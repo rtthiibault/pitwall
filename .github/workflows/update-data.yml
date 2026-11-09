@@ -31,7 +31,7 @@ jobs:
           git config user.email "pitwall-bot@users.noreply.github.com"
           # Sans nouvelle donnée, on ne garde meta.json que le lundi : un commit par semaine
           # suffit pour que GitHub ne désactive pas cette tâche planifiée (60 jours sans activité).
-          if git diff --quiet -- data/snapshot.json data/seasons && [ -z "$(git ls-files --others --exclude-standard data/seasons)" ]; then
+          if git diff --quiet -- data/snapshot.json data/seasons data/portraits.json && [ -f data/portraits.json ] && git ls-files --error-unmatch data/portraits.json >/dev/null 2>&1 && [ -z "$(git ls-files --others --exclude-standard data/seasons)" ]; then
             if [ "$(date -u +%u)" != "1" ] && [ "${{ github.event_name }}" = "schedule" ]; then
               git checkout -- data/meta.json 2>/dev/null || true
             fi

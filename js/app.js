@@ -36,6 +36,12 @@
       S.season = F1.data.normalize(F1.FALLBACK, 'fallback');
       await prepare();
     }
+    // portraits : on attend au plus 2,5 s, puis on redessine quand tout est arrivé
+    const pp = F1.visuals.loadPortraits([...S.season.drivers.values(), ...(S.season.upcoming ? S.season.upcoming.drivers.values() : [])]);
+    let portraitsDone = false;
+    pp.then(() => { portraitsDone = true; });
+    await Promise.race([pp, new Promise((r) => setTimeout(r, 2500))]);
+    if (!portraitsDone) pp.then(() => route());
     await lights.finish();
     F1.store.onChange(updateWallet);
     updateWallet();
@@ -137,6 +143,7 @@
       case 'classements': html = pageStandings(); break;
       case 'gp': html = pageGP(+parts[1]); break;
       case 'mes-paris': html = pageMyBets(); break;
+      case 'grille': html = pageGrid(); break;
       default: html = pageHome();
     }
     app.innerHTML = sourceNotice() + html;
@@ -170,10 +177,19 @@
   const team = (id) => S.season.teams.get(id) || { short: id, color: '#888', name: id };
   const tcol = (id) => team(id).color;
 
+  // Avatar pilote : photo libre (Wikimedia Commons) ou initiales aux couleurs de l'écurie
+  function ava(id, cls = '') {
+    const d = drv(id) || (S.season.upcoming && S.season.upcoming.drivers.get(id));
+    if (!d) return '';
+    const p = F1.visuals.portrait(id);
+    const c = tcol(d.teamId);
+    const ini = esc((d.given || '?')[0] + (d.family || '?')[0]);
+    return `<span class="ava ${cls}" style="--tc:${c}">${p ? `<img src="${esc(p.img)}" alt="${esc(d.given + ' ' + d.family)}" loading="lazy" onerror="this.remove()">` : ''}<i>${ini}</i></span>`;
+  }
   function drvCell(id, extra = '') {
     const d = drv(id); if (!d) return esc(id);
     const t = team(d.teamId);
-    return `<div class="drv"><span class="tstripe" style="background:${t.color}"></span><div><b><span class="gv">${esc(d.given)}</span>${esc(d.family)}</b><small>${flag(d.iso, 'sm')} ${esc(t.short)}${d.tbc ? ' · à confirmer' : ''}${extra}</small></div></div>`;
+    return `<div class="drv">${ava(id)}<div><b><span class="gv">${esc(d.given)}</span>${esc(d.family)}</b><small>${flag(d.iso, 'sm')} ${esc(t.short)}${d.tbc ? ' · à confirmer' : ''}${extra}</small></div></div>`;
   }
   function teamCell(id) {
     const t = team(id);
@@ -214,7 +230,7 @@
 
   function h2hCard(m) {
     const [sa, sb] = m.selections;
-    const side = (s) => { const d = drv(s.driverId); return `<div class="side" style="--tc:${tcol(d.teamId)}"><div class="n">${esc(d.family)}</div><div class="t">${flag(d.iso, 'sm')} ${esc(team(d.teamId).short)} · ${fmt(d.points)} pts</div>${oddBtn(s, m, { label: 'Devant' })}</div>`; };
+    const side = (s) => { const d = drv(s.driverId); return `<div class="side" style="--tc:${tcol(d.teamId)}"><div class="row" style="flex-wrap:nowrap;gap:10px;margin-bottom:4px">${ava(d.id, 'md')}<div class="n">${esc(d.family)}</div></div><div class="t">${flag(d.iso, 'sm')} ${esc(team(d.teamId).short)} · ${fmt(d.points)} pts</div>${oddBtn(s, m, { label: 'Devant' })}</div>`; };
     return `<div class="card market"><div class="market-h"><div><h3>${esc(m.title)}</h3><div class="sub">${esc(m.sub)} · le mieux classé à l'arrivée</div></div>${closeChip(m)}</div>
       <div class="h2h">${side(sa)}<div class="vs">VS</div>${side(sb)}</div>
       <div class="h2h-bar"><i style="width:${sa.prob * 100}%;background:${tcol(drv(sa.driverId).teamId)}"></i><i style="flex:1;background:${tcol(drv(sb.driverId).teamId)};opacity:.7"></i></div>
@@ -276,7 +292,7 @@
     const nextSess = nx.sessions.find((x) => x.date.getTime() > now);
     const w = S.weather;
     const wIcon = w ? (w.rain >= 50 ? '🌧️' : w.rain >= 25 ? '🌦️' : w.code <= 1 ? '☀️' : '⛅') : '';
-    return `<section class="hero"><div class="hero-bg">${streaks()}<div class="grid-floor"></div><div class="big-round">R${nx.round}</div><div class="kerb"></div></div>
+    return `<section class="hero"><div class="hero-bg">${streaks()}<div class="grid-floor"></div><div class="big-round">R${nx.round}</div>${heroCar()}<div class="kerb"></div></div>
       <div class="hero-top">${flag(nx.iso, 'lg')}<span class="chip red live">Prochain Grand Prix</span><span class="chip">Manche ${nx.round} / ${s.races.length}</span>${nx.sprint ? '<span class="chip gold">⚡ Week-end Sprint</span>' : ''}${nx.street ? '<span class="chip">🏙️ Circuit urbain</span>' : ''}${nx.round === 1 ? `<span class="chip green">🚦 Ouverture de la saison ${s.year}</span>` : ''}${nx.tbc ? '<span class="chip">À confirmer</span>' : ''}</div>
       <h1><span class="accent">${esc(nx.countryFr)}</span>${esc(nx.nameFr)}</h1>
       <div class="hero-meta"><span>📍 ${esc(nx.circuit)} · ${esc(nx.locality)}</span><span>🗓️ ${DAYL.format(nx.date)} · ${HM.format(nx.date)}</span>
@@ -285,6 +301,12 @@
       <div class="weekend">${nx.sessions.map((x) => `<div class="sess ${x.date.getTime() < now ? 'done' : x === nextSess ? 'next' : ''}"><small>${esc(x.label)}</small><b>${WD.format(x.date)} ${HM.format(x.date)}</b></div>`).join('')}</div>
       <div class="hero-actions"><a class="btn" href="#/paris">🏁 Parier sur ce GP</a><a class="btn ghost" href="#/paris/tierce">Jouer le tiercé</a></div></section>`;
   }
+  function heroCar() {
+    const w = S.markets.find((m) => m.kind === 'win');
+    const fav = w && w.selections[0] && drv(w.selections[0].driverId);
+    if (!fav) return '';
+    return `<div class="hero-car" title="Monoplace du favori : ${esc(fav.family)}">${F1.visuals.car(fav.teamId, { number: fav.number, spin: true })}</div>`;
+  }
   function streaks() {
     let h = '';
     for (let i = 0; i < 9; i++) h += `<span class="streak" style="top:${8 + i * 10}%;width:${120 + (i * 53) % 220}px;animation-duration:${1.6 + (i * 0.37) % 1.8}s;animation-delay:${(i * 0.61) % 3}s"></span>`;
@@ -292,14 +314,14 @@
   }
   function favCard(x, m, i) {
     const d = drv(x.driverId); const t = team(d.teamId);
-    return `<div class="fav" style="--tc:${t.color}"><div class="bignum">${esc(d.number)}</div><div><div class="rank">Favori n°${i + 1}</div><div class="fname">${flag(d.iso, 'sm')} ${esc(d.given)}</div><div class="lname">${esc(d.family)}</div><div class="team">${esc(t.short)} · ${fmt(d.points)} pts</div></div>
+    return `<div class="fav" style="--tc:${t.color}"><div class="bignum">${esc(d.number)}</div>${F1.visuals.portrait(d.id) ? `<img class="fav-photo" src="${esc(F1.visuals.portrait(d.id).img)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<div style="position:relative"><div class="rank">Favori n°${i + 1}</div><div class="fname">${flag(d.iso, 'sm')} ${esc(d.given)}</div><div class="lname">${esc(d.family)}</div><div class="team">${esc(t.short)} · ${fmt(d.points)} pts</div></div>
       <div>${oddBtn(x, m, { label: `<span>Victoire</span><span class="prob">${pct(x.prob)}</span>` })}</div></div>`;
   }
   function lastPodium() {
     const r = S.season.lastDone;
     if (!r) return `<div class="card"><h3>Dernier Grand Prix</h3><div class="empty"><div class="ic">🏁</div>Aucune course disputée pour l'instant.</div></div>`;
     const top = r.results.slice(0, 3);
-    const step = (x, p) => { if (!x) return '<div></div>'; const d = drv(x.driverId); return `<div class="pod-step p${p}" style="--tc:${tcol(x.teamId)};--mc:${['var(--gold)', 'var(--silver)', 'var(--bronze)'][p - 1]}"><div class="who">${flag(d.iso, 'sm')} ${esc(d.family)}</div><div class="tm">${esc(team(x.teamId).short)}</div><div class="blk">${p}</div></div>`; };
+    const step = (x, p) => { if (!x) return '<div></div>'; const d = drv(x.driverId); return `<div class="pod-step p${p}" style="--tc:${tcol(x.teamId)};--mc:${['var(--gold)', 'var(--silver)', 'var(--bronze)'][p - 1]}">${ava(d.id, 'lg')}<div class="who">${flag(d.iso, 'sm')} ${esc(d.family)}</div><div class="tm">${esc(team(x.teamId).short)}</div><div class="blk">${p}</div></div>`; };
     return `<a class="card" href="#/gp/${r.round}"><div class="market-h"><div><h3>${flag(r.iso, 'sm')} ${esc(r.nameFr)}</h3><div class="sub">Dernier Grand Prix · ${DAY.format(r.date)}</div></div><span class="chip">Résultats →</span></div>
       <div class="podium">${step(top[1], 2)}${step(top[0], 1)}${step(top[2], 3)}</div></a>`;
   }
@@ -384,7 +406,7 @@
     const slots = T.map((id, i) => {
       if (!id) return `<div class="tslot"><div class="pp">P${i + 1}</div><div class="muted" style="font-size:13px">Choisissez un pilote</div></div>`;
       const d = drv(id);
-      return `<button class="tslot filled" style="--tc:${tcol(d.teamId)}" data-action="tierce-clear" data-i="${i}" title="Retirer"><div class="pp">P${i + 1}</div><div class="nn">${esc(d.family)}</div><div class="muted" style="font-size:12px">${esc(team(d.teamId).short)} ✕</div></button>`;
+      return `<button class="tslot filled" style="--tc:${tcol(d.teamId)}" data-action="tierce-clear" data-i="${i}" title="Retirer"><div class="pp">P${i + 1}</div>${ava(d.id, 'md')}<div class="nn">${esc(d.family)}</div><div class="muted" style="font-size:12px">${esc(team(d.teamId).short)} ✕</div></button>`;
     }).join('');
     let res = '';
     if (T.every(Boolean)) {
@@ -398,7 +420,7 @@
     return `<div class="grid g2"><div class="card"><h3>🏆 Composez votre tiercé</h3><div class="sub">Désignez le podium du ${esc(nx.nameFr)}. Cotes calculées avec la formule de Harville à partir des probabilités de victoire.</div>
       <div class="tierce-slots">${slots}</div>${res}${T.some(Boolean) ? '<button class="more" data-action="tierce-reset">↺ Recommencer</button>' : ''}</div>
       <div class="card"><h3>Pilotes</h3><div class="sub">Classés par probabilité de podium</div><div class="pick-grid" style="margin-top:14px">
-      ${sorted.map((d) => { const x = drv(d.id); return `<button class="pick ${T.includes(d.id) ? 'used' : ''}" data-action="tierce-pick" data-d="${esc(d.id)}"><span class="tstripe" style="background:${tcol(x.teamId)};height:28px"></span><span>${esc(x.code)}<small>${pct(d.p.podium)}</small></span></button>`; }).join('')}
+      ${sorted.map((d) => { const x = drv(d.id); return `<button class="pick ${T.includes(d.id) ? 'used' : ''}" data-action="tierce-pick" data-d="${esc(d.id)}">${ava(d.id)}<span>${esc(x.code)}<small>${pct(d.p.podium)}</small></span></button>`; }).join('')}
       </div></div></div>`;
   }
 
@@ -543,7 +565,7 @@
     const tab = S.gpTab;
     const tabs = `<div class="seg" style="margin-bottom:16px"><button class="${tab === 'race' ? 'on' : ''}" data-action="gptab" data-t="race">Course</button>${r.sprintResults ? `<button class="${tab === 'sprint' ? 'on' : ''}" data-action="gptab" data-t="sprint">Sprint</button>` : ''}<button class="${tab === 'quali' ? 'on' : ''}" data-action="gptab" data-t="quali">Qualifications</button></div>`;
     const top = r.results.slice(0, 3);
-    const step = (x, p) => { if (!x) return '<div></div>'; const d = drv(x.driverId); return `<div class="pod-step p${p}" style="--tc:${tcol(x.teamId)};--mc:${['var(--gold)', 'var(--silver)', 'var(--bronze)'][p - 1]}"><div class="who">${flag(d.iso, 'sm')} ${esc(d.family)}</div><div class="tm">${esc(team(x.teamId).short)}</div><div class="blk">${p}</div></div>`; };
+    const step = (x, p) => { if (!x) return '<div></div>'; const d = drv(x.driverId); return `<div class="pod-step p${p}" style="--tc:${tcol(x.teamId)};--mc:${['var(--gold)', 'var(--silver)', 'var(--bronze)'][p - 1]}">${ava(d.id, 'lg')}<div class="who">${flag(d.iso, 'sm')} ${esc(d.family)}</div><div class="tm">${esc(team(x.teamId).short)}</div><div class="blk">${p}</div></div>`; };
     const fl = r.results.find((x) => x.fastestRank === 1);
     const gainer = r.results.filter((x) => x.classified && x.grid > 0).sort((a, b) => (b.grid - b.pos) - (a.grid - a.pos))[0];
     const dnfs = r.results.filter((x) => !x.classified);
@@ -562,6 +584,37 @@
     }
     return head + tabs + `<div class="grid" style="grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px" id="gpGrid"><div class="card pad0"><div class="table-wrap">${table}</div></div>${side}</div>
       <style>@media(max-width:900px){#gpGrid{grid-template-columns:minmax(0,1fr)!important}}</style>`;
+  }
+
+  /* =================== Grille (pilotes & monoplaces) =================== */
+  function pageGrid() {
+    const s = S.season;
+    const st = seasonStats();
+    const teams = [...s.teams.values()].filter((t) => s.entrants.some((id) => drv(id).teamId === t.id)).sort((a, b) => b.points - a.points || a.position - b.position);
+    const win = S.markets.find((m) => m.kind === 'win');
+    const wp = win ? Object.fromEntries(win.selections.map((x) => [x.driverId, x])) : {};
+    const card = (id) => {
+      const d = drv(id); const o = st[d.id] || {}; const p = F1.visuals.portrait(d.id);
+      return `<div class="gdrv" style="--tc:${tcol(d.teamId)}"><div class="gnum">${esc(d.number)}</div>
+        <div class="gphoto">${p ? `<img src="${esc(p.img)}" alt="${esc(d.given + ' ' + d.family)}" loading="lazy" onerror="this.remove()">` : ''}<i>${esc(d.code)}</i></div>
+        <div class="ginfo"><div class="fname">${flag(d.iso, 'sm')} ${esc(d.given)}</div><div class="lname">${esc(d.family)}</div>${d.tbc ? '<span class="chip" style="margin-top:4px">À confirmer</span>' : ''}
+        <div class="gstats"><span><b>${fmt(d.points)}</b> pts</span><span><b>${o.wins || 0}</b> vict.</span><span><b>${o.podiums || 0}</b> podiums</span><span><b>P${d.position < 99 ? d.position : '—'}</b></span></div>
+        ${wp[d.id] ? oddBtn(wp[d.id], win, { label: `<span>Victoire ${esc(s.next ? s.next.nameFr.replace('Grand Prix', 'GP') : '')}</span>` }) : ''}</div></div>`;
+    };
+    return `<div class="market-head"><div><h1>Grille ${s.year}</h1><div class="muted" style="margin-top:6px">${teams.length} écuries · ${s.entrants.length} pilotes · cliquez une cote pour parier</div></div></div>
+      <div class="grid g2">${teams.map((t, i) => {
+        const ds = s.entrants.filter((id) => drv(id).teamId === t.id);
+        return `<div class="gteam" style="--tc:${t.color}"><div class="gteam-h"><div><div class="rank">P${i + 1} constructeurs · ${fmt(t.points)} pts</div><h3>${esc(t.short)}</h3><div class="sub">${esc(t.name)}</div></div></div>
+          <div class="gcar">${F1.visuals.car(t.id, { number: drv(ds[0]).number, spin: true })}</div>
+          <div class="gdrivers">${ds.map(card).join('')}</div></div>`;
+      }).join('')}</div>`;
+  }
+  function credits() {
+    const all = F1.visuals.allPortraits();
+    const ids = Object.keys(all).filter((id) => drv(id) || (S.season.upcoming && S.season.upcoming.drivers.get(id)));
+    modal(`<h2>Crédits photos</h2><p class="muted" style="font-size:13px;margin-top:0">Portraits issus de Wikimedia Commons, sous licences libres (Creative Commons, etc.). Merci aux photographes.</p>
+      <div style="display:grid;gap:8px;font-size:13px">${ids.map((id) => { const p = all[id]; const d = drv(id) || S.season.upcoming.drivers.get(id); return `<div class="row" style="flex-wrap:nowrap">${ava(id)}<div><b>${esc(d.given + ' ' + d.family)}</b><br><span class="muted">© ${esc(p.artist || 'voir la page du fichier')} · ${esc(p.license || 'licence libre')} · <a href="${esc(p.page || p.file || p.wiki || '#')}" target="_blank" rel="noopener" style="text-decoration:underline">source</a></span></div></div>`; }).join('') || '<span class="muted">Aucun portrait chargé.</span>'}</div>
+      <div class="row" style="margin-top:18px"><span class="sp"></span><button class="btn sm" data-action="close-modal">Fermer</button></div>`);
   }
 
   /* =================== Mes paris =================== */
@@ -747,6 +800,7 @@
       <div class="logo" style="justify-content:center;font-size:18px;margin-bottom:10px"><span>PIT<em>WALL</em></span></div>
       Données : <a href="https://github.com/jolpica/jolpica-f1" target="_blank" rel="noopener">Jolpica F1 API</a> (successeur d'Ergast) · Météo : <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> · Source : ${src}${s.updated ? ' · maj ' + DTF.format(s.updated) : ''}${meta}
       · <button class="link" data-action="reload" style="text-decoration:underline">Actualiser</button><br><br>
+      Photos des pilotes : Wikimedia Commons, licences libres — <button class="link" data-action="credits" style="text-decoration:underline">crédits photos</button> · Monoplaces : illustrations originales.<br><br>
       Jeu gratuit à jetons virtuels, sans argent réel ni gain matériel. Site de fans non officiel, sans lien avec la Formula One Group, la FIA ou les écuries. Les cotes sont des estimations statistiques et n'ont qu'une valeur ludique.</div>`;
   }
 
@@ -811,6 +865,7 @@
       case 'claim-season': { const g = F1.store.claimSeason(S.season); if (g) { toast('🎆', `+${g} jetons pour la saison ${S.season.year} !`, 'win'); confetti(160); route(); } break; }
       case 'rescue': { const g = F1.store.rescue(S.season, S.season.next); if (g) { toast('⛽', `Ravitaillement : +${g} jetons`, 'win'); route(); } break; }
       case 'profile': profile(); break;
+      case 'credits': credits(); break;
       case 'save-name': { const v = ($('#nameIn').value || '').trim(); if (!v) { $('#nameIn').focus(); return; } F1.store.setName(v); closeModal(); toast('👋', `Bienvenue, <b>${esc(v)}</b> !`, 'win'); route(); break; }
       case 'copy-code': { const t = $('#expCode'); t.select(); (navigator.clipboard ? navigator.clipboard.writeText(t.value) : Promise.reject()).then(() => toast('📋', 'Code copié'), () => document.execCommand('copy')); break; }
       case 'import': try { F1.store.importCode($('#impCode').value); closeModal(); shownBal = null; updateWallet(); route(); toast('✅', 'Sauvegarde importée', 'win'); } catch (err) { toast('⚠️', 'Code de sauvegarde invalide', 'err'); } break;

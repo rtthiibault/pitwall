@@ -204,7 +204,7 @@
       drivers.set(D.driverId, {
         id: D.driverId, code: D.code || D.familyName.slice(0, 3).toUpperCase(), number: D.permanentNumber || ex.number || '',
         given: D.givenName, family: D.familyName, nationality: D.nationality, iso: NAT_ISO[D.nationality] || '',
-        teamId: teamId || ex.teamId, tbc: ex.tbc, points: ex.points || 0, position: ex.position || 99, wins: ex.wins || 0,
+        teamId: teamId || ex.teamId, tbc: ex.tbc, wiki: D.url || ex.wiki, points: ex.points || 0, position: ex.position || 99, wins: ex.wins || 0,
       });
     };
     const addTeam = (C) => {
