@@ -53,7 +53,7 @@
     ['sainz', 'SAI', '55', 'Carlos', 'Sainz', 'Spanish', 'williams'],
     ['lawson', 'LAW', '30', 'Liam', 'Lawson', 'New Zealander', 'rb', true],
     ['arvid_lindblad', 'LIN', '41', 'Arvid', 'Lindblad', 'British', 'rb', true],
-    ['camara', 'CAM', '', 'Rafael', 'Câmara', 'Brazilian', 'haas'],
+    ['rafael_camara', 'CAM', '', 'Rafael', 'Câmara', 'Brazilian', 'haas'],
     ['bearman', 'BEA', '87', 'Oliver', 'Bearman', 'British', 'haas', true],
     ['hulkenberg', 'HUL', '27', 'Nico', 'Hülkenberg', 'German', 'audi'],
     ['bortoleto', 'BOR', '5', 'Gabriel', 'Bortoleto', 'Brazilian', 'audi'],

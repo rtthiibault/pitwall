@@ -36,7 +36,7 @@
     Austria: 'Autriche', UK: 'Royaume-Uni', 'United Kingdom': 'Royaume-Uni', Belgium: 'Belgique', Hungary: 'Hongrie',
     Netherlands: 'Pays-Bas', Italy: 'Italie', Azerbaijan: 'Azerbaïdjan', Singapore: 'Singapour', Mexico: 'Mexique',
     Brazil: 'Brésil', Qatar: 'Qatar', UAE: 'Émirats arabes unis', 'United Arab Emirates': 'Émirats arabes unis',
-    Portugal: 'Portugal', France: 'France', Germany: 'Allemagne', Turkey: 'Turquie',
+    Portugal: 'Portugal', Malaysia: 'Malaisie', France: 'France', Germany: 'Allemagne', Turkey: 'Turquie',
   };
   const NAT_ISO = {
     British: 'gb', Dutch: 'nl', Monegasque: 'mc', Spanish: 'es', Mexican: 'mx', Australian: 'au', French: 'fr',
@@ -58,7 +58,7 @@
     'United States Grand Prix': 'Grand Prix des États-Unis', 'Mexico City Grand Prix': 'Grand Prix de Mexico',
     'São Paulo Grand Prix': 'Grand Prix de São Paulo', 'Las Vegas Grand Prix': 'Grand Prix de Las Vegas',
     'Qatar Grand Prix': 'Grand Prix du Qatar', 'Abu Dhabi Grand Prix': "Grand Prix d'Abu Dhabi",
-    'Emilia Romagna Grand Prix': "Grand Prix d'Émilie-Romagne", 'Portuguese Grand Prix': 'Grand Prix du Portugal', 'Turkish Grand Prix': 'Grand Prix de Turquie',
+    'Emilia Romagna Grand Prix': "Grand Prix d'Émilie-Romagne", 'Portuguese Grand Prix': 'Grand Prix du Portugal', 'Barcelona Grand Prix': 'Grand Prix de Barcelone', 'Brazilian Grand Prix': 'Grand Prix du Brésil', 'Bahrain Grand Prix in Malaysia': 'Grand Prix de Bahreïn (en Malaisie)', 'Malaysian Grand Prix': 'Grand Prix de Malaisie', 'Turkish Grand Prix': 'Grand Prix de Turquie',
   };
   const STREET = ['monaco', 'marina_bay', 'baku', 'jeddah', 'vegas', 'albert_park', 'villeneuve', 'miami', 'madring'];
 
