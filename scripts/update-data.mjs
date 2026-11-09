@@ -111,7 +111,7 @@ async function wget(url, tries = 5) {
   }
   throw new Error('limite de requêtes Wikimedia : ' + url);
 }
-const titleOf = (d) => (d.url && d.url.includes('/wiki/') ? decodeURIComponent(d.url.split('/wiki/')[1].split(/[?#]/)[0]).replace(/_/g, ' ') : null);
+const titleOf = (d) => (d.url && d.url.includes('/wiki/') ? decodeURIComponent(d.url.split('/wiki/')[1].split(/[?#]/)[0]).replace(/_/g, ' ') : d.givenName && d.familyName ? `${d.givenName} ${d.familyName}` : null);
 // 2 requêtes groupées : image principale des pages Wikipédia, puis auteur/licence sur Commons
 async function portraitsFor(list) {
   const out = {};

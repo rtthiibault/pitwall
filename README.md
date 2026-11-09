@@ -25,6 +25,15 @@ Site de paris **à jetons virtuels** sur la Formule 1. Il est 100 % statique (HT
 - **Pages** : calendrier, classements (avec un graphique d'évolution interactif), résultats détaillés de chaque GP.
 - **Sauvegarde** : export/import d'un code, pour passer d'un appareil à l'autre.
 
+## Pilotes et monoplaces
+- **Portraits des pilotes** : il s'agit uniquement d'images **libres de droits** issues de Wikimedia Commons (licences CC BY, CC BY-SA, CC0…), c'est-à-dire les photos principales des pages Wikipédia des pilotes. L'automatisation hebdomadaire les liste dans `data/portraits.json`, avec l'auteur et la licence de chacune. Les crédits sont affichés par le lien « crédits photos » en pied de page, comme l'exigent ces licences. Si une photo manque, le site affiche les initiales du pilote aux couleurs de son écurie.
+- **Monoplaces** : ce sont des illustrations vectorielles originales aux couleurs de chaque écurie (`js/visuals.js`, objet `LIVERY`). Elles n'utilisent aucune image officielle, donc aucun problème de droits.
+- Elles apparaissent à plusieurs endroits :
+  - sur les cartes des favoris ;
+  - dans les duels, le podium, le tiercé et les classements ;
+  - sur la nouvelle page **Grille** (chaque écurie, sa voiture et ses deux pilotes) ;
+  - dans le bandeau d'accueil, avec la voiture du favori.
+
 ## Saisons multiples (2026 → 2027)
 - `js/season2027.js` contient le **calendrier officiel 2027** : 24 GP et 10 Sprints. Le Portugal et la Turquie reviennent, la Turquie étant encore « à confirmer ». Il contient aussi la grille provisoire, où les baquets non officialisés sont marqués « à confirmer ». Les horaires sont estimés.
 - Tant que 2026 se dispute :
@@ -82,6 +91,7 @@ Ouvrez ensuite http://localhost:8000.
 | Fichier | Rôle |
 |---|---|
 | `js/season2027.js` | Calendrier et grille 2027 intégrés |
+| `js/visuals.js` | Monoplaces SVG (livrées) et portraits des pilotes |
 | `js/data.js` | Appels API, cache, normalisation, couleurs des écuries, drapeaux |
 | `js/model.js` | Simulation Monte-Carlo, conversion probabilité → cote |
 | `js/markets.js` | Définition des marchés et règles de règlement |
