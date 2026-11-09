@@ -58,7 +58,7 @@
     'United States Grand Prix': 'Grand Prix des États-Unis', 'Mexico City Grand Prix': 'Grand Prix de Mexico',
     'São Paulo Grand Prix': 'Grand Prix de São Paulo', 'Las Vegas Grand Prix': 'Grand Prix de Las Vegas',
     'Qatar Grand Prix': 'Grand Prix du Qatar', 'Abu Dhabi Grand Prix': "Grand Prix d'Abu Dhabi",
-    'Emilia Romagna Grand Prix': "Grand Prix d'Émilie-Romagne",
+    'Emilia Romagna Grand Prix': "Grand Prix d'Émilie-Romagne", 'Portuguese Grand Prix': 'Grand Prix du Portugal', 'Turkish Grand Prix': 'Grand Prix de Turquie',
   };
   const STREET = ['monaco', 'marina_bay', 'baku', 'jeddah', 'vegas', 'albert_park', 'villeneuve', 'miami', 'madring'];
 
@@ -107,21 +107,28 @@
     return [...byRound.values()].sort((a, b) => a.round - b.round);
   }
 
-  async function loadLive() {
+  // path = 'current' ou une année ('2027')
+  async function loadLive(path) {
     const [sched, ds, cs] = await Promise.all([
-      getJSON(`${API}/current.json?limit=100`),
-      getJSON(`${API}/current/driverStandings.json?limit=100`),
-      getJSON(`${API}/current/constructorStandings.json?limit=100`),
+      getJSON(`${API}/${path}.json?limit=100`),
+      getJSON(`${API}/${path}/driverStandings.json?limit=100`),
+      getJSON(`${API}/${path}/constructorStandings.json?limit=100`),
     ]);
-    await sleep(400);
-    const results = await apiRaces('current/results', 'Results');
-    await sleep(400);
-    let sprint = [];
-    try { sprint = await apiRaces('current/sprint', 'SprintResults'); } catch (e) { /* pas de sprint */ }
+    const races = sched.MRData.RaceTable.Races;
+    if (!races.length) throw new Error('calendrier vide');
+    let results = [], sprint = [];
+    const started = races.some((r) => new Date(r.date + 'T' + (r.time || '12:00:00Z')).getTime() < Date.now());
+    if (started) {
+      await sleep(400);
+      results = await apiRaces(`${path}/results`, 'Results');
+      await sleep(400);
+      try { sprint = await apiRaces(`${path}/sprint`, 'SprintResults'); } catch (e) { /* pas de sprint */ }
+    }
     const dl = ds.MRData.StandingsTable.StandingsLists[0];
     const cl = cs.MRData.StandingsTable.StandingsLists[0];
     return {
-      schedule: sched.MRData.RaceTable.Races,
+      year: +(sched.MRData.RaceTable.season || races[0].season),
+      schedule: races,
       driverStandings: dl ? dl.DriverStandings : [],
       constructorStandings: cl ? cl.ConstructorStandings : [],
       results, sprint, qualifying: [],
@@ -129,22 +136,46 @@
     };
   }
 
-  async function loadRaw() {
-    const c = cacheGet(RAW_KEY);
-    if (c && Date.now() - c.t < TTL) return { raw: c.d, source: 'live' };
+  // Complète une saison qui n'a pas encore de classement (avant-saison) avec la grille embarquée
+  function withEmbedded(raw) {
+    const emb = F1.SEASONS && F1.SEASONS[raw.year];
+    if (!emb) return raw;
+    const out = { ...raw };
+    if (!out.schedule || !out.schedule.length) out.schedule = emb.schedule;
+    else out.schedule = out.schedule.map((r) => { const e = emb.schedule.find((x) => x.round === r.round && x.Circuit.circuitId === r.Circuit.circuitId); return e && e.tbc ? { ...r, tbc: true } : r; });
+    if ((!out.driverStandings || !out.driverStandings.length) && !(out.results || []).length) out.driverStandings = emb.driverStandings;
+    if (!out.constructorStandings || !out.constructorStandings.length) out.constructorStandings = emb.constructorStandings;
+    return out;
+  }
+
+  async function loadRaw(path = 'current') {
+    const key = RAW_KEY + ':' + path;
+    const c = cacheGet(key);
+    const ttl = path === 'current' ? TTL : 6 * 36e5;
+    if (c && Date.now() - c.t < ttl) return { raw: withEmbedded(c.d), source: 'live' };
     try {
-      const raw = await loadLive();
-      cacheSet(RAW_KEY, raw);
-      return { raw, source: 'live' };
+      const raw = await loadLive(path);
+      cacheSet(key, raw);
+      return { raw: withEmbedded(raw), source: 'live' };
     } catch (e) {
-      console.warn('[PITWALL] API live indisponible :', e.message);
+      console.warn(`[PITWALL] API live indisponible (${path}) :`, e.message);
     }
-    try {
-      const snap = await getJSON('data/snapshot.json?v=' + Math.floor(Date.now() / 36e5), 6000);
-      if (snap && snap.schedule && snap.schedule.length) return { raw: snap, source: 'snapshot' };
-    } catch (e) { /* pas de snapshot */ }
-    if (c) return { raw: c.d, source: 'cache' };
-    return { raw: F1.FALLBACK, source: 'fallback' };
+    if (path === 'current') {
+      try {
+        const snap = await getJSON('data/snapshot.json?v=' + Math.floor(Date.now() / 36e5), 6000);
+        if (snap && snap.schedule && snap.schedule.length) return { raw: withEmbedded({ year: +snap.schedule[0].season, ...snap }), source: 'snapshot' };
+      } catch (e) { /* pas de snapshot */ }
+    }
+    if (c) return { raw: withEmbedded(c.d), source: 'cache' };
+    const year = path === 'current' ? embeddedYear() : +path;
+    if (F1.SEASONS[year]) return { raw: F1.SEASONS[year], source: 'fallback' };
+    return null;
+  }
+  // Saison embarquée la plus pertinente aujourd'hui (celle qui n'est pas encore terminée)
+  function embeddedYear() {
+    const ys = Object.keys(F1.SEASONS).map(Number).sort();
+    for (const y of ys) { const last = F1.SEASONS[y].schedule.at(-1); if (new Date(last.date).getTime() + 2 * 864e5 > Date.now()) return y; }
+    return ys.at(-1);
   }
 
   /* ---------- Normalisation ---------- */
@@ -173,7 +204,7 @@
       drivers.set(D.driverId, {
         id: D.driverId, code: D.code || D.familyName.slice(0, 3).toUpperCase(), number: D.permanentNumber || ex.number || '',
         given: D.givenName, family: D.familyName, nationality: D.nationality, iso: NAT_ISO[D.nationality] || '',
-        teamId: teamId || ex.teamId, points: ex.points || 0, position: ex.position || 99, wins: ex.wins || 0,
+        teamId: teamId || ex.teamId, tbc: ex.tbc, points: ex.points || 0, position: ex.position || 99, wins: ex.wins || 0,
       });
     };
     const addTeam = (C) => {
@@ -199,7 +230,7 @@
       const ex = drivers.get(s.Driver.driverId);
       addDriver(s.Driver, (ex && ex.teamId) || (cons.length ? cons[cons.length - 1].constructorId : null));
       const d = drivers.get(s.Driver.driverId);
-      d.points = +s.points; d.position = +s.position || 99; d.wins = +s.wins;
+      d.points = +s.points; d.position = +s.position || 99; d.wins = +s.wins; d.tbc = !!s.tbc;
     }
     for (const s of raw.constructorStandings || []) {
       addTeam(s.Constructor);
@@ -226,7 +257,7 @@
         locality: r.Circuit.Location.locality, country, countryFr: F1.countryFr(country), iso: COUNTRY_ISO[country] || '',
         lat: +r.Circuit.Location.lat, long: +r.Circuit.Location.long,
         date: at(r), qualiDate: at(r.Qualifying), sprintDate: at(r.Sprint), sprint: !!r.Sprint,
-        street: STREET.includes(r.Circuit.circuitId),
+        street: STREET.includes(r.Circuit.circuitId), tbc: !!r.tbc,
         sessions,
         results: resByRound.get(round) || null,
         sprintResults: sprintByRound.get(round) || null,
@@ -254,7 +285,7 @@
     for (const d of drivers.values()) if (ptsByDriver[d.id] != null && ptsByDriver[d.id] > d.points) d.points = ptsByDriver[d.id];
 
     const season = {
-      year: races.length ? races[0].season : new Date().getFullYear(),
+      year: races.length ? races[0].season : raw.year || new Date().getFullYear(),
       source, updated: raw.updated ? new Date(raw.updated) : null,
       races, drivers, teams, entrants, next, pending, lastDone, doneCount: done.length,
       finished: races.length > 0 && races.every((r) => r.results),
@@ -262,9 +293,44 @@
     return season;
   }
 
+  // Niveau des écuries pour l'avant-saison : points/voiture/course de la saison précédente, régressés vers la moyenne
+  function priorsFrom(prev) {
+    if (!prev || prev.doneCount < 3) return null;
+    const out = {};
+    for (const t of prev.teams.values()) out[t.id] = 2 + 0.8 * (t.points / (2 * prev.doneCount));
+    return out;
+  }
+
+  /* Charge la saison active (celle sur laquelle on parie) et, si elle existe, la saison suivante.
+     Quand la saison en cours est terminée, la saison suivante devient automatiquement la saison active. */
   async function loadSeason() {
-    const { raw, source } = await loadRaw();
-    return normalize(raw, source);
+    const cur = await loadRaw('current');
+    let season = normalize(cur.raw, cur.source);
+    const nextYear = season.year + 1;
+    let upcoming = null;
+    if (F1.SEASONS[nextYear] || season.finished || !season.next) {
+      const nx = await loadRaw(String(nextYear));
+      if (nx) upcoming = normalize(nx.raw, nx.source === 'fallback' && cur.source !== 'fallback' ? 'embedded' : nx.source);
+    }
+    if (upcoming && upcoming.races.length) upcoming.priors = priorsFrom(season);
+    // bascule : plus aucun GP à venir dans la saison courante -> la suivante devient active
+    if (upcoming && !season.next && !season.pending && upcoming.next) {
+      upcoming.prev = season;
+      return upcoming;
+    }
+    // saison "current" en avant-saison (janvier-mars) : priors depuis la saison précédente
+    if (season.doneCount === 0 && season.source !== 'fallback') {
+      const pv = await loadRaw(String(season.year - 1));
+      if (pv && pv.source !== 'fallback') { season.prev = normalize(pv.raw, pv.source); season.priors = priorsFrom(season.prev); }
+    }
+    season.upcoming = upcoming && upcoming.year > season.year ? upcoming : null;
+    return season;
+  }
+
+  // Saison d'une année précise (pour régler d'anciens paris)
+  async function loadYear(year) {
+    const r = await loadRaw(String(year));
+    return r ? normalize(r.raw, r.source) : null;
   }
 
   // Qualifications d'une manche (chargées à la demande)
@@ -310,5 +376,5 @@
     try { Object.keys(localStorage).filter((k) => k.startsWith('pitwall:raw') || k.startsWith('pitwall:q:')).forEach((k) => localStorage.removeItem(k)); } catch (e) { /* */ }
   }
 
-  F1.data = { loadSeason, loadQualifying, loadWeather, normalize, clearCache };
+  F1.data = { loadSeason, loadYear, loadQualifying, loadWeather, normalize, clearCache, embeddedYear };
 })(globalThis.F1 = globalThis.F1 || {});

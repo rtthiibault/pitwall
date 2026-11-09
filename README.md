@@ -25,6 +25,18 @@ Site de paris **à jetons virtuels** sur la Formule 1. Il est 100 % statique (HT
 - **Pages** : calendrier, classements (avec un graphique d'évolution interactif), résultats détaillés de chaque GP.
 - **Sauvegarde** : export/import d'un code, pour passer d'un appareil à l'autre.
 
+## Saisons multiples (2026 → 2027)
+- `js/season2027.js` contient le **calendrier officiel 2027** : 24 GP et 10 Sprints. Le Portugal et la Turquie reviennent, la Turquie étant encore « à confirmer ». Il contient aussi la grille provisoire, où les baquets non officialisés sont marqués « à confirmer ». Les horaires sont estimés.
+- Tant que 2026 se dispute :
+  - la page d'accueil présente la saison 2027 ;
+  - le calendrier 2027 est consultable (sélecteur 2026/2027 sur la page Calendrier) ;
+  - les paris **Champion 2027** sont déjà ouverts (onglet Paris → Saison).
+- Dès que le dernier GP 2026 est passé, le site **bascule automatiquement** sur 2027 : les paris ouvrent sur Bahreïn, une prime de nouvelle saison de 500 jetons est offerte et le champion 2026 est rappelé.
+- Les cotes d'avant-saison partent de la hiérarchie 2026 (points par voiture et par course, régressés vers la moyenne). Elles intègrent aussi une incertitude par écurie qui diminue au fil des courses.
+- Dès que l'API publie les horaires et la grille officiels 2027, ils remplacent automatiquement les données intégrées.
+- Les paris d'une saison sont réglés avec les données de cette saison, même après la bascule.
+- Pour préparer 2028 : copiez `season2027.js` en `season2028.js`, mettez à jour les tableaux et ajoutez la balise `<script>` dans `index.html`.
+
 ## Publier gratuitement
 
 ### Option A : GitHub Pages (recommandée, active la mise à jour hebdo)
@@ -54,6 +66,7 @@ Ouvrez ensuite http://localhost:8000.
 ## Structure
 | Fichier | Rôle |
 |---|---|
+| `js/season2027.js` | Calendrier et grille 2027 intégrés |
 | `js/data.js` | Appels API, cache, normalisation, couleurs des écuries, drapeaux |
 | `js/model.js` | Simulation Monte-Carlo, conversion probabilité → cote |
 | `js/markets.js` | Définition des marchés et règles de règlement |

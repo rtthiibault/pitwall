@@ -40,7 +40,7 @@
     const rain = weather ? Math.min(weather.rain || 0, 100) / 100 : 0;
     const out = season.entrants.map((id) => {
       const d = season.drivers.get(id);
-      const prior = F1.ref.TEAM_PRIOR[d.teamId] ?? 4;
+      const prior = (season.priors && season.priors[d.teamId]) ?? F1.ref.TEAM_PRIOR[d.teamId] ?? 4;
       const ppr = (pts[id] || 0) / Math.max(starts[id] || 0, 1);
       const tppr = (teamPts[d.teamId] || 0) / Math.max(2 * n, 1);
       const rec = recent[id] ? recent[id].s / recent[id].w : ppr;
@@ -181,13 +181,21 @@
     const key = new Float64Array(N), order = Array.from({ length: N }, (_, i) => i);
     const ptsArr = new Float64Array(N), tPts = new Float64Array(teams.length);
     const sims = remaining.length ? N_SEASON : 1;
+    // incertitude sur la hiérarchie : choc de performance par écurie (et un peu par pilote),
+    // d'autant plus fort qu'il reste de manches (avant-saison = on ne sait presque rien)
+    const total = season.races.length || 1;
+    const sigma = 0.55 * Math.pow(remaining.length / total, 0.8);
+    const gauss = () => Math.sqrt(-2 * Math.log(r() + 1e-12)) * Math.cos(2 * Math.PI * r());
+    const shock = new Float64Array(N), tShock = new Float64Array(teams.length);
     for (let it = 0; it < sims; it++) {
+      for (let t = 0; t < teams.length; t++) tShock[t] = gauss() * sigma;
+      for (let i = 0; i < N; i++) shock[i] = st[i].ls + tShock[tIdx[i]] + gauss() * sigma * 0.4;
       for (let i = 0; i < N; i++) ptsArr[i] = base[i];
       for (let t = 0; t < teams.length; t++) tPts[t] = tBase[t];
       for (const rc of remaining) {
         const runs = rc.sprint && !rc.sprintResults ? [SPTS, PTS] : [PTS];
         for (const table of runs) {
-          for (let i = 0; i < N; i++) key[i] = r() < 0.06 ? -1e6 : st[i].ls + gumbel(r);
+          for (let i = 0; i < N; i++) key[i] = r() < 0.06 ? -1e6 : shock[i] + gumbel(r);
           order.sort((a, b) => key[b] - key[a]);
           for (let k = 0; k < table.length; k++) { const i = order[k]; if (key[i] > -1e5) { ptsArr[i] += table[k]; tPts[tIdx[i]] += table[k]; } }
         }
@@ -206,7 +214,7 @@
 
   /* ---- Probabilités -> cotes décimales ---- */
   function toOdds(p, margin = 1.07) {
-    if (!(p > 0)) return 501;
+    if (!(p > 0)) return 250;
     let o = 1 / (p * margin);
     if (o < 1.01) o = 1.01;
     if (o < 2) return Math.round(o * 100) / 100;
@@ -214,7 +222,7 @@
     if (o < 10) return Math.round(o * 10) / 10;
     if (o < 30) return Math.round(o * 2) / 2;
     if (o < 100) return Math.round(o);
-    return Math.min(501, Math.round(o / 5) * 5);
+    return Math.min(250, Math.round(o / 5) * 5);
   }
   // Formule de Harville (tiercé) à partir des probabilités de victoire
   function harville(winP, a, b, c) {

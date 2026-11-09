@@ -6,7 +6,7 @@
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const fmt = (n, d = 0) => Number(n || 0).toLocaleString('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d });
   const fmtJ = (n) => fmt(n, Math.abs(n % 1) > 0.001 ? 2 : 0);
-  const fmtOdds = (o) => (o > 500 ? '500+' : o >= 30 ? fmt(o) : o >= 10 ? fmt(o, o % 1 ? 1 : 0) : fmt(o, 2));
+  const fmtOdds = (o) => (o >= 250 && o < 1000 ? '250' : o >= 30 ? fmt(o) : o >= 10 ? fmt(o, o % 1 ? 1 : 0) : fmt(o, 2));
   const pct = (p) => (p < 0.001 ? '<0,1 %' : fmt(p * 100, p < 0.1 ? 1 : 0) + ' %');
   const DTF = new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   const DAY = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' });
@@ -19,7 +19,7 @@
   const S = {
     season: null, sim: null, markets: [], seasonMarkets: [], seasonSim: null, weather: null,
     sel: new Map(), slip: [], mode: 'single', modeTouched: false, stake: 20, slipOpen: false,
-    expanded: new Set(), tierce: [null, null, null], standTab: 'drivers', chartHidden: new Set(), betsTab: 'open', gpTab: 'race',
+    expanded: new Set(), tierce: [null, null, null], upMarkets: [], archives: {}, calYear: null, standTab: 'drivers', chartHidden: new Set(), betsTab: 'open', gpTab: 'race',
   };
   F1.state = S;
 
@@ -58,6 +58,13 @@
     // qualifs pour régler les paris "pole" en attente
     const rounds = new Set(F1.store.get().bets.filter((b) => b.status === 'open').flatMap((b) => b.legs.filter((l) => l.kind === 'pole' && !l.result).map((l) => l.round)));
     for (const r of rounds) { const race = s.races.find((x) => x.round === r); if (race && !race.results) await F1.data.loadQualifying(s, race); }
+    // paris ouverts sur une autre saison (ex. paris 2026 alors que 2027 est active) : charger cette saison
+    const years = new Set(F1.store.get().bets.filter((b) => b.status === 'open').flatMap((b) => b.legs.filter((l) => !l.result && l.season && l.season !== s.year).map((l) => l.season)));
+    for (const y of years) {
+      if (s.prev && s.prev.year === y) S.archives[y] = s.prev;
+      else if (s.upcoming && s.upcoming.year === y) S.archives[y] = s.upcoming;
+      else if (!S.archives[y] && y < s.year) { try { S.archives[y] = await F1.data.loadYear(y); } catch (e) { /* */ } }
+    }
     computeMarkets();
   }
 
@@ -70,9 +77,12 @@
     }
     S.seasonSim = s.entrants.length >= 4 ? F1.model.simulateSeason(s) : null;
     S.seasonMarkets = S.seasonSim && !s.finished ? F1.markets.buildSeason(s, S.seasonSim) : [];
+    // saison suivante (ex. 2027) : paris long terme ouverts dès maintenant
+    S.upMarkets = [];
+    if (s.upcoming && s.upcoming.entrants.length >= 4) S.upMarkets = F1.markets.buildSeason(s.upcoming, F1.model.simulateSeason(s.upcoming));
     // rafraîchir les cotes des sélections du ticket
     const all = new Map();
-    [...S.markets, ...S.seasonMarkets].forEach((m) => m.selections.forEach((x) => all.set(x.sid, { ...x, closes: m.closes })));
+    [...S.markets, ...S.seasonMarkets, ...S.upMarkets].forEach((m) => m.selections.forEach((x) => all.set(x.sid, { ...x, closes: m.closes, season: x.season || s.year })));
     S.slip = S.slip.map((l) => all.get(l.sid) || (l.kind === 'tierce' && s.next && l.round === s.next.round ? l : null)).filter(Boolean);
     saveSlip();
   }
@@ -122,7 +132,7 @@
     let html;
     switch (r) {
       case 'paris': html = pageBets(parts[1] || 'populaires'); break;
-      case 'calendrier': html = pageCalendar(); break;
+      case 'calendrier': html = pageCalendar(+parts[1] || null); break;
       case 'classements': html = pageStandings(); break;
       case 'gp': html = pageGP(+parts[1]); break;
       case 'mes-paris': html = pageMyBets(); break;
@@ -147,6 +157,7 @@
   function sourceNotice() {
     const src = S.season.source;
     if (src === 'live') return '';
+    if (src === 'embedded') return `<div class="notice" style="margin-bottom:18px">📅 Saison ${S.season.year} : calendrier officiel et grille provisoire intégrés au site. Horaires estimés, remplacés automatiquement dès leur publication par l'API.</div>`;
     const msg = src === 'snapshot' ? 'API live injoignable : affichage du dernier instantané hebdomadaire des données.'
       : src === 'cache' ? 'API live injoignable : affichage des dernières données en cache.'
         : 'Mode hors ligne : données live indisponibles, calendrier et grille de secours affichés. Les cotes reposent sur un modèle a priori.';
@@ -161,7 +172,7 @@
   function drvCell(id, extra = '') {
     const d = drv(id); if (!d) return esc(id);
     const t = team(d.teamId);
-    return `<div class="drv"><span class="tstripe" style="background:${t.color}"></span><div><b><span class="gv">${esc(d.given)}</span>${esc(d.family)}</b><small>${flag(d.iso, 'sm')} ${esc(t.short)}${extra}</small></div></div>`;
+    return `<div class="drv"><span class="tstripe" style="background:${t.color}"></span><div><b><span class="gv">${esc(d.given)}</span>${esc(d.family)}</b><small>${flag(d.iso, 'sm')} ${esc(t.short)}${d.tbc ? ' · à confirmer' : ''}${extra}</small></div></div>`;
   }
   function teamCell(id) {
     const t = team(id);
@@ -169,7 +180,7 @@
   }
 
   function isClosed(m) { return m.closes && m.closes.getTime() <= Date.now(); }
-  function reg(s, m) { const x = { ...s, closes: m ? m.closes : s.closes, season: S.season.year }; S.sel.set(x.sid, x); return x; }
+  function reg(s, m) { const x = { ...s, closes: m ? m.closes : s.closes, season: s.season || S.season.year }; S.sel.set(x.sid, x); return x; }
   function oddBtn(s, m, { compact = false, label = null, cls = '' } = {}) {
     const x = reg(s, m);
     const on = S.slip.some((l) => l.sid === x.sid);
@@ -231,6 +242,8 @@
     const nx = s.next;
     let h = hero(nx);
     if (s.pending) h += `<div class="notice red" style="margin-top:18px">🏁 <b>${esc(s.pending.nameFr)}</b> : course terminée ou en cours — vos paris seront réglés dès la publication des résultats officiels.</div>`;
+    if (s.doneCount === 0 && nx && F1.store.canClaimSeason(s)) h += `<div class="notice" style="margin-top:18px">🎆 Nouvelle saison ${s.year} : prime de lancement <b>+${F1.store.SEASON_BONUS} jetons</b>. <span class="sp"></span><button class="btn sm gold" data-action="claim-season">Récupérer</button></div>`;
+    if (s.prev && s.doneCount === 0) { const ch = [...s.prev.drivers.values()].sort((a, b) => b.points - a.points)[0]; if (ch) h += `<div class="notice" style="margin-top:18px">🏆 Saison ${s.prev.year} terminée : <b>${esc(ch.given + ' ' + ch.family)}</b> champion du monde avec ${fmt(ch.points)} points. Les cotes ${s.year} partent de la hiérarchie ${s.prev.year}.</div>`; }
     if (nx && F1.store.canClaim(s, nx)) h += `<div class="notice" style="margin-top:18px">🎁 Prime du week-end disponible : <b>+${F1.store.WEEKLY} jetons</b> pour le ${esc(nx.nameFr)}. <span class="sp"></span><button class="btn sm gold" data-action="claim">Récupérer</button></div>`;
     if (nx && F1.store.canRescue(s, nx)) h += `<div class="notice red" style="margin-top:18px">💸 Réservoir vide ? Le stand vous ravitaille : <b>+${F1.store.RESCUE} jetons</b>. <span class="sp"></span><button class="btn sm" data-action="rescue">Ravitailler</button></div>`;
 
@@ -243,6 +256,7 @@
       h += `<section class="section"><div class="section-h"><h2>À la une</h2></div><div class="grid g3">${boostCard(boost) || ''}${rival ? h2hCard(rival) : ''}${marketCard(quali, { limit: 6 })}</div></section>`;
     }
     h += `<section class="section"><div class="grid g2">${lastPodium()}${miniStandings()}</div></section>`;
+    h += upcomingTeaser();
     h += homeStats();
     return h;
   }
@@ -262,7 +276,7 @@
     const w = S.weather;
     const wIcon = w ? (w.rain >= 50 ? '🌧️' : w.rain >= 25 ? '🌦️' : w.code <= 1 ? '☀️' : '⛅') : '';
     return `<section class="hero"><div class="hero-bg">${streaks()}<div class="grid-floor"></div><div class="big-round">R${nx.round}</div><div class="kerb"></div></div>
-      <div class="hero-top">${flag(nx.iso, 'lg')}<span class="chip red live">Prochain Grand Prix</span><span class="chip">Manche ${nx.round} / ${s.races.length}</span>${nx.sprint ? '<span class="chip gold">⚡ Week-end Sprint</span>' : ''}${nx.street ? '<span class="chip">🏙️ Circuit urbain</span>' : ''}</div>
+      <div class="hero-top">${flag(nx.iso, 'lg')}<span class="chip red live">Prochain Grand Prix</span><span class="chip">Manche ${nx.round} / ${s.races.length}</span>${nx.sprint ? '<span class="chip gold">⚡ Week-end Sprint</span>' : ''}${nx.street ? '<span class="chip">🏙️ Circuit urbain</span>' : ''}${nx.round === 1 ? `<span class="chip green">🚦 Ouverture de la saison ${s.year}</span>` : ''}${nx.tbc ? '<span class="chip">À confirmer</span>' : ''}</div>
       <h1><span class="accent">${esc(nx.countryFr)}</span>${esc(nx.nameFr)}</h1>
       <div class="hero-meta"><span>📍 ${esc(nx.circuit)} · ${esc(nx.locality)}</span><span>🗓️ ${DAYL.format(nx.date)} · ${HM.format(nx.date)}</span>
       ${w ? `<span class="weather" title="Prévision Open-Meteo à l'heure du départ">${wIcon} ${w.temp}°C · 💧 ${w.rain} % · 💨 ${w.wind} km/h</span>` : ''}</div>
@@ -294,6 +308,22 @@
     return `<a class="card" href="#/classements"><div class="market-h"><div><h3>Championnat pilotes</h3><div class="sub">Après ${S.season.doneCount} manche${S.season.doneCount > 1 ? 's' : ''}</div></div><span class="chip">Complet →</span></div>
       <table class="tbl" style="margin-top:10px"><tbody>${ds.map((d, i) => `<tr><td class="pos">${i + 1}</td><td>${drvCell(d.id)}</td><td style="width:35%"><div class="ptsbar"><i style="width:${(d.points / max) * 100}%;background:${tcol(d.teamId)}"></i></div></td><td class="r num"><b>${fmt(d.points)}</b></td></tr>`).join('')}</tbody></table></a>`;
   }
+  function upcomingTeaser() {
+    const up = S.season.upcoming;
+    if (!up || !up.races.length) return '';
+    const first = up.races[0], last = up.races.at(-1);
+    const nSprint = up.races.filter((r) => r.sprint).length;
+    const news = up.races.filter((r) => !S.season.races.some((x) => x.circuitId === r.circuitId));
+    const wdc = S.upMarkets.find((m) => m.kind === 'wdc');
+    return `<section class="section"><div class="section-h"><h2>Saison ${up.year}</h2><a class="link" href="#/calendrier/${up.year}">Calendrier ${up.year} →</a></div>
+      <div class="grid g2"><div class="hero" style="min-height:0;padding:28px"><div class="hero-bg">${streaks()}<div class="big-round" style="font-size:200px;top:-30px">${up.year}</div><div class="kerb"></div></div>
+        <div class="hero-top">${flag(first.iso)}<span class="chip red">Ouverture</span><span class="chip">${up.races.length} GP</span><span class="chip gold">⚡ ${nSprint} Sprints</span></div>
+        <h1 style="font-size:clamp(26px,3.4vw,40px)"><span class="accent">${DAYL.format(first.date)}</span>${esc(first.nameFr)}</h1>
+        <div class="hero-meta"><span>🏁 Finale : ${esc(last.nameFr)} · ${DAY.format(last.date)}</span></div>
+        ${news.length ? `<div class="weekend">${news.map((r) => `<div class="sess next"><small>Retour${r.tbc ? ' · à confirmer' : ''}</small><b>${flag(r.iso, 'sm')} ${esc(r.countryFr)}</b></div>`).join('')}</div>` : ''}
+        ${countdown(first.date.getTime())}</div>
+        ${wdc ? marketCard(wdc, { limit: 6 }) : ''}</div></section>`;
+  }
   function homeStats() {
     const st = F1.store.stats(); const p = F1.store.get();
     return `<section class="section"><div class="section-h"><h2>Votre saison${p.name ? ' — ' + esc(p.name) : ''}</h2><a class="link" href="#/mes-paris">Mes paris →</a></div>
@@ -309,7 +339,7 @@
   function pageBets(tab) {
     const s = S.season, nx = s.next, M = S.markets;
     const by = (k) => M.filter((m) => m.kind === k && m.layout !== 'boost');
-    const counts = { populaires: '', pilotes: M.filter((m) => m.layout === 'drivers').length, duels: by('h2h').length, ecuries: M.filter((m) => m.group === 'teams').length, speciaux: M.filter((m) => m.group === 'specials').length, tierce: '', saison: S.seasonMarkets.length };
+    const counts = { populaires: '', pilotes: M.filter((m) => m.layout === 'drivers').length, duels: by('h2h').length, ecuries: M.filter((m) => m.group === 'teams').length, speciaux: M.filter((m) => m.group === 'specials').length, tierce: '', saison: S.seasonMarkets.length + S.upMarkets.length };
     let h = `<div class="market-head"><div><div class="row" style="margin-bottom:8px">${nx ? `<span class="chip red live">Manche ${nx.round}</span>${nx.sprint ? '<span class="chip gold">⚡ Sprint</span>' : ''}${nx.qualifying ? '<span class="chip green">Grille connue</span>' : ''}` : '<span class="chip">Saison</span>'}</div>
       <h1>${nx ? flag(nx.iso, 'lg') + esc(nx.nameFr) : 'Marchés de saison'}</h1>${nx ? `<div class="muted" style="margin-top:6px">${esc(nx.circuit)} · départ ${DTF.format(nx.date)}</div>` : ''}</div>
       ${nx ? `<div><div class="muted upper" style="font-size:11px;font-weight:700;text-align:right">Départ dans</div>${countdown(nx.date.getTime())}</div>` : ''}</div>`;
@@ -322,7 +352,7 @@
       case 'ecuries': h += `<div class="grid g2">${M.filter((m) => m.group === 'teams').map((m) => marketCard(m, { limit: 11 })).join('')}</div>`; break;
       case 'speciaux': h += `<div class="grid g2">${M.filter((m) => m.group === 'specials').map((m) => marketCard(m)).join('')}</div>`; break;
       case 'tierce': h += tiercePanel(); break;
-      case 'saison': h += S.seasonMarkets.length ? `<div class="notice" style="margin-bottom:16px">🔮 Cotes issues de ${fmt(6000)} simulations de la fin de saison. Paris réglés après la dernière manche.</div><div class="grid g2">${S.seasonMarkets.map((m) => marketCard(m)).join('')}</div>` : '<div class="empty">Titres déjà attribués.</div>'; break;
+      case 'saison': h += (S.upMarkets.length ? `<div class="section-h"><h2>Saison ${S.season.upcoming.year} — paris long terme</h2><a class="link" href="#/calendrier/${S.season.upcoming.year}">Calendrier →</a></div><div class="notice" style="margin-bottom:16px">🔮 Cotes d'avant-saison basées sur la hiérarchie ${S.season.year} et la grille ${S.season.upcoming.year} (provisoire). Paris réglés après la dernière manche ${S.season.upcoming.year}.</div><div class="grid g2" style="margin-bottom:28px">${S.upMarkets.map((m) => marketCard(m)).join('')}</div><div class="section-h"><h2>Saison ${S.season.year}</h2></div>` : '') + (S.seasonMarkets.length ? `<div class="notice" style="margin-bottom:16px">🔮 Cotes issues de ${fmt(6000)} simulations de la fin de saison. Paris réglés après la dernière manche.</div><div class="grid g2">${S.seasonMarkets.map((m) => marketCard(m)).join('')}</div>` : '<div class="empty">Titres déjà attribués.</div>'); break;
       default: {
         const win = by('win')[0];
         const boost = M.find((m) => m.layout === 'boost');
@@ -372,23 +402,27 @@
   }
 
   /* =================== Calendrier =================== */
-  function pageCalendar() {
-    const s = S.season;
+  function pageCalendar(yr) {
+    const base = S.season;
+    const years = [base.prev, base, base.upcoming].filter(Boolean);
+    const s = years.find((x) => x.year === yr) || base;
     const cards = s.races.map((r) => {
       const isNext = s.next && s.next.round === r.round;
       const first = r.sessions[0] ? r.sessions[0].date : r.date;
       const range = first && r.date ? (first.getMonth() === r.date.getMonth() ? `${first.getDate()} – ${DAY.format(r.date)}` : `${DAY.format(first)} – ${DAY.format(r.date)}`) : '';
       let foot;
       if (r.results) { const w = r.results[0]; const d = drv(w.driverId); foot = `<span class="winner"><span class="tstripe" style="background:${tcol(w.teamId)}"></span>🏆 ${esc(d ? d.family : w.driverId)}</span><span class="chip">Résultats</span>`; }
-      else if (isNext) foot = `<span class="chip red live">Prochain GP</span><span class="chip gold">Paris ouverts</span>`;
+      else if (isNext && s === base) foot = `<span class="chip red live">Prochain GP</span><span class="chip gold">Paris ouverts</span>`;
       else if (r.date && r.date < Date.now()) foot = `<span class="chip">En attente des résultats</span>`;
       else foot = `<span class="muted" style="font-size:13px">${r.date ? DAYL.format(r.date) : ''}</span>`;
-      return `<a class="race-card ${isNext ? 'next' : r.results ? 'past' : ''}" href="${isNext ? '#/paris' : '#/gp/' + r.round}"><div class="rn">${String(r.round).padStart(2, '0')}</div>
-        <div class="row">${flag(r.iso)}<span class="rdate">${range}</span>${r.sprint ? '<span class="chip gold">Sprint</span>' : ''}</div>
+      const isN = isNext && s === base;
+      return `<a class="race-card ${isN ? 'next' : r.results ? 'past' : ''}" href="${isN ? '#/paris' : s === base ? '#/gp/' + r.round : '#/calendrier/' + s.year}"><div class="rn">${String(r.round).padStart(2, '0')}</div>
+        <div class="row">${flag(r.iso)}<span class="rdate">${range}</span>${r.sprint ? '<span class="chip gold">Sprint</span>' : ''}${r.tbc ? '<span class="chip">À confirmer</span>' : ''}</div>
         <div class="rname">${esc(r.nameFr)}</div><div class="rdate">${esc(r.circuit)}</div><div class="rfoot">${foot}</div></a>`;
     }).join('');
     const done = s.doneCount, tot = s.races.length;
-    return `<div class="market-head"><div><h1>Calendrier ${s.year}</h1><div class="muted" style="margin-top:6px">${tot} Grands Prix · ${done} disputé${done > 1 ? 's' : ''} · ${s.races.filter((r) => r.sprint).length} week-ends Sprint</div></div>
+    return `<div class="market-head"><div><h1>Calendrier ${s.year}</h1><div class="muted" style="margin-top:6px">${tot} Grands Prix · ${done} disputé${done > 1 ? 's' : ''} · ${s.races.filter((r) => r.sprint).length} week-ends Sprint${(s.source === 'fallback' || s.source === 'embedded') && !done ? ' · horaires estimés en attendant la publication officielle' : ''}</div>
+      ${years.length > 1 ? `<div class="seg" style="margin-top:12px">${years.map((x) => `<a href="#/calendrier/${x.year}" style="padding:6px 14px;border-radius:8px;font-weight:700;font-size:13px" class="${x === s ? 'on' : ''}">${x.year}</a>`).join('')}</div>` : ''}</div>
       <div style="min-width:240px"><div class="row" style="justify-content:space-between;font-size:13px"><span class="muted">Progression de la saison</span><b>${Math.round((done / Math.max(tot, 1)) * 100)} %</b></div><div class="ptsbar" style="margin-top:6px;height:8px"><i style="width:${(done / Math.max(tot, 1)) * 100}%;background:linear-gradient(90deg,var(--red),var(--red2))"></i></div></div></div>
       <div class="cal">${cards}</div>`;
   }
@@ -546,12 +580,13 @@
       <section class="section"><div class="section-h"><h2>Succès</h2><span class="muted">${Object.keys(p.ach).length} / ${F1.store.ACH.length}</span></div><div class="grid g3">${F1.store.ACH.map((a) => `<div class="ach ${p.ach[a.id] ? '' : 'locked'}"><div class="ic">${a.icon}</div><div><b>${esc(a.title)}</b><small>${esc(a.desc)}</small></div></div>`).join('')}</div></section>`;
     return h;
   }
+  function seasonByYear(y) { const s = S.season; if (!y || y === s.year) return s; if (s.upcoming && s.upcoming.year === y) return s.upcoming; if (s.prev && s.prev.year === y) return s.prev; return S.archives[y] || null; }
   const STATUS = { open: ['En cours', 'gold'], won: ['Gagné', 'green'], lost: ['Perdu', 'red'], void: ['Remboursé', ''] };
   function betCard(b) {
     const [lbl, cls] = STATUS[b.status];
-    const race = (r) => { const x = S.season.races.find((y) => y.round === r); return x ? x.nameFr.replace('Grand Prix', 'GP') : 'Saison'; };
+    const race = (r, y) => { const ss = seasonByYear(y); const x = ss && ss.races.find((z) => z.round === r); return (x ? x.nameFr.replace('Grand Prix', 'GP') : 'Manche ' + r) + (y && y !== S.season.year ? ' ' + y : ''); };
     return `<div class="bet ${b.status}"><div class="bet-h"><span class="row"><b>${b.legs.length > 1 ? `Combiné × ${b.legs.length}` : 'Simple'}</b><span class="muted" style="font-size:12px">${DTF.format(new Date(b.placedAt))}</span></span><span class="chip ${cls}">${lbl}</span></div>
-      <div class="bet-legs">${b.legs.map((l) => `<div class="leg"><span><span class="res ${l.result || ''}">${l.result === 'won' ? '✓' : l.result === 'lost' ? '✕' : l.result === 'void' ? '↺' : '•'}</span> <b>${esc(l.label)}</b><span class="lm">${esc(l.mtitle)} · ${esc(l.round ? race(l.round) : 'Saison')}</span></span><b class="num" style="color:var(--gold)">${fmtOdds(l.odds)}</b></div>`).join('')}</div>
+      <div class="bet-legs">${b.legs.map((l) => `<div class="leg"><span><span class="res ${l.result || ''}">${l.result === 'won' ? '✓' : l.result === 'lost' ? '✕' : l.result === 'void' ? '↺' : '•'}</span> <b>${esc(l.label)}</b><span class="lm">${esc(l.mtitle)} · ${esc(l.round ? race(l.round, l.season) : 'Saison ' + (l.season || S.season.year))}</span></span><b class="num" style="color:var(--gold)">${fmtOdds(l.odds)}</b></div>`).join('')}</div>
       <div class="bet-f"><span>Mise <b>${fmtJ(b.stake)}</b></span><span>Cote <b>${fmtOdds(b.odds)}</b></span><span>${b.status === 'open' ? 'Gain potentiel' : 'Retour'} <b style="color:${b.status === 'won' ? 'var(--win)' : 'inherit'}">${fmtJ(b.status === 'open' ? b.stake * b.odds : b.payout)}</b></span></div></div>`;
   }
   function mountBankroll() {
@@ -601,7 +636,7 @@
     $('#slipFab').style.display = n ? '' : 'none';
     $('#fabCount').textContent = n;
     const conf = conflicts();
-    const totalOdds = S.slip.reduce((p, l) => p * l.odds, 1);
+    const totalOdds = Math.min(F1.store.MAX_ODDS, S.slip.reduce((p, l) => p * l.odds, 1));
     const stake = S.stake;
     const bal = F1.store.get().balance;
     const totalStake = S.mode === 'single' ? stake * n : stake;
@@ -645,7 +680,7 @@
 
   /* =================== Règlement =================== */
   function runSettlement() {
-    const settled = F1.store.settleAll(S.season);
+    const settled = [S.season, ...Object.values(S.archives).filter(Boolean)].flatMap((ss) => F1.store.settleAll(ss));
     let delay = 0;
     let anyWin = false;
     settled.forEach((b) => {
@@ -705,7 +740,7 @@
 
   function renderFooter() {
     const s = S.season;
-    const src = { live: 'API live', snapshot: 'instantané hebdomadaire', cache: 'cache local', fallback: 'données de secours' }[s.source];
+    const src = { live: 'API live', snapshot: 'instantané hebdomadaire', cache: 'cache local', fallback: 'données de secours', embedded: 'calendrier ' + s.year + ' intégré' }[s.source];
     $('#footer').innerHTML = `<div style="max-width:760px;margin:0 auto">
       <div class="logo" style="justify-content:center;font-size:18px;margin-bottom:10px"><span>PIT<em>WALL</em></span></div>
       Données : <a href="https://github.com/jolpica/jolpica-f1" target="_blank" rel="noopener">Jolpica F1 API</a> (successeur d'Ergast) · Météo : <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> · Source : ${src}${s.updated ? ' · maj ' + DTF.format(s.updated) : ''}
@@ -771,6 +806,7 @@
       case 'gptab': S.gpTab = a.dataset.t; route(); break;
       case 'betstab': S.betsTab = a.dataset.t; route(); break;
       case 'claim': { const g = F1.store.claimWeekly(S.season, S.season.next); if (g) { toast('🎁', `+${g} jetons crédités !`, 'win'); confetti(100); showAchievements(); route(); } break; }
+      case 'claim-season': { const g = F1.store.claimSeason(S.season); if (g) { toast('🎆', `+${g} jetons pour la saison ${S.season.year} !`, 'win'); confetti(160); route(); } break; }
       case 'rescue': { const g = F1.store.rescue(S.season, S.season.next); if (g) { toast('⛽', `Ravitaillement : +${g} jetons`, 'win'); route(); } break; }
       case 'profile': profile(); break;
       case 'save-name': { const v = ($('#nameIn').value || '').trim(); if (!v) { $('#nameIn').focus(); return; } F1.store.setName(v); closeModal(); toast('👋', `Bienvenue, <b>${esc(v)}</b> !`, 'win'); route(); break; }

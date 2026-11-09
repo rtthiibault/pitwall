@@ -4,6 +4,7 @@
   const START = 1000;
   const WEEKLY = 150;
   const RESCUE = 300;
+  const MAX_ODDS = 2000; // plafond d'un combiné
 
   const ACH = [
     { id: 'first', icon: '🏁', title: 'Lights out', desc: 'Placer votre premier pari' },
@@ -44,7 +45,7 @@
     stake = Math.floor(stake * 100) / 100;
     if (!(stake > 0)) throw new Error('Mise invalide');
     if (stake > state.balance + 1e-9) throw new Error('Solde insuffisant');
-    const odds = Math.round(legs.reduce((p, l) => p * l.odds, 1) * 100) / 100;
+    const odds = Math.min(MAX_ODDS, Math.round(legs.reduce((p, l) => p * l.odds, 1) * 100) / 100);
     const bet = {
       id: uid(), placedAt: Date.now(), stake, odds, status: 'open', payout: 0,
       legs: legs.map((l) => ({ sid: l.sid, mid: l.mid, kind: l.kind, round: l.round, key: l.key, label: l.label, mtitle: l.mtitle, odds: l.odds, args: l.args, driverId: l.driverId, teamId: l.teamId, season: l.season, result: null })),
@@ -66,14 +67,14 @@
       let changed = false;
       for (const leg of bet.legs) {
         if (leg.result) continue;
-        if (leg.season && leg.season !== season.year) { if (leg.season < season.year) { leg.result = 'void'; changed = true; } continue; }
+        if (leg.season && leg.season !== season.year) continue;
         const r = F1.markets.settle(leg, season);
         if (r) { leg.result = r; changed = true; }
       }
       if (!changed && !bet.legs.every((l) => l.result)) continue;
       if (bet.legs.some((l) => l.result === 'lost')) { bet.status = 'lost'; bet.payout = 0; }
       else if (bet.legs.every((l) => l.result)) {
-        const eff = bet.legs.reduce((p, l) => p * (l.result === 'won' ? l.odds : 1), 1);
+        const eff = Math.min(MAX_ODDS, bet.legs.reduce((p, l) => p * (l.result === 'won' ? l.odds : 1), 1));
         if (bet.legs.every((l) => l.result === 'void')) { bet.status = 'void'; bet.payout = bet.stake; }
         else { bet.status = 'won'; bet.payout = Math.round(bet.stake * eff * 100) / 100; bet.effOdds = Math.round(eff * 100) / 100; }
       } else continue;
@@ -103,10 +104,21 @@
     if (state.claimed[k]) return 0;
     state.claimed[k] = Date.now();
     state.balance += WEEKLY;
-    if (Object.keys(state.claimed).length >= 5) unlock('loyal');
+    if (Object.keys(state.claimed).filter((k) => k[0] !== 'S').length >= 5) unlock('loyal');
     track(); save();
     return WEEKLY;
   }
+  const SEASON_BONUS = 500;
+  function claimSeason(season) {
+    get();
+    const k = 'S' + season.year;
+    if (state.claimed[k]) return 0;
+    state.claimed[k] = Date.now();
+    state.balance += SEASON_BONUS;
+    track(); save();
+    return SEASON_BONUS;
+  }
+  const canClaimSeason = (season) => !get().claimed['S' + season.year];
   function canClaim(season, race) { return race && !get().claimed[`${season.year}-${race.round}`]; }
   function rescue(season, race) {
     get();
@@ -143,5 +155,5 @@
   function reset() { const n = get().name; state = blank(); state.name = n; save(); }
   const popUnlocked = () => unlocked.splice(0);
 
-  F1.store = { load, get, save, onChange, placeBet, settleAll, claimWeekly, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE };
+  F1.store = { load, get, save, onChange, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
 })(globalThis.F1 = globalThis.F1 || {});

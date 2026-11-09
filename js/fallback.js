@@ -1,4 +1,4 @@
-/* Données de secours (calendrier + grille 2026) utilisées uniquement si l'API
+/* Données embarquées (calendrier + grille 2026) utilisées uniquement si l'API
    live ET le snapshot hebdomadaire sont indisponibles. Format compatible Ergast. */
 (function (F1) {
   const R = [
@@ -58,28 +58,35 @@
     ['perez', 'PER', '11', 'Sergio', 'Pérez', 'Mexican', 'cadillac'],
     ['bottas', 'BOT', '77', 'Valtteri', 'Bottas', 'Finnish', 'cadillac'],
   ];
-  const teamObj = (id) => { const t = T.find((x) => x[0] === id); return { constructorId: t[0], name: t[1], nationality: t[2] }; };
-  const shift = (iso, h) => { const d = new Date(new Date(iso).getTime() + h * 3600e3); return { date: d.toISOString().slice(0, 10), time: d.toISOString().slice(11, 19) + 'Z' }; };
-  F1.FALLBACK = {
-    schedule: R.map((r) => {
-      const race = shift(r[8], 0);
-      const o = {
-        season: '2026', round: String(r[0]), raceName: r[1],
-        Circuit: { circuitId: r[2], circuitName: r[3], Location: { lat: String(r[6]), long: String(r[7]), locality: r[4], country: r[5] } },
-        date: race.date, time: race.time,
-        FirstPractice: shift(r[8], -48),
-        Qualifying: shift(r[8], r[9] ? -24 : -25),
-      };
-      if (r[9]) { o.SprintQualifying = shift(r[8], -44); o.Sprint = shift(r[8], -28); }
-      else { o.SecondPractice = shift(r[8], -44.5); o.ThirdPractice = shift(r[8], -28.5); }
-      return o;
-    }),
-    driverStandings: D.map((d, i) => ({
-      position: String(i + 1), positionText: String(i + 1), points: '0', wins: '0',
-      Driver: { driverId: d[0], code: d[1], permanentNumber: d[2], givenName: d[3], familyName: d[4], nationality: d[5] },
-      Constructors: [teamObj(d[6])],
-    })),
-    constructorStandings: T.map((t, i) => ({ position: String(i + 1), points: '0', wins: '0', Constructor: teamObj(t[0]) })),
-    results: [], sprint: [], qualifying: [],
+  F1.makeSeason = function (year, R, D, T) {
+    const teamObj = (id) => { const t = T.find((x) => x[0] === id); return { constructorId: t[0], name: t[1], nationality: t[2] }; };
+    const shift = (iso, h) => { const d = new Date(new Date(iso).getTime() + h * 3600e3); return { date: d.toISOString().slice(0, 10), time: d.toISOString().slice(11, 19) + 'Z' }; };
+    return {
+      year,
+      schedule: R.map((r) => {
+        const race = shift(r[8], 0);
+        const o = {
+          season: String(year), round: String(r[0]), raceName: r[1],
+          Circuit: { circuitId: r[2], circuitName: r[3], Location: { lat: String(r[6]), long: String(r[7]), locality: r[4], country: r[5] } },
+          date: race.date, time: race.time,
+          FirstPractice: shift(r[8], -48),
+          Qualifying: shift(r[8], r[9] ? -24 : -25),
+        };
+        if (r[9]) { o.SprintQualifying = shift(r[8], -44); o.Sprint = shift(r[8], -28); }
+        else { o.SecondPractice = shift(r[8], -44.5); o.ThirdPractice = shift(r[8], -28.5); }
+        if (r[10]) o.tbc = true;
+        return o;
+      }),
+      driverStandings: D.map((d, i) => ({
+        position: String(i + 1), positionText: String(i + 1), points: '0', wins: '0',
+        Driver: { driverId: d[0], code: d[1], permanentNumber: d[2], givenName: d[3], familyName: d[4], nationality: d[5] },
+        Constructors: [teamObj(d[6])], tbc: !!d[7],
+      })),
+      constructorStandings: T.map((t, i) => ({ position: String(i + 1), points: '0', wins: '0', Constructor: teamObj(t[0]) })),
+      results: [], sprint: [], qualifying: [], embedded: true,
+    };
   };
+  F1.SEASONS = F1.SEASONS || {};
+  F1.SEASONS[2026] = F1.makeSeason(2026, R, D, T);
+  F1.FALLBACK = F1.SEASONS[2026];
 })(globalThis.F1 = globalThis.F1 || {});
