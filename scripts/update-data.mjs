@@ -100,29 +100,55 @@ for (const y of [cur.year - 1, cur.year + 1]) {
 }
 
 // ---------- Portraits des pilotes (images libres de Wikimedia Commons, avec auteur et licence) ----------
-const UA = { 'User-Agent': 'PitwallFanSite/1.0 (site de pronostics F1 non commercial)' };
+const UA = { 'User-Agent': 'PitwallFanSite/1.0 (non-commercial F1 fan site; weekly batch job)' };
 const strip = (h) => String(h || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-async function wget(url) { const r = await fetch(url, { headers: UA }); if (!r.ok) throw new Error(r.status + ' ' + url); return r.json(); }
-async function portraitFor(d) {
-  let title = d.url && d.url.includes('/wiki/') ? decodeURIComponent(d.url.split('/wiki/')[1]) : null;
-  if (!title) {
-    const q = await wget(`https://en.wikipedia.org/w/api.php?action=opensearch&format=json&limit=1&search=${encodeURIComponent(d.givenName + ' ' + d.familyName + ' racing driver')}`);
-    title = q[3] && q[3][0] ? decodeURIComponent(q[3][0].split('/wiki/')[1]) : null;
+async function wget(url, tries = 5) {
+  for (let i = 0; i < tries; i++) {
+    const r = await fetch(url, { headers: UA });
+    if (r.status === 429 || r.status >= 500) { const ra = +r.headers.get('retry-after') || 5 * (i + 1); await sleep(ra * 1000); continue; }
+    if (!r.ok) throw new Error(r.status + ' ' + url);
+    return r.json();
   }
-  if (!title) return null;
-  const sum = await wget(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
-  const orig = (sum.originalimage || sum.thumbnail || {}).source;
-  if (!orig || !orig.includes('/wikipedia/commons/')) return null; // images libres uniquement
-  const file = decodeURIComponent(orig.split('/').pop());
-  const info = await wget(`https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=420&titles=${encodeURIComponent('File:' + file)}`);
-  const page = Object.values(info.query.pages)[0];
-  const ii = page && page.imageinfo && page.imageinfo[0];
-  if (!ii) return null;
-  const md = ii.extmetadata || {};
-  return {
-    img: ii.thumburl || ii.url, page: ii.descriptionurl, wiki: sum.content_urls && sum.content_urls.desktop.page,
-    artist: strip(md.Artist && md.Artist.value) || 'Auteur inconnu', license: strip(md.LicenseShortName && md.LicenseShortName.value) || 'Licence libre',
-  };
+  throw new Error('limite de requêtes Wikimedia : ' + url);
+}
+const titleOf = (d) => (d.url && d.url.includes('/wiki/') ? decodeURIComponent(d.url.split('/wiki/')[1].split(/[?#]/)[0]).replace(/_/g, ' ') : null);
+// 2 requêtes groupées : image principale des pages Wikipédia, puis auteur/licence sur Commons
+async function portraitsFor(list) {
+  const out = {};
+  const titles = new Map();
+  for (const d of list) { const t = titleOf(d); if (t) titles.set(t, d.driverId); }
+  const names = [...titles.keys()];
+  const fileOf = {};
+  for (let i = 0; i < names.length; i += 40) {
+    const j = await wget(`https://en.wikipedia.org/w/api.php?action=query&format=json&redirects=1&prop=pageimages&piprop=name&titles=${encodeURIComponent(names.slice(i, i + 40).join('|'))}`);
+    const alias = {};
+    for (const n of (j.query.normalized || [])) alias[n.to] = n.from;
+    for (const n of (j.query.redirects || [])) alias[n.to] = alias[n.from] || n.from;
+    for (const pg of Object.values(j.query.pages)) {
+      const orig = alias[pg.title] || pg.title;
+      const id = titles.get(orig) || titles.get(pg.title);
+      if (id && pg.pageimage) fileOf[id] = pg.pageimage;
+    }
+    await sleep(1000);
+  }
+  const files = [...new Set(Object.values(fileOf))];
+  for (let i = 0; i < files.length; i += 40) {
+    const j = await wget(`https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=420&titles=${encodeURIComponent(files.slice(i, i + 40).map((f) => 'File:' + f).join('|'))}`);
+    const norm = {};
+    for (const n of (j.query.normalized || [])) norm[n.to] = n.from;
+    for (const pg of Object.values(j.query.pages)) {
+      const ii = pg.imageinfo && pg.imageinfo[0];
+      if (!ii || pg.missing !== undefined) continue; // absente de Commons = image non libre -> ignorée
+      const fname = (norm[pg.title] || pg.title).replace(/^File:/, '');
+      const md = ii.extmetadata || {};
+      for (const [id, f] of Object.entries(fileOf)) {
+        if (f.replace(/_/g, ' ') !== fname.replace(/_/g, ' ')) continue;
+        out[id] = { img: ii.thumburl || ii.url, page: ii.descriptionurl, artist: strip(md.Artist && md.Artist.value) || 'Auteur inconnu', license: strip(md.LicenseShortName && md.LicenseShortName.value) || 'Licence libre' };
+      }
+    }
+    await sleep(1000);
+  }
+  return out;
 }
 let oldP = {};
 try { oldP = JSON.parse(await readFile('data/portraits.json', 'utf8')).drivers || {}; } catch (e) { /* premier passage */ }
@@ -132,12 +158,11 @@ for (const s of [cur]) {
   for (const r of s.results.slice(-3)) for (const x of r.Results) want.set(x.Driver.driverId, x.Driver);
 }
 try { const nx = JSON.parse(await readFile(`data/seasons/${cur.year + 1}.json`, 'utf8')); for (const x of nx.driverStandings) want.set(x.Driver.driverId, x.Driver); } catch (e) { /* pas encore de saison suivante */ }
+let fresh = {};
+try { fresh = await portraitsFor([...want.values()]); } catch (e) { console.warn('! portraits : ' + e.message); }
 const drivers = {};
-for (const [id, d] of want) {
-  try { const p = await portraitFor(d); if (p) drivers[id] = p; else if (oldP[id]) drivers[id] = oldP[id]; }
-  catch (e) { console.warn(`! portrait ${id} : ${e.message}`); if (oldP[id]) drivers[id] = oldP[id]; }
-  await sleep(250);
-}
+for (const id of want.keys()) { if (fresh[id]) drivers[id] = fresh[id]; else if (oldP[id]) drivers[id] = oldP[id]; }
+console.log(`Portraits : ${Object.keys(drivers).length}/${want.size}`);
 await save('data/portraits.json', { updated: new Date().toISOString(), source: 'Wikimedia Commons', drivers });
 meta.portraits = Object.keys(drivers).length;
 
