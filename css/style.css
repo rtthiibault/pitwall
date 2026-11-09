@@ -518,3 +518,27 @@ footer a { color: var(--muted); text-decoration: underline; }
 .gstats { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); margin: 8px 0 10px; }
 .gstats b { color: var(--text); }
 @media (max-width: 460px) { .gdrivers { grid-template-columns: 1fr; } }
+
+/* ---------- Amis ---------- */
+.friends-btn { position: relative; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: var(--muted); background: var(--card); border: 1px solid var(--line); transition: .2s; }
+.friends-btn:hover, .friends-btn.active { color: var(--text); background: var(--card2); }
+.friends-btn svg { width: 20px; height: 20px; }
+.friends-btn .badge { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; font-size: 11px; animation: bump .6s var(--ease); }
+.plist { display: grid; gap: 6px; margin-top: 10px; }
+.prow { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 12px; background: rgba(255,255,255,.03); border: 1px solid var(--line); animation: slideIn .3s var(--ease); }
+.prow .pinfo { flex: 1; min-width: 0; }
+.prow .pinfo b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.prow .pinfo small { color: var(--muted); font-size: 12px; }
+.friend-me { background: radial-gradient(500px 160px at 0% 0%, color-mix(in srgb, var(--tc) 30%, transparent), transparent 70%), linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.02)); }
+.ava.lg0 { width: 64px; height: 64px; } .ava.lg0 i { font-size: 22px; }
+.tbl tr.me-row td { background: rgba(225, 6, 0, .07); }
+select.field { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%; background-size: 5px 5px; background-repeat: no-repeat; }
+select.field option { background: #15161f; }
+code { background: rgba(255,255,255,.08); padding: 1px 6px; border-radius: 5px; font-size: .9em; }
+@media (max-width: 420px) { .prow { flex-wrap: wrap; } .prow .btn { margin-left: auto; } }
+@media (max-width: 640px) {
+  .friend-me > .row { flex-wrap: wrap !important; }
+  .friend-me > .row > .sp { display: none; }
+  .friend-me > .row > .row { width: 100%; }
+  .friend-me > .row > .row .btn { flex: 1; }
+}

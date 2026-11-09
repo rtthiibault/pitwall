@@ -44,6 +44,9 @@
     if (!portraitsDone) pp.then(() => route());
     await lights.finish();
     F1.store.onChange(updateWallet);
+    F1.store.onChange(() => F1.social.sync());
+    F1.social.onChange(() => { friendsBadge(); if (/^#\/amis/.test(location.hash) && !document.activeElement.closest('#friendSearch')) route(); });
+    F1.social.init().then((so) => { if (so.incoming.length) toast('👋', `${so.incoming.length} demande${so.incoming.length > 1 ? 's' : ''} d'ami en attente`, 'win', 5000); });
     updateWallet();
     route();
     renderSlip();
@@ -135,6 +138,7 @@
     const r = parts[0] || '';
     S.sel.clear();
     $$('[data-r]').forEach((a) => a.classList.toggle('active', a.dataset.r === (r === 'gp' ? 'calendrier' : r)));
+    $('#friendsBtn').classList.toggle('active', r === 'amis');
     const app = $('#app');
     let html;
     switch (r) {
@@ -144,6 +148,7 @@
       case 'gp': html = pageGP(+parts[1]); break;
       case 'mes-paris': html = pageMyBets(); break;
       case 'grille': html = pageGrid(); break;
+      case 'amis': html = pageFriends(parts); break;
       default: html = pageHome();
     }
     app.innerHTML = sourceNotice() + html;
@@ -160,6 +165,7 @@
       if (race && !race.qualifying) F1.data.loadQualifying(S.season, race).then((q) => { if (q) route(); });
     }
     if (r === 'mes-paris') mountBankroll();
+    if (r === 'amis') mountFriends(parts);
   }
 
   function sourceNotice() {
@@ -617,6 +623,108 @@
       <div class="row" style="margin-top:18px"><span class="sp"></span><button class="btn sm" data-action="close-modal">Fermer</button></div>`);
   }
 
+  /* =================== Amis =================== */
+  const SO = () => F1.social.state;
+  function friendsBadge() {
+    const n = SO().incoming.length, b = $('#friendsBadge');
+    if (!b) return;
+    b.textContent = n; b.style.display = n ? '' : 'none';
+  }
+  function uava(p, cls = '') {
+    const c = p.team ? tcol(p.team) : 'var(--red)';
+    return `<span class="ava ${cls}" style="--tc:${c}"><i>${esc((p.username || '?').slice(0, 2).toUpperCase())}</i></span>`;
+  }
+  function relBtn(p) {
+    const rel = F1.social.relation(p.id), l = F1.social.linkWith(p.id);
+    if (rel === 'me') return '<span class="chip">Vous</span>';
+    if (rel === 'friend') return '<span class="chip green">✓ Ami</span>';
+    if (rel === 'sent') return `<button class="btn sm ghost" data-action="f-remove" data-id="${l.id}" title="Annuler la demande">⏳ Envoyée · annuler</button>`;
+    if (rel === 'received') return `<button class="btn sm" data-action="f-accept" data-id="${l.id}">Accepter</button>`;
+    return `<button class="btn sm" data-action="f-add" data-u="${esc(p.id)}">＋ Ajouter</button>`;
+  }
+  function playerRow(p) {
+    const rate = p.bets_done ? Math.round((p.bets_won / p.bets_done) * 100) + ' %' : '—';
+    return `<div class="prow">${uava(p, 'md')}<div class="pinfo"><b>${esc(p.username)}</b><small>${p.team ? esc(team(p.team).short) + ' · ' : ''}${coin}${fmt(p.balance)} · réussite ${rate}</small></div>${relBtn(p)}</div>`;
+  }
+  function pageFriends(parts) {
+    const so = SO();
+    const head = `<div class="market-head"><div><h1>Amis</h1><div class="muted" style="margin-top:6px">Cherchez des joueurs, ajoutez-les et comparez vos résultats.</div></div></div>`;
+    if (!so.enabled) {
+      return head + `<div class="card" style="max-width:760px"><div style="font-size:40px">🛠️</div><h3>Le système d'amis n'est pas encore activé</h3>
+        <p class="muted">Il nécessite une base de données partagée gratuite (Supabase). Le propriétaire du site doit la créer une seule fois, en 5 minutes :</p>
+        <ol class="muted" style="line-height:1.8"><li>Créer un projet gratuit sur <a href="https://supabase.com" target="_blank" rel="noopener" style="text-decoration:underline">supabase.com</a></li>
+        <li><b>SQL Editor</b> → coller le contenu de <code>supabase/schema.sql</code> → <b>Run</b></li>
+        <li><b>Authentication → Sign In / Providers</b> → activer <b>Allow anonymous sign-ins</b></li>
+        <li><b>Project Settings → API</b> → copier l'URL et la clé <i>anon public</i> dans <code>js/config.js</code></li>
+        <li>Pousser la modification sur GitHub : c'est en ligne !</li></ol></div>`;
+    }
+    if (so.error) return head + `<div class="notice red">⚠️ Connexion au service d'amis impossible : ${esc(so.error)} <button class="btn sm ghost" data-action="f-retry">Réessayer</button></div>`;
+    if (!so.ready) return head + '<div class="skeleton"></div>';
+    if (!so.me) {
+      const sug = F1.social.cleanName(F1.store.get().name);
+      return head + `<div class="card" style="max-width:560px"><div style="font-size:40px">🪪</div><h3>Choisissez votre pseudo public</h3>
+        <p class="muted" style="font-size:14px">C'est le nom sous lequel vos amis vous trouveront. 3 à 24 caractères : lettres sans accent, chiffres, _ . -</p>
+        <input class="field" id="claimName" maxlength="24" value="${esc(sug)}" placeholder="ex. Lewis_du_93" style="margin:6px 0 12px">
+        <label class="muted" style="font-size:13px;font-weight:700">Écurie favorite (couleur de votre avatar)</label>
+        <select class="field" id="claimTeam" style="margin:6px 0 16px">${teamOptions('')}</select>
+        <button class="btn block" data-action="f-claim">Créer mon profil joueur</button>
+        <p class="muted" style="font-size:12px;margin-bottom:0">Votre profil est lié à ce navigateur. Seuls votre pseudo et vos statistiques de jeu sont visibles par les autres joueurs.</p></div>`;
+    }
+    const me = so.me;
+    const invite = `${location.origin}${location.pathname}#/amis/u/${encodeURIComponent(me.username)}`;
+    const board = [{ ...me, isMe: true }, ...so.friends.map((x) => x.p)].sort((a, b) => b.balance - a.balance);
+    let h = head;
+    if (parts[1] === 'u' && parts[2]) h += `<div id="inviteCard" class="card" style="margin-bottom:16px"><div class="skeleton" style="height:60px"></div></div>`;
+    h += `<div class="card friend-me" style="--tc:${me.team ? tcol(me.team) : 'var(--red)'}"><div class="row" style="flex-wrap:nowrap">${uava(me, 'lg0')}<div style="min-width:0"><div class="muted upper" style="font-size:11px;font-weight:700">Votre profil joueur</div><div style="font-size:24px;font-weight:900;font-style:italic">${esc(me.username)}</div><div class="muted" style="font-size:13px">${so.friends.length} ami${so.friends.length > 1 ? 's' : ''} · ${coin}${fmt(me.balance)}</div></div>
+      <span class="sp"></span><div class="row"><button class="btn sm ghost" data-action="f-copy" data-v="${esc(invite)}">🔗 Copier mon lien d'invitation</button><button class="btn sm ghost" data-action="f-edit">✏️ Modifier</button></div></div></div>
+      <div class="grid g2" style="margin-top:16px">
+        <div class="card"><h3>🔍 Rechercher un joueur</h3><div class="sub">Tapez au moins 2 lettres de son pseudo</div>
+          <div id="friendSearch"><input class="field" id="friendQ" placeholder="Pseudo…" autocomplete="off" style="margin-top:12px" value="${esc(S.friendQ || '')}"></div><div id="friendRes" class="plist"></div></div>
+        <div class="card"><h3>📨 Demandes</h3>
+          ${so.incoming.length ? `<div class="sub" style="margin-top:6px">Reçues</div><div class="plist">${so.incoming.map((x) => `<div class="prow">${uava(x.p, 'md')}<div class="pinfo"><b>${esc(x.p.username)}</b><small>veut devenir votre ami</small></div><div class="row"><button class="btn sm" data-action="f-accept" data-id="${x.link.id}">Accepter</button><button class="btn sm ghost" data-action="f-remove" data-id="${x.link.id}">Refuser</button></div></div>`).join('')}</div>` : '<div class="muted" style="margin-top:10px;font-size:14px">Aucune demande reçue.</div>'}
+          ${so.outgoing.length ? `<div class="sub" style="margin-top:14px">Envoyées</div><div class="plist">${so.outgoing.map((x) => playerRow(x.p)).join('')}</div>` : ''}
+        </div></div>
+      <section class="section"><div class="section-h"><h2>Classement entre amis</h2><button class="link" data-action="f-refresh">↻ Actualiser</button></div>
+      ${so.friends.length ? `<div class="card pad0"><div class="table-wrap"><table class="tbl"><thead><tr><th>#</th><th>Joueur</th><th class="r">Solde</th><th class="r">Bénéfice</th><th class="c">Réussite</th><th class="c">Paris réglés</th><th class="c">Meill. cote</th><th class="c">Succès</th><th></th></tr></thead><tbody>
+        ${board.map((p, i) => { const l = p.isMe ? null : F1.social.linkWith(p.id); return `<tr class="${p.isMe ? 'me-row' : ''}"><td class="pos">${i === 0 ? '🏆' : i + 1}</td><td><div class="drv">${uava(p)}<div><b>${esc(p.username)}</b>${p.isMe ? ' <span class="chip">Vous</span>' : ''}<small>${p.team ? esc(team(p.team).short) : ''}</small></div></div></td>
+          <td class="r num"><b>${fmt(p.balance)}</b></td><td class="r num"><span class="gain ${p.profit >= 0 ? 'up' : 'down'}">${p.profit >= 0 ? '+' : ''}${fmt(p.profit)}</span></td><td class="c num">${p.bets_done ? Math.round((p.bets_won / p.bets_done) * 100) + ' %' : '—'}</td><td class="c num">${p.bets_done}</td><td class="c num">${p.best_odds ? fmtOdds(+p.best_odds) : '—'}</td><td class="c num">${p.achievements}</td>
+          <td class="r">${l ? `<button class="link" data-action="f-remove" data-id="${l.id}" data-confirm="1" title="Retirer de mes amis">✕</button>` : ''}</td></tr>`; }).join('')}</tbody></table></div></div>`
+        : `<div class="empty"><div class="ic">🤝</div>Pas encore d'amis. Recherchez un pseudo ci-dessus ou partagez votre lien d'invitation.</div>`}</section>`;
+    return h;
+  }
+  function teamOptions(cur) {
+    return '<option value="">— Aucune —</option>' + [...S.season.teams.values()].filter((t) => S.season.entrants.some((id) => drv(id).teamId === t.id)).map((t) => `<option value="${esc(t.id)}" ${t.id === cur ? 'selected' : ''}>${esc(t.short)}</option>`).join('');
+  }
+  let searchT = null, searchSeq = 0;
+  function runSearch() {
+    const q = ($('#friendQ') || {}).value || '';
+    S.friendQ = q;
+    const out = $('#friendRes'); if (!out) return;
+    clearTimeout(searchT);
+    if (q.trim().length < 2) { out.innerHTML = ''; return; }
+    out.innerHTML = '<div class="muted" style="padding:10px 0;font-size:14px">Recherche…</div>';
+    const seq = ++searchSeq;
+    searchT = setTimeout(async () => {
+      try {
+        const res = await F1.social.search(q);
+        if (seq !== searchSeq) return;
+        out.innerHTML = res.length ? res.map(playerRow).join('') : `<div class="muted" style="padding:10px 0;font-size:14px">Aucun joueur trouvé pour « ${esc(q)} ».</div>`;
+      } catch (e) { out.innerHTML = `<div style="color:var(--lose);font-size:14px;padding:10px 0">${esc(e.message)}</div>`; }
+    }, 300);
+  }
+  function mountFriends(parts) {
+    const q = $('#friendQ');
+    if (q) { q.addEventListener('input', runSearch); if (q.value) runSearch(); }
+    const ic = $('#inviteCard');
+    if (ic) F1.social.byUsername(decodeURIComponent(parts[2])).then((p) => {
+      ic.innerHTML = p ? `<div class="sub" style="margin-bottom:8px">🎟️ Invitation reçue</div>${playerRow(p)}` : `<div class="muted">Aucun joueur nommé « ${esc(decodeURIComponent(parts[2]))} ».</div>`;
+    }).catch((e) => { ic.innerHTML = `<div class="muted">${esc(e.message)}</div>`; });
+  }
+  async function socialAct(fn, okMsg) {
+    try { await fn(); if (okMsg) toast('✅', okMsg, 'win'); } catch (e) { toast('⚠️', esc(e.message), 'err'); }
+    if (/^#\/amis/.test(location.hash)) { route(); }
+  }
+
   /* =================== Mes paris =================== */
   function pageMyBets() {
     const p = F1.store.get(), st = F1.store.stats();
@@ -866,6 +974,15 @@
       case 'rescue': { const g = F1.store.rescue(S.season, S.season.next); if (g) { toast('⛽', `Ravitaillement : +${g} jetons`, 'win'); route(); } break; }
       case 'profile': profile(); break;
       case 'credits': credits(); break;
+      case 'f-retry': F1.social.init().then(route); break;
+      case 'f-refresh': socialAct(() => F1.social.refresh()); break;
+      case 'f-claim': { const n = $('#claimName').value.trim(), t = $('#claimTeam').value; socialAct(async () => { await F1.social.claim(n, t); if (!F1.store.get().name) F1.store.setName(n); }, `Profil créé : bienvenue ${esc(n)} !`); break; }
+      case 'f-edit': { const me = SO().me; modal(`<h2>Profil joueur</h2><label class="muted" style="font-size:13px;font-weight:700">Pseudo public</label><input class="field" id="claimName" maxlength="24" value="${esc(me.username)}" style="margin:6px 0 12px"><label class="muted" style="font-size:13px;font-weight:700">Écurie favorite</label><select class="field" id="claimTeam" style="margin:6px 0 16px">${teamOptions(me.team)}</select><div class="row"><button class="btn sm ghost" data-action="close-modal">Annuler</button><span class="sp"></span><button class="btn sm" data-action="f-save">Enregistrer</button></div>`); break; }
+      case 'f-save': { const n = $('#claimName').value.trim(), t = $('#claimTeam').value; closeModal(); socialAct(() => F1.social.claim(n, t), 'Profil mis à jour'); break; }
+      case 'f-add': socialAct(() => F1.social.request(a.dataset.u), 'Demande d\'ami envoyée'); break;
+      case 'f-accept': socialAct(() => F1.social.accept(+a.dataset.id), 'Vous êtes maintenant amis 🤝'); break;
+      case 'f-remove': if (!a.dataset.confirm || confirm('Retirer ce joueur de vos amis ?')) socialAct(() => F1.social.remove(+a.dataset.id)); break;
+      case 'f-copy': (navigator.clipboard ? navigator.clipboard.writeText(a.dataset.v) : Promise.reject()).then(() => toast('🔗', 'Lien d\'invitation copié : envoyez-le à vos amis !', 'win'), () => prompt('Copiez ce lien :', a.dataset.v)); break;
       case 'save-name': { const v = ($('#nameIn').value || '').trim(); if (!v) { $('#nameIn').focus(); return; } F1.store.setName(v); closeModal(); toast('👋', `Bienvenue, <b>${esc(v)}</b> !`, 'win'); route(); break; }
       case 'copy-code': { const t = $('#expCode'); t.select(); (navigator.clipboard ? navigator.clipboard.writeText(t.value) : Promise.reject()).then(() => toast('📋', 'Code copié'), () => document.execCommand('copy')); break; }
       case 'import': try { F1.store.importCode($('#impCode').value); closeModal(); shownBal = null; updateWallet(); route(); toast('✅', 'Sauvegarde importée', 'win'); } catch (err) { toast('⚠️', 'Code de sauvegarde invalide', 'err'); } break;
@@ -879,6 +996,7 @@
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') { if ($('#modal').innerHTML && F1.store.get().name) closeModal(); else if (S.slipOpen) { S.slipOpen = false; renderSlip(); } }
     if (e.key === 'Enter' && e.target.id === 'nameIn') $('[data-action="save-name"]').click();
+    if (e.key === 'Enter' && e.target.id === 'claimName' && $('[data-action="f-claim"]')) $('[data-action="f-claim"]').click();
   });
   window.addEventListener('resize', () => { document.body.classList.toggle('has-slip', S.slip.length > 0 && innerWidth >= 1280); });
 

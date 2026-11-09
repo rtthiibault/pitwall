@@ -25,6 +25,34 @@ Site de paris **à jetons virtuels** sur la Formule 1. Il est 100 % statique (HT
 - **Pages** : calendrier, classements (avec un graphique d'évolution interactif), résultats détaillés de chaque GP.
 - **Sauvegarde** : export/import d'un code, pour passer d'un appareil à l'autre.
 
+## Système d'amis
+La page **Amis** permet de :
+- rechercher un joueur par son pseudo ;
+- lui envoyer une demande d'ami, puis accepter ou refuser les demandes reçues ;
+- partager un lien d'invitation ;
+- comparer ses résultats dans un **classement entre amis** (solde, bénéfice, réussite, meilleure cote, succès).
+
+Un badge rouge dans la barre du haut signale les nouvelles demandes.
+
+### Activer le système d'amis (une seule fois, environ 5 minutes, gratuit)
+1. Créez un compte et un projet gratuit sur [supabase.com](https://supabase.com) (bouton *New project*, région Europe).
+2. Ouvrez **SQL Editor → New query**, collez le contenu de `supabase/schema.sql`, puis cliquez sur **Run**.
+3. Allez dans **Authentication → Sign In / Providers** et activez **Allow anonymous sign-ins**.
+4. Allez dans **Project Settings → API**. Copiez la *Project URL* et la clé *anon public* dans `js/config.js`.
+5. Commitez et poussez `js/config.js` sur GitHub : c'est en ligne.
+
+La clé *anon* est **publique par conception** : vous pouvez la mettre dans le site sans risque. La sécurité repose sur les règles (RLS) de `schema.sql` :
+- chacun ne peut modifier que son propre profil ;
+- seuls les deux joueurs concernés voient une demande d'ami ;
+- seul le destinataire peut l'accepter.
+
+Ne mettez **jamais** la clé *service_role* dans le site.
+
+### Limites à connaître
+- **Le profil joueur est lié au navigateur** (compte anonyme, sans email). Si on vide les données du navigateur ou qu'on change d'appareil, on repart avec un nouveau profil.
+- **Les statistiques du classement sont déclarées par chaque navigateur** : c'est un jeu entre amis, pas une compétition protégée contre la triche.
+- **Seuls le pseudo, l'écurie favorite et les statistiques de jeu sont publics.**
+
 ## Pilotes et monoplaces
 - **Portraits des pilotes** : il s'agit uniquement d'images **libres de droits** issues de Wikimedia Commons (licences CC BY, CC BY-SA, CC0…), c'est-à-dire les photos principales des pages Wikipédia des pilotes. L'automatisation hebdomadaire les liste dans `data/portraits.json`, avec l'auteur et la licence de chacune. Les crédits sont affichés par le lien « crédits photos » en pied de page, comme l'exigent ces licences. Si une photo manque, le site affiche les initiales du pilote aux couleurs de son écurie.
 - **Monoplaces** : ce sont des illustrations vectorielles originales aux couleurs de chaque écurie (`js/visuals.js`, objet `LIVERY`). Elles n'utilisent aucune image officielle, donc aucun problème de droits.
@@ -92,6 +120,9 @@ Ouvrez ensuite http://localhost:8000.
 |---|---|
 | `js/season2027.js` | Calendrier et grille 2027 intégrés |
 | `js/visuals.js` | Monoplaces SVG (livrées) et portraits des pilotes |
+| `js/social.js` | Système d'amis (Supabase) |
+| `js/config.js` | Configuration Supabase (URL + clé anon) |
+| `supabase/schema.sql` | Tables et règles de sécurité du système d'amis |
 | `js/data.js` | Appels API, cache, normalisation, couleurs des écuries, drapeaux |
 | `js/model.js` | Simulation Monte-Carlo, conversion probabilité → cote |
 | `js/markets.js` | Définition des marchés et règles de règlement |
