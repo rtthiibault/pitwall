@@ -160,12 +160,12 @@
     } catch (e) {
       console.warn(`[PITWALL] API live indisponible (${path}) :`, e.message);
     }
-    if (path === 'current') {
-      try {
-        const snap = await getJSON('data/snapshot.json?v=' + Math.floor(Date.now() / 36e5), 6000);
-        if (snap && snap.schedule && snap.schedule.length) return { raw: withEmbedded({ year: +snap.schedule[0].season, ...snap }), source: 'snapshot' };
-      } catch (e) { /* pas de snapshot */ }
-    }
+    // repli : fichiers régénérés automatiquement par la GitHub Action (data/snapshot.json, data/seasons/<année>.json)
+    try {
+      const file = path === 'current' ? 'data/snapshot.json' : `data/seasons/${path}.json`;
+      const snap = await getJSON(file + '?v=' + Math.floor(Date.now() / 36e5), 6000);
+      if (snap && snap.schedule && snap.schedule.length) return { raw: withEmbedded({ year: +snap.schedule[0].season, ...snap }), source: 'snapshot' };
+    } catch (e) { /* pas de fichier hebdo */ }
     if (c) return { raw: withEmbedded(c.d), source: 'cache' };
     const year = path === 'current' ? embeddedYear() : +path;
     if (F1.SEASONS[year]) return { raw: F1.SEASONS[year], source: 'fallback' };
@@ -376,5 +376,10 @@
     try { Object.keys(localStorage).filter((k) => k.startsWith('pitwall:raw') || k.startsWith('pitwall:q:')).forEach((k) => localStorage.removeItem(k)); } catch (e) { /* */ }
   }
 
-  F1.data = { loadSeason, loadYear, loadQualifying, loadWeather, normalize, clearCache, embeddedYear };
+  // Date du dernier passage de la mise à jour automatique
+  async function loadMeta() {
+    try { return await getJSON('data/meta.json?v=' + Math.floor(Date.now() / 36e5), 5000); } catch (e) { return null; }
+  }
+
+  F1.data = { loadMeta, loadSeason, loadYear, loadQualifying, loadWeather, normalize, clearCache, embeddedYear };
 })(globalThis.F1 = globalThis.F1 || {});

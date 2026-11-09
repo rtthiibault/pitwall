@@ -50,9 +50,24 @@ Site de paris **à jetons virtuels** sur la Formule 1. Il est 100 % statique (HT
 Glissez-déposez le dossier sur [app.netlify.com/drop](https://app.netlify.com/drop) et c'est en ligne. Le site lit l'API live directement : la GitHub Action n'est qu'un filet de sécurité.
 
 ## Comment se fait l'actualisation
-1. À chaque visite, le navigateur interroge l'API live, avec un cache de 20 minutes.
-2. Si l'API est injoignable, le site utilise `data/snapshot.json`, que la GitHub Action régénère le lundi et le mardi.
-3. En dernier recours, il affiche le calendrier et la grille 2026 intégrés (`js/fallback.js`).
+Les données sont actualisées sur deux niveaux :
+
+1. **Temps réel.** À chaque visite, le navigateur interroge l'API live, avec un cache de 20 minutes. Le site couvre :
+   - le calendrier ;
+   - les résultats, les qualifications et les sprints ;
+   - les classements pilotes et constructeurs ;
+   - la météo (Open-Meteo) ;
+   - les cotes et le règlement des paris.
+2. **Automatisation GitHub** (`.github/workflows/update-data.yml`). Elle régénère `data/seasons/<année>.json` pour les saisons précédente, en cours et suivante, ainsi que `data/snapshot.json` et `data/meta.json`. Elle passe :
+   - le samedi soir, pour les qualifs et le sprint ;
+   - le dimanche, toutes les 6 heures, pour la course ;
+   - le lundi, pour les classements officiels ;
+   - le mercredi, pour les pénalités et les corrections.
+
+   Elle ne commite que si les données ont changé. Le lundi, elle commite quand même, ce qui sert de battement hebdomadaire : GitHub désactive une tâche planifiée après 60 jours sans activité, et ce commit l'en empêche pendant l'intersaison.
+3. **Ordre de repli.** Si l'API est en panne, chaque saison retombe sur son fichier hebdomadaire. En dernier recours, le site utilise le calendrier et la grille intégrés (`js/fallback.js`, `js/season2027.js`).
+
+Le pied de page indique la source utilisée et la date de la dernière vérification automatique. Pour forcer une mise à jour, va dans **Actions**, puis « Mise à jour des données F1 », puis *Run workflow*.
 
 ## Tester en local
 ```bash

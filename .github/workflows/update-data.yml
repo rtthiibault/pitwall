@@ -1,28 +1,43 @@
-name: Mise à jour hebdomadaire des données F1
+name: Mise à jour des données F1
 
 on:
   schedule:
-    # Lundi et mardi matin (UTC), après chaque Grand Prix
-    - cron: '17 6 * * 1,2'
+    - cron: '17 22 * * 6'      # samedi soir : qualifs et sprints
+    - cron: '17 */6 * * 0'     # dimanche toutes les 6 h : course
+    - cron: '17 6 * * 1,3'     # lundi (résultats/classements officiels + battement hebdo) et mercredi (corrections, pénalités)
   workflow_dispatch: {}
 
 permissions:
   contents: write
 
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Récupérer les données
+      - name: Récupérer toutes les données (saisons précédente, en cours et suivante)
         run: node scripts/update-data.mjs
       - name: Commit si changement
         run: |
           git config user.name "pitwall-bot"
           git config user.email "pitwall-bot@users.noreply.github.com"
-          git add data/snapshot.json
-          git diff --cached --quiet || git commit -m "Données F1 : mise à jour $(date -u +%F)"
+          # Sans nouvelle donnée, on ne garde meta.json que le lundi : un commit par semaine
+          # suffit pour que GitHub ne désactive pas cette tâche planifiée (60 jours sans activité).
+          if git diff --quiet -- data/snapshot.json data/seasons && [ -z "$(git ls-files --others --exclude-standard data/seasons)" ]; then
+            if [ "$(date -u +%u)" != "1" ] && [ "${{ github.event_name }}" = "schedule" ]; then
+              git checkout -- data/meta.json 2>/dev/null || true
+            fi
+          fi
+          git add data/
+          if git diff --cached --quiet; then echo "Aucun changement"; exit 0; fi
+          git commit -m "Données F1 : mise à jour $(date -u '+%F %H:%M') UTC"
+          git pull --rebase origin main
           git push
