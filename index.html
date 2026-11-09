@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>PITWALL — Pronostics Formule 1</title>
+  <meta name="description" content="Pariez (en jetons virtuels) sur chaque Grand Prix de Formule 1 : vainqueur, podium, duels, tiercé, meilleur tour… Cotes recalculées après chaque course.">
+  <meta name="theme-color" content="#07070b">
+  <meta property="og:title" content="PITWALL — Pronostics Formule 1">
+  <meta property="og:description" content="Le jeu de pronostics F1 gratuit, cotes mises à jour à chaque Grand Prix.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2307070b'/%3E%3Cpath d='M10 44 L30 20 H54 L50 26 H33 L28 32 H46 L42 38 H23 L18 44Z' fill='%23e10600'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,300;0,400;0,600;0,700;0,900;1,700;1,900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="lights" id="lights" aria-hidden="true">
+    <div class="lights-gantry">
+      <div class="pod"><i></i><i></i><i></i><i></i></div>
+      <div class="pod"><i></i><i></i><i></i><i></i></div>
+      <div class="pod"><i></i><i></i><i></i><i></i></div>
+      <div class="pod"><i></i><i></i><i></i><i></i></div>
+      <div class="pod"><i></i><i></i><i></i><i></i></div>
+    </div>
+    <div class="lights-caption" id="lightsCaption">Connexion au <b>muret des stands</b>…</div>
+  </div>
+
+  <header class="topbar">
+    <a href="#/" class="logo" aria-label="PITWALL accueil">
+      <svg viewBox="0 0 64 36" aria-hidden="true"><path d="M2 34 L26 4 H62 L56 12 H33 L28 18 H52 L46 26 H22 L16 34Z" fill="#e10600"/></svg>
+      <span>PIT<em>WALL</em></span>
+    </a>
+    <nav class="nav" id="nav">
+      <a href="#/" data-r="">Accueil</a>
+      <a href="#/paris" data-r="paris">Paris</a>
+      <a href="#/calendrier" data-r="calendrier">Calendrier</a>
+      <a href="#/classements" data-r="classements">Classements</a>
+      <a href="#/mes-paris" data-r="mes-paris">Mes paris</a>
+    </nav>
+    <div class="top-right">
+      <a href="#/mes-paris" class="wallet" id="wallet" title="Votre solde de jetons">
+        <span class="coin">J</span><span class="num" id="balance">—</span>
+      </a>
+      <button class="avatar" id="avatar" data-action="profile" title="Profil">?</button>
+    </div>
+  </header>
+
+  <main id="app"><div class="skeleton"></div></main>
+
+  <aside class="slip" id="slip" aria-label="Ticket de paris"></aside>
+  <div class="backdrop" id="backdrop" data-action="close-slip"></div>
+  <button class="slip-fab" id="slipFab" data-action="open-slip" style="display:none">Ticket <span class="badge" id="fabCount">0</span></button>
+
+  <nav class="bottomnav" id="bottomnav">
+    <a href="#/" data-r=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Accueil</a>
+    <a href="#/paris" data-r="paris"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21V4m0 0h12l-2 4 2 4H4"/></svg>Paris</a>
+    <a href="#/calendrier" data-r="calendrier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Calendrier</a>
+    <a href="#/classements" data-r="classements"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21V11M12 21V5M16 21v-7M4 21h16"/></svg>Classement</a>
+    <a href="#/mes-paris" data-r="mes-paris"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h14v17l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 9h6M9 13h6"/></svg>Mes paris</a>
+  </nav>
+
+  <footer id="footer"></footer>
+  <div id="modal"></div>
+  <div class="toasts" id="toasts"></div>
+  <canvas id="confetti"></canvas>
+
+  <script src="js/fallback.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/model.js"></script>
+  <script src="js/markets.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
