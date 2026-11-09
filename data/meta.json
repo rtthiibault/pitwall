@@ -1,0 +1,18 @@
+{
+  "updated": "2026-11-09T21:57:07.429Z",
+  "seasons": {
+    "2025": {
+      "races": 24,
+      "done": 24,
+      "sprints": 6,
+      "leader": "Norris (423)"
+    },
+    "2026": {
+      "races": 23,
+      "done": 20,
+      "sprints": 6,
+      "leader": "Antonelli (390)"
+    }
+  },
+  "current": 2026
+}
