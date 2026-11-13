@@ -84,7 +84,7 @@ Ne mettez **jamais** la clé *service_role* dans le site.
 - **Monoplaces 3D** : il s'agit du modèle « F1 2026 concept polygon model » (`assets/f1-2026.glb`), affiché avec Three.js.
   - **Conversion** : le fichier USDZ d'origine (1,16 million de triangles) a été converti en GLB, puis segmenté en zones de livrée (carrosserie, couleur secondaire, dessous de caisse, carbone, pneus, jantes).
   - **Allègement** : le modèle a été simplifié à environ 530 000 triangles et compressé avec meshopt (1,4 Mo).
-  - **Peinture** : chaque écurie est peinte à la volée avec ses couleurs (`LIVERY` dans `js/visuals.js`).
+  - **Peinture** : chaque écurie reçoit sa **livrée 2026** (couleurs, dégradés, découpes et filets d'après l'affiche officielle des monoplaces, sans les logos de sponsors). Ce sont les fonctions `LIVERY3D` de `js/visuals.js`, qui colorent chaque sommet selon sa position sur la voiture (avant/arrière, hauteur, côté).
   - **Affichage** : le bandeau d'accueil et le garage montrent une voiture interactive, qu'on fait pivoter à la souris ou au doigt. Ailleurs, le site affiche des images 3D générées dans le navigateur.
   - **Repli** : si WebGL est indisponible, des illustrations vectorielles prennent le relais.
   - ⚠️ Vérifiez la licence du modèle sur sa page d'origine. Si c'est une licence Creative Commons BY, ajoutez le crédit de l'auteur dans le pied de page.

@@ -7,12 +7,12 @@
     red_bull: { body: '#1E2A5A', accent: '#E10600', detail: '#FFCC00', helmet: '#3671C6' },
     mercedes: { body: '#16181C', accent: '#27F4D2', detail: '#C8CCD0', helmet: '#FFFFFF' },
     aston_martin: { body: '#00594F', accent: '#CEDC00', detail: '#0B2A26', helmet: '#CEDC00' },
-    alpine: { body: '#0078C1', accent: '#FD4BC7', detail: '#0A1A3A', helmet: '#FFFFFF' },
+    alpine: { body: '#FF7FB8', accent: '#1D5FD6', detail: '#0C1A3D', helmet: '#FFFFFF' },
     williams: { body: '#00A0DE', accent: '#041E42', detail: '#FFFFFF', helmet: '#041E42' },
     rb: { body: '#F2F3F7', accent: '#1634CB', detail: '#E10600', helmet: '#1634CB' },
     racing_bulls: { body: '#F2F3F7', accent: '#1634CB', detail: '#E10600', helmet: '#1634CB' },
     haas: { body: '#EEEEEE', accent: '#E6002B', detail: '#1A1A1A', helmet: '#E6002B' },
-    audi: { body: '#BFC3C7', accent: '#F50537', detail: '#141414', helmet: '#141414' },
+    audi: { body: '#D5D7DB', accent: '#E3261C', detail: '#1D1E21', helmet: '#141414' },
     sauber: { body: '#52E252', accent: '#111111', detail: '#111111', helmet: '#FFFFFF' },
     cadillac: { body: '#121212', accent: '#F4F4F4', detail: '#C9A227', helmet: '#C9A227' },
   };
@@ -193,5 +193,139 @@
   }
   window.addEventListener('car3d-ready', () => hydrate(document));
 
-  F1.visuals = { car, svgCar, hydrate, livery, loadPortraits, portrait, allPortraits };
+  /* ---------- Livrées 3D 2026 (d'après l'affiche officielle des monoplaces, sans logos de sponsors) ----------
+     paint(u, v, s, part, ny) -> couleur hexadécimale ou null (= carbone)
+       u : position longitudinale 0 (arrière) -> 1 (pointe du nez)
+       v : hauteur 0 (sol) -> 1 (haut de la prise d'air)
+       s : écart latéral 0 (axe) -> 1 (bord extérieur)
+       part : 'body' | 'accent' | 'lower' | 'carbon'
+     Repères : essieu arrière u≈0,18 · pontons u≈0,30–0,70 · prise d'air u≈0,42–0,50 · cockpit u≈0,52–0,62 · essieu avant u≈0,82 */
+  const sm = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  const hx = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const mix = (c1, c2, t) => { const a = hx(c1), b = hx(c2); return '#' + a.map((x, i) => Math.round(x + (b[i] - x) * t).toString(16).padStart(2, '0')).join(''); };
+  // filet horizontal : seulement sur les flancs (surfaces quasi verticales, |normale y| faible)
+  const band = (v, a, b, n) => v > a && v < b && (n == null || Math.abs(n) < 0.3);
+  const isRW = (u, v) => u < 0.11 && v > 0.42;           // aileron arrière
+  const isFW = (u, v) => u > 0.88 && v < 0.24;           // aileron avant
+  const LIVERY3D = {
+    alpine: { // A526 : dégradé rose -> bleu, dessous bleu nuit
+      paint(u, v, s, p, n) {
+        if (p === 'carbon') return isRW(u, v) ? (v > 0.8 ? '#ff6fae' : '#1a3f9a') : isFW(u, v) && s > 0.75 ? '#1a3f9a' : null;
+        if (p === 'lower' || v < 0.2) return '#0c1a3d';
+        const t = sm(0.34, 0.72, u);
+        let c = mix('#ff7fb8', '#1d5fd6', t);
+        if (v > 0.72 && u < 0.55) c = mix(c, '#ff5fa6', 0.4);
+        return c;
+      },
+    },
+    aston_martin: { // AMR26 : vert anglais, filets citron vert
+      paint(u, v, s, p, n) {
+        if (p === 'carbon') return isRW(u, v) && v > 0.85 ? '#cedc00' : isFW(u, v) && s > 0.8 ? '#0a4f43' : null;
+        if (p === 'lower' || v < 0.19) return '#071f1a';
+        if (band(v, 0.34, 0.365, n) && u > 0.25 && u < 0.95) return '#cedc00';
+        if (p === 'accent') return u < 0.15 ? '#cedc00' : '#0b5a4b';
+        return u > 0.88 ? mix('#0b5a4b', '#0f7a63', 0.5) : '#0b5a4b';
+      },
+    },
+    audi: { // R26 : avant argent, milieu rouge, arrière anthracite
+      paint(u, v, s, p, n) {
+        if (p === 'carbon') return isRW(u, v) ? (v > 0.85 ? '#e3261c' : '#1d1e21') : isFW(u, v) && s > 0.8 ? '#cfd2d6' : null;
+        if (p === 'lower' || v < 0.18) return '#141416';
+        if (p === 'accent') return '#e3261c';
+        if (u > 0.6) return '#d5d7db';
+        if (u > 0.44) return '#e3261c';
+        return v > 0.5 ? '#26272b' : '#1b1c1f';
+      },
+      finish: { rough: 0.38, clear: 0.7 },
+    },
+    cadillac: { // noir et blanc, avant clair
+      paint(u, v, s, p, n) {
+        if (p === 'carbon') return isFW(u, v) ? '#e9e9eb' : isRW(u, v) && v > 0.85 ? '#e9e9eb' : null;
+        if (p === 'accent') return '#e9e9eb';
+        if (p === 'lower' || v < 0.18) return u > 0.62 ? '#dcdcdf' : '#0e0e10';
+        if (band(v, 0.3, 0.34, n) && u > 0.3 && u < 0.9) return '#e9e9eb';
+        if (u > 0.9 && v < 0.3) return '#e9e9eb';
+        return '#111113';
+      },
+    },
+    haas: { // VF-26 : blanc, rouge et noir
+      paint(u, v, s, p, n) {
+        if (p === 'carbon') return isRW(u, v) ? (v > 0.85 ? '#e6002b' : '#f1f1f1') : null;
+        if (p === 'accent') return '#e6002b';
+        if (p === 'lower' || v < 0.19) return '#121212';
+        if (u < 0.48 && v > 0.62) return v > 0.8 ? '#121212' : '#e6002b';
+        if (band(v, 0.27, 0.33, n) && u > 0.22 && u < 0.78) return '#e6002b';
+        if (band(v, 0.22, 0.27, n) && u > 0.22 && u < 0.7) return '#121212';
+        return '#f2f2f2';
+      },
+    },
+    ferrari: { // SF-26 : rouge, touches blanches, dessous noir
+      paint(u, v, s, p, n) {
+        if (p === 'carbon') return isRW(u, v) && v > 0.85 ? '#d40000' : null;
+        if (p === 'accent') return '#f4f4f4';
+        if (p === 'lower' || v < 0.2) return '#141414';
+        if (u > 0.4 && u < 0.56 && v > 0.7) return '#f4f4f4';
+        if (band(v, 0.22, 0.26, n) && u > 0.25 && u < 0.85) return '#f4f4f4';
+        return '#d40000';
+      },
+    },
+    mclaren: { // MCL40 : papaye avec chevron noir
+      paint(u, v, s, p, n) {
+        if (p === 'carbon') return isRW(u, v) && v > 0.8 ? '#ff8000' : isFW(u, v) && s > 0.82 ? '#ff8000' : null;
+        if (p === 'accent') return '#1b1b1f';
+        if (p === 'lower' || v < 0.19) return '#141416';
+        if (u > 0.24 && u < 0.62 && v > 0.52 && v < 0.5 + (u - 0.24) * 0.9) return '#1b1b1f';
+        if (u > 0.62 && u < 0.72 && v > 0.45 && v < 0.6) return '#1b1b1f';
+        return '#ff8000';
+      },
+    },
+    mercedes: { // W17 : noir, filets turquoise et argent
+      paint(u, v, s, p, n) {
+        if (p === 'carbon') return isRW(u, v) && v > 0.85 ? '#00d2be' : null;
+        if (p === 'accent') return '#00d2be';
+        if (p === 'lower' || v < 0.18) return '#0b0b0c';
+        if (band(v, 0.2, 0.25, n) && u > 0.25 && u < 0.85) return '#00d2be';
+        if (u > 0.78 && v > 0.22) return mix('#121214', '#5a5e66', sm(0.78, 1, u) * 0.6);
+        return '#121214';
+      },
+    },
+    rb: { // VCARB 03 : blanc dessus, bleu dessous, touches rouges
+      paint(u, v, s, p, n) {
+        if (p === 'carbon') return isRW(u, v) ? (v > 0.85 ? '#e10600' : '#1a2fb5') : isFW(u, v) && s > 0.8 ? '#1a2fb5' : null;
+        if (p === 'accent') return '#e10600';
+        if (p === 'lower' || v < 0.18) return '#0f1a66';
+        const split = 0.36 + 0.18 * sm(0.2, 0.9, u);
+        if (u < 0.22) return '#1a2fb5';
+        if (v < split) return '#1a2fb5';
+        if (u > 0.36 && u < 0.46 && v > 0.62) return '#e10600';
+        return '#f4f5f7';
+      },
+    },
+    racing_bulls: null,
+    red_bull: { // RB22 : bleu nuit mat, rouge et jaune
+      paint(u, v, s, p, n) {
+        if (p === 'carbon') return isRW(u, v) && v > 0.85 ? '#d6001c' : null;
+        if (p === 'accent') return '#ffcc00';
+        if (p === 'lower' || v < 0.18) return '#0d1430';
+        if (u > 0.95) return '#ffcc00';
+        if (u > 0.3 && u < 0.5 && v > 0.55) return v > 0.78 ? '#ffcc00' : '#d6001c';
+        if (band(v, 0.24, 0.28, n) && u > 0.3 && u < 0.85) return '#d6001c';
+        return '#1a2650';
+      },
+      finish: { rough: 0.62, clear: 0.15 },
+    },
+    williams: { // FW48 : dégradé bleu nuit -> bleu ciel
+      paint(u, v, s, p, n) {
+        if (p === 'carbon') return isRW(u, v) && v > 0.85 ? '#2aa8ea' : null;
+        if (p === 'accent') return '#f2f4f8';
+        if (p === 'lower' || v < 0.18) return '#06163a';
+        const t = Math.max(sm(0.55, 0.25, v), sm(0.6, 0.95, u) * 0.8);
+        return mix('#0a2a66', '#2aa8ea', t);
+      },
+    },
+  };
+  LIVERY3D.racing_bulls = LIVERY3D.rb;
+  const liveryPaint = (id) => LIVERY3D[id] || null;
+
+  F1.visuals = { car, svgCar, hydrate, livery, liveryPaint, loadPortraits, portrait, allPortraits };
 })(globalThis.F1 = globalThis.F1 || {});

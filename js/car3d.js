@@ -8,13 +8,14 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
-import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+import { toCreasedNormals, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 
 const F1 = (globalThis.F1 = globalThis.F1 || {});
 const MODEL_URL = new URL('../assets/f1-2026.glb', import.meta.url).href;
 
 /* ---------- Modèle : chargé une seule fois, géométries partagées entre toutes les voitures ---------- */
 let PARTS = null; // [{ name, geometry }]
+let BOUNDS = null;
 async function loadModel() {
   const gltf = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(MODEL_URL);
   const parts = [];
@@ -30,7 +31,8 @@ async function loadModel() {
     if (o.geometry.index) g.setIndex(o.geometry.index.clone());
     g.applyMatrix4(o.matrixWorld);
     // normales recalculées avec arêtes vives (ailerons nets, carrosserie lisse)
-    const cg = toCreasedNormals(g, Math.PI / 3.6);
+    // puis ré-indexation : moins de sommets -> couleurs de livrée moins coûteuses à calculer
+    const cg = mergeVertices(toCreasedNormals(g, Math.PI / 3.6), 1e-4);
     cg.computeBoundingBox();
     parts.push({ name: o.name, geometry: cg });
   });
@@ -39,15 +41,42 @@ async function loadModel() {
   parts.forEach((p) => box.union(p.geometry.boundingBox));
   const cx = (box.min.x + box.max.x) / 2;
   parts.forEach((p) => p.geometry.translate(-cx, 0, 0));
+  BOUNDS = { x0: box.min.x - cx, x1: box.max.x - cx, y1: box.max.y, z1: Math.max(-box.min.z, box.max.z) };
   PARTS = parts;
 }
 
 /* ---------- Livrées ---------- */
 const livery = (id) => (F1.visuals && F1.visuals.livery ? F1.visuals.livery(id) : { body: '#e10600', accent: '#111', detail: '#222', helmet: '#fff' });
+// Couleur de chaque sommet selon la livrée 2026 de l'écurie (zones, dégradés, filets)
+function paintGeometry(part, fn) {
+  const pos = part.geometry.attributes.position, nrm = part.geometry.attributes.normal;
+  const col = new Uint8Array(pos.count * 3);
+  const { x0, x1, y1, z1 } = BOUNDS;
+  const c = new THREE.Color();
+  const cache = new Map();
+  for (let i = 0; i < pos.count; i++) {
+    const u = (pos.getX(i) - x0) / (x1 - x0), v = pos.getY(i) / y1, s = Math.abs(pos.getZ(i)) / z1;
+    const hex = fn(u, v, s, part.name, nrm.getY(i)) || '#101114';
+    let rgb = cache.get(hex);
+    if (!rgb) { c.set(hex); rgb = [c.r, c.g, c.b].map((x) => Math.round(x * 255)); cache.set(hex, rgb); } // espace linéaire
+    col[i * 3] = rgb[0]; col[i * 3 + 1] = rgb[1]; col[i * 3 + 2] = rgb[2];
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', pos);
+  g.setAttribute('normal', part.geometry.attributes.normal);
+  g.setIndex(part.geometry.index);
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3, true));
+  g.boundingSphere = part.geometry.boundingSphere; g.boundingBox = part.geometry.boundingBox;
+  return g;
+}
 function materials(teamId) {
   const L = livery(teamId);
+  const LV = F1.visuals && F1.visuals.liveryPaint ? F1.visuals.liveryPaint(teamId) : null;
+  const fin = (LV && LV.finish) || { rough: 0.3, clear: 1 };
   const paint = (c, rough = 0.3) => new THREE.MeshPhysicalMaterial({ color: c, metalness: 0.3, roughness: rough, clearcoat: 1, clearcoatRoughness: 0.05 });
   return {
+    LV,
+    livery: new THREE.MeshPhysicalMaterial({ vertexColors: true, metalness: 0.25, roughness: fin.rough, clearcoat: fin.clear, clearcoatRoughness: 0.06 }),
     body: paint(L.body),
     accent: paint(L.accent, 0.3),
     lower: new THREE.MeshPhysicalMaterial({ color: new THREE.Color(L.body).lerp(new THREE.Color(0x0b0b0e), 0.9), metalness: 0.2, roughness: 0.5, clearcoat: 0.6 }),
@@ -60,7 +89,10 @@ function buildCar(teamId) {
   const M = materials(teamId);
   const car = new THREE.Group();
   for (const p of PARTS) {
-    const m = new THREE.Mesh(p.geometry, M[p.name] || M.body);
+    const painted = M.LV && ['body', 'accent', 'lower', 'carbon'].includes(p.name);
+    const geo = painted ? paintGeometry(p, M.LV.paint) : p.geometry;
+    const m = new THREE.Mesh(geo, painted ? M.livery : (M[p.name] || M.body));
+    if (painted) m.userData.ownGeometry = true;
     m.castShadow = true; m.receiveShadow = true;
     car.add(m);
   }
