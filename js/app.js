@@ -125,7 +125,7 @@
         clearInterval(timer);
         await new Promise((r) => setTimeout(r, seen ? 150 : 400 + Math.random() * 600));
         pods.forEach((p) => p.classList.remove('on'));
-        $('#lightsCaption').textContent = 'Extinction des feux, c\'est parti !';
+        $('#lightsCaption').innerHTML = '<b>Extinction des feux</b> — c\'est parti !';
         await new Promise((r) => setTimeout(r, seen ? 150 : 450));
         el.classList.add('out');
         try { sessionStorage.setItem('pitwall:lights', '1'); } catch (e) { /* */ }
