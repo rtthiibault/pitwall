@@ -781,3 +781,32 @@ footer::before { content: ''; position: absolute; left: 10%; right: 10%; top: 0;
 .logo-word { font-weight: 900; font-style: italic; letter-spacing: .04em; }
 .foot-logo { justify-content: center; font-size: 18px; margin-bottom: 10px; }
 @media (max-width: 560px) { .logo-word { display: none; } }
+
+/* ---------- Section « drift » pilotée par le scroll ---------- */
+.drift { position: relative; height: 230vh; margin: 34px 0 10px; }
+.drift-sticky { position: sticky; top: 72px; height: calc(100vh - 92px); min-height: 420px; border-radius: 26px; overflow: hidden;
+  border: 1px solid transparent; background: radial-gradient(900px 420px at 50% 0%, color-mix(in srgb, var(--tc) 18%, transparent), transparent 70%) padding-box, #0f1115 padding-box, var(--edge) border-box; }
+.drift-canvas { position: absolute; inset: 0; opacity: 0; transition: opacity .8s var(--ease); }
+.drift.ready .drift-canvas { opacity: 1; }
+.drift-copy { position: absolute; left: 30px; top: 26px; max-width: 360px; pointer-events: none; }
+.drift-copy h2 { margin: 6px 0 6px; font-size: clamp(30px, 4vw, 48px); font-weight: 900; font-style: italic; text-transform: uppercase; line-height: .95; text-shadow: 0 6px 30px rgba(0,0,0,.7); }
+.drift-copy p { margin: 0; color: #c9ccd6; font-size: 15px; text-shadow: 0 2px 12px rgba(0,0,0,.8); }
+.drift-tag { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border-radius: 999px; background: rgba(0,0,0,.5); border: 1px solid rgba(255,255,255,.1); font-weight: 700; font-size: 13px; backdrop-filter: blur(6px); }
+.drift-tag .tstripe { height: 14px; }
+.drift-meter { position: absolute; right: 26px; bottom: 22px; padding: 10px 16px; border-radius: 14px; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.1); backdrop-filter: blur(8px); text-align: right; }
+.drift-meter span { display: block; font-size: 11px; color: var(--muted); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.drift-meter b { font-size: 34px; font-weight: 900; font-style: italic; font-variant-numeric: tabular-nums; color: var(--gold); }
+@media (max-width: 720px) { .drift { height: 200vh; } .drift-sticky { top: 66px; height: calc(100vh - 150px); border-radius: 18px; } .drift-copy { left: 18px; top: 18px; right: 18px; } .drift-copy p { display: none; } .drift-meter { right: 14px; bottom: 14px; } }
+
+/* ---------- Progression du scroll : petite F1 sur vibreur ---------- */
+.scroll-race { position: fixed; left: 0; right: 0; top: 0; height: 6px; z-index: 60; pointer-events: none; opacity: 0; transition: opacity .3s; --p: 0; }
+.scroll-race.on { opacity: 1; }
+.sr-kerb { position: absolute; inset: 0; background: repeating-linear-gradient(90deg, #e10600 0 24px, #f2f2f2 24px 48px); opacity: .28; }
+.sr-fill { position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--p) * 100%); background: repeating-linear-gradient(90deg, #e10600 0 24px, #f2f2f2 24px 48px); }
+.sr-car { position: absolute; top: -4px; left: calc(var(--p) * (100% - 40px)); width: 40px; height: 15px; filter: drop-shadow(0 2px 4px rgba(0,0,0,.6)); }
+
+/* ---------- Boutons : même police que les titres (Titillium Web italique grasse) ---------- */
+.btn, .slip-fab, .tab, .rd-tab, .seg button, .seg a, .chips button {
+  font-family: 'Titillium Web', system-ui, sans-serif; font-style: italic; font-weight: 900; letter-spacing: .03em;
+}
+.btn, .slip-fab { text-transform: uppercase; }
