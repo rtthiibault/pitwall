@@ -782,21 +782,65 @@ footer::before { content: ''; position: absolute; left: 10%; right: 10%; top: 0;
 .foot-logo { justify-content: center; font-size: 18px; margin-bottom: 10px; }
 @media (max-width: 560px) { .logo-word { display: none; } }
 
-/* ---------- Section « drift » pilotée par le scroll ---------- */
-.drift { position: relative; height: 230vh; margin: 34px 0 10px; }
-.drift-sticky { position: sticky; top: 72px; height: calc(100vh - 92px); min-height: 420px; border-radius: 26px; overflow: hidden;
-  border: 1px solid transparent; background: radial-gradient(900px 420px at 50% 0%, color-mix(in srgb, var(--tc) 18%, transparent), transparent 70%) padding-box, #0f1115 padding-box, var(--edge) border-box; }
-.drift-canvas { position: absolute; inset: 0; opacity: 0; transition: opacity .8s var(--ease); }
-.drift.ready .drift-canvas { opacity: 1; }
-.drift-copy { position: absolute; left: 30px; top: 26px; max-width: 360px; pointer-events: none; }
-.drift-copy h2 { margin: 6px 0 6px; font-size: clamp(30px, 4vw, 48px); font-weight: 900; font-style: italic; text-transform: uppercase; line-height: .95; text-shadow: 0 6px 30px rgba(0,0,0,.7); }
-.drift-copy p { margin: 0; color: #c9ccd6; font-size: 15px; text-shadow: 0 2px 12px rgba(0,0,0,.8); }
-.drift-tag { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border-radius: 999px; background: rgba(0,0,0,.5); border: 1px solid rgba(255,255,255,.1); font-weight: 700; font-size: 13px; backdrop-filter: blur(6px); }
-.drift-tag .tstripe { height: 14px; }
-.drift-meter { position: absolute; right: 26px; bottom: 22px; padding: 10px 16px; border-radius: 14px; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.1); backdrop-filter: blur(8px); text-align: right; }
-.drift-meter span { display: block; font-size: 11px; color: var(--muted); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
-.drift-meter b { font-size: 34px; font-weight: 900; font-style: italic; font-variant-numeric: tabular-nums; color: var(--gold); }
-@media (max-width: 720px) { .drift { height: 200vh; } .drift-sticky { top: 66px; height: calc(100vh - 150px); border-radius: 18px; } .drift-copy { left: 18px; top: 18px; right: 18px; } .drift-copy p { display: none; } .drift-meter { right: 14px; bottom: 14px; } }
+/* ---------- Circuit 3D en fond de page (la F1 drift pendant le défilement) ---------- */
+.track-bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0; transition: opacity 1.2s var(--ease); }
+.track-bg.ready { opacity: .92; }
+.track-bg::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgba(5,6,10,.82) 0%, rgba(5,6,10,.55) 40%, rgba(5,6,10,.18) 70%, rgba(5,6,10,.35) 100%),
+    linear-gradient(180deg, rgba(5,6,10,.75) 0, rgba(5,6,10,.15) 30%, rgba(5,6,10,.1) 75%, rgba(5,6,10,.6)); }
+footer#footer { position: relative; background: linear-gradient(180deg, transparent, rgba(5,6,10,.85) 30%); }
+@media (max-width: 900px) { .track-bg::after { background: linear-gradient(180deg, rgba(5,6,10,.75), rgba(5,6,10,.35) 40%, rgba(5,6,10,.55)); } }
+
+/* Télémétrie embarquée (suit la F1 du fond) */
+.tele { position: fixed; left: 18px; bottom: 18px; z-index: 40; display: flex; align-items: center; gap: 16px; padding: 9px 16px 12px 12px; border-radius: 14px;
+  background: rgba(8,9,14,.72); border: 1px solid rgba(255,255,255,.09); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  font-style: italic; pointer-events: none; opacity: 0; transform: translateY(14px); transition: opacity .6s var(--ease), transform .6s var(--ease), box-shadow .3s; overflow: hidden; }
+.tele.ready { opacity: 1; transform: none; }
+.tele small { display: block; font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); font-weight: 700; font-style: normal; }
+.tele b { font-size: 20px; font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1; }
+.tele .tele-spd { display: inline-block; min-width: 2.2em; font-size: 26px; }
+.tele-stripe { width: 5px; align-self: stretch; border-radius: 3px; background: var(--tc, var(--red)); transform: skewX(-14deg); }
+.tele-who b { font-size: 15px; letter-spacing: .04em; }
+.tele-sec { font-size: 13px !important; padding: 3px 8px; border-radius: 6px; background: #a259ff; color: #fff; }
+.tele-sec[data-s="2"] { background: #2ee59d; color: #032; } .tele-sec[data-s="3"] { background: #ffd400; color: #221; }
+.tele-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(255,255,255,.06); }
+.tele-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #2ee59d, #ffd400 60%, #e10600); transition: width .15s linear; }
+.tele.hot { box-shadow: 0 0 0 1px rgba(255,170,40,.35), 0 0 30px -6px rgba(255,140,0,.5); }
+.tele.hot #teleDrift { color: var(--gold); }
+@media (max-width: 900px) { .tele { left: 10px; bottom: 82px; gap: 10px; padding: 5px 10px 8px 8px; opacity: .9; } .tele.ready { opacity: .9; } .tele-who, .tele > div:nth-of-type(3) { display: none; } .tele b { font-size: 15px; } .tele .tele-spd { font-size: 19px; } }
+
+/* Drapeau à damier entre les onglets */
+.flag-wipe { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 400; pointer-events: none; display: none; }
+.flag-wipe.on { display: block; }
+.fx-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 390; pointer-events: none; }
+
+/* Lignes de vitesse au défilement rapide */
+.speed-lines { position: fixed; inset: -10%; z-index: 30; pointer-events: none; opacity: 0;
+  background: repeating-conic-gradient(from 0deg at 50% 50%, transparent 0 2.2deg, rgba(255,255,255,.16) 2.2deg 2.5deg, transparent 2.5deg 5.3deg, rgba(255,255,255,.07) 5.3deg 5.5deg);
+  -webkit-mask-image: radial-gradient(closest-side, transparent 58%, #000 100%); mask-image: radial-gradient(closest-side, transparent 58%, #000 100%);
+  animation: warp 1.2s linear infinite; }
+@keyframes warp { to { transform: rotate(5.5deg) scale(1.04); } }
+
+/* Apparitions en cascade */
+.rv { opacity: 0; transform: translate3d(0, 26px, 0) skewX(-3deg); }
+.rv.in { opacity: 1; transform: none; transition: opacity .55s var(--ease) var(--rd, 0ms), transform .7s var(--ease) var(--rd, 0ms); }
+.section-h.rv.in h2::before { animation: stripeIn .6s var(--ease) both; }
+.section-h.rv.in h2 { background-image: linear-gradient(100deg, #fff 0 40%, #ff4a3d 48%, #ffd400 52%, #c9ccd8 60%); background-size: 260% 100%; animation: sweepTxt 1.1s var(--ease) both; }
+@keyframes stripeIn { from { transform: skewX(-18deg) scaleY(0); } }
+@keyframes sweepTxt { from { background-position: 100% 0; } to { background-position: 0 0; } }
+
+/* Navigation : vibreur qui glisse sous l'onglet actif */
+.nav { position: relative; }
+.nav a.active::after { display: none; }
+.nav-ind { position: absolute; left: 0; bottom: -3px; height: 4px; border-radius: 2px; pointer-events: none; transition: transform .45s cubic-bezier(.6,-.2,.25,1.3), width .45s var(--ease), opacity .3s;
+  background: repeating-linear-gradient(90deg, #e10600 0 7px, #fff 7px 14px); box-shadow: 0 0 12px rgba(225,6,0,.6); animation: kerbRun .5s linear infinite; }
+@keyframes kerbRun { to { background-position: 14px 0; } }
+.nav a { transition: color .2s, transform .2s; }
+.nav a:hover { transform: translateY(-1px) skewX(-6deg); }
+
+/* Panneaux un peu plus transparents : on devine la F1 qui glisse derrière */
+:root { --panel: rgba(14, 15, 22, .62); }
+@media (prefers-reduced-motion: reduce) { .rv { opacity: 1; transform: none; } .speed-lines, .tele { display: none; } }
 
 /* ---------- Progression du scroll : petite F1 sur vibreur ---------- */
 .scroll-race { position: fixed; left: 0; right: 0; top: 0; height: 6px; z-index: 60; pointer-events: none; opacity: 0; transition: opacity .3s; --p: 0; }

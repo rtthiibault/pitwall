@@ -171,6 +171,7 @@ Ouvrez ensuite http://localhost:8000.
 | `js/markets.js` | Définition des marchés et règles de règlement |
 | `js/store.js` | Portefeuille, paris, succès (localStorage) |
 | `js/app.js` | Interface : pages, ticket, graphiques, animations |
+| `js/fx.js` | Effets course auto : drapeau à damier entre les onglets, étincelles au clic, lignes de vitesse, apparitions en cascade, vibreur de navigation |
 
 Pour ajuster le modèle : `TEAM_PRIOR` (niveau supposé des écuries en début de saison) se trouve dans `data.js`, et les exposants et l'effet de la grille dans `model.js`. La marge du « bookmaker » se règle par marché dans `markets.js` (`margin`).
 

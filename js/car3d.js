@@ -528,121 +528,165 @@ function mount(el, teamId, { autoRotate = true, view = '34', speed = 1.2, focus 
 /* ---------- Scène « drift » pilotée par le scroll ----------
    Un virage vu de haut : la monoplace entre en glisse (angle de dérive + contre-braquage),
    fume des pneus arrière et laisse des traces de gomme. getP() renvoie la progression 0 -> 1. */
-function mountDrift(el, teamId, getP) {
+/* ---------- Circuit de fond : la F1 enchaîne les virages en glisse au fil du défilement de la page ---------- */
+function mountTrack(el, teamId, getP, { onTel } = {}) {
   const canvas = document.createElement('canvas');
   canvas.className = 'car3d-canvas';
   el.innerHTML = ''; el.appendChild(canvas);
   const size = () => [Math.max(240, el.clientWidth), Math.max(200, el.clientHeight)];
   let [w, h] = size();
   const r = newRenderer(canvas, w, h);
-  r.setPixelRatio(Math.min(1.75, window.devicePixelRatio || 1)); r.setSize(w, h, false);
+  r.setPixelRatio(Math.min(1.5, window.devicePixelRatio || 1)); r.setSize(w, h, false);
   r.setClearColor(0x000000, 0);
   const { scene, car } = makeScene(r, teamId, { ground: false });
-  scene.fog = new THREE.Fog(0x0f1115, 18, 46); // le sol se fond dans le fond de la section
-  // le plateau d'ombre doit suivre la voiture : on ajoute un sol d'ombre large
-  const shadowFloor = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.ShadowMaterial({ opacity: 0.38 }));
+  scene.fog = new THREE.Fog(0x05060a, 16, 44);
+  const shadowFloor = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.ShadowMaterial({ opacity: 0.4 }));
   shadowFloor.rotation.x = -Math.PI / 2; shadowFloor.position.y = 0.004; shadowFloor.receiveShadow = true; scene.add(shadowFloor);
   const key = scene.children.find((o) => o.isDirectionalLight && o.castShadow);
-  if (key) { Object.assign(key.shadow.camera, { left: -8, right: 8, top: 8, bottom: -8 }); key.shadow.camera.updateProjectionMatrix(); scene.add(key.target); }
+  if (key) { Object.assign(key.shadow.camera, { left: -8, right: 8, top: 8, bottom: -8 }); key.shadow.mapSize.set(1024, 1024); key.shadow.camera.updateProjectionMatrix(); scene.add(key.target); }
 
-  // tracé du virage (épingle large)
+  // tracé : une succession de virages gauche/droite, une épingle et une chicane
   const curve = new THREE.CatmullRomCurve3([
-    new THREE.Vector3(-34, 0, 14), new THREE.Vector3(-14, 0, 12), new THREE.Vector3(2, 0, 7),
-    new THREE.Vector3(10, 0, -3), new THREE.Vector3(7, 0, -14), new THREE.Vector3(-6, 0, -20), new THREE.Vector3(-28, 0, -22),
-  ], false, 'catmullrom', 0.5);
-  const N = 240, HW = 6.2;
-  const pos = [], idx = [], uv = [];
+    [-40, 12], [-18, 12], [-2, 9], [8, 0], [6, -12], [-6, -20], [-14, -32], [-8, -46], [8, -52], [22, -60], [24, -74],
+    [12, -84], [-6, -86], [-22, -92], [-30, -106], [-22, -120], [-4, -124], [8, -134], [4, -148], [-10, -156], [-30, -160], [-46, -168],
+  ].map(([x, z]) => new THREE.Vector3(x, 0, z)), false, 'catmullrom', 0.5);
+  const N = 1100, HW = 6.2;
   const pts = curve.getSpacedPoints(N), up = new THREE.Vector3(0, 1, 0);
-  const side = (i) => { const t = curve.getTangentAt(i / N); return new THREE.Vector3().crossVectors(up, t).normalize(); };
+  const tans = pts.map((_, i) => curve.getTangentAt(i / N));
+  const side = (i) => new THREE.Vector3().crossVectors(up, tans[i]).normalize();
+  const sides = pts.map((_, i) => side(i));
+  const head = (t) => Math.atan2(-t.z, t.x);
+  const turnAt = (i) => { const j = Math.min(N, i + 8); let d = head(tans[j]) - head(tans[i]); return Math.atan2(Math.sin(d), Math.cos(d)); };
+  // asphalte
+  const pos = [], idx = [], uv = [];
   for (let i = 0; i <= N; i++) {
-    const n = side(i), p = pts[i];
+    const n = sides[i], p = pts[i];
     pos.push(p.x + n.x * HW, 0.001, p.z + n.z * HW, p.x - n.x * HW, 0.001, p.z - n.z * HW);
     uv.push(0, i / 8, 1, i / 8);
     if (i < N) { const a = i * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
   }
   const road = new THREE.BufferGeometry();
   road.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); road.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); road.setIndex(idx); road.computeVertexNormals();
-  // asphalte (texture de grain procédurale)
   const tc = document.createElement('canvas'); tc.width = tc.height = 256;
-  const tx = tc.getContext('2d'); tx.fillStyle = '#3a3d44'; tx.fillRect(0, 0, 256, 256);
-  for (let i = 0; i < 9000; i++) { const g = 30 + Math.random() * 40; tx.fillStyle = `rgba(${g},${g},${g + 4},${0.35 + Math.random() * 0.4})`; tx.fillRect(Math.random() * 256, Math.random() * 256, 1.5, 1.5); }
+  const tx = tc.getContext('2d'); tx.fillStyle = '#34373e'; tx.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 9000; i++) { const g = 28 + Math.random() * 40; tx.fillStyle = `rgba(${g},${g},${g + 4},${0.35 + Math.random() * 0.4})`; tx.fillRect(Math.random() * 256, Math.random() * 256, 1.5, 1.5); }
   const asphaltTex = new THREE.CanvasTexture(tc); asphaltTex.wrapS = asphaltTex.wrapT = THREE.RepeatWrapping; asphaltTex.colorSpace = THREE.SRGBColorSpace;
   const roadMesh = new THREE.Mesh(road, new THREE.MeshStandardMaterial({ map: asphaltTex, roughness: 0.92, metalness: 0, side: THREE.DoubleSide }));
   roadMesh.receiveShadow = true; scene.add(roadMesh);
-  // lignes blanches de bord et vibreurs rouge/blanc à la corde et à l'extérieur
-  const strip = (offset, width, y, from, to, mat) => {
-    const P = [], I = [];
+  // bandes (lignes, vibreurs, bacs à graviers) regroupées par matériau : peu d'appels de dessin
+  const bufs = new Map();
+  const strip = (mat, offset, width, y, from, to) => {
+    if (!bufs.has(mat)) bufs.set(mat, { P: [], I: [] });
+    const b = bufs.get(mat), base = b.P.length / 3;
     for (let i = from; i <= to; i++) {
-      const n = side(i), p = pts[i];
-      P.push(p.x + n.x * (offset + width / 2), y, p.z + n.z * (offset + width / 2), p.x + n.x * (offset - width / 2), y, p.z + n.z * (offset - width / 2));
-      if (i < to) { const a = (i - from) * 2; I.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
+      const n = sides[i], p = pts[i];
+      b.P.push(p.x + n.x * (offset + width / 2), y, p.z + n.z * (offset + width / 2), p.x + n.x * (offset - width / 2), y, p.z + n.z * (offset - width / 2));
+      if (i < to) { const a = base + (i - from) * 2; b.I.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
     }
-    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); g.setIndex(I); g.computeVertexNormals();
-    const m = new THREE.Mesh(g, mat); m.receiveShadow = true; scene.add(m);
   };
-  const white = new THREE.MeshStandardMaterial({ color: 0xe9e9ea, roughness: 0.7, side: THREE.DoubleSide }), red = new THREE.MeshStandardMaterial({ color: 0xd8191f, roughness: 0.6, side: THREE.DoubleSide });
-  strip(HW - 0.35, 0.3, 0.003, 0, N, white); strip(-HW + 0.35, 0.3, 0.003, 0, N, white);
-  const kerb = (offset, from, to) => { for (let i = from; i < to; i += 3) strip(offset, 1.3, 0.006, i, Math.min(i + 3, to), ((i - from) / 3) % 2 ? white : red); };
-  kerb(-HW - 0.65, 70, 170); kerb(HW + 0.65, 40, 90); kerb(HW + 0.65, 150, 200);
-  // herbe autour du circuit (assombrie, pour rester dans la palette du site)
-  const grass = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), new THREE.MeshStandardMaterial({ color: 0x0c1410, roughness: 1 }));
-  grass.rotation.x = -Math.PI / 2; grass.position.y = -0.01; grass.receiveShadow = true; scene.add(grass);
+  const white = new THREE.MeshStandardMaterial({ color: 0xe9e9ea, roughness: 0.7, side: THREE.DoubleSide });
+  const red = new THREE.MeshStandardMaterial({ color: 0xd8191f, roughness: 0.6, side: THREE.DoubleSide });
+  const gravel = new THREE.MeshStandardMaterial({ color: 0x3b3428, roughness: 1, side: THREE.DoubleSide });
+  strip(white, HW - 0.35, 0.3, 0.003, 0, N); strip(white, -HW + 0.35, 0.3, 0.003, 0, N);
+  // vibreurs à la corde et à la sortie de chaque virage, graviers à l'extérieur
+  const runs = []; let cur = null;
+  for (let i = 0; i < N - 8; i++) {
+    const tr = turnAt(i), s = Math.sign(tr);
+    if (Math.abs(tr) > 0.09) { if (!cur || cur.s !== s) { cur = { s, a: i, b: i }; runs.push(cur); } else cur.b = i; } else cur = null;
+  }
+  runs.filter((u) => u.b - u.a > 12).forEach((u) => {
+    const inner = u.s * (HW + 0.65), outer = -u.s * (HW + 0.65);
+    const a = Math.max(0, u.a), b = Math.min(N, u.b + 8);
+    for (let i = a; i < b; i += 3) strip(((i - a) / 3) % 2 ? white : red, inner, 1.3, 0.006, i, Math.min(i + 3, b));
+    const oa = Math.min(N - 1, u.a + Math.round((u.b - u.a) * 0.55)), ob = Math.min(N, u.b + 34);
+    for (let i = oa; i < ob; i += 3) strip(((i - oa) / 3) % 2 ? white : red, outer, 1.3, 0.006, i, Math.min(i + 3, ob));
+    strip(gravel, -u.s * (HW + 5.2), 7.4, 0.002, Math.max(0, u.a - 10), Math.min(N, u.b + 40));
+  });
+  // grille de départ : ligne à damier et emplacements
+  const sl = 72;
+  for (let k = 0; k < 10; k++) strip(k % 2 ? white : new THREE.MeshBasicMaterial({ color: 0x111111 }), -HW + (k + 0.5) * (2 * HW / 10), 2 * HW / 10, 0.004, sl, sl + 2);
+  for (let k = 0; k < 4; k++) strip(white, (k % 2 ? 1 : -1) * 2.6, 2.2, 0.004, sl - 12 - k * 12, sl - 11 - k * 12);
+  bufs.forEach((b, mat) => {
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(b.P, 3)); g.setIndex(b.I); g.computeVertexNormals();
+    const m = new THREE.Mesh(g, mat); m.receiveShadow = true; scene.add(m);
+  });
+  const grass = new THREE.Mesh(new THREE.PlaneGeometry(800, 800), new THREE.MeshStandardMaterial({ color: 0x0b120e, roughness: 1 }));
+  grass.rotation.x = -Math.PI / 2; grass.position.set(0, -0.01, -80); grass.receiveShadow = true; scene.add(grass);
+  // murs de pneus derrière les graviers
+  const tyreMat = new THREE.MeshStandardMaterial({ color: 0x141518, roughness: 0.8 });
+  const tyreGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.55, 12);
+  const tyrePos = [];
+  runs.filter((u) => u.b - u.a > 12).forEach((u) => {
+    for (let i = Math.max(0, u.a - 6); i < Math.min(N, u.b + 36); i += 2) {
+      const n = sides[i], p = pts[i], o = -u.s * (HW + 9.6); tyrePos.push([p.x + n.x * o, p.z + n.z * o]);
+    }
+  });
+  const tyres = new THREE.InstancedMesh(tyreGeo, tyreMat, tyrePos.length), mx = new THREE.Matrix4();
+  tyrePos.forEach(([x, z], k) => tyres.setMatrixAt(k, mx.makeTranslation(x, 0.28, z)));
+  scene.add(tyres);
 
   // fumée des pneus
   const sc = document.createElement('canvas'); sc.width = sc.height = 64;
   const sx = sc.getContext('2d'); const sg = sx.createRadialGradient(32, 32, 2, 32, 32, 31);
   sg.addColorStop(0, 'rgba(235,235,240,.55)'); sg.addColorStop(1, 'rgba(235,235,240,0)'); sx.fillStyle = sg; sx.fillRect(0, 0, 64, 64);
   const smokeTex = new THREE.CanvasTexture(sc);
-  const smoke = Array.from({ length: 140 }, () => {
+  const smoke = Array.from({ length: 160 }, () => {
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: smokeTex, transparent: true, depthWrite: false, opacity: 0 }));
     sp.visible = false; sp.userData = { life: 0 }; scene.add(sp); return sp;
   });
-  let smokeI = 0;
-  // traces de gomme (marques sombres laissées par les roues arrière)
-  const skidMat = new THREE.MeshBasicMaterial({ color: 0x08080a, transparent: true, opacity: 0.4, depthWrite: false });
+  let smokeI = 0, smokeAlive = 0;
+  const skidMat = new THREE.MeshBasicMaterial({ color: 0x050506, transparent: true, opacity: 0.45, depthWrite: false });
   const skidGeo = new THREE.PlaneGeometry(0.34, 0.26); skidGeo.rotateX(-Math.PI / 2);
-  const skids = Array.from({ length: 1400 }, () => { const m = new THREE.Mesh(skidGeo, skidMat); m.visible = false; m.position.y = 0.008; scene.add(m); return m; });
+  const skids = Array.from({ length: 2400 }, () => { const m = new THREE.Mesh(skidGeo, skidMat); m.visible = false; m.position.y = 0.008; scene.add(m); return m; });
   let skidI = 0;
   const lastSkid = [null, null];
 
   scene.add(car);
-  car.position.set(0, 0, 0);
-  const cam = new THREE.PerspectiveCamera(38, w / h, 0.3, 400);
-  let alive = true, raf = 0, visible = true, sp = 0, prevP = -1, prevT = performance.now();
-  const io = 'IntersectionObserver' in window ? new IntersectionObserver((e) => { visible = e[0].isIntersecting; }) : null;
-  if (io) io.observe(el);
-  const ro = 'ResizeObserver' in window ? new ResizeObserver(() => { [w, h] = size(); r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }) : null;
+  const cam = new THREE.PerspectiveCamera(36, w / h, 0.3, 400);
+  const frame = () => {
+    cam.aspect = w / h;
+    // grand écran : la voiture glisse dans le tiers droit, à côté du contenu
+    if (w / h > 1.25) cam.setViewOffset(w, h, -w * 0.17, -h * 0.05, w, h); else cam.setViewOffset(w, h, 0, -h * 0.08, w, h);
+    cam.updateProjectionMatrix();
+  };
+  frame();
+  let alive = true, raf = 0, sp = -1, prevP = -1, prevT = performance.now(), dirty = true, vel = 0, drift = 0;
+  const ro = 'ResizeObserver' in window ? new ResizeObserver(() => { [w, h] = size(); r.setSize(w, h, false); frame(); dirty = true; }) : null;
   if (ro) ro.observe(el);
-  const camPos = new THREE.Vector3(), camLook = new THREE.Vector3();
-  const tmp = new THREE.Vector3();
+  const camPos = new THREE.Vector3(), camLook = new THREE.Vector3(), tmp = new THREE.Vector3();
   const rearL = new THREE.Vector3(-1.7, 0.02, 0.78), rearR = new THREE.Vector3(-1.7, 0.02, -0.78);
   const loop = () => {
     if (!alive) return;
     raf = requestAnimationFrame(loop);
     const now = performance.now(), dt = Math.min(0.05, (now - prevT) / 1000); prevT = now;
-    if (!visible || document.hidden) return;
+    if (document.hidden) return;
     const target = Math.max(0, Math.min(1, getP()));
-    sp += (target - sp) * Math.min(1, dt * 6);               // inertie
-    const t = 0.03 + sp * 0.94;
+    if (sp < 0) sp = target;
+    const moving = Math.abs(target - sp) > 2e-5;
+    if (!moving && !smokeAlive && !dirty && Math.abs(vel) < 0.5) return;
+    dirty = false;
+    const step = (target - sp) * Math.min(1, dt * 5);
+    sp += step;
+    const t = 0.052 + sp * 0.94;
+    // vitesse « affichée » : suit le défilement (unités de circuit / s)
+    vel += ((step / Math.max(dt, 1e-3)) * 300 - vel) * Math.min(1, dt * 4);
     const p = curve.getPointAt(t), tan = curve.getTangentAt(t);
-    const heading = Math.atan2(-tan.z, tan.x);
-    // courbure locale -> intensité du drift
-    const t2 = Math.min(1, t + 0.02), tan2 = curve.getTangentAt(t2);
-    let turn = Math.atan2(-tan2.z, tan2.x) - heading; turn = Math.atan2(Math.sin(turn), Math.cos(turn));
-    const drift = Math.max(-0.75, Math.min(0.75, turn * 9));
+    const heading = head(tan);
+    const tan2 = curve.getTangentAt(Math.min(1, t + 0.008));
+    let turn = head(tan2) - heading; turn = Math.atan2(Math.sin(turn), Math.cos(turn));
+    // la glisse n'existe qu'en mouvement ; marche arrière = glisse inversée, plus douce
+    const goal = Math.max(-0.8, Math.min(0.8, turn * 7)) * Math.min(1, Math.abs(vel) / 40) * (vel < 0 ? -0.5 : 1);
+    drift += (goal - drift) * Math.min(1, dt * 5);
     car.position.set(p.x, 0, p.z);
     car.rotation.y = heading + drift;
-    // caméra : 3/4 haut, légèrement à l'extérieur du virage, qui suit la voiture
-    const kz = Math.max(1, Math.min(2.2, 1.5 / (w / h))); // écran étroit : caméra plus éloignée
-    camPos.set(p.x + (-tan.x * 6 + 5) * kz, 6.2 * kz, p.z + (-tan.z * 6 + 6) * kz);
-    if (prevP < 0) cam.position.copy(camPos); else cam.position.lerp(camPos, Math.min(1, dt * 3));
+    const kz = Math.max(1, Math.min(2.1, 1.45 / (w / h)));
+    camPos.set(p.x + (-tan.x * 5.6 + 3.9) * kz, 4.7 * kz, p.z + (-tan.z * 5.6 + 4.9) * kz);
+    if (prevP < 0) cam.position.copy(camPos); else cam.position.lerp(camPos, Math.min(1, dt * 9));
     camLook.set(p.x + tan.x * 3, 0.4, p.z + tan.z * 3);
     cam.lookAt(camLook);
     if (key) { key.position.set(p.x + 3, 9, p.z + 4); key.target.position.set(p.x, 0, p.z); }
-    // fumée et gomme quand la voiture glisse
-    const speed = Math.abs(target - prevP) / Math.max(dt, 1e-3);
-    if (Math.abs(drift) <= 0.18) { lastSkid[0] = lastSkid[1] = null; }
-    if (prevP >= 0 && Math.abs(drift) > 0.18 && speed > 0.02) {
+    if (Math.abs(drift) <= 0.16) { lastSkid[0] = lastSkid[1] = null; }
+    if (prevP >= 0 && Math.abs(drift) > 0.16 && Math.abs(vel) > 25) {
       car.updateMatrixWorld();
       [rearL, rearR].forEach((wpt, k) => {
         tmp.copy(wpt).applyMatrix4(car.matrixWorld);
@@ -652,7 +696,6 @@ function mountDrift(el, teamId, getP) {
         const last = lastSkid[k];
         if (!last) lastSkid[k] = tmp.clone();
         else if (last.distanceTo(tmp) > 0.12) {
-          // trace continue : un segment étiré entre la position précédente et l'actuelle
           const d = last.distanceTo(tmp);
           if (d < 4) {
             const m = skids[skidI++ % skids.length];
@@ -664,33 +707,36 @@ function mountDrift(el, teamId, getP) {
         }
       });
     }
+    smokeAlive = 0;
     smoke.forEach((s) => {
       if (!s.visible) return;
       const d = s.userData; d.life -= dt * 0.7;
       if (d.life <= 0) { s.visible = false; return; }
+      smokeAlive++;
       const sc2 = 1.2 + (1 - d.life) * 4.5; s.scale.set(sc2, sc2, 1);
       s.position.y += dt * d.v; s.material.opacity = d.life * 0.55;
     });
     prevP = target;
     r.render(scene, cam);
+    if (onTel) onTel({ speed: Math.abs(vel), drift: drift * 57.3, p: sp });
   };
   loop();
-  const api = {
+  return {
+    // téléportation (pendant le drapeau à damier) : pas de marche arrière visible
+    jump() { sp = -1; prevP = -1; vel = 0; drift = 0; lastSkid[0] = lastSkid[1] = null; dirty = true; },
     dispose() {
-      alive = false; cancelAnimationFrame(raf); if (io) io.disconnect(); if (ro) ro.disconnect();
+      alive = false; cancelAnimationFrame(raf); if (ro) ro.disconnect();
       scene.traverse((o) => { if (o.material && o.material.dispose) o.material.dispose(); if (o.geometry && o.geometry !== skidGeo && !PARTS.some((pp) => pp.geometry === o.geometry)) o.geometry.dispose(); });
-      r.dispose(); r.forceContextLoss && r.forceContextLoss(); viewers.delete(api);
+      r.dispose(); r.forceContextLoss && r.forceContextLoss();
     },
   };
-  viewers.add(api);
-  return api;
 }
 function disposeAll() { [...viewers].forEach((v) => v.dispose()); }
 function supported() {
   try { const c = document.createElement('canvas'); return !!(window.WebGLRenderingContext && (c.getContext('webgl2') || c.getContext('webgl'))); } catch (e) { return false; }
 }
 
-F1.car3d = { snapshot, mount, mountDrift, disposeAll, supported: supported(), ready: false };
+F1.car3d = { snapshot, mount, mountTrack, disposeAll, supported: supported(), ready: false };
 if (F1.car3d.supported) {
   loadModel()
     .then(() => { F1.car3d.ready = true; window.dispatchEvent(new Event('car3d-ready')); })

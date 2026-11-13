@@ -49,6 +49,7 @@
     F1.social.init().then((so) => { if (so.incoming.length) toast('👋', `${so.incoming.length} demande${so.incoming.length > 1 ? 's' : ''} d'ami en attente`, 'win', 5000); });
     updateWallet();
     route();
+    mountTrackBg();
     renderSlip();
     renderFooter();
     F1.data.loadMeta().then((m) => { S.meta = m; renderFooter(); });
@@ -137,6 +138,7 @@
   function route() {
     const parts = (location.hash.replace(/^#\/?/, '') || '').split('/');
     const r = parts[0] || '';
+    if (lastTop === null) lastTop = r;
     S.sel.clear();
     $$('[data-r]').forEach((a) => a.classList.toggle('active', a.dataset.r === (r === 'gp' ? 'calendrier' : r)));
     $('#friendsBtn').classList.toggle('active', r === 'amis');
@@ -158,9 +160,22 @@
     app.classList.remove('fade-in'); void app.offsetWidth; app.classList.add('fade-in');
     afterRender(r, parts);
     F1.visuals.hydrate(app);
+    if (F1.fx) {
+      F1.fx.navIndicator();
+      const path = location.hash.replace(/^#\/?/, '');
+      if (path !== lastPath) F1.fx.reveal(app);
+      lastPath = path;
+    }
     tick();
   }
-  window.addEventListener('hashchange', () => { route(); window.scrollTo({ top: 0 }); });
+  let lastPath = null, lastTop = null;
+  // changement d'onglet : un drapeau à damier balaie l'écran, la page change pendant qu'il la couvre
+  window.addEventListener('hashchange', () => {
+    const top = (location.hash.replace(/^#\/?/, '') || '').split('/')[0];
+    const go = () => { route(); window.scrollTo({ top: 0, behavior: 'instant' }); if (trackBg) trackBg.jump(); };
+    if (F1.fx && lastTop !== null && top !== lastTop) F1.fx.flagWipe(go); else go();
+    lastTop = top;
+  });
   // Barre de progression du scroll : une petite F1 roule sur un vibreur
   let scrollRaf = 0;
   function onScroll() {
@@ -170,15 +185,12 @@
       const max = document.documentElement.scrollHeight - innerHeight;
       const p = max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 0;
       const bar = $('#scrollRace'); if (bar) { bar.style.setProperty('--p', p); bar.classList.toggle('on', max > 200 && scrollY > 40); }
-      const zone = $('#driftZone'), out = $('#driftAngle');
-      if (zone && out) { const r = zone.getBoundingClientRect(); const q = Math.min(1, Math.max(0, -r.top / Math.max(1, r.height - innerHeight))); out.textContent = Math.round(Math.sin(q * Math.PI) * 38) + '°'; }
     });
   }
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll);
 
   function afterRender(r, parts) {
-    if (r === '') mountDrift();
     if (r === 'classements') mountChart();
     if (r === 'gp' && S.gpTab === 'quali') {
       const race = S.season.races.find((x) => x.round === +parts[1]);
@@ -291,7 +303,6 @@
     if (nx && F1.store.canClaim(s, nx)) h += `<div class="notice" style="margin-top:18px">🎁 Prime du week-end disponible : <b>+${F1.store.WEEKLY} jetons</b> pour le ${esc(nx.nameFr)}. <span class="sp"></span><button class="btn sm gold" data-action="claim">Récupérer</button></div>`;
     if (nx && F1.store.canRescue(s, nx)) h += `<div class="notice red" style="margin-top:18px">💸 Réservoir vide ? Le stand vous ravitaille : <b>+${F1.store.RESCUE} jetons</b>. <span class="sp"></span><button class="btn sm" data-action="rescue">Ravitailler</button></div>`;
 
-    h += driftSection();
     if (S.markets.length) {
       const win = S.markets.find((m) => m.kind === 'win');
       h += `<section class="section"><div class="section-h"><h2>Favoris pour la victoire</h2><a class="link" href="#/paris">Tous les marchés →</a></div><div class="grid g4">${win.selections.slice(0, 4).map((x, i) => favCard(x, win, i)).join('')}</div></section>`;
@@ -361,27 +372,35 @@
     return `<a class="card" href="#/classements"><div class="market-h"><div><h3>Championnat pilotes</h3><div class="sub">Après ${S.season.doneCount} manche${S.season.doneCount > 1 ? 's' : ''}</div></div><span class="chip">Complet →</span></div>
       <table class="tbl" style="margin-top:10px"><tbody>${ds.map((d, i) => `<tr><td class="pos">${i + 1}</td><td>${drvCell(d.id)}</td><td style="width:35%"><div class="ptsbar"><i style="width:${(d.points / max) * 100}%;background:${tcol(d.teamId)}"></i></div></td><td class="r num"><b>${fmt(d.points)}</b></td></tr>`).join('')}</tbody></table></a>`;
   }
-  /* ---------- Section « drift » : la F1 du favori glisse dans un virage au fil du scroll ---------- */
-  function driftSection() {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return '';
+  /* ---------- Circuit en fond de page : la F1 du favori enchaîne les virages en glisse au fil du défilement ---------- */
+  let trackBg = null;
+  function mountTrackBg() {
+    if (trackBg || (F1.fx && F1.fx.reduce)) return;
+    const el = $('#trackBg'); if (!el) return;
     const w = S.markets.find((m) => m.kind === 'win');
     const fav = w && w.selections[0] && drv(w.selections[0].driverId);
     const teamId = fav ? fav.teamId : (S.season.entrants[0] && drv(S.season.entrants[0]).teamId) || 'mclaren';
     const t = team(teamId);
-    return `<section class="drift" id="driftZone" style="--tc:${t.color}"><div class="drift-sticky">
-      <div class="drift-canvas" data-team="${esc(teamId)}"></div>
-      <div class="drift-copy"><div class="drift-tag"><span class="tstripe" style="background:${t.color}"></span>${esc(t.short)}${fav ? ` · ${esc(fav.family)}` : ''}</div>
-        <h2>Dans le virage</h2><p>Faites défiler : la monoplace du favori entre en glisse, contre-braque et ressort pleine charge.</p></div>
-      <div class="drift-meter"><span>Angle de dérive</span><b id="driftAngle">0°</b></div></div></section>`;
-  }
-  let driftViewer = null;
-  function mountDrift() {
-    const zone = $('#driftZone'); if (!zone) return;
-    const el = $('.drift-canvas', zone);
     const go = () => {
-      if (!el.isConnected || !F1.car3d || !F1.car3d.supported || !F1.car3d.ready) return;
-      const getP = () => { const r = zone.getBoundingClientRect(); return -r.top / Math.max(1, r.height - innerHeight); };
-      try { driftViewer = F1.car3d.mountDrift(el, el.dataset.team, getP); zone.classList.add('ready'); } catch (e) { zone.remove(); }
+      if (trackBg || !F1.car3d || !F1.car3d.supported || !F1.car3d.ready) return;
+      const getP = () => { const max = document.documentElement.scrollHeight - innerHeight; return max > 0 ? scrollY / max : 0; };
+      const tele = $('#tele'), spd = $('#teleSpd'), gear = $('#teleGear'), dr = $('#teleDrift'), thr = $('#teleThr'), sec = $('#teleSec');
+      tele.style.setProperty('--tc', t.color);
+      $('#teleWho').textContent = fav ? fav.family.toUpperCase() : t.short.toUpperCase();
+      let shown = -1;
+      const onTel = ({ speed, drift, p }) => {
+        const kmh = Math.min(346, Math.round(speed * 3.2));
+        if (kmh === shown && Math.abs(drift) < 0.5) return;
+        shown = kmh;
+        spd.textContent = kmh;
+        gear.textContent = kmh < 4 ? 'N' : Math.min(8, 1 + Math.floor(kmh / 44));
+        dr.textContent = Math.abs(Math.round(drift)) + '°';
+        thr.style.width = Math.min(100, kmh / 3.4) + '%';
+        const s = p < 1 / 3 ? 1 : p < 2 / 3 ? 2 : 3;
+        if (sec.dataset.s !== String(s)) { sec.dataset.s = s; sec.textContent = 'S' + s; }
+        tele.classList.toggle('hot', Math.abs(drift) > 12);
+      };
+      try { trackBg = F1.car3d.mountTrack(el, teamId, getP, { onTel }); el.classList.add('ready'); tele.classList.add('ready'); } catch (e) { console.warn(e); }
     };
     if (F1.car3d && F1.car3d.ready) go(); else window.addEventListener('car3d-ready', go, { once: true });
   }
