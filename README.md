@@ -33,8 +33,13 @@ Site de paris **à jetons virtuels** sur la Formule 1. Il est 100 % statique (HT
 - **Châssis** : de 60 à 250 PC, selon le niveau réel de l'écurie. Chacun a son profil de Vitesse de pointe, Appui aérodynamique et Fiabilité (`TEAM_PROFILE`).
 - **Transferts** : un pilote ou un châssis se revend à 70 % de sa valeur. Changer de châssis remet la R&D à zéro, mais rembourse 50 % de l'argent investi.
 - **R&D pièce par pièce** (onglet R&D, inspiré des jeux F1) :
-  - **4 catégories** : Aérodynamique, Châssis, Chaîne motrice, Durabilité.
-  - **32 pièces en 8 branches** (`RD_PARTS` dans `js/manager.js`) : aileron avant, volet Gurney, fond plat, diffuseur, rétroviseurs, jantes, aileron arrière actif, suspensions, freins, V6 turbo, MGU-K, batterie, radiateurs…
+  - **5 catégories** : Aérodynamique, Châssis, Chaîne motrice, Durabilité, Stratégie & équipe.
+  - **Niveaux Mk I → Mk V** : chaque pièce se développe 5 fois (190 améliorations au total). Les gains diminuent et les coûts augmentent (×1,55 par niveau).
+  - **Stratégie & équipe** : 6 pièces qui agissent pendant la course : embrayage de départ, gestion des pneus (usure en fin de relais), mode dépassement (5 derniers tours), équipe de stand (arrêts plus courts, moins d'arrêts ratés), ingénieur de course (coup stratégique sous voiture de sécurité), simulateur pilote.
+  - **Packages** : quand toutes les pièces d'une branche atteignent un niveau, la branche donne un bonus supplémentaire.
+  - **Pari soufflerie** : développer à moitié prix avec 55 % de réussite ; chaque échec augmente les chances suivantes (+12 points, jusqu'à 85 %).
+  - **Objectifs du jour** : 3 défis tirés chaque jour (podium, places gagnées, meilleur tour, R&D…) qui rapportent des PitCoins.
+  - **38 pièces en 10 branches** (`RD_PARTS` dans `js/manager.js`) : aileron avant, volet Gurney, fond plat, diffuseur, rétroviseurs, jantes, aileron arrière actif, suspensions, freins, V6 turbo, MGU-K, batterie, radiateurs…
   - **Déblocage** : les pièces d'une branche se débloquent dans l'ordre. Au-delà de la prochaine pièce, elles restent des « Améliorations inconnues ».
   - **Effets** : chaque pièce ajoute des points de Vitesse, d'Appui ou de Fiabilité.
   - **Conseil** : la pièce au meilleur rapport gain/prix pour le prochain GP est signalée.

@@ -126,6 +126,7 @@
     { id: 'chassis', name: 'Châssis', icon: '🔩', color: '#2ee59d' },
     { id: 'pu', name: 'Chaîne motrice', icon: '⚡', color: '#ff4fa3' },
     { id: 'rel', name: 'Durabilité', icon: '🛡️', color: '#ffcc4d' },
+    { id: 'strat', name: 'Stratégie & équipe', icon: '🧠', color: '#a259ff' },
   ];
   const P = (cat, br, id, name, desc, icon, fx, cost, t, d) => ({ cat, br, id, name, desc, icon, fx, cost, focus: { t, d } });
   const RD_PARTS = [
@@ -169,7 +170,40 @@
     P('rel', 'Usure', 'gearbox_rel', 'Fiabilité de la boîte', 'Pignons renforcés.', 'gearbox', { rel: 4 }, 70, [-1.7, 0.35, 0], [-1.4, 0.6, 1.75]),
     P('rel', 'Usure', 'engine_life', 'Longévité moteur', 'Pièces internes plus résistantes : moins de casses.', 'engine', { rel: 4 }, 110, [-0.6, 0.55, 0], [0.2, 1.5, 2.3]),
     P('rel', 'Usure', 'brake_life', 'Endurance des freins', 'Disques à l\'usure mieux maîtrisée.', 'brake', { rel: 3 }, 150, [1.73, 0.36, 0.72], [0.45, 0.2, 1.15]),
+    // Stratégie & équipe — ces pièces agissent directement sur le déroulement de la course
+    P('strat', 'Départ & course', 'launch', 'Embrayage de départ', 'Logiciel d\'embrayage et cartographie anti-patinage : un meilleur envol quand les feux s\'éteignent.', 'gearbox', { launch: 1 }, 45, [-1.7, 0.35, 0], [-1.4, 0.6, 1.75]),
+    P('strat', 'Départ & course', 'tyres', 'Gestion des pneus', 'Capteurs de température et carrossage optimisé : les pneus s\'usent moins, moins de tête-à-queue en fin de course.', 'rim', { tyre: 1 }, 70, [-1.95, 0.36, 0.8], [-0.6, 0.3, 1.6]),
+    P('strat', 'Départ & course', 'push', 'Mode dépassement', 'Une réserve d\'énergie électrique libérée dans les 5 derniers tours.', 'motor', { push: 1 }, 110, [0.45, 0.3, 0], [0.9, 1.1, 2.0]),
+    P('strat', 'Équipe & stand', 'pitcrew', 'Équipe de stand', 'Pistolets pneumatiques, crics rapides et entraînement : des arrêts plus courts et moins d\'arrêts ratés.', 'pit', { pit: 1 }, 40, [1.73, 0.36, 0.85], [0.7, 0.25, 1.6]),
+    P('strat', 'Équipe & stand', 'radio', 'Ingénieur de course', 'Lecture de course en direct : il vous fait rentrer au bon moment sous voiture de sécurité.', 'radio', { sc: 1 }, 75, [0.3, 0.85, 0], [0.9, 0.8, 1.6]),
+    P('strat', 'Équipe & stand', 'simu', 'Simulateur pilote', 'Séances au simulateur avant chaque course : votre pilote gagne en rythme, en combativité et en régularité.', 'sim', { drv: 1 }, 120, [0.9, 0.5, 0], [1.5, 1.3, 2.1]),
   ];
+  /* Niveaux de développement : chaque pièce passe de Mk I à Mk V (gains décroissants, coûts croissants) */
+  const MAX_LV = 5;
+  const LV_GAIN = [1, 0.5, 0.35, 0.25, 0.2];
+  const LV_NAME = ['—', 'Mk I', 'Mk II', 'Mk III', 'Mk IV', 'Mk V'];
+  const lvCum = (l) => LV_GAIN.slice(0, l).reduce((a, b) => a + b, 0);
+  const partLevel = (owned, id) => { const v = owned && owned[id]; return !v ? 0 : v > MAX_LV ? 1 : v; };
+  const levelCost = (p, l) => Math.round((p.cost * Math.pow(1.55, l - 1)) / 5) * 5; // coût pour atteindre le niveau l
+  const STAT_KEYS = ['speed', 'df', 'rel'];
+  const MECH = {
+    launch: { label: 'Départ', icon: '🚦' }, tyre: { label: 'Pneus', icon: '🛞' }, push: { label: 'Dépassement', icon: '🔋' },
+    pit: { label: 'Arrêts au stand', icon: '🔧' }, sc: { label: 'Stratégie SC', icon: '📻' }, drv: { label: 'Pilote', icon: '🎮' },
+  };
+  // Soufflerie : développement à moitié prix mais incertain (les échecs donnent des données pour la tentative suivante)
+  const tunnelChance = (fails = 0) => Math.min(0.85, 0.55 + 0.12 * fails);
+  // Package : bonus quand toutes les pièces d'une branche atteignent un niveau minimal
+  const PKG = [0, 2, 1.5, 2, 2.5, 4];
+  function branchPackage(cat, br, owned = {}) {
+    const list = RD_PARTS.filter((x) => x.cat === cat && x.br === br);
+    const minL = Math.min(...list.map((x) => partLevel(owned, x.id)));
+    const tot = {}; list.forEach((x) => { for (const k in x.fx) tot[k] = (tot[k] || 0) + x.fx[k]; });
+    const key = Object.keys(tot).sort((a, b) => tot[b] - tot[a])[0];
+    const isStat = STAT_KEYS.includes(key);
+    const bonus = PKG.slice(0, minL + 1).reduce((a, b) => a + b, 0) * (isStat ? 1 : 0.06);
+    const next = minL < MAX_LV ? PKG[minL + 1] * (isStat ? 1 : 0.06) : 0;
+    return { minL, key, bonus, next, isStat };
+  }
   const RD_BY_ID = new Map(RD_PARTS.map((p) => [p.id, p]));
   const rdBranches = (cat) => [...new Set(RD_PARTS.filter((p) => p.cat === cat).map((p) => p.br))];
   // État d'une pièce : 'done' | 'available' | 'locked' | 'unknown' (au-delà de la prochaine pièce verrouillée)
@@ -181,14 +215,22 @@
     return owned[list[Math.max(0, i - 2)].id] || i === 1 ? 'locked' : 'unknown';
   }
   function partsBonus(owned = {}) {
-    const b = { speed: 0, df: 0, rel: 0 };
-    for (const id of Object.keys(owned)) { const p = RD_BY_ID.get(id); if (p) for (const k in p.fx) b[k] += p.fx[k]; }
+    const b = { speed: 0, df: 0, rel: 0 }, mech = { launch: 0, tyre: 0, push: 0, pit: 0, sc: 0, drv: 0 };
+    for (const p of RD_PARTS) {
+      const l = partLevel(owned, p.id); if (!l) continue;
+      const f = lvCum(l);
+      for (const k in p.fx) (k in b ? b : mech)[k] += p.fx[k] * f;
+    }
+    RD_CATS.forEach((c) => rdBranches(c.id).forEach((br) => { const pk = branchPackage(c.id, br, owned); if (pk.bonus) (pk.key in b ? b : mech)[pk.key] += pk.bonus; }));
+    b.mech = mech;
     return b;
   }
   function carStats(chassis, ups = {}, parts = null) {
     const b = partsBonus(parts || {});
-    return { speed: chassis.speed + UP_STEP * (ups.speed || 0) + b.speed, df: chassis.df + UP_STEP * (ups.df || 0) + b.df, rel: Math.min(99, chassis.rel + UP_STEP * (ups.rel || 0) + b.rel) };
+    return { speed: chassis.speed + UP_STEP * (ups.speed || 0) + b.speed, df: chassis.df + UP_STEP * (ups.df || 0) + b.df, rel: Math.min(99, chassis.rel + UP_STEP * (ups.rel || 0) + b.rel), mech: b.mech };
   }
+  // Note globale de la monoplace (pour l'affichage)
+  const carRating = (car) => Math.round(car.speed * 0.38 + car.df * 0.38 + car.rel * 0.24 + (car.mech ? Object.values(car.mech).reduce((a, v) => a + v, 0) * 2.5 : 0));
   // Réglage du week-end : -1 (faible appui, vitesse) à +1 (fort appui)
   function withSetup(car, setup) {
     const s = clamp(setup || 0, -1, 1);
@@ -205,6 +247,7 @@
   const compat = (car, w, setup) => Math.round(carScore(withSetup(car, setup), w));
 
   /* ---------- Plateau IA (fixe pour la journée et la ligue) ---------- */
+  const BOT_EXTRA = [0, 4, 14, 28, 44, 62]; // développement moyen des managers IA selon la ligue
   const BOT_NAMES = ['Apex Racing', 'Scuderia Lumière', 'Vortex GP', 'Nordic Speed', 'Team Kerb', 'Blue Comet', 'Atlas Motorsport', 'Riviera F1', 'Phoenix Racing', 'Iron Horse GP',
     'Sakura Speed', 'Andes Racing', 'Celtic Motorsport', 'Orbit Team', 'Velocity Works', 'Gaucho Racing', 'Alpine Wolf', 'Tidewater GP', 'Crimson Arrow', 'Zenith Racing', 'Boreal F1', 'Midnight Motorsport'];
   function botField(mk, league, dayKey) {
@@ -222,7 +265,11 @@
       const c = mk.chassis[a + Math.floor(r() * Math.max(1, b - a))];
       const lv = () => Math.round(league.bot[0] + r() * (league.bot[1] - league.bot[0]));
       const ups = { speed: lv(), df: lv(), rel: lv() };
-      return { bot: true, name, driver: d, chassisId: c.id, car: carStats(c, ups), setup: Math.round((r() * 1.6 - 0.8) * 10) / 10 };
+      const car = carStats(c, ups), ex = BOT_EXTRA[li];
+      car.speed += ex; car.df += ex; car.rel = Math.min(97, car.rel + ex * 0.5);
+      const bm = li * 0.3;
+      car.mech = { launch: bm * r() * 1.4, tyre: bm, push: bm * r() * 1.4, pit: bm, sc: bm * r(), drv: 0 };
+      return { bot: true, name, driver: d, chassisId: c.id, car, setup: Math.round((r() * 1.6 - 0.8) * 10) / 10 };
     });
   }
 
@@ -234,9 +281,12 @@
     const field = [{ ...player, me: true }, ...bots].map((c, i) => {
       const car = withSetup(c.car, c.setup);
       const cs = carScore(car, w);
-      const d = c.driver;
+      const mech = c.car.mech || {};
+      const db = 2 * Math.min(2.5, mech.drv || 0);
+      const d = db ? { ...c.driver, pace: Math.min(99, c.driver.pace + db), craft: Math.min(99, c.driver.craft + db), cons: Math.min(99, c.driver.cons + db) } : c.driver;
+      const M = (k) => Math.min(2.6, mech[k] || 0);
       const form = gauss(r) * 3.5; // forme du jour (pilote + voiture)
-      return { i, c, name: c.name, driver: d, cs, perf: 0.42 * ((d.pace + d.craft) / 2) + 0.58 * cs + form, q: 0.5 * d.pace + 0.5 * cs + form + gauss(r) * 2.5, time: 0, out: null, lapsDone: 0, spins: 0 };
+      return { i, c, name: c.name, driver: d, cs, M, pitLap: 7 + Math.floor(r() * 6), perf: 0.42 * ((d.pace + d.craft) / 2) + 0.58 * cs + form, q: 0.5 * d.pace + 0.5 * cs + form + gauss(r) * 2.5, time: 0, out: null, lapsDone: 0, spins: 0 };
     });
     // qualifications
     field.sort((a, b) => b.q - a.q).forEach((x, k) => { x.grid = k + 1; });
@@ -257,14 +307,36 @@
         const u = r();
         if (u < pMech) { x.out = { lap, why: ['Moteur', 'Boîte de vitesses', 'Hydraulique', 'Surchauffe', 'Freins'][Math.floor(r() * 5)] }; events.push({ lap, type: 'dnf', who: x.i, txt: `abandonne (${x.out.why.toLowerCase()})` }); continue; }
         if (u < pMech + pCrash) { x.out = { lap, why: 'Accident' }; events.push({ lap, type: 'dnf', who: x.i, txt: 'part dans le mur : abandon' }); continue; }
-        let t = 90 - x.perf * 0.045 + gauss(r) * 0.6 * (1.5 - d.cons / 100);
-        if (r() < 0.035 * (1 - d.cons / 100) * 3) { t += 4 + r() * 4; x.spins++; events.push({ lap, type: 'spin', who: x.i, txt: 'part en tête-à-queue et perd du temps' }); }
+        const ty = x.M('tyre');
+        let t = 90 - x.perf * 0.045 + gauss(r) * 0.6 * (1.5 - d.cons / 100) * (1 - 0.12 * ty);
+        // départ : l'embrayage fait la différence au premier tour
+        if (lap === 1) { const g = gauss(r) * 0.9 - 0.9 * x.M('launch'); t += g; if (x.c.me && x.M('launch') > 0.5 && g < -1.2) events.push({ lap, type: 'gain', who: x.i, txt: 'envol parfait au départ !' }); }
+        // usure des pneus en fin de relais et mode dépassement dans les derniers tours
+        const stint = lap >= x.pitLap ? lap - x.pitLap : lap;
+        if (stint > 5) t += 0.09 * (stint - 5) * (1 - 0.28 * ty);
+        if (lap > LAPS - 5) t -= 0.2 * x.M('push');
+        if (r() < 0.035 * (1 - d.cons / 100) * 3 * (1 - 0.2 * ty)) { t += 4 + r() * 4; x.spins++; events.push({ lap, type: 'spin', who: x.i, txt: 'part en tête-à-queue et perd du temps' }); }
+        // arrêt au stand (un par course)
+        if (lap === x.pitLap) {
+          const crew = x.M('pit');
+          let still = Math.max(1.8, 2.05 + Math.abs(gauss(r)) * 0.7 * (1 - 0.25 * crew) - 0.12 * crew);
+          const botched = r() < 0.07 * (1 - 0.3 * crew);
+          if (botched) still += 3 + r() * 5;
+          t += 19 + still;
+          if (x.c.me) events.push({ lap, type: botched ? 'loss' : 'pit', who: x.i, txt: botched ? `arrêt au stand raté : ${still.toFixed(1).replace('.', ',')} s immobilisé !` : `arrêt au stand en ${still.toFixed(1).replace('.', ',')} s` });
+        }
         x.time += t; x.lapsDone = lap;
         if (t < fastest.t) fastest = { t, who: x.i, lap };
       }
       if (lap === scLap) {
         // voiture de sécurité : le peloton se regroupe
+        // l'ingénieur de course exploite la neutralisation (arrêt « gratuit », bon placement)
+        const meX = field.find((x) => x.c.me);
+        const before = field.filter((x) => !x.out).sort((a, b) => a.time - b.time).indexOf(meX);
+        field.forEach((x) => { if (!x.out) x.time -= 2.2 * x.M('sc') + r() * 0.8; });
         const running = field.filter((x) => !x.out).sort((a, b) => a.time - b.time);
+        const after = running.indexOf(meX);
+        if (!meX.out && meX.M('sc') > 0.3 && after < before) events.push({ lap, type: 'gain', who: meX.i, txt: `📻 coup stratégique sous voiture de sécurité : +${before - after} place${before - after > 1 ? 's' : ''}` });
         const lead = running[0].time;
         running.forEach((x, k) => { x.time = lead + k * 0.6; });
         events.push({ lap, type: 'sc', txt: 'Voiture de sécurité : le peloton est regroupé !' });
@@ -296,7 +368,27 @@
     return clamp(Math.round(4 + gain / 10 + ((bet.effOdds || bet.odds) >= 5 ? 10 : 0)), 5, 80);
   }
 
+  /* ---------- Objectifs du jour ---------- */
+  const OBJECTIVES = [
+    { id: 'races3', txt: 'Disputer 3 courses', k: 'races', goal: 3, pc: 25 },
+    { id: 'top5', txt: 'Terminer 2 fois dans le top 5', k: 'top5', goal: 2, pc: 40 },
+    { id: 'podium', txt: 'Monter sur le podium', k: 'podium', goal: 1, pc: 50 },
+    { id: 'win', txt: 'Remporter une course', k: 'win', goal: 1, pc: 80 },
+    { id: 'gain5', txt: 'Gagner 5 places en une seule course', k: 'gainMax', goal: 5, pc: 45 },
+    { id: 'finish4', txt: 'Voir le drapeau à damier 4 fois', k: 'finish', goal: 4, pc: 35 },
+    { id: 'rd2', txt: 'Développer 2 améliorations', k: 'rd', goal: 2, pc: 30 },
+    { id: 'tunnel', txt: 'Réussir un pari soufflerie', k: 'tunnelOk', goal: 1, pc: 35 },
+    { id: 'fastest', txt: 'Signer le meilleur tour en course', k: 'fastest', goal: 1, pc: 45 },
+  ];
+  function dailyObjectives(dayKey) {
+    const r = rng(hash('obj-' + dayKey));
+    const pool = [...OBJECTIVES]; const out = [];
+    while (out.length < 3) out.push(pool.splice(Math.floor(r() * pool.length), 1)[0]);
+    return out;
+  }
+
   F1.manager = {
+    MAX_LV, LV_GAIN, LV_NAME, lvCum, partLevel, levelCost, MECH, tunnelChance, branchPackage, carRating, OBJECTIVES, dailyObjectives,
     START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, PC_TABLE,
     RD_CATS, RD_PARTS, RD_BY_ID, rdBranches, partState, partsBonus,
     market, carStats, withSetup, carScore, bestSetup, compat, circuitProfile, botField, simulate, rewards, betReward, hash, TALENT,

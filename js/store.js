@@ -20,6 +20,10 @@
     { id: 'mgr_win', icon: '🏁', title: 'Victoire constructeur', desc: 'Gagner une course de manager' },
     { id: 'mgr_or', icon: '🥇', title: 'Ligue Or', desc: 'Atteindre la ligue Or en mode manager' },
     { id: 'mgr_rd', icon: '🔬', title: 'Bureau d\'études', desc: 'Développer 5 pièces en R&D' },
+    { id: 'mgr_mk5', icon: '🧬', title: 'Spécification ultime', desc: 'Amener une pièce au niveau Mk V' },
+    { id: 'mgr_pkg', icon: '📦', title: 'Package complet', desc: 'Toutes les pièces d\'une branche de R&D développées' },
+    { id: 'mgr_tunnel', icon: '🎲', title: 'Coup de poker', desc: 'Réussir un pari soufflerie' },
+    { id: 'mgr_obj', icon: '🎯', title: 'Feuille de route', desc: 'Remplir les 3 objectifs d\'une journée' },
   ];
 
   let state = null;
@@ -33,7 +37,12 @@
     try { state = JSON.parse(localStorage.getItem(KEY)); } catch (e) { state = null; }
     if (!state || state.v !== 1) state = blank();
     if (!state.manager) state.manager = blankManager();
-    if (!state.manager.parts) state.manager.parts = {};
+    const m = state.manager;
+    if (!m.parts) m.parts = {};
+    // anciennes sauvegardes : une pièce développée (horodatage) devient Mk I
+    for (const k in m.parts) if (m.parts[k] > 5) m.parts[k] = 1;
+    if (!m.fails) m.fails = {};
+    if (!m.daily) m.daily = { key: '' };
     return state;
   }
   function save() {
@@ -196,17 +205,50 @@
     if (m.ups[stat] >= 5) unlock('mgr_rd');
     save();
   }
-  // Recherche d'une pièce (R&D pièce par pièce)
-  function research(part) {
+  // Statistiques du jour (objectifs)
+  function daily() {
     const m = mgr();
-    if (!m.chassis) throw new Error('Achetez d\'abord un châssis');
-    const st = F1.manager.partState(part, m.parts);
-    if (st === 'done') throw new Error('Pièce déjà développée');
-    if (st !== 'available') throw new Error('Développez d\'abord la pièce précédente de cette branche');
-    spendPC(part.cost, `R&D : ${part.name}`);
-    m.parts[part.id] = Date.now(); m.rdSpent += part.cost;
-    if (Object.keys(m.parts).length >= 5) unlock('mgr_rd');
+    if (!m.daily || m.daily.key !== dayKey()) m.daily = { key: dayKey(), races: 0, top5: 0, podium: 0, win: 0, gainMax: 0, finish: 0, rd: 0, tunnelOk: 0, fastest: 0, claimed: {} };
+    return m.daily;
+  }
+  function objectives() {
+    const d = daily();
+    return F1.manager.dailyObjectives(d.key).map((o) => ({ ...o, val: Math.min(o.goal, d[o.k] || 0), done: (d[o.k] || 0) >= o.goal, claimed: !!d.claimed[o.id] }));
+  }
+  function claimObjective(id, mult = 1) {
+    const o = objectives().find((x) => x.id === id);
+    if (!o || !o.done || o.claimed) throw new Error('Objectif non disponible');
+    const pc = Math.round(o.pc * mult);
+    daily().claimed[id] = Date.now();
+    addPC(pc, `Objectif : ${o.txt}`);
+    if (objectives().every((x) => x.claimed)) unlock('mgr_obj');
     save();
+    return pc;
+  }
+  // Recherche : chaque pièce progresse de Mk I à Mk V. mode 'tunnel' = pari soufflerie (moitié prix, réussite incertaine)
+  function research(part, mode = 'safe') {
+    const m = mgr(), MG = F1.manager;
+    if (!m.chassis) throw new Error('Achetez d\'abord un châssis');
+    const lv = MG.partLevel(m.parts, part.id);
+    if (lv >= MG.MAX_LV) throw new Error('Pièce déjà au niveau maximal');
+    if (!lv && MG.partState(part, m.parts) !== 'available') throw new Error('Développez d\'abord la pièce précédente de cette branche');
+    const full = MG.levelCost(part, lv + 1);
+    const tunnel = mode === 'tunnel';
+    const cost = tunnel ? Math.round(full / 2) : full;
+    const chance = tunnel ? MG.tunnelChance(m.fails[part.id] || 0) : 1;
+    spendPC(cost, `R&D${tunnel ? ' (soufflerie)' : ''} : ${part.name} ${MG.LV_NAME[lv + 1]}`);
+    m.rdSpent += cost;
+    const ok = Math.random() < chance;
+    const d = daily();
+    if (ok) {
+      m.parts[part.id] = lv + 1; m.fails[part.id] = 0; d.rd++;
+      if (tunnel) { d.tunnelOk++; unlock('mgr_tunnel'); }
+      if (Object.keys(m.parts).length >= 5) unlock('mgr_rd');
+      if (lv + 1 >= MG.MAX_LV) unlock('mgr_mk5');
+      if (MG.branchPackage(part.cat, part.br, m.parts).minL >= 1) unlock('mgr_pkg');
+    } else m.fails[part.id] = (m.fails[part.id] || 0) + 1;
+    save();
+    return { ok, level: m.parts[part.id] || 0, chance, cost };
   }
   function setSetup(v) { mgr().setup = v; save(); }
   const dayKey = () => new Date().toLocaleDateString('fr-CA');
@@ -220,6 +262,10 @@
     m.best = Math.max(m.best, m.lp);
     addPC(r.pc, `Course : P${r.pos}${r.dnf ? ' (abandon)' : ''}`);
     m.races.unshift({ ...r, t: Date.now(), lpBefore: before, lpAfter: m.lp }); if (m.races.length > 30) m.races.pop();
+    const d = daily();
+    d.races++;
+    if (!r.dnf) { d.finish++; if (r.pos <= 5) d.top5++; if (r.pos <= 3) d.podium++; if (r.pos === 1) d.win++; d.gainMax = Math.max(d.gainMax, (r.grid || r.pos) - r.pos); }
+    if (r.fastest) d.fastest++;
     if (r.pos === 1 && !r.dnf) unlock('mgr_win');
     if (F1.manager && m.lp >= F1.manager.LEAGUES[2].min) unlock('mgr_or');
     save();
@@ -235,5 +281,5 @@
   function reset() { const n = get().name; state = blank(); state.name = n; save(); }
   const popUnlocked = () => unlocked.splice(0);
 
-  F1.store = { load, get, save, onChange, mgr, addPC, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
+  F1.store = { load, get, save, onChange, mgr, addPC, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
 })(globalThis.F1 = globalThis.F1 || {});

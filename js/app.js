@@ -846,6 +846,13 @@
     return h + '</div>';
   }
 
+  function objectivesCard(ctx) {
+    const obs = F1.store.objectives(), mult = ctx.league.mult;
+    return `<section class="section"><div class="section-h"><h2>Objectifs du jour</h2><span class="muted" style="font-size:13px">Nouveaux objectifs chaque jour · gains ×${mult} en ligue ${esc(ctx.league.name)}</span></div>
+      <div class="grid g3">${obs.map((o) => `<div class="card obj ${o.done ? 'done' : ''} ${o.claimed ? 'claimed' : ''}"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><b>🎯 ${esc(o.txt)}</b><span class="chip gold">${fmtPC(o.pc * mult)}</span></div>
+        <div class="ptsbar" style="height:8px;margin-top:12px"><i style="width:${(o.val / o.goal) * 100}%;background:${o.done ? 'var(--win)' : 'linear-gradient(90deg,#a259ff,#ff4fa3)'}"></i></div>
+        <div class="row" style="justify-content:space-between;margin-top:10px"><span class="muted num" style="font-size:13px">${o.val} / ${o.goal}</span>${o.claimed ? '<span class="chip green">✓ Récupéré</span>' : o.done ? `<button class="btn sm gold" data-action="obj-claim" data-id="${o.id}">Récupérer</button>` : ''}</div></div>`).join('')}</div></section>`;
+  }
   function mgrHome(ctx, nl) {
     const { m, drvM, ch, car, race, w, league } = ctx;
     if (!drvM || !ch) {
@@ -873,7 +880,7 @@
           <div class="grid g2" style="margin-top:14px;gap:10px 18px">
             ${MG().STATS.map((st) => statBar(st.short, car[st.k], ch[st.k], F1.teamColor(ch.id), st.icon)).join('')}
             ${statBar('Pilote', drvM.rating, drvM.rating, 'var(--gold)', '👤')}
-          </div></div></div>
+          </div>${mechChips(car)}<div class="row" style="margin-top:12px"><span class="chip">🏎️ Note voiture <b style="margin-left:4px">${MG().carRating(car)}</b></span><a class="btn sm ghost" href="#/manager/rd">🔬 Développer la voiture</a></div></div></div>
       <div class="grid g2" style="margin-top:16px">
         <div class="card"><div class="market-h"><div><h3>${flag(race.iso, 'sm')} ${esc(race.nameFr)}</h3><div class="sub">Circuit des courses manager · ${esc(w.kind)}</div></div></div>
           <div class="cprof">${[['⚡ Vitesse', w.speed], ['🌀 Appui', w.df], ['🔧 Fiabilité', w.rel]].map(([l, v]) => `<div><small>${l}</small><div class="sbar-t"><i style="width:${v * 100 / 0.7}%;background:var(--red2)"></i></div><b>${Math.round(v * 100)} %</b></div>`).join('')}</div>
@@ -890,6 +897,7 @@
           <button class="btn block" style="margin-top:16px;font-size:16px;padding:16px" data-action="m-race" ${left > 0 ? '' : 'disabled'}>${left > 0 ? '🚦 Lancer une course' : '⏳ Revenez demain'}</button>
           <div class="muted" style="font-size:12px;margin-top:8px;text-align:center">${left > 0 ? 'Résultat : niveau du pilote + voiture × compatibilité du circuit + aléa (incidents, voiture de sécurité…)' : `Limite de ${MG().RACES_PER_DAY} courses par jour atteinte.`}</div></div>
       </div>
+      ${objectivesCard(ctx)}
       ${m.races.length ? `<section class="section"><div class="section-h"><h2>Dernières courses</h2></div><div class="card pad0"><div class="table-wrap"><table class="tbl"><thead><tr><th>Date</th><th>Circuit</th><th>Ligue</th><th class="c">Départ</th><th class="c">Arrivée</th><th class="r">LP</th><th class="r">PitCoins</th></tr></thead><tbody>
         ${m.races.slice(0, 10).map((r) => `<tr><td class="muted">${DTF.format(new Date(r.t))}</td><td>${esc(r.gp || '')}</td><td>${esc(r.league || '')}</td><td class="c num">P${r.grid || '—'}</td><td class="c"><b>${r.dnf ? 'AB' : 'P' + r.pos}</b></td><td class="r"><span class="gain ${r.lp >= 0 ? 'up' : 'down'}">${r.lp >= 0 ? '+' : ''}${r.lp}</span></td><td class="r num">+${r.pc}</td></tr>`).join('')}</tbody></table></div></div></section>` : ''}`;
   }
@@ -954,11 +962,17 @@
     gearbox: '<circle cx="30" cy="40" r="14"/><circle cx="54" cy="32" r="10"/><path d="M30 26 V22 M30 54 V58 M16 40 H12 M44 40 H48 M54 22 V18 M64 32 H68"/>',
     radiator: '<rect x="12" y="20" width="56" height="36" rx="3"/><path d="M20 20 V56 M28 20 V56 M36 20 V56 M44 20 V56 M52 20 V56 M60 20 V56"/>',
     louvre: '<path d="M10 54 L22 22 H70 L58 54Z"/><path d="M26 30 H62 M24 38 H60 M22 46 H58"/>',
+    pit: '<path d="M10 50 L34 26 L42 34 L18 58Z"/><path d="M38 22 L50 10 L62 22 L50 34"/><circle cx="58" cy="46" r="12"/><circle cx="58" cy="46" r="4"/>',
+    radio: '<path d="M18 34 C18 20 28 12 40 12 C52 12 62 20 62 34"/><rect x="12" y="32" width="12" height="20" rx="4"/><rect x="56" y="32" width="12" height="20" rx="4"/><path d="M62 50 C62 58 54 62 44 62 H38"/>',
+    sim: '<rect x="10" y="14" width="60" height="34" rx="3"/><path d="M30 60 H50 M40 48 V60"/><path d="M18 40 L30 28 L40 34 L52 22 L62 26"/>',
     hydraulic: '<path d="M14 30 H50 C60 30 60 46 50 46 H30 C20 46 20 58 30 58 H66"/><circle cx="14" cy="30" r="5"/><circle cx="66" cy="58" r="5"/>',
   };
   const rdIcon = (k, col) => `<svg viewBox="0 0 80 70" class="rd-ico" fill="none" stroke="${col}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${RD_ICON[k] || RD_ICON.chip}</svg>`;
-  const FX_LBL = { speed: '⚡ Vitesse', df: '🌀 Appui', rel: '🔧 Fiabilité' };
+  const FX_LBL = { speed: '⚡ Vitesse', df: '🌀 Appui', rel: '🔧 Fiabilité', launch: '🚦 Départ', tyre: '🛞 Pneus', push: '🔋 Dépassement', pit: '🔧 Stand', sc: '📻 Stratégie SC', drv: '🎮 Pilote' };
+  const fxVal = (k, v) => (['speed', 'df', 'rel'].includes(k) ? `+${fmt(v, v % 1 ? 1 : 0)}` : `+${Math.round(v * 40)} %`);
+  const pips = (lv) => `<span class="pips">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= lv ? 'on' : ''}"></i>`).join('')}</span>`;
 
+  const mechChips = (car) => { const e = Object.entries(car.mech || {}).filter(([, v]) => v > 0.01); return e.length ? `<div class="row" style="gap:6px;margin-top:12px">${e.map(([k, v]) => `<span class="chip">${MG().MECH[k].icon} ${MG().MECH[k].label} ${fxVal(k, v)}</span>`).join('')}</div>` : ''; };
   function mgrRD(ctx) {
     const { m, ch, car, w, race, league, bots } = ctx;
     if (!ch) return `<div class="empty"><div class="ic">🔬</div>Achetez d'abord un châssis pour lancer la R&D.<div style="margin-top:14px"><a class="btn" href="#/manager/chassis">Voir les châssis</a></div></div>`;
@@ -967,35 +981,41 @@
     S.rdCat = cat.id;
     const owned = m.parts || {};
     const all = MG().RD_PARTS;
-    const done = all.filter((p) => owned[p.id]).length;
     let sel = S.rdSel && MG().RD_BY_ID.get(S.rdSel);
     if (sel && sel.cat !== cat.id) sel = null;
     // pièce conseillée pour le prochain GP : meilleur gain d'indice par PitCoin parmi les pièces disponibles
-    const gainOf = (p) => { const nc = { ...car }; for (const k in p.fx) nc[k] += p.fx[k]; return MG().compat(nc, w, m.setup) - MG().compat(car, w, m.setup); };
-    const avail = all.filter((p) => MG().partState(p, owned) === 'available');
-    const reco = avail.sort((a, b) => gainOf(b) / b.cost - gainOf(a) / a.cost)[0];
+    const LV = (p) => MG().partLevel(owned, p.id);
+    const nextCost = (p) => MG().levelCost(p, LV(p) + 1);
+    const gainOf = (p) => { if (LV(p) >= MG().MAX_LV) return 0; const nc = MG().carStats(ch, m.ups, { ...owned, [p.id]: LV(p) + 1 }); return Math.round((MG().compat(nc, w, m.setup) - MG().compat(car, w, m.setup)) * 10) / 10; };
+    const avail = all.filter((p) => { const st = MG().partState(p, owned); return (st === 'available' || st === 'done') && LV(p) < MG().MAX_LV && p.cat !== 'strat'; });
+    const reco = avail.sort((a, b) => gainOf(b) / nextCost(b) - gainOf(a) / nextCost(a))[0];
     const botAvg = (k) => bots.reduce((a, b) => a + b.car[k], 0) / bots.length;
     const legacy = (m.ups.speed || 0) + (m.ups.df || 0) + (m.ups.rel || 0);
 
     const tabs = cats.map((c) => {
-      const n = all.filter((p) => p.cat === c.id), d = n.filter((p) => owned[p.id]).length;
-      return `<button class="rd-tab ${c.id === cat.id ? 'on' : ''}" data-action="rd-cat" data-c="${c.id}" style="--cc:${c.color}"><span>${c.icon}</span>${esc(c.name)}<small>${d}/${n.length}</small></button>`;
+      const n = all.filter((p) => p.cat === c.id), d = n.reduce((a, p) => a + LV(p), 0);
+      return `<button class="rd-tab ${c.id === cat.id ? 'on' : ''}" data-action="rd-cat" data-c="${c.id}" style="--cc:${c.color}"><span>${c.icon}</span>${esc(c.name)}<small>${d}/${n.length * MG().MAX_LV}</small></button>`;
     }).join('');
     const rows = MG().rdBranches(cat.id).map((br) => {
       const list = all.filter((p) => p.cat === cat.id && p.br === br);
-      const nd = list.filter((p) => owned[p.id]).length;
+      const nd = list.reduce((a, p) => a + LV(p), 0);
+      const pk = MG().branchPackage(cat.id, br, owned);
       const cards = list.map((p) => {
         const st = MG().partState(p, owned);
-        const unknown = st === 'unknown';
-        const can = st === 'available' && p.cost <= m.pc + 1e-9;
-        return `<button class="rd-card ${st} ${sel && sel.id === p.id ? 'sel' : ''} ${reco && reco.id === p.id ? 'reco' : ''}" data-action="rd-sel" data-p="${p.id}" style="--cc:${cat.color}">
-          ${st === 'done' ? '<span class="rd-badge ok">✓</span>' : st === 'locked' ? '<span class="rd-badge">🔒</span>' : reco && reco.id === p.id ? '<span class="rd-badge reco">Conseillé</span>' : ''}
-          <div class="rd-art">${unknown ? '<div class="rd-q">?</div>' : rdIcon(p.icon, st === 'done' ? '#cfe9ff' : st === 'available' ? '#ffffff' : 'rgba(255,255,255,.45)')}</div>
+        const unknown = st === 'unknown', lv = LV(p), max = lv >= MG().MAX_LV;
+        const cost = nextCost(p);
+        const can = (st === 'available' || st === 'done') && !max && cost <= m.pc + 1e-9;
+        return `<button class="rd-card ${st} ${max ? 'max' : ''} ${sel && sel.id === p.id ? 'sel' : ''} ${reco && reco.id === p.id ? 'reco' : ''}" data-action="rd-sel" data-p="${p.id}" style="--cc:${cat.color}">
+          ${max ? '<span class="rd-badge ok">MAX</span>' : lv ? `<span class="rd-badge ok">${MG().LV_NAME[lv]}</span>` : st === 'locked' ? '<span class="rd-badge">🔒</span>' : reco && reco.id === p.id ? '<span class="rd-badge reco">Conseillé</span>' : ''}
+          ${!max && lv && reco && reco.id === p.id ? '<span class="rd-badge reco" style="top:38px">Conseillé</span>' : ''}
+          <div class="rd-art">${unknown ? '<div class="rd-q">?</div>' : rdIcon(p.icon, lv ? '#cfe9ff' : st === 'available' ? '#ffffff' : 'rgba(255,255,255,.45)')}</div>
           <div class="rd-name">${unknown ? 'Amélioration inconnue' : esc(p.name)}</div>
-          <div class="rd-cat">${cat.icon} ${esc(cat.name)}</div>
-          <div class="rd-foot">${st === 'done' ? '<span class="muted">Terminé</span>' : unknown ? '<span class="muted">—</span>' : `<b class="${can ? '' : 'muted'}">${pcoin}${p.cost}</b>`}</div></button>`;
+          <div class="rd-cat">${unknown ? `${cat.icon} ${esc(cat.name)}` : pips(lv)}</div>
+          <div class="rd-foot">${max ? '<span class="muted">Spécification max</span>' : unknown || st === 'locked' ? '<span class="muted">—</span>' : `<b class="${can ? '' : 'muted'}">${pcoin}${cost}</b><small class="muted"> → ${MG().LV_NAME[lv + 1]}</small>`}</div></button>`;
       }).join('<span class="rd-link"></span>');
-      return `<div class="rd-row"><div class="rd-branch"><b>${esc(br)}</b><small>${nd}/${list.length}</small></div><div class="rd-cards">${cards}</div></div>`;
+      const pkTxt = pk.minL >= MG().MAX_LV ? `📦 Package ${MG().LV_NAME[pk.minL]} complet · ${FX_LBL[pk.key]} ${fxVal(pk.key, pk.bonus)}`
+        : `📦 Package ${MG().LV_NAME[pk.minL + 1]} : toutes les pièces ${MG().LV_NAME[pk.minL + 1]} → ${FX_LBL[pk.key]} ${fxVal(pk.key, pk.next)}${pk.bonus ? ` <span class="muted">(actuel ${fxVal(pk.key, pk.bonus)})</span>` : ''}`;
+      return `<div class="rd-row"><div class="rd-branch"><b>${esc(br)}</b><small>${nd}/${list.length * MG().MAX_LV}</small></div><div><div class="rd-pkg ${pk.minL ? 'on' : ''}" style="--cc:${cat.color}">${pkTxt}</div><div class="rd-cards">${cards}</div></div></div>`;
     }).join('');
 
     let detail;
@@ -1006,8 +1026,19 @@
           <div style="flex:1;min-width:0"><div class="muted upper" style="font-size:11px;font-weight:700">${cat.icon} ${esc(cat.name)} · ${esc(sel.br)}</div><h3 style="font-size:20px;margin:2px 0 6px">${st === 'unknown' ? 'Amélioration inconnue' : esc(sel.name)}</h3>
           <div class="muted" style="font-size:14px">${st === 'unknown' ? 'Développez les pièces précédentes de cette branche pour la découvrir.' : esc(sel.desc)}</div></div>
           <button class="rd-close" data-action="rd-sel" data-p="" aria-label="Vue d'ensemble">✕</button></div>
-        ${st === 'unknown' ? '' : `<div class="row" style="margin-top:12px;gap:8px">${Object.entries(sel.fx).map(([k, v]) => `<span class="chip green">${FX_LBL[k]} +${v}</span>`).join('')}<span class="chip ${g > 0 ? 'gold' : ''}">Indice au ${esc(race.nameFr.replace('Grand Prix', 'GP'))} : +${g}</span></div>
-        <div class="row" style="margin-top:14px">${st === 'done' ? '<span class="chip green">✓ Pièce installée sur votre monoplace</span>' : st === 'available' ? `<button class="btn" data-action="rd-buy" data-p="${sel.id}" ${sel.cost > m.pc + 1e-9 ? 'disabled' : ''}>🔬 Développer · ${sel.cost} PC</button>${sel.cost > m.pc + 1e-9 ? `<span class="muted" style="font-size:13px">Il vous manque ${Math.ceil(sel.cost - m.pc)} PitCoins</span>` : ''}` : '<span class="chip">🔒 Développez d\'abord la pièce précédente</span>'}</div>`}</div>`;
+        ${st === 'unknown' ? '' : (() => {
+          const lv = LV(sel), max = lv >= MG().MAX_LV, nl = lv + 1;
+          const cost = nextCost(sel), half = Math.round(cost / 2), fails = (m.fails || {})[sel.id] || 0, ch2 = MG().tunnelChance(fails);
+          const step = max ? 0 : MG().LV_GAIN[lv];
+          const ladder = `<div class="mk-ladder">${[1, 2, 3, 4, 5].map((i) => `<div class="mk ${i <= lv ? 'on' : ''} ${i === nl ? 'next' : ''}"><b>${MG().LV_NAME[i]}</b><small>${Object.entries(sel.fx).map(([k, v]) => fxVal(k, v * MG().LV_GAIN[i - 1])).join(' ')}</small>${i <= lv ? '' : `<small class="muted">${fmt(MG().levelCost(sel, i))} PC</small>`}</div>`).join('')}</div>`;
+          const can = st === 'available' || st === 'done';
+          return `${ladder}<div class="row" style="margin-top:12px;gap:8px">${max ? '' : Object.entries(sel.fx).map(([k, v]) => `<span class="chip green">${FX_LBL[k]} ${fxVal(k, v * step)}</span>`).join('')}${max || sel.cat === 'strat' ? '' : `<span class="chip ${g > 0 ? 'gold' : ''}">Indice au ${esc(race.nameFr.replace('Grand Prix', 'GP'))} : +${fmt(g, g % 1 ? 1 : 0)}</span>`}${sel.cat === 'strat' && !max ? '<span class="chip">Agit pendant la course</span>' : ''}</div>
+          <div class="row" style="margin-top:14px;gap:10px">${max ? '<span class="chip green">🧬 Spécification maximale atteinte</span>' : !can ? '<span class="chip">🔒 Développez d\'abord la pièce précédente</span>'
+            : `<button class="btn" data-action="rd-buy" data-p="${sel.id}" data-mode="safe" ${cost > m.pc + 1e-9 ? 'disabled' : ''}>🔬 ${lv ? 'Passer en' : 'Développer'} ${MG().LV_NAME[nl]} · ${cost} PC</button>
+              <button class="btn ghost tunnel-btn" data-action="rd-buy" data-p="${sel.id}" data-mode="tunnel" ${half > m.pc + 1e-9 ? 'disabled' : ''} title="Moitié prix, mais la pièce peut échouer en soufflerie. Chaque échec augmente les chances de la tentative suivante.">🎲 Pari soufflerie · ${half} PC · ${Math.round(ch2 * 100)} %</button>
+              ${cost > m.pc + 1e-9 ? `<span class="muted" style="font-size:13px">Il vous manque ${Math.ceil(cost - m.pc)} PitCoins pour le développement sûr</span>` : ''}`}</div>
+          ${fails ? `<div class="muted" style="font-size:12px;margin-top:8px">📈 ${fails} essai${fails > 1 ? 's' : ''} raté${fails > 1 ? 's' : ''} en soufflerie : les données récoltées augmentent vos chances.</div>` : ''}`;
+        })()}</div>`;
     } else {
       detail = `<div class="rd-detail"><h3 style="margin:0 0 6px">Sélectionnez une pièce à rechercher</h3><div class="muted" style="font-size:14px">La caméra zoome sur la pièce choisie. Prochain GP : <b style="color:var(--text)">${esc(race.nameFr)}</b> (${esc(w.kind.toLowerCase())}).${reco ? ` Pièce conseillée : <b style="color:var(--text)">${esc(reco.name)}</b>.` : ''}</div></div>`;
     }
@@ -1016,13 +1047,41 @@
     const carHtml = F1.visuals.car(ch.id, { live: true, view: '34' }).replace('class="car3d', `data-workshop="1" ${showId ? `data-part="${showId}" ` : ''}class="car3d`);
 
     return `<div class="rd-head"><div><h2 class="rd-title">Recherche</h2><div class="rd-tabs" id="rdTabs">${tabs}</div></div>
-        <div class="rd-kpis" id="rdKpis"><div><small>Améliorations</small><b>${done}/${all.length}</b></div><div><small>R&D investie</small><b>${fmtPC(m.rdSpent)}</b></div><div><small>PitCoins</small><b>${fmtPC(m.pc)}</b></div></div></div>
+        <div class="rd-kpis" id="rdKpis"><div><small>Note voiture</small><b>${MG().carRating(car)}</b></div><div><small>Niveaux R&D</small><b>${all.reduce((a, p) => a + LV(p), 0)}/${all.length * MG().MAX_LV}</b></div><div><small>R&D investie</small><b>${fmtPC(m.rdSpent)}</b></div><div><small>PitCoins</small><b>${fmtPC(m.pc)}</b></div></div></div>
       <div class="rd-stage" style="--cc:${cat.color}"><div class="stage-glow" style="--tc:${cat.color}"></div>${carHtml}
         <div class="rd-stage-cap" id="rdCap">${sel && MG().partState(sel, owned) !== 'unknown' ? `<span class="pulse-dot"></span><b>${esc(sel.name)}</b>` : `<span class="muted">⟲ Faites pivoter votre ${esc(ch.name)} · sélectionnez une pièce pour zoomer</span>`}</div></div>
       <div id="rdDetail">${detail}</div>
       <div class="rd-tree" id="rdTree">${rows}</div>
       <div class="grid g2" style="margin-top:16px" id="rdBottom"><div class="card"><h3>Comparaison des performances</h3><div class="sub">Votre voiture (couleur) face à la moyenne des managers de la ligue ${esc(league.name)} (gris)</div><div style="margin-top:12px;display:grid;gap:10px">${cmp}</div></div>
-        <div class="card"><h3>Votre monoplace</h3><div class="sub">Châssis ${esc(ch.name)} + pièces développées${legacy ? ` + ${legacy} niveaux de l'ancienne R&D` : ''}</div><div style="margin-top:12px;display:grid;gap:8px">${MG().STATS.map((st) => statBar(st.short, car[st.k], ch[st.k], F1.teamColor(ch.id), st.icon)).join('')}</div></div></div>`;
+        <div class="card"><h3>Votre monoplace</h3><div class="sub">Châssis ${esc(ch.name)} + pièces développées${legacy ? ` + ${legacy} niveaux de l'ancienne R&D` : ''}</div><div style="margin-top:12px;display:grid;gap:8px">${MG().STATS.map((st) => statBar(st.short, car[st.k], ch[st.k], F1.teamColor(ch.id), st.icon)).join('')}</div>${mechChips(car)}</div></div>`;
+  }
+
+  // Pari soufflerie : la pièce passe dans le flux d'air, l'aiguille de la balance décide
+  function tunnelAnim(res, p, done) {
+    const cat = MG().RD_CATS.find((c) => c.id === p.cat);
+    const ov = document.createElement('div');
+    ov.className = 'tunnel-ov';
+    let streams = '';
+    for (let i = 0; i < 16; i++) streams += `<i style="top:${6 + i * 5.8}%;animation-delay:${(i * 0.137) % 0.9}s;animation-duration:${0.55 + (i % 4) * 0.12}s"></i>`;
+    ov.innerHTML = `<div class="tunnel-box" style="--cc:${cat.color}"><div class="tunnel-h">🌬️ Soufflerie · ${Math.round(res.chance * 100)} % de réussite</div>
+      <div class="tunnel"><div class="air">${streams}</div><div class="tunnel-part">${rdIcon(p.icon, '#fff')}</div></div>
+      <div class="gauge"><div class="gauge-zone" style="width:${res.chance * 100}%"></div><div class="needle"></div></div>
+      <div class="tunnel-res">Mesures en cours…</div></div>`;
+    document.body.appendChild(ov);
+    // l'aiguille hésite puis se fixe dans la zone verte (réussite) ou rouge (échec)
+    const target = res.ok ? Math.random() * res.chance * 0.92 + 0.03 : res.chance + (1 - res.chance) * (0.15 + Math.random() * 0.75);
+    const nd = $('.needle', ov), out = $('.tunnel-res', ov), t0 = performance.now(), D = 2200;
+    const step = (now) => {
+      const k = Math.min(1, (now - t0) / D);
+      const wob = Math.sin(k * 22) * (1 - k) * 0.35;
+      const x = Math.max(0, Math.min(1, 0.5 + (target - 0.5) * (k * k * (3 - 2 * k)) + wob));
+      nd.style.left = x * 100 + '%';
+      if (k < 1) return requestAnimationFrame(step);
+      ov.classList.add(res.ok ? 'ok' : 'ko');
+      out.innerHTML = res.ok ? `✅ Validée : <b>${esc(p.name)} ${MG().LV_NAME[res.level]}</b>` : '❌ Corrélation ratée : la pièce part à la poubelle';
+      setTimeout(() => { ov.classList.add('out'); setTimeout(() => ov.remove(), 350); done(); }, 1100);
+    };
+    requestAnimationFrame(step);
   }
 
   // Mise à jour partielle de la page R&D (sans recharger la voiture 3D) puis zoom sur la pièce
@@ -1086,7 +1145,7 @@
     const rw = MG().rewards(meF.pos, meF.out, ctx.league);
     const leagueBefore = ctx.league;
     // le résultat est enregistré tout de suite (fermer la fenêtre ne permet pas d'annuler une course)
-    F1.store.recordRace({ pos: meF.pos, dnf: meF.out, grid: meField.grid, lp: rw.lp, pc: rw.pc, gp: ctx.race.nameFr.replace('Grand Prix', 'GP'), league: leagueBefore.name, driver: ctx.drvM.family, chassis: ctx.ch.name });
+    F1.store.recordRace({ pos: meF.pos, dnf: meF.out, grid: meField.grid, fastest: res.fastest.who === 0, lp: rw.lp, pc: rw.pc, gp: ctx.race.nameFr.replace('Grand Prix', 'GP'), league: leagueBefore.name, driver: ctx.drvM.family, chassis: ctx.ch.name });
     F1.social.sync(true);
     showRace(res, ctx, rw, leagueBefore);
   }
@@ -1403,7 +1462,20 @@
       case 'm-buy-c': { const ctx = mgrCtx(); const c = ctx.mk.byChassis.get(a.dataset.id); if (ctx.m.chassis && ctx.m.rdSpent > 0 && !confirm('Changer de châssis remet votre R&D à zéro. Continuer ?')) break; try { F1.store.buyChassis(c, resaleC(ctx)); toast('🔩', `Châssis <b>${esc(c.name)}</b> livré au garage !`, 'win'); confetti(80); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'rd-cat': S.rdCat = a.dataset.c; S.rdSel = null; rdRefresh(); break;
       case 'rd-sel': S.rdSel = a.dataset.p || null; rdRefresh(); break;
-      case 'rd-buy': { const p = MG().RD_BY_ID.get(a.dataset.p); try { F1.store.research(p); toast('🔬', `<b>${esc(p.name)}</b> développé et installé !`, 'win'); confetti(70); showAchievements(); F1.social.sync(); rdRefresh(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
+      case 'rd-buy': {
+        const p = MG().RD_BY_ID.get(a.dataset.p), mode = a.dataset.mode || 'safe';
+        try {
+          const res = F1.store.research(p, mode);
+          const after = () => {
+            if (res.ok) { toast(mode === 'tunnel' ? '🎲' : '🔬', `<b>${esc(p.name)}</b> ${MG().LV_NAME[res.level]} installé${mode === 'tunnel' ? ' — la soufflerie valide la pièce !' : ' !'}`, 'win'); confetti(res.level >= MG().MAX_LV ? 200 : 70); }
+            else toast('💨', `Échec en soufflerie : <b>${esc(p.name)}</b> ne tient pas ses promesses. Chances de la prochaine tentative : ${Math.round(MG().tunnelChance(F1.store.mgr().fails[p.id]) * 100)} %`, 'err', 5000);
+            showAchievements(); F1.social.sync(); rdRefresh();
+          };
+          if (mode === 'tunnel') tunnelAnim(res, p, after); else after();
+        } catch (err) { toast('⚠️', esc(err.message), 'err'); }
+        break;
+      }
+      case 'obj-claim': { try { const pc = F1.store.claimObjective(a.dataset.id, mgrCtx().league.mult); toast('🎯', `Objectif rempli : +${pc} PitCoins`, 'win'); confetti(60); showAchievements(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'm-up': { const k = a.dataset.k; const lvl = F1.store.mgr().ups[k] || 0; try { F1.store.upgrade(k, MG().upCost(lvl)); const st = MG().STATS.find((x) => x.k === k); toast('🔬', `${st.icon} ${esc(st.label)} : niveau ${lvl + 1} !`, 'win'); showAchievements(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'm-race': startRace(); break;
       case 'm-again': closeModal(); setTimeout(startRace, 50); break;

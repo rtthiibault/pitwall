@@ -196,6 +196,13 @@ const PART3D = {
   gearbox_rel: { cut: BOX.gearbox, lift: [0, 0.7, 0], inner: 'gearbox', bay: ['exhaust'], cam: BOXCAM },
   engine_life: { cut: BOX.hood, lift: [0, 0.75, 0], inner: 'engine', bay: ['turbo', 'mguk', 'hydraulics'], cam: HOODCAM },
   brake_life: { cut: BOX.fwheel, lift: [0, 0.12, 1.45], inner: 'brakeF', cam: FWCAM },
+  // Stratégie & équipe
+  launch: { cut: BOX.gearbox, lift: [0, 0.7, 0], inner: 'gearbox', bay: ['exhaust'], cam: BOXCAM },
+  tyres: { glow: [[-2.4, 0, 0.55], [-1.5, 0.74, 0.99]], cam: RWCAM },
+  push: { cut: BOX.tank, lift: [0, 0.75, 0], inner: 'battery', cam: [-0.3, 0.45, 0.05, 1.3, 1.25, 1.6] },
+  pitcrew: { cut: BOX.fwheel, lift: [0, 0.12, 1.45], inner: 'brakeF', cam: FWCAM },
+  radio: { glow: [[-0.15, 0.6, 0], [0.78, 1.04, 0.34]], cam: [0.3, 0.9, 0.1, 1.1, 0.75, 1.4] },
+  simu: { glow: [[-0.1, 0.05, 0], [1.45, 0.95, 0.3]], cam: [0.7, 0.55, 0.15, 1.1, 1.3, 1.9] },
 };
 
 // Uniforms partagés par tous les matériaux d'une voiture (découpe, surbrillance, rayons X)
