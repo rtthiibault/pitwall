@@ -140,6 +140,7 @@
     S.sel.clear();
     $$('[data-r]').forEach((a) => a.classList.toggle('active', a.dataset.r === (r === 'gp' ? 'calendrier' : r)));
     $('#friendsBtn').classList.toggle('active', r === 'amis');
+    if (F1.car3d) F1.car3d.disposeAll();
     const app = $('#app');
     let html;
     switch (r) {
@@ -156,6 +157,7 @@
     app.innerHTML = sourceNotice() + html;
     app.classList.remove('fade-in'); void app.offsetWidth; app.classList.add('fade-in');
     afterRender(r, parts);
+    F1.visuals.hydrate(app);
     tick();
   }
   window.addEventListener('hashchange', () => { route(); window.scrollTo({ top: 0 }); });
@@ -301,20 +303,22 @@
     const nextSess = nx.sessions.find((x) => x.date.getTime() > now);
     const w = S.weather;
     const wIcon = w ? (w.rain >= 50 ? '🌧️' : w.rain >= 25 ? '🌦️' : w.code <= 1 ? '☀️' : '⛅') : '';
-    return `<section class="hero"><div class="hero-bg">${streaks()}<div class="grid-floor"></div><div class="big-round">R${nx.round}</div>${heroCar()}<div class="kerb"></div></div>
-      <div class="hero-top">${flag(nx.iso, 'lg')}<span class="chip red live">Prochain Grand Prix</span><span class="chip">Manche ${nx.round} / ${s.races.length}</span>${nx.sprint ? '<span class="chip gold">⚡ Week-end Sprint</span>' : ''}${nx.street ? '<span class="chip">🏙️ Circuit urbain</span>' : ''}${nx.round === 1 ? `<span class="chip green">🚦 Ouverture de la saison ${s.year}</span>` : ''}${nx.tbc ? '<span class="chip">À confirmer</span>' : ''}</div>
+    return `<section class="hero"><div class="hero-bg">${streaks()}<div class="grid-floor"></div><div class="big-round">R${nx.round}</div><div class="kerb"></div></div>
+      <div class="hero-main"><div class="hero-top">${flag(nx.iso, 'lg')}<span class="chip red live">Prochain Grand Prix</span><span class="chip">Manche ${nx.round} / ${s.races.length}</span>${nx.sprint ? '<span class="chip gold">⚡ Week-end Sprint</span>' : ''}${nx.street ? '<span class="chip">🏙️ Circuit urbain</span>' : ''}${nx.round === 1 ? `<span class="chip green">🚦 Ouverture de la saison ${s.year}</span>` : ''}${nx.tbc ? '<span class="chip">À confirmer</span>' : ''}</div>
       <h1><span class="accent">${esc(nx.countryFr)}</span>${esc(nx.nameFr)}</h1>
       <div class="hero-meta"><span>📍 ${esc(nx.circuit)} · ${esc(nx.locality)}</span><span>🗓️ ${DAYL.format(nx.date)} · ${HM.format(nx.date)}</span>
       ${w ? `<span class="weather" title="Prévision Open-Meteo à l'heure du départ">${wIcon} ${w.temp}°C · 💧 ${w.rain} % · 💨 ${w.wind} km/h</span>` : ''}</div>
       ${countdown(nx.date.getTime())}
       <div class="weekend">${nx.sessions.map((x) => `<div class="sess ${x.date.getTime() < now ? 'done' : x === nextSess ? 'next' : ''}"><small>${esc(x.label)}</small><b>${WD.format(x.date)} ${HM.format(x.date)}</b></div>`).join('')}</div>
-      <div class="hero-actions"><a class="btn" href="#/paris">🏁 Parier sur ce GP</a><a class="btn ghost" href="#/paris/tierce">Jouer le tiercé</a></div></section>`;
+      <div class="hero-actions"><a class="btn" href="#/paris">🏁 Parier sur ce GP</a><a class="btn ghost" href="#/paris/tierce">Jouer le tiercé</a></div></div>${heroCar()}</section>`;
   }
   function heroCar() {
     const w = S.markets.find((m) => m.kind === 'win');
     const fav = w && w.selections[0] && drv(w.selections[0].driverId);
     if (!fav) return '';
-    return `<div class="hero-car" title="Monoplace du favori : ${esc(fav.family)}">${F1.visuals.car(fav.teamId, { number: fav.number, spin: true })}</div>`;
+    const t = team(fav.teamId);
+    return `<div class="hero-stage" style="--tc:${t.color}"><div class="stage-glow"></div>${F1.visuals.car(fav.teamId, { live: true, number: fav.number })}
+      <div class="stage-cap"><span class="tstripe" style="background:${t.color}"></span><div><small>Favori du week-end</small><b>${esc(fav.family)} · ${esc(t.short)}</b></div><span class="stage-hint">⟲ Faites pivoter</span></div></div>`;
   }
   function streaks() {
     let h = '';
@@ -614,7 +618,7 @@
       <div class="grid g2">${teams.map((t, i) => {
         const ds = s.entrants.filter((id) => drv(id).teamId === t.id);
         return `<div class="gteam" style="--tc:${t.color}"><div class="gteam-h"><div><div class="rank">P${i + 1} constructeurs · ${fmt(t.points)} pts</div><h3>${esc(t.short)}</h3><div class="sub">${esc(t.name)}</div></div></div>
-          <div class="gcar">${F1.visuals.car(t.id, { number: drv(ds[0]).number, spin: true })}</div>
+          <div class="gcar">${F1.visuals.car(t.id, { view: '34', number: drv(ds[0]).number })}</div>
           <div class="gdrivers">${ds.map(card).join('')}</div></div>`;
       }).join('')}</div>`;
   }
@@ -799,7 +803,7 @@
     const L = F1.visuals.livery(ch.id);
     const setupLbl = (v) => (v <= -0.35 ? 'Faible appui (vitesse)' : v >= 0.35 ? 'Fort appui (virages)' : 'Réglage médian');
     return `<div class="garage" style="--tc:${L.body}">
-        <div class="garage-car">${F1.visuals.car(ch.id, { number: drvM.number, spin: false })}</div>
+        <div class="garage-car">${F1.visuals.car(ch.id, { live: true, number: drvM.number })}<div class="stage-hint" style="text-align:center">⟲ Faites pivoter votre monoplace</div></div>
         <div class="garage-info">
           <div class="row" style="flex-wrap:nowrap"><div class="gphoto" style="--tc:${tcol(drvM.teamId)};width:74px;height:74px">${p ? `<img src="${esc(p.img)}" alt="" onerror="this.remove()">` : ''}<i>${esc(drvM.code)}</i></div>
           <div><div class="muted upper" style="font-size:11px;font-weight:700">Votre pilote</div><div class="lname" style="font-size:24px;font-weight:900;font-style:italic;text-transform:uppercase">${esc(drvM.family)}</div><div class="muted" style="font-size:13px">Note ${drvM.rating} · châssis ${esc(ch.name)}</div></div>
@@ -855,7 +859,7 @@
         const net = c.price - (own ? 0 : res);
         const idx = MG().compat(c, w, MG().bestSetup(c, w));
         return `<div class="mcard ${own ? 'own' : ''}" style="--tc:${F1.teamColor(c.id)}"><div class="row" style="justify-content:space-between"><div><div style="font-weight:900;font-style:italic;text-transform:uppercase;font-size:20px">${esc(c.name)}</div><div class="muted" style="font-size:12px">Indice au prochain GP : <b>${idx}</b></div></div>${own ? '<span class="chip green">Votre châssis</span>' : ''}</div>
-          <div style="margin:4px -6px">${F1.visuals.car(c.id, { shadow: false })}</div>
+          <div style="margin:4px -6px">${F1.visuals.car(c.id, { view: '34', shadow: false })}</div>
           <div style="display:grid;gap:6px;margin-bottom:12px">${MG().STATS.map((st) => statBar(st.short, c[st.k], c[st.k], F1.teamColor(c.id), st.icon)).join('')}</div>
           <div class="row" style="justify-content:space-between"><b style="font-size:18px">${fmtPC(c.price)}</b>${own ? '' : `<button class="btn sm" data-action="m-buy-c" data-id="${esc(c.id)}" ${net > m.pc + 1e-9 ? 'disabled' : ''}>${m.chassis ? `Changer (${net >= 0 ? '−' : '+'}${Math.abs(net)})` : 'Acheter'}</button>`}</div></div>`;
       }).join('')}</div>`;
@@ -944,7 +948,7 @@
     $('#modal').innerHTML = `<div class="modal race-modal"><div class="modal-box race-box">
       <div class="race-h"><div><div class="muted upper" style="font-size:11px;font-weight:700">${leagueBadge(leagueBefore)} · ${esc(ctx.race.nameFr)}</div><div class="race-lap">Tour <b id="lapN">0</b> / ${MG().LAPS}</div></div><button class="btn sm ghost" data-action="m-skip">Passer ⏭</button></div>
       <div id="raceEnd"></div>
-      <div class="race-car">${F1.visuals.car(ctx.ch.id, { number: ctx.drvM.number, spin: true })}</div>
+      <div class="race-car">${F1.visuals.car(ctx.ch.id, { view: 'side', number: ctx.drvM.number, spin: true })}</div>
       <div class="race-body"><div class="tower" style="height:${res.field.length * ROW}px">${tower}</div><div class="feed" id="feed"><div class="ev"><b>Départ</b> — vous partez P${res.field.find((x) => x.c.me).grid} sur la grille</div></div></div>
       </div></div>`;
     let lap = 0;
@@ -989,6 +993,7 @@
       showAchievements();
     };
     S.raceFinish = finish;
+    F1.visuals.hydrate($('#modal'));
     raceTimer = setInterval(() => { lap++; if (lap >= MG().LAPS) finish(); else render(lap); }, 650);
   }
 

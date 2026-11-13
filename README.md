@@ -81,7 +81,13 @@ Ne mettez **jamais** la clé *service_role* dans le site.
 
 ## Pilotes et monoplaces
 - **Portraits des pilotes** : il s'agit uniquement d'images **libres de droits** issues de Wikimedia Commons (licences CC BY, CC BY-SA, CC0…), c'est-à-dire les photos principales des pages Wikipédia des pilotes. L'automatisation hebdomadaire les liste dans `data/portraits.json`, avec l'auteur et la licence de chacune. Les crédits sont affichés par le lien « crédits photos » en pied de page, comme l'exigent ces licences. Si une photo manque, le site affiche les initiales du pilote aux couleurs de son écurie.
-- **Monoplaces** : ce sont des illustrations vectorielles originales aux couleurs de chaque écurie (`js/visuals.js`, objet `LIVERY`). Elles n'utilisent aucune image officielle, donc aucun problème de droits.
+- **Monoplaces 3D** : il s'agit du modèle « F1 2026 concept polygon model » (`assets/f1-2026.glb`), affiché avec Three.js.
+  - **Conversion** : le fichier USDZ d'origine (1,16 million de triangles) a été converti en GLB, puis segmenté en zones de livrée (carrosserie, couleur secondaire, dessous de caisse, carbone, pneus, jantes).
+  - **Allègement** : le modèle a été simplifié à environ 530 000 triangles et compressé avec meshopt (1,4 Mo).
+  - **Peinture** : chaque écurie est peinte à la volée avec ses couleurs (`LIVERY` dans `js/visuals.js`).
+  - **Affichage** : le bandeau d'accueil et le garage montrent une voiture interactive, qu'on fait pivoter à la souris ou au doigt. Ailleurs, le site affiche des images 3D générées dans le navigateur.
+  - **Repli** : si WebGL est indisponible, des illustrations vectorielles prennent le relais.
+  - ⚠️ Vérifiez la licence du modèle sur sa page d'origine. Si c'est une licence Creative Commons BY, ajoutez le crédit de l'auteur dans le pied de page.
 - Elles apparaissent à plusieurs endroits :
   - sur les cartes des favoris ;
   - dans les duels, le podium, le tiercé et les classements ;
@@ -145,6 +151,8 @@ Ouvrez ensuite http://localhost:8000.
 | Fichier | Rôle |
 |---|---|
 | `js/season2027.js` | Calendrier et grille 2027 intégrés |
+| `js/car3d.js` | Rendu 3D des monoplaces (Three.js, modèle GLB) |
+| `assets/f1-2026.glb` | Modèle 3D de la monoplace |
 | `js/visuals.js` | Monoplaces SVG (livrées) et portraits des pilotes |
 | `js/social.js` | Système d'amis (Supabase) |
 | `js/config.js` | Configuration Supabase (URL + clé anon) |

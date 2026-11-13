@@ -39,7 +39,7 @@
   }
 
   /* Monoplace 2026 vue de profil (nez à droite). opts : number, spin (roues animées), shadow, cam, compound */
-  function car(teamId, opts = {}) {
+  function svgCar(teamId, opts = {}) {
     const L = livery(teamId);
     const id = 'c' + (++uid);
     const num = opts.number != null ? String(opts.number) : '';
@@ -157,5 +157,41 @@
   const portrait = (id) => portraits[id] || null;
   const allPortraits = () => portraits;
 
-  F1.visuals = { car, livery, loadPortraits, portrait, allPortraits };
+  /* Monoplace : emplacement remplacé par le rendu 3D (Three.js) dès qu'il est prêt, dessin vectoriel sinon.
+     opts.view : '34' (trois-quarts) | 'side' (profil) ; opts.live : visionneuse 3D interactive */
+  function car(teamId, opts = {}) {
+    const view = opts.view || (opts.live ? '34' : 'side');
+    return `<div class="car3d ${opts.live ? 'live' : ''} v-${view}" data-team="${teamId}" data-view="${view}"><div class="car3d-fb">${svgCar(teamId, opts)}</div></div>`;
+  }
+  let hydrating = false;
+  function hydrate(root = document) {
+    if (!F1.car3d || !F1.car3d.supported || !F1.car3d.ready) return;
+    const slots = [...root.querySelectorAll('.car3d:not(.ok)')];
+    slots.filter((el) => el.classList.contains('live')).forEach((el) => {
+      el.classList.add('ok');
+      try { F1.car3d.mount(el, el.dataset.team, { view: el.dataset.view, autoRotate: true, speed: 1.1 }); } catch (e) { el.classList.remove('ok'); }
+    });
+    const imgs = slots.filter((el) => !el.classList.contains('live'));
+    if (!imgs.length || hydrating) return;
+    hydrating = true;
+    let i = 0;
+    const step = () => {
+      const t0 = performance.now();
+      while (i < imgs.length && performance.now() - t0 < 40) {
+        const el = imgs[i++];
+        if (!el.isConnected || el.classList.contains('ok')) continue;
+        try {
+          const side = el.dataset.view === 'side';
+          const url = F1.car3d.snapshot(el.dataset.team, { view: el.dataset.view, w: side ? 900 : 960, h: side ? 300 : 440 });
+          el.innerHTML = `<img src="${url}" alt="Monoplace ${F1.teamShort(el.dataset.team)}" draggable="false">`;
+          el.classList.add('ok');
+        } catch (e) { /* on garde le dessin vectoriel */ }
+      }
+      if (i < imgs.length) setTimeout(step, 16); else { hydrating = false; const more = root.querySelector('.car3d:not(.ok):not(.live)'); if (more) hydrate(root); }
+    };
+    step();
+  }
+  window.addEventListener('car3d-ready', () => hydrate(document));
+
+  F1.visuals = { car, svgCar, hydrate, livery, loadPortraits, portrait, allPortraits };
 })(globalThis.F1 = globalThis.F1 || {});
