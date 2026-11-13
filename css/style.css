@@ -854,3 +854,7 @@ footer#footer { position: relative; background: linear-gradient(180deg, transpar
   font-family: 'Titillium Web', system-ui, sans-serif; font-style: italic; font-weight: 900; letter-spacing: .03em;
 }
 .btn, .slip-fab { text-transform: uppercase; }
+
+/* La F1 du fond et sa télémétrie n'apparaissent que sur l'accueil */
+body:not(.on-home) .track-bg.ready, body:not(.on-home) .tele.ready { opacity: 0 !important; visibility: hidden; transition: none; }
+body:not(.on-home) { --panel: rgba(16, 17, 25, .72); }

@@ -650,7 +650,7 @@ function mountTrack(el, teamId, getP, { onTel } = {}) {
     cam.updateProjectionMatrix();
   };
   frame();
-  let alive = true, raf = 0, sp = -1, prevP = -1, prevT = performance.now(), dirty = true, vel = 0, drift = 0;
+  let alive = true, paused = false, raf = 0, sp = -1, prevP = -1, prevT = performance.now(), dirty = true, vel = 0, drift = 0;
   const ro = 'ResizeObserver' in window ? new ResizeObserver(() => { [w, h] = size(); r.setSize(w, h, false); frame(); dirty = true; }) : null;
   if (ro) ro.observe(el);
   const camPos = new THREE.Vector3(), camLook = new THREE.Vector3(), tmp = new THREE.Vector3();
@@ -659,7 +659,7 @@ function mountTrack(el, teamId, getP, { onTel } = {}) {
     if (!alive) return;
     raf = requestAnimationFrame(loop);
     const now = performance.now(), dt = Math.min(0.05, (now - prevT) / 1000); prevT = now;
-    if (document.hidden) return;
+    if (document.hidden || paused) return;
     const target = Math.max(0, Math.min(1, getP()));
     if (sp < 0) sp = target;
     const moving = Math.abs(target - sp) > 2e-5;
@@ -723,6 +723,7 @@ function mountTrack(el, teamId, getP, { onTel } = {}) {
   loop();
   return {
     // téléportation (pendant le drapeau à damier) : pas de marche arrière visible
+    pause(v) { paused = !!v; if (!paused) { sp = -1; prevP = -1; vel = 0; drift = 0; lastSkid[0] = lastSkid[1] = null; dirty = true; } },
     jump() { sp = -1; prevP = -1; vel = 0; drift = 0; lastSkid[0] = lastSkid[1] = null; dirty = true; },
     dispose() {
       alive = false; cancelAnimationFrame(raf); if (ro) ro.disconnect();

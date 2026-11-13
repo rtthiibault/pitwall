@@ -139,6 +139,8 @@
     const parts = (location.hash.replace(/^#\/?/, '') || '').split('/');
     const r = parts[0] || '';
     if (lastTop === null) lastTop = r;
+    document.body.classList.toggle('on-home', r === '');
+    if (trackBg) trackBg.pause(r !== '');
     S.sel.clear();
     $$('[data-r]').forEach((a) => a.classList.toggle('active', a.dataset.r === (r === 'gp' ? 'calendrier' : r)));
     $('#friendsBtn').classList.toggle('active', r === 'amis');
@@ -400,7 +402,7 @@
         if (sec.dataset.s !== String(s)) { sec.dataset.s = s; sec.textContent = 'S' + s; }
         tele.classList.toggle('hot', Math.abs(drift) > 12);
       };
-      try { trackBg = F1.car3d.mountTrack(el, teamId, getP, { onTel }); el.classList.add('ready'); tele.classList.add('ready'); } catch (e) { console.warn(e); }
+      try { trackBg = F1.car3d.mountTrack(el, teamId, getP, { onTel }); trackBg.pause(!document.body.classList.contains('on-home')); el.classList.add('ready'); tele.classList.add('ready'); } catch (e) { console.warn(e); }
     };
     if (F1.car3d && F1.car3d.ready) go(); else window.addEventListener('car3d-ready', go, { once: true });
   }
