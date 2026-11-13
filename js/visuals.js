@@ -199,7 +199,7 @@
        v : hauteur 0 (sol) -> 1 (haut de la prise d'air)
        s : écart latéral 0 (axe) -> 1 (bord extérieur)
        part : 'body' | 'accent' | 'lower' | 'carbon'
-     Repères : essieu arrière u≈0,18 · pontons u≈0,30–0,70 · prise d'air u≈0,42–0,50 · cockpit u≈0,52–0,62 · essieu avant u≈0,82 */
+     Repères (mesurés sur le modèle) : essieu arrière u≈0,18 · capot moteur étroit u≈0,20–0,45 · prise d'air u≈0,35–0,45 · cockpit/halo u≈0,45–0,60 · pontons u≈0,45–0,66 · essieu avant u≈0,82 */
   const sm = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
   const hx = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
   const mix = (c1, c2, t) => { const a = hx(c1), b = hx(c2); return '#' + a.map((x, i) => Math.round(x + (b[i] - x) * t).toString(16).padStart(2, '0')).join(''); };
@@ -208,14 +208,23 @@
   const isRW = (u, v) => u < 0.11 && v > 0.42;           // aileron arrière
   const isFW = (u, v) => u > 0.88 && v < 0.24;           // aileron avant
   const LIVERY3D = {
-    alpine: { // A526 : dégradé rose -> bleu, dessous bleu nuit
+    alpine: { // A526 (photo) : bleu vif, arête du nez et halo roses, dérives roses, dessous noir
       paint(u, v, s, p, n) {
-        if (p === 'carbon') return isRW(u, v) ? (v > 0.8 ? '#ff6fae' : '#1a3f9a') : isFW(u, v) && s > 0.75 ? '#1a3f9a' : null;
-        if (p === 'lower' || v < 0.2) return '#0c1a3d';
-        const t = sm(0.34, 0.72, u);
-        let c = mix('#ff7fb8', '#1d5fd6', t);
-        if (v > 0.72 && u < 0.55) c = mix(c, '#ff5fa6', 0.4);
-        return c;
+        const pink = '#ff6fb5', blue = '#1f74e0', deep = '#0d3f9e';
+        if (p === 'carbon') {
+          if (isRW(u, v)) return s > 0.4 ? pink : v > 0.85 ? pink : '#121318';
+          if (isFW(u, v)) return s > 0.75 ? pink : (v > 0.19 && s > 0.25 ? pink : null);
+          return null;
+        }
+        if (p === 'accent') return u > 0.5 ? pink : blue;
+        if (p === 'lower' || v < 0.17) return '#0e1016';
+        if (u > 0.44 && u < 0.62 && v > 0.76) return pink;                       // halo rose
+        if (u > 0.55 && s < 0.13 && (n == null || n > 0.3) && v > 0.2) return pink; // arête du nez jusqu'au cockpit
+        if (u > 0.55 && s < 0.17 && v > 0.2 && n != null && n > 0.1) return '#4aa3ff'; // filet bleu clair le long du nez
+        if (u > 0.82 && v < 0.24) return '#0e1016';                             // dessous du nez
+        if (u < 0.2 && v > 0.45) return pink;                                    // arrière du capot
+        if (band(v, 0.4, 0.46, n) && u > 0.5 && u < 0.58) return pink;          // touche rose sur le ponton
+        return mix(deep, blue, sm(0.2, 0.6, v));
       },
     },
     aston_martin: { // AMR26 : vert anglais, filets citron vert
@@ -259,34 +268,61 @@
         return '#f2f2f2';
       },
     },
-    ferrari: { // SF-26 : rouge, touches blanches, dessous noir
+    ferrari: { // SF-26 (photo) : rouge, grand panneau blanc capot/haut des pontons, dessous et ailerons noirs
       paint(u, v, s, p, n) {
-        if (p === 'carbon') return isRW(u, v) && v > 0.85 ? '#d40000' : null;
-        if (p === 'accent') return '#f4f4f4';
-        if (p === 'lower' || v < 0.2) return '#141414';
-        if (u > 0.4 && u < 0.56 && v > 0.7) return '#f4f4f4';
-        if (band(v, 0.22, 0.26, n) && u > 0.25 && u < 0.85) return '#f4f4f4';
-        return '#d40000';
+        const red = '#d4000f', white = '#f4f4f2', black = '#121214';
+        if (p === 'carbon') {
+          if (isFW(u, v)) return s > 0.72 && v > 0.08 ? red : null;
+          return null;
+        }
+        if (p === 'accent') return u > 0.5 ? red : black;
+        if (p === 'lower' || v < 0.18) return black;
+        if (u > 0.45 && u < 0.62 && v > 0.8) return black;                         // halo
+        // panneau blanc : du cockpit vers l'arrière, frontière diagonale qui descend sur le ponton
+        if (u > 0.14 && u < 0.62 && v > 0.36 + Math.max(0, u - 0.45) * 1.3) return white;
+        if (u <= 0.12) return v > 0.5 ? black : red;                               // structure arrière
+        if (u > 0.6 && band(v, 0.3, 0.33, n) && u < 0.85) return white;           // filet blanc sur le flanc du nez
+        return red;
       },
     },
-    mclaren: { // MCL40 : papaye avec chevron noir
+    mclaren: { // MCL40 (photo) : papaye + anthracite (dessus/flancs des pontons, tour du cockpit)
       paint(u, v, s, p, n) {
-        if (p === 'carbon') return isRW(u, v) && v > 0.8 ? '#ff8000' : isFW(u, v) && s > 0.82 ? '#ff8000' : null;
-        if (p === 'accent') return '#1b1b1f';
-        if (p === 'lower' || v < 0.19) return '#141416';
-        if (u > 0.24 && u < 0.62 && v > 0.52 && v < 0.5 + (u - 0.24) * 0.9) return '#1b1b1f';
-        if (u > 0.62 && u < 0.72 && v > 0.45 && v < 0.6) return '#1b1b1f';
-        return '#ff8000';
+        const pap = '#ff8000', anth = '#1c1c21';
+        if (p === 'carbon') {
+          if (isRW(u, v)) return v > 0.78 || s > 0.42 ? pap : anth;
+          if (isFW(u, v)) return s > 0.72 ? (v > 0.12 && v < 0.2 ? pap : anth) : (v > 0.17 && s > 0.2 ? pap : null);
+          return null;
+        }
+        if (p === 'accent') return anth;
+        if (p === 'lower' || v < 0.18) return anth;
+        if (u > 0.44 && u < 0.64 && v > 0.72) return anth;                         // tour du cockpit / halo
+        if (u > 0.16 && u < 0.45 && v > 0.6 && s < 0.07) return pap;              // arête papaye du capot moteur
+        if (u > 0.16 && u < 0.67 && v > 0.36 && s > 0.05) {                         // dessus et flancs des pontons / capot
+          return v < 0.34 + (0.67 - u) * 0.38 ? pap : anth;                         // la vague papaye remonte vers l'arrière
+        }
+        if (u > 0.6 && u < 0.86 && v < 0.34 && s > 0.08) return anth;              // flancs bas du nez
+        return pap;
       },
     },
-    mercedes: { // W17 : noir, filets turquoise et argent
+    mercedes: { // W17 (photo) : noir brillant, nez argent cerné de turquoise, filets turquoise
       paint(u, v, s, p, n) {
-        if (p === 'carbon') return isRW(u, v) && v > 0.85 ? '#00d2be' : null;
-        if (p === 'accent') return '#00d2be';
-        if (p === 'lower' || v < 0.18) return '#0b0b0c';
-        if (band(v, 0.2, 0.25, n) && u > 0.25 && u < 0.85) return '#00d2be';
-        if (u > 0.78 && v > 0.22) return mix('#121214', '#5a5e66', sm(0.78, 1, u) * 0.6);
-        return '#121214';
+        const blk = '#0e0f11', teal = '#00d7c1', silver = '#bfc3c9';
+        if (p === 'carbon') {
+          if (isFW(u, v)) return s > 0.78 && v > 0.12 ? teal : null;
+          if (isRW(u, v)) return v > 0.95 && s > 0.3 ? teal : null;
+          return null;
+        }
+        if (p === 'accent') return u > 0.5 ? silver : blk;
+        if (p === 'lower' || v < 0.17) return blk;
+        const top = n == null || n > 0.35;
+        if (u > 0.6 && top && v > 0.2) {
+          if (s < 0.085) return silver;                                             // nez argent
+          if (s < 0.11) return teal;                                                // filet turquoise du nez
+        }
+        if (u > 0.6 && u < 0.67 && v > 0.4 && v < 0.62 && s > 0.25) return teal;   // bord d'attaque des pontons
+        if (band(v, 0.2, 0.235, n) && u > 0.3 && u < 0.8) return teal;            // filet bas de caisse
+        if (u > 0.2 && u < 0.45 && v > 0.55 && s > 0.07 && s < 0.1) return teal;  // filets du capot
+        return blk;
       },
     },
     rb: { // VCARB 03 : blanc dessus, bleu dessous, touches rouges
@@ -302,15 +338,22 @@
       },
     },
     racing_bulls: null,
-    red_bull: { // RB22 : bleu nuit mat, rouge et jaune
+    red_bull: { // RB22 (photo) : bleu nuit mat, prise d'air jaune, flancs du capot rouges, nez jaune/orange
       paint(u, v, s, p, n) {
-        if (p === 'carbon') return isRW(u, v) && v > 0.85 ? '#d6001c' : null;
-        if (p === 'accent') return '#ffcc00';
-        if (p === 'lower' || v < 0.18) return '#0d1430';
-        if (u > 0.95) return '#ffcc00';
-        if (u > 0.3 && u < 0.5 && v > 0.55) return v > 0.78 ? '#ffcc00' : '#d6001c';
-        if (band(v, 0.24, 0.28, n) && u > 0.3 && u < 0.85) return '#d6001c';
-        return '#1a2650';
+        const navy = '#121a42', blue = '#24418f', red = '#d6001c', yel = '#ffc400', org = '#ff8a00';
+        if (p === 'carbon') {
+          if (isFW(u, v)) return s > 0.72 ? red : (v > 0.14 && s > 0.2 ? blue : null);
+          if (isRW(u, v)) return v > 0.85 ? blue : null;
+          return null;
+        }
+        if (p === 'accent') return u > 0.5 ? yel : red;
+        if (p === 'lower' || v < 0.17) return '#0b0f22';
+        if (u > 0.92) return mix(org, yel, sm(0.92, 0.99, u));                     // pointe du nez jaune/orange
+        if (u > 0.88 && u <= 0.92) return red;
+        if (u > 0.33 && u < 0.47 && v > 0.8) return yel;                           // prise d'air jaune
+        if (u > 0.2 && u < 0.44 && v > 0.5 && s > 0.06) return v > 0.74 ? yel : red; // flanc du capot rouge/jaune
+        if (band(v, 0.25, 0.29, n) && u > 0.3 && u < 0.86) return red;            // filet rouge
+        return mix(navy, blue, sm(0.3, 0.55, v) * 0.18);
       },
       finish: { rough: 0.62, clear: 0.15 },
     },
