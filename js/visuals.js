@@ -169,7 +169,7 @@
     const slots = [...root.querySelectorAll('.car3d:not(.ok)')];
     slots.filter((el) => el.classList.contains('live')).forEach((el) => {
       el.classList.add('ok');
-      try { F1.car3d.mount(el, el.dataset.team, { view: el.dataset.view, autoRotate: true, speed: 1.1 }); } catch (e) { el.classList.remove('ok'); }
+      try { el.__car3d = F1.car3d.mount(el, el.dataset.team, { view: el.dataset.view, autoRotate: !el.dataset.focus, speed: 1.1, focus: el.dataset.focus ? JSON.parse(el.dataset.focus) : null }); } catch (e) { el.classList.remove('ok'); }
     });
     const imgs = slots.filter((el) => !el.classList.contains('live'));
     if (!imgs.length || hydrating) return;

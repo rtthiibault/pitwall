@@ -744,7 +744,7 @@
     const w = MG().circuitProfile(race);
     const drvM = m.driver ? mk.byDriver.get(m.driver.id) || null : null;
     const ch = m.chassis ? mk.byChassis.get(m.chassis.id) || null : null;
-    const car = ch ? MG().carStats(ch, m.ups) : null;
+    const car = ch ? MG().carStats(ch, m.ups, m.parts) : null;
     const league = MG().leagueOf(m.lp);
     const bots = MG().botField(mk, league, `${F1.store.dayKey()}-${race ? race.round : 0}`);
     return { m, mk, race, w, drvM, ch, car, league, bots };
@@ -865,25 +865,114 @@
       }).join('')}</div>`;
   }
 
+  /* ---------- R&D pièce par pièce ---------- */
+  // Pictogrammes (traits) des pièces
+  const RD_ICON = {
+    wing: '<path d="M6 40 C24 30 48 28 74 32 L74 38 C50 36 26 38 6 46Z"/><path d="M10 50 C30 44 52 43 72 45"/><path d="M74 26 V50"/>',
+    flap: '<path d="M8 44 C28 36 50 34 72 36"/><path d="M12 34 C30 28 50 26 70 28 L72 31"/><path d="M70 28 L74 24"/>',
+    endplate: '<path d="M20 52 V24 C20 18 26 16 32 16 H58 L62 22 V52Z"/><path d="M28 30 H54 M28 40 H54"/>',
+    floor: '<path d="M6 46 L18 34 H62 L74 46Z"/><path d="M24 40 C32 36 48 36 56 40"/><path d="M18 46 V50 H62 V46"/>',
+    diffuser: '<path d="M10 50 L30 30 H70 V50Z"/><path d="M38 30 V50 M50 30 V50 M60 30 V50"/>',
+    mirror: '<path d="M14 40 H44 L40 48 H14Z"/><path d="M44 40 C52 30 66 30 70 36 L70 46 C64 48 54 48 48 46"/>',
+    rim: '<circle cx="40" cy="38" r="20"/><circle cx="40" cy="38" r="11"/><circle cx="40" cy="38" r="3"/>',
+    sidepod: '<path d="M8 30 C26 22 52 22 72 30 L72 44 C54 50 26 50 8 44Z"/><path d="M60 28 V46"/><path d="M12 46 C28 52 50 52 66 46"/>',
+    rwing: '<path d="M10 22 H70 L66 30 H14Z"/><path d="M14 34 H66 L62 40 H18Z"/><path d="M18 22 V54 M62 22 V54"/>',
+    susp: '<path d="M8 22 L44 38 L8 54"/><path d="M44 38 H62"/><circle cx="66" cy="38" r="8"/>',
+    brake: '<circle cx="40" cy="38" r="20"/><circle cx="40" cy="38" r="6"/><path d="M24 22 C34 14 50 14 58 22 L52 28 C46 22 36 22 30 28Z"/>',
+    balance: '<path d="M40 16 V56"/><path d="M14 30 H66"/><path d="M14 30 L6 44 H22Z"/><path d="M66 30 L58 44 H74Z"/>',
+    mono: '<path d="M6 44 C20 30 44 24 74 28 L74 40 C50 40 28 46 6 50Z"/><circle cx="46" cy="30" r="5"/>',
+    halo: '<path d="M10 46 C16 22 52 18 66 30 L70 46"/><path d="M50 22 L58 46"/>',
+    engine: '<rect x="14" y="26" width="40" height="24" rx="3"/><path d="M20 26 V18 H48 V26 M54 32 H66 V44 H54 M14 34 H6 V42 H14"/>',
+    turbo: '<circle cx="34" cy="38" r="16"/><path d="M34 22 C44 30 44 46 34 54 M18 38 C26 30 42 30 50 38"/><path d="M50 30 H70 V40 H50"/>',
+    airbox: '<path d="M14 54 V34 C14 22 26 16 40 16 C54 16 66 22 66 34 V54Z"/><ellipse cx="40" cy="32" rx="12" ry="8"/>',
+    exhaust: '<path d="M8 32 H44 L58 26 H72 V44 H58 L44 38 H8Z"/><path d="M66 30 V40"/>',
+    motor: '<circle cx="40" cy="38" r="18"/><path d="M40 20 V56 M22 38 H58"/><path d="M46 24 L36 38 H46 L36 52" stroke-width="3"/>',
+    battery: '<rect x="12" y="24" width="52" height="28" rx="4"/><path d="M64 32 H70 V44 H64"/><path d="M40 28 L32 40 H42 L36 50"/>',
+    chip: '<rect x="22" y="22" width="36" height="32" rx="3"/><rect x="31" y="31" width="18" height="14"/><path d="M28 16 V22 M40 16 V22 M52 16 V22 M28 54 V60 M40 54 V60 M52 54 V60 M16 30 H22 M16 46 H22 M58 30 H64 M58 46 H64"/>',
+    gearbox: '<circle cx="30" cy="40" r="14"/><circle cx="54" cy="32" r="10"/><path d="M30 26 V22 M30 54 V58 M16 40 H12 M44 40 H48 M54 22 V18 M64 32 H68"/>',
+    radiator: '<rect x="12" y="20" width="56" height="36" rx="3"/><path d="M20 20 V56 M28 20 V56 M36 20 V56 M44 20 V56 M52 20 V56 M60 20 V56"/>',
+    louvre: '<path d="M10 54 L22 22 H70 L58 54Z"/><path d="M26 30 H62 M24 38 H60 M22 46 H58"/>',
+    hydraulic: '<path d="M14 30 H50 C60 30 60 46 50 46 H30 C20 46 20 58 30 58 H66"/><circle cx="14" cy="30" r="5"/><circle cx="66" cy="58" r="5"/>',
+  };
+  const rdIcon = (k, col) => `<svg viewBox="0 0 80 70" class="rd-ico" fill="none" stroke="${col}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${RD_ICON[k] || RD_ICON.chip}</svg>`;
+  const FX_LBL = { speed: '⚡ Vitesse', df: '🌀 Appui', rel: '🔧 Fiabilité' };
+
   function mgrRD(ctx) {
-    const { m, ch, car, w, race } = ctx;
+    const { m, ch, car, w, race, league, bots } = ctx;
     if (!ch) return `<div class="empty"><div class="ic">🔬</div>Achetez d'abord un châssis pour lancer la R&D.<div style="margin-top:14px"><a class="btn" href="#/manager/chassis">Voir les châssis</a></div></div>`;
-    const top = MG().STATS.reduce((a, st) => (w[st.k] > w[a.k] ? st : a), MG().STATS[0]);
-    return `<div class="notice" style="margin-bottom:16px">🎯 Prochain GP : <b>${esc(race.nameFr)}</b> (${esc(w.kind.toLowerCase())}). Priorité conseillée : <b>${top.icon} ${top.label}</b>. Chaque niveau ajoute +${MG().UP_STEP} points à la caractéristique.</div>
-      <div class="grid g3">${MG().STATS.map((st) => {
-        const lvl = m.ups[st.k] || 0;
-        const max = lvl >= MG().UP_MAX;
-        const cost = MG().upCost(lvl);
-        const nextCar = { ...car, [st.k]: car[st.k] + MG().UP_STEP };
-        const gain = MG().compat(nextCar, w, m.setup) - MG().compat(car, w, m.setup);
-        return `<div class="card rd ${st.k === top.k ? 'reco' : ''}">${st.k === top.k ? '<span class="chip red" style="position:absolute;top:14px;right:14px">Conseillé</span>' : ''}<div style="font-size:34px">${st.icon}</div><h3>${st.label}</h3>
-          <div class="pips">${Array.from({ length: MG().UP_MAX }, (_, i) => `<i class="${i < lvl ? 'on' : ''}"></i>`).join('')}</div>
-          <div class="muted" style="font-size:13px">Niveau ${lvl} / ${MG().UP_MAX} · valeur <b style="color:var(--text)">${Math.round(car[st.k])}</b>${max ? '' : ` → ${Math.round(nextCar[st.k])}`}</div>
-          <div class="muted" style="font-size:13px;margin-top:4px">Impact au ${esc(race.nameFr.replace('Grand Prix', 'GP'))} : <b style="color:var(--win)">+${gain} d'indice</b></div>
-          <button class="btn block" style="margin-top:14px" data-action="m-up" data-k="${st.k}" ${max || cost > m.pc + 1e-9 ? 'disabled' : ''}>${max ? 'Niveau maximum' : `Développer · ${cost} PC`}</button></div>`;
-      }).join('')}</div>
-      <div class="card" style="margin-top:16px"><h3>Votre voiture</h3><div class="sub">Base du châssis ${esc(ch.name)} + améliorations (en clair)</div><div class="grid g3" style="margin-top:12px">${MG().STATS.map((st) => statBar(st.short, car[st.k], ch[st.k], F1.teamColor(ch.id), st.icon)).join('')}</div>
-        <div class="muted" style="font-size:13px;margin-top:10px">R&D investie : ${fmtPC(m.rdSpent)}</div></div>`;
+    const cats = MG().RD_CATS;
+    const cat = cats.find((c) => c.id === S.rdCat) || cats[0];
+    S.rdCat = cat.id;
+    const owned = m.parts || {};
+    const all = MG().RD_PARTS;
+    const done = all.filter((p) => owned[p.id]).length;
+    let sel = S.rdSel && MG().RD_BY_ID.get(S.rdSel);
+    if (sel && sel.cat !== cat.id) sel = null;
+    // pièce conseillée pour le prochain GP : meilleur gain d'indice par PitCoin parmi les pièces disponibles
+    const gainOf = (p) => { const nc = { ...car }; for (const k in p.fx) nc[k] += p.fx[k]; return MG().compat(nc, w, m.setup) - MG().compat(car, w, m.setup); };
+    const avail = all.filter((p) => MG().partState(p, owned) === 'available');
+    const reco = avail.sort((a, b) => gainOf(b) / b.cost - gainOf(a) / a.cost)[0];
+    const botAvg = (k) => bots.reduce((a, b) => a + b.car[k], 0) / bots.length;
+    const legacy = (m.ups.speed || 0) + (m.ups.df || 0) + (m.ups.rel || 0);
+
+    const tabs = cats.map((c) => {
+      const n = all.filter((p) => p.cat === c.id), d = n.filter((p) => owned[p.id]).length;
+      return `<button class="rd-tab ${c.id === cat.id ? 'on' : ''}" data-action="rd-cat" data-c="${c.id}" style="--cc:${c.color}"><span>${c.icon}</span>${esc(c.name)}<small>${d}/${n.length}</small></button>`;
+    }).join('');
+    const rows = MG().rdBranches(cat.id).map((br) => {
+      const list = all.filter((p) => p.cat === cat.id && p.br === br);
+      const nd = list.filter((p) => owned[p.id]).length;
+      const cards = list.map((p) => {
+        const st = MG().partState(p, owned);
+        const unknown = st === 'unknown';
+        const can = st === 'available' && p.cost <= m.pc + 1e-9;
+        return `<button class="rd-card ${st} ${sel && sel.id === p.id ? 'sel' : ''} ${reco && reco.id === p.id ? 'reco' : ''}" data-action="rd-sel" data-p="${p.id}" style="--cc:${cat.color}">
+          ${st === 'done' ? '<span class="rd-badge ok">✓</span>' : st === 'locked' ? '<span class="rd-badge">🔒</span>' : reco && reco.id === p.id ? '<span class="rd-badge reco">Conseillé</span>' : ''}
+          <div class="rd-art">${unknown ? '<div class="rd-q">?</div>' : rdIcon(p.icon, st === 'done' ? '#cfe9ff' : st === 'available' ? '#ffffff' : 'rgba(255,255,255,.45)')}</div>
+          <div class="rd-name">${unknown ? 'Amélioration inconnue' : esc(p.name)}</div>
+          <div class="rd-cat">${cat.icon} ${esc(cat.name)}</div>
+          <div class="rd-foot">${st === 'done' ? '<span class="muted">Terminé</span>' : unknown ? '<span class="muted">—</span>' : `<b class="${can ? '' : 'muted'}">${pcoin}${p.cost}</b>`}</div></button>`;
+      }).join('<span class="rd-link"></span>');
+      return `<div class="rd-row"><div class="rd-branch"><b>${esc(br)}</b><small>${nd}/${list.length}</small></div><div class="rd-cards">${cards}</div></div>`;
+    }).join('');
+
+    let detail;
+    if (sel) {
+      const st = MG().partState(sel, owned);
+      const g = gainOf(sel);
+      detail = `<div class="rd-detail" style="--cc:${cat.color}"><div class="row" style="flex-wrap:nowrap;align-items:start"><div class="rd-art sm">${rdIcon(sel.icon, '#fff')}</div>
+          <div style="flex:1;min-width:0"><div class="muted upper" style="font-size:11px;font-weight:700">${cat.icon} ${esc(cat.name)} · ${esc(sel.br)}</div><h3 style="font-size:20px;margin:2px 0 6px">${st === 'unknown' ? 'Amélioration inconnue' : esc(sel.name)}</h3>
+          <div class="muted" style="font-size:14px">${st === 'unknown' ? 'Développez les pièces précédentes de cette branche pour la découvrir.' : esc(sel.desc)}</div></div>
+          <button class="rd-close" data-action="rd-sel" data-p="" aria-label="Vue d'ensemble">✕</button></div>
+        ${st === 'unknown' ? '' : `<div class="row" style="margin-top:12px;gap:8px">${Object.entries(sel.fx).map(([k, v]) => `<span class="chip green">${FX_LBL[k]} +${v}</span>`).join('')}<span class="chip ${g > 0 ? 'gold' : ''}">Indice au ${esc(race.nameFr.replace('Grand Prix', 'GP'))} : +${g}</span></div>
+        <div class="row" style="margin-top:14px">${st === 'done' ? '<span class="chip green">✓ Pièce installée sur votre monoplace</span>' : st === 'available' ? `<button class="btn" data-action="rd-buy" data-p="${sel.id}" ${sel.cost > m.pc + 1e-9 ? 'disabled' : ''}>🔬 Développer · ${sel.cost} PC</button>${sel.cost > m.pc + 1e-9 ? `<span class="muted" style="font-size:13px">Il vous manque ${Math.ceil(sel.cost - m.pc)} PitCoins</span>` : ''}` : '<span class="chip">🔒 Développez d\'abord la pièce précédente</span>'}</div>`}</div>`;
+    } else {
+      detail = `<div class="rd-detail"><h3 style="margin:0 0 6px">Sélectionnez une pièce à rechercher</h3><div class="muted" style="font-size:14px">La caméra zoome sur la pièce choisie. Prochain GP : <b style="color:var(--text)">${esc(race.nameFr)}</b> (${esc(w.kind.toLowerCase())}).${reco ? ` Pièce conseillée : <b style="color:var(--text)">${esc(reco.name)}</b>.` : ''}</div></div>`;
+    }
+    const cmp = MG().STATS.map((st) => `<div class="cmp-row"><span>${st.icon} ${st.short}</span><div class="cmp-bars"><i class="me" style="width:${Math.min(100, car[st.k])}%"></i><i class="bot" style="width:${Math.min(100, botAvg(st.k))}%"></i></div><b class="num">${Math.round(car[st.k])}<small class="muted"> / ${Math.round(botAvg(st.k))}</small></b></div>`).join('');
+    const carHtml = F1.visuals.car(ch.id, { live: true, view: '34' }).replace('class="car3d', `data-focus='${sel && MG().partState(sel, owned) !== 'unknown' ? JSON.stringify(sel.focus) : ''}' class="car3d`).replace("data-focus='' ", '');
+
+    return `<div class="rd-head"><div><h2 class="rd-title">Recherche</h2><div class="rd-tabs" id="rdTabs">${tabs}</div></div>
+        <div class="rd-kpis" id="rdKpis"><div><small>Améliorations</small><b>${done}/${all.length}</b></div><div><small>R&D investie</small><b>${fmtPC(m.rdSpent)}</b></div><div><small>PitCoins</small><b>${fmtPC(m.pc)}</b></div></div></div>
+      <div class="rd-stage" style="--cc:${cat.color}"><div class="stage-glow" style="--tc:${cat.color}"></div>${carHtml}
+        <div class="rd-stage-cap" id="rdCap">${sel && MG().partState(sel, owned) !== 'unknown' ? `<span class="pulse-dot"></span><b>${esc(sel.name)}</b>` : `<span class="muted">⟲ Faites pivoter votre ${esc(ch.name)} · sélectionnez une pièce pour zoomer</span>`}</div></div>
+      <div id="rdDetail">${detail}</div>
+      <div class="rd-tree" id="rdTree">${rows}</div>
+      <div class="grid g2" style="margin-top:16px" id="rdBottom"><div class="card"><h3>Comparaison des performances</h3><div class="sub">Votre voiture (couleur) face à la moyenne des managers de la ligue ${esc(league.name)} (gris)</div><div style="margin-top:12px;display:grid;gap:10px">${cmp}</div></div>
+        <div class="card"><h3>Votre monoplace</h3><div class="sub">Châssis ${esc(ch.name)} + pièces développées${legacy ? ` + ${legacy} niveaux de l'ancienne R&D` : ''}</div><div style="margin-top:12px;display:grid;gap:8px">${MG().STATS.map((st) => statBar(st.short, car[st.k], ch[st.k], F1.teamColor(ch.id), st.icon)).join('')}</div></div></div>`;
+  }
+
+  // Mise à jour partielle de la page R&D (sans recharger la voiture 3D) puis zoom sur la pièce
+  function rdRefresh() {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = mgrRD(mgrCtx());
+    for (const id of ['rdTabs', 'rdKpis', 'rdCap', 'rdDetail', 'rdTree', 'rdBottom']) { const a = $('#' + id), b = tmp.querySelector('#' + id); if (a && b) a.innerHTML = b.innerHTML; }
+    const st = $('.rd-stage'); const nst = tmp.querySelector('.rd-stage'); if (st && nst) st.style.cssText = nst.style.cssText;
+    const el = $('.rd-stage .car3d');
+    const p = S.rdSel && MG().RD_BY_ID.get(S.rdSel);
+    const f = p && MG().partState(p, F1.store.mgr().parts) !== 'unknown' ? p.focus : null;
+    if (el) { el.dataset.focus = f ? JSON.stringify(f) : ''; if (el.__car3d) el.__car3d.focus(f); }
+    const pc = $('.pc-big b'); if (pc) pc.innerHTML = fmtPC(F1.store.mgr().pc);
   }
 
   function mgrLeagues(ctx, nl) {
@@ -1249,6 +1338,9 @@
       case 'credits': credits(); break;
       case 'm-buy-d': { const ctx = mgrCtx(); const d = ctx.mk.byDriver.get(a.dataset.id); try { F1.store.buyDriver(d, resaleD(ctx)); toast('🤝', `<b>${esc(d.name)}</b> rejoint votre écurie !`, 'win'); confetti(80); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'm-buy-c': { const ctx = mgrCtx(); const c = ctx.mk.byChassis.get(a.dataset.id); if (ctx.m.chassis && ctx.m.rdSpent > 0 && !confirm('Changer de châssis remet votre R&D à zéro. Continuer ?')) break; try { F1.store.buyChassis(c, resaleC(ctx)); toast('🔩', `Châssis <b>${esc(c.name)}</b> livré au garage !`, 'win'); confetti(80); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
+      case 'rd-cat': S.rdCat = a.dataset.c; S.rdSel = null; rdRefresh(); break;
+      case 'rd-sel': S.rdSel = a.dataset.p || null; rdRefresh(); break;
+      case 'rd-buy': { const p = MG().RD_BY_ID.get(a.dataset.p); try { F1.store.research(p); toast('🔬', `<b>${esc(p.name)}</b> développé et installé !`, 'win'); confetti(70); showAchievements(); F1.social.sync(); rdRefresh(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'm-up': { const k = a.dataset.k; const lvl = F1.store.mgr().ups[k] || 0; try { F1.store.upgrade(k, MG().upCost(lvl)); const st = MG().STATS.find((x) => x.k === k); toast('🔬', `${st.icon} ${esc(st.label)} : niveau ${lvl + 1} !`, 'win'); showAchievements(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'm-race': startRace(); break;
       case 'm-again': closeModal(); setTimeout(startRace, 50); break;

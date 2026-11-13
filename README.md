@@ -32,7 +32,14 @@ Site de paris **à jetons virtuels** sur la Formule 1. Il est 100 % statique (HT
 - **Marché des pilotes** : la note de chaque pilote combine un talent de base (`TALENT` dans `js/manager.js`) et sa **forme réelle** de la saison. La note et le prix sont donc mis à jour chaque semaine (de 35 PC pour un rookie à 180 PC pour Verstappen). Chaque pilote a trois caractéristiques : Rythme, Combativité, Régularité.
 - **Châssis** : de 60 à 250 PC, selon le niveau réel de l'écurie. Chacun a son profil de Vitesse de pointe, Appui aérodynamique et Fiabilité (`TEAM_PROFILE`).
 - **Transferts** : un pilote ou un châssis se revend à 70 % de sa valeur. Changer de châssis remet la R&D à zéro, mais rembourse 50 % de l'argent investi.
-- **R&D** : 10 niveaux par caractéristique, chacun ajoute +2,5 points. Le coût augmente à chaque niveau (25, 33, 44… PC).
+- **R&D pièce par pièce** (onglet R&D, inspiré des jeux F1) :
+  - **4 catégories** : Aérodynamique, Châssis, Chaîne motrice, Durabilité.
+  - **32 pièces en 8 branches** (`RD_PARTS` dans `js/manager.js`) : aileron avant, volet Gurney, fond plat, diffuseur, rétroviseurs, jantes, aileron arrière actif, suspensions, freins, V6 turbo, MGU-K, batterie, radiateurs…
+  - **Déblocage** : les pièces d'une branche se débloquent dans l'ordre. Au-delà de la prochaine pièce, elles restent des « Améliorations inconnues ».
+  - **Effets** : chaque pièce ajoute des points de Vitesse, d'Appui ou de Fiabilité.
+  - **Conseil** : la pièce au meilleur rapport gain/prix pour le prochain GP est signalée.
+  - **Voiture 3D** : votre monoplace s'affiche en haut de la page. Quand on sélectionne une pièce, la caméra zoome dessus (point `focus` de chaque pièce), avec un repère lumineux.
+  - **Comparaison** : vos caractéristiques sont comparées à la moyenne des managers de votre ligue.
 - **Stratégie** :
   - Chaque circuit a un profil (`CIRCUIT`) : Monza demande de la vitesse, Monaco de l'appui, Singapour de la fiabilité…
   - Les courses se disputent sur le circuit du **prochain Grand Prix réel**.

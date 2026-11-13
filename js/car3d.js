@@ -162,7 +162,7 @@ function snapshot(teamId, { view = '34', w = 960, h = 520 } = {}) {
 
 /* ---------- API : visionneuse interactive ---------- */
 const viewers = new Set();
-function mount(el, teamId, { autoRotate = true, view = '34', speed = 1.2 } = {}) {
+function mount(el, teamId, { autoRotate = true, view = '34', speed = 1.2, focus = null } = {}) {
   const canvas = document.createElement('canvas');
   canvas.className = 'car3d-canvas';
   el.innerHTML = ''; el.appendChild(canvas);
@@ -173,11 +173,25 @@ function mount(el, teamId, { autoRotate = true, view = '34', speed = 1.2 } = {})
   const { scene, car } = makeScene(r, teamId);
   const v = VIEWS[view] || VIEWS['34'];
   const cam = new THREE.PerspectiveCamera(v.fov, w / h, 0.1, 60);
-  cam.position.set(...v.pos);
+  // écran étroit (mobile) : on recule la caméra pour que la voiture tienne en entier
+  const fit = (pos, target, k = Math.max(1, Math.min(2, Math.pow(1.9 / (w / h), 0.85)))) => pos.map((p, i) => target[i] + (p - target[i]) * k);
+  cam.position.set(...fit(v.pos, v.target));
   const ctl = new OrbitControls(cam, canvas);
   ctl.target.set(...v.target); ctl.enableZoom = false; ctl.enablePan = false; ctl.enableDamping = true;
   ctl.minPolarAngle = 0.6; ctl.maxPolarAngle = 1.45; ctl.autoRotate = autoRotate; ctl.autoRotateSpeed = speed;
   ctl.update();
+  // repère lumineux (pièce sélectionnée en R&D)
+  const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+  const cx = cv.getContext('2d'); const gr = cx.createRadialGradient(64, 64, 2, 64, 64, 62);
+  gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.18, 'rgba(120,220,255,.95)'); gr.addColorStop(0.45, 'rgba(39,180,244,.35)'); gr.addColorStop(1, 'rgba(39,180,244,0)');
+  cx.fillStyle = gr; cx.fillRect(0, 0, 128, 128);
+  const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cv), transparent: true, depthTest: false, blending: THREE.AdditiveBlending }));
+  marker.visible = false; marker.renderOrder = 10; scene.add(marker);
+  let tween = null;
+  const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  function flyTo(pos, target, ms = 1100) {
+    tween = { p0: cam.position.clone(), t0: ctl.target.clone(), p1: new THREE.Vector3(...pos), t1: new THREE.Vector3(...target), start: performance.now(), ms };
+  }
   let alive = true, raf = 0, visible = true;
   const io = 'IntersectionObserver' in window ? new IntersectionObserver((e) => { visible = e[0].isIntersecting; }) : null;
   if (io) io.observe(el);
@@ -187,11 +201,30 @@ function mount(el, teamId, { autoRotate = true, view = '34', speed = 1.2 } = {})
     if (!alive) return;
     raf = requestAnimationFrame(loop);
     if (!visible || document.hidden) return;
+    if (tween) {
+      const k = Math.min(1, (performance.now() - tween.start) / tween.ms), e = ease(k);
+      cam.position.lerpVectors(tween.p0, tween.p1, e); ctl.target.lerpVectors(tween.t0, tween.t1, e);
+      if (k >= 1) tween = null;
+    }
+    if (marker.visible) { const ph = performance.now() / 500; const sc = 0.32 + Math.sin(ph) * 0.06; marker.scale.set(sc, sc, sc); }
     ctl.update();
     r.render(scene, cam);
   };
   loop();
   const api = {
+    // zoom animé sur une pièce : f = { t: [x, y, z] (point visé), d: [dx, dy, dz] (position de la caméra relative) }
+    focus(f) {
+      if (!f) return api.reset();
+      ctl.autoRotate = false; ctl.minPolarAngle = 0.05; ctl.maxPolarAngle = 1.53;
+      const t = f.t, d = f.d.map((x) => x * 1.35); // recul léger pour garder la pièce dans son contexte
+      flyTo(fit([t[0] + d[0], t[1] + d[1], t[2] + d[2]], t, Math.max(1, Math.min(1.6, Math.pow(1.9 / (w / h), 0.6)))), t);
+      marker.position.set(...t); marker.visible = true;
+    },
+    reset() {
+      marker.visible = false;
+      flyTo(fit(v.pos, v.target), v.target);
+      setTimeout(() => { ctl.minPolarAngle = 0.6; ctl.maxPolarAngle = 1.45; ctl.autoRotate = autoRotate; }, 1150);
+    },
     dispose() {
       alive = false; cancelAnimationFrame(raf); if (io) io.disconnect(); if (ro) ro.disconnect(); ctl.dispose();
       scene.traverse((o) => { if (o.material && o.material.dispose) o.material.dispose(); });
@@ -199,6 +232,7 @@ function mount(el, teamId, { autoRotate = true, view = '34', speed = 1.2 } = {})
     },
   };
   viewers.add(api);
+  if (focus) setTimeout(() => api.focus(focus), 300);
   return api;
 }
 function disposeAll() { [...viewers].forEach((v) => v.dispose()); }
