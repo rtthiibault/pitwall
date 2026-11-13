@@ -991,7 +991,8 @@
       detail = `<div class="rd-detail"><h3 style="margin:0 0 6px">Sélectionnez une pièce à rechercher</h3><div class="muted" style="font-size:14px">La caméra zoome sur la pièce choisie. Prochain GP : <b style="color:var(--text)">${esc(race.nameFr)}</b> (${esc(w.kind.toLowerCase())}).${reco ? ` Pièce conseillée : <b style="color:var(--text)">${esc(reco.name)}</b>.` : ''}</div></div>`;
     }
     const cmp = MG().STATS.map((st) => `<div class="cmp-row"><span>${st.icon} ${st.short}</span><div class="cmp-bars"><i class="me" style="width:${Math.min(100, car[st.k])}%"></i><i class="bot" style="width:${Math.min(100, botAvg(st.k))}%"></i></div><b class="num">${Math.round(car[st.k])}<small class="muted"> / ${Math.round(botAvg(st.k))}</small></b></div>`).join('');
-    const carHtml = F1.visuals.car(ch.id, { live: true, view: '34' }).replace('class="car3d', `data-focus='${sel && MG().partState(sel, owned) !== 'unknown' ? JSON.stringify(sel.focus) : ''}' class="car3d`).replace("data-focus='' ", '');
+    const showId = sel && MG().partState(sel, owned) !== 'unknown' ? sel.id : '';
+    const carHtml = F1.visuals.car(ch.id, { live: true, view: '34' }).replace('class="car3d', `data-workshop="1" ${showId ? `data-part="${showId}" ` : ''}class="car3d`);
 
     return `<div class="rd-head"><div><h2 class="rd-title">Recherche</h2><div class="rd-tabs" id="rdTabs">${tabs}</div></div>
         <div class="rd-kpis" id="rdKpis"><div><small>Améliorations</small><b>${done}/${all.length}</b></div><div><small>R&D investie</small><b>${fmtPC(m.rdSpent)}</b></div><div><small>PitCoins</small><b>${fmtPC(m.pc)}</b></div></div></div>
@@ -1011,8 +1012,8 @@
     const st = $('.rd-stage'); const nst = tmp.querySelector('.rd-stage'); if (st && nst) st.style.cssText = nst.style.cssText;
     const el = $('.rd-stage .car3d');
     const p = S.rdSel && MG().RD_BY_ID.get(S.rdSel);
-    const f = p && MG().partState(p, F1.store.mgr().parts) !== 'unknown' ? p.focus : null;
-    if (el) { el.dataset.focus = f ? JSON.stringify(f) : ''; if (el.__car3d) el.__car3d.focus(f); }
+    const id = p && MG().partState(p, F1.store.mgr().parts) !== 'unknown' ? p.id : '';
+    if (el) { el.dataset.part = id; if (el.__car3d) el.__car3d.part(id || null); }
     const pc = $('.pc-big b'); if (pc) pc.innerHTML = fmtPC(F1.store.mgr().pc);
   }
 

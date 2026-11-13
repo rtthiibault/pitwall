@@ -141,19 +141,202 @@ function materials(teamId) {
   if (def) for (const p of ['body', 'accent', 'lower', 'carbon']) M[p] = liveryMaterial(def, p, p === 'carbon' ? { rough: 0.5, clear: 0.4 } : fin);
   return M;
 }
-function buildCar(teamId) {
+/* ---------- Atelier R&D : vues écorchées, pièces internes, rayons X ----------
+   Boîtes exprimées en (x, y, |z|) dans le repère de la voiture (x = avant, y = haut, roues avant x≈1,50, arrière x≈-1,96).
+   cut : zone de carrosserie retirée (le « capot » s'efface et flotte au-dessus, translucide)
+   glow : zone mise en surbrillance (le reste de la voiture passe en mode rayons X)
+   inner : pièce interne qui ressort de la voiture · bay : autres pièces de la même baie (contexte)
+   lift : déplacement du capot retiré · cam : [cible x, y, z, décalage caméra dx, dy, dz] */
+const BOX = {
+  hood: [[-1.62, 0.42, 0], [-0.42, 1.2, 0.5]],
+  sidepod: [[-0.45, 0.12, 0.24], [0.75, 0.64, 0.8]],
+  gearbox: [[-2.18, 0.12, 0], [-1.42, 0.9, 0.42]],
+  exhaust: [[-2.32, 0.42, 0], [-1.3, 0.92, 0.32]],
+  fwheel: [[1.08, -0.05, 0.5], [1.92, 0.8, 1.0]],
+  rwheel: [[-2.4, -0.05, 0.44], [-1.52, 0.8, 1.0]],
+  tank: [[-0.62, 0.12, 0], [0.02, 0.92, 0.32]],
+  floor: [[-1.6, -0.02, 0.25], [1.15, 0.12, 0.98]],
+};
+const HOODCAM = [-1.0, 0.62, 0.05, 1.7, 1.55, 2.0], PODCAM = [0.15, 0.42, 0.5, 1.4, 1.1, 1.9], BOXCAM = [-1.8, 0.5, 0.1, -1.4, 1.2, 1.9];
+const FWCAM = [1.42, 0.38, 0.55, 2.1, 1.3, 0.9], RWCAM = [-1.9, 0.4, 0.5, -2.0, 1.3, 0.95];
+const PART3D = {
+  // Aérodynamique
+  fw_main: { glow: [[2.1, -0.02, 0], [2.76, 0.16, 0.97]], cam: [2.35, 0.12, 0.3, 1.5, 0.8, 1.6] },
+  fw_gurney: { glow: [[2.02, 0.1, 0], [2.6, 0.32, 0.97]], cam: [2.3, 0.2, 0.45, 1.1, 0.6, 1.3] },
+  fw_end: { glow: [[2.1, -0.02, 0.74], [2.76, 0.36, 0.98]], cam: [2.4, 0.16, 0.85, 1.0, 0.5, 1.2] },
+  floor: { glow: BOX.floor, cam: [-0.2, 0.05, 0.7, 0.6, 0.55, 2.4] },
+  diffuser: { glow: [[-2.76, -0.02, 0], [-1.92, 0.42, 0.64]], cam: [-2.35, 0.2, 0.3, -1.7, 0.45, 1.3] },
+  mirrors: { glow: [[0.05, 0.6, 0.22], [0.8, 0.98, 0.64]], cam: [0.45, 0.78, 0.42, 1.0, 0.45, 1.3] },
+  rims: { glow: [[1.1, 0, 0.56], [1.9, 0.74, 0.98]], cam: FWCAM },
+  sidepods: { glow: BOX.sidepod, cam: PODCAM },
+  rw: { glow: [[-2.76, 0.55, 0], [-2.08, 1.1, 0.64]], cam: [-2.4, 0.85, 0.2, -1.8, 0.85, 1.9] },
+  active: { glow: [[-2.76, 0.78, 0], [-2.08, 1.1, 0.64]], cam: [-2.4, 0.92, 0.2, -1.3, 0.95, 1.4] },
+  // Châssis
+  susp_f: { cut: BOX.fwheel, lift: [0, 0.12, 1.45], glow: [[0.8, 0.12, 0.18], [1.75, 0.62, 0.62]], bay: ['brakeF'], cam: FWCAM },
+  susp_r: { cut: BOX.rwheel, lift: [0, 0.12, 1.45], glow: [[-2.35, 0.12, 0.16], [-1.45, 0.66, 0.56]], bay: ['brakeR'], cam: RWCAM },
+  brakes: { cut: BOX.fwheel, lift: [0, 0.12, 1.45], inner: 'brakeF', cam: FWCAM },
+  balance: { glow: [[-1.6, -0.02, 0], [1.4, 0.2, 0.98]], inner: 'ballast', cam: [0.0, 0.1, 0.5, 0.4, 1.4, 2.6] },
+  mono: { glow: [[-0.1, 0.05, 0], [1.45, 0.95, 0.3]], cam: [0.7, 0.55, 0.15, 1.1, 1.3, 1.9] },
+  halo: { glow: [[-0.15, 0.78, 0], [0.78, 1.04, 0.34]], cam: [0.3, 0.9, 0.1, 1.1, 0.75, 1.4] },
+  ballast: { cut: BOX.floor, lift: [0, -0.35, 0], inner: 'ballast', cam: [0.4, 0.15, 0.3, 0.6, 1.2, 1.9] },
+  // Chaîne motrice
+  ice: { cut: BOX.hood, lift: [0, 0.75, 0], inner: 'engine', bay: ['turbo', 'mguk', 'hydraulics'], cam: HOODCAM },
+  turbo: { cut: BOX.hood, lift: [0, 0.75, 0], inner: 'turbo', bay: ['engine', 'mguk', 'hydraulics'], cam: [-1.45, 0.62, 0.05, -0.2, 1.3, 1.7] },
+  airbox: { glow: [[-0.9, 0.82, 0], [-0.3, 1.16, 0.2]], cam: [-0.6, 0.95, 0.05, 0.9, 0.55, 1.2] },
+  exhaust: { cut: BOX.exhaust, lift: [0, 0.65, 0], inner: 'exhaust', bay: ['gearbox'], cam: BOXCAM },
+  mguk: { cut: BOX.hood, lift: [0, 0.75, 0], inner: 'mguk', bay: ['engine', 'turbo', 'hydraulics'], cam: [-0.7, 0.45, 0.2, 1.1, 1.0, 1.7] },
+  battery: { cut: BOX.tank, lift: [0, 0.75, 0], inner: 'battery', cam: [-0.3, 0.45, 0.05, 1.3, 1.25, 1.6] },
+  maps: { cut: BOX.sidepod, lift: [0, 0.6, 0.15], inner: 'ecu', bay: ['radiators'], cam: PODCAM },
+  gearbox_p: { cut: BOX.gearbox, lift: [0, 0.7, 0], inner: 'gearbox', bay: ['exhaust'], cam: BOXCAM },
+  // Durabilité
+  radiators: { cut: BOX.sidepod, lift: [0, 0.6, 0.15], inner: 'radiators', bay: ['ecu'], cam: PODCAM },
+  cooling: { glow: [[-1.55, 0.6, 0.06], [-0.5, 1.02, 0.46]], cam: [-1.0, 0.8, 0.2, 0.9, 1.1, 1.6] },
+  hydraulics: { cut: BOX.hood, lift: [0, 0.75, 0], inner: 'hydraulics', bay: ['engine', 'turbo', 'mguk'], cam: HOODCAM },
+  electronics: { cut: BOX.sidepod, lift: [0, 0.6, 0.15], inner: 'ecu', bay: ['radiators'], cam: PODCAM },
+  gearbox_rel: { cut: BOX.gearbox, lift: [0, 0.7, 0], inner: 'gearbox', bay: ['exhaust'], cam: BOXCAM },
+  engine_life: { cut: BOX.hood, lift: [0, 0.75, 0], inner: 'engine', bay: ['turbo', 'mguk', 'hydraulics'], cam: HOODCAM },
+  brake_life: { cut: BOX.fwheel, lift: [0, 0.12, 1.45], inner: 'brakeF', cam: FWCAM },
+};
+
+// Uniforms partagés par tous les matériaux d'une voiture (découpe, surbrillance, rayons X)
+function xrayUniforms() {
+  return {
+    uCutMin: { value: new THREE.Vector3() }, uCutMax: { value: new THREE.Vector3() }, uCutT: { value: 0 },
+    uGlowMin: { value: new THREE.Vector3() }, uGlowMax: { value: new THREE.Vector3() }, uGlowT: { value: 0 },
+    uDim: { value: 0 }, uTime: { value: 0 }, uGlowCol: { value: new THREE.Color(0x38d9ff) },
+  };
+}
+const XRAY_FRAG = `
+uniform vec3 uCutMin, uCutMax, uGlowMin, uGlowMax, uGlowCol; uniform float uCutT, uGlowT, uDim, uTime;
+varying vec3 vXP;
+float xBox(vec3 p, vec3 mn, vec3 mx, float t) { vec3 c = (mn + mx) * 0.5; vec3 h = (mx - mn) * 0.5 * t; vec3 q = abs(p - c) - h; return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0); }
+`;
+function patchXray(sh, U) {
+  Object.assign(sh.uniforms, U);
+  sh.vertexShader = sh.vertexShader
+    .replace('#include <common>', '#include <common>\nvarying vec3 vXP;')
+    .replace('#include <begin_vertex>', '#include <begin_vertex>\nvXP = position;');
+  sh.fragmentShader = sh.fragmentShader
+    .replace('#include <common>', '#include <common>\n' + XRAY_FRAG)
+    .replace('void main() {', `void main() {
+  vec3 xp = vec3(vXP.x, vXP.y, abs(vXP.z));
+  float cutD = uCutT > 0.001 ? xBox(xp, uCutMin, uCutMax, uCutT) : 1.0;
+  if (cutD < 0.0) discard;`)
+    .replace('#include <dithering_fragment>', `
+  float gD = uGlowT > 0.001 ? xBox(xp, uGlowMin, uGlowMax, 1.0) : 1.0;
+  float g = (1.0 - smoothstep(0.0, 0.05, gD)) * uGlowT;
+  float pulse = 0.6 + 0.4 * sin(uTime * 3.2);
+  vec3 lum = vec3(dot(gl_FragColor.rgb, vec3(0.299, 0.587, 0.114)));
+  gl_FragColor.rgb = mix(gl_FragColor.rgb, lum * vec3(0.32, 0.38, 0.46), uDim * (1.0 - g));
+  float fr = pow(1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition))), 2.0);
+  gl_FragColor.rgb = mix(gl_FragColor.rgb, gl_FragColor.rgb * 0.55 + uGlowCol * 0.35, g * 0.6);
+  gl_FragColor.rgb += uGlowCol * g * (0.3 + 0.9 * fr) * pulse;
+  float rim = (1.0 - smoothstep(0.0, 0.022, cutD)) * step(0.001, uCutT);
+  gl_FragColor.rgb += vec3(1.0, 0.5, 0.12) * rim * 1.6;
+  #include <dithering_fragment>`);
+}
+function applyXray(mat, U) {
+  const prev = mat.onBeforeCompile;
+  mat.onBeforeCompile = (sh, r) => { if (prev) prev.call(mat, sh, r); patchXray(sh, U); };
+  const key = mat.customProgramCacheKey ? mat.customProgramCacheKey() : '';
+  mat.customProgramCacheKey = () => key + '|xray';
+  mat.needsUpdate = true;
+}
+
+// Carrosserie retirée : copie translucide de la zone découpée, qui s'écarte de la voiture
+function ghostMaterial(cutMin, cutMax, liftU) {
+  const m = new THREE.MeshBasicMaterial({ color: 0x7fdcff, transparent: true, opacity: 0.1, depthWrite: false, side: THREE.DoubleSide });
+  m.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, { uCutMin: cutMin, uCutMax: cutMax, uLift: liftU });
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nuniform vec3 uLift; varying vec3 vXP;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvXP = position; transformed += vec3(uLift.x, uLift.y, uLift.z * sign(position.z));');
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nuniform vec3 uCutMin, uCutMax; varying vec3 vXP;')
+      .replace('void main() {', 'void main() {\n  vec3 xp = vec3(vXP.x, vXP.y, abs(vXP.z));\n  if (any(lessThan(xp, uCutMin)) || any(greaterThan(xp, uCutMax))) discard;');
+  };
+  m.customProgramCacheKey = () => 'pitwall-ghost';
+  return m;
+}
+
+// Pièces internes (modélisées en code, en coordonnées voiture)
+function buildInner() {
+  const groups = {};
+  const metal = (c = 0x9aa3ad, rough = 0.32) => new THREE.MeshStandardMaterial({ color: c, metalness: 0.85, roughness: rough, emissive: 0x38d9ff, emissiveIntensity: 0 });
+  const mk = (id, build) => { const g = new THREE.Group(); g.userData = { id, mats: [] }; build(g, (geo, mat, f) => { const m = new THREE.Mesh(geo, mat); if (f) f(m); m.castShadow = true; g.add(m); g.userData.mats.push(mat); return m; }); g.visible = false; groups[id] = g; return g; };
+  const sym = (add, geo, mat, x, y, z, f) => [1, -1].forEach((s) => add(geo, mat, (m) => { m.position.set(x, y, z * s); if (f) f(m, s); }));
+  mk('engine', (g, add) => { // V6 turbo à 90° : carter, deux bancs de cylindres, plenum
+    const blk = metal(0x8b929c); const head = metal(0x5d636d, 0.4); const red = metal(0xd8261c, 0.35);
+    add(new THREE.BoxGeometry(0.62, 0.2, 0.26), blk, (m) => m.position.set(-1.05, 0.38, 0));
+    sym(add, new THREE.BoxGeometry(0.6, 0.11, 0.16), head, -1.05, 0.55, 0.13, (m, s) => { m.rotation.x = s * 0.7; });
+    sym(add, new THREE.BoxGeometry(0.62, 0.035, 0.1), red, -1.05, 0.62, 0.17, (m, s) => { m.rotation.x = s * 0.7; });
+    for (let i = 0; i < 3; i++) sym(add, new THREE.CylinderGeometry(0.035, 0.035, 0.12, 10), metal(0x2a2d33, 0.5), -1.25 + i * 0.2, 0.68, 0.2, (m, s) => { m.rotation.x = s * 0.7; });
+    add(new THREE.CylinderGeometry(0.07, 0.07, 0.55, 16), metal(0xb7bec7, 0.25), (m) => { m.rotation.z = Math.PI / 2; m.position.set(-1.05, 0.66, 0); });
+  });
+  mk('turbo', (g, add) => { // turbocompresseur : volute + axe + compresseur
+    add(new THREE.TorusGeometry(0.075, 0.035, 12, 24), metal(0xc58a3e, 0.3), (m) => { m.rotation.y = Math.PI / 2; m.position.set(-1.46, 0.56, 0); });
+    add(new THREE.CylinderGeometry(0.05, 0.05, 0.14, 14), metal(0x8b929c), (m) => { m.rotation.z = Math.PI / 2; m.position.set(-1.53, 0.56, 0); });
+    add(new THREE.TorusGeometry(0.07, 0.032, 12, 24), metal(0xb7bec7), (m) => { m.rotation.y = Math.PI / 2; m.position.set(-1.62, 0.56, 0); });
+  });
+  mk('mguk', (g, add) => { // moteur électrique MGU-K (350 kW)
+    add(new THREE.CylinderGeometry(0.085, 0.085, 0.22, 20), metal(0x4a6fd0, 0.3), (m) => { m.rotation.x = Math.PI / 2; m.position.set(-0.66, 0.34, 0.16); });
+    add(new THREE.CylinderGeometry(0.06, 0.06, 0.24, 16), metal(0xd6dbe2, 0.25), (m) => { m.rotation.x = Math.PI / 2; m.position.set(-0.66, 0.34, 0.16); });
+  });
+  mk('hydraulics', (g, add) => { // circuits hydrauliques
+    const mat = metal(0xffb020, 0.4);
+    [[[-1.5, 0.3, 0.12], [-1.2, 0.5, 0.2], [-0.8, 0.45, 0.22], [-0.5, 0.3, 0.12]], [[-1.55, 0.35, -0.1], [-1.1, 0.28, -0.22], [-0.6, 0.36, -0.18]]].forEach((pts) =>
+      add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map((p) => new THREE.Vector3(...p))), 40, 0.014, 8), mat));
+  });
+  mk('battery', (g, add) => { // batterie (cellules + boîtier)
+    add(new THREE.BoxGeometry(0.42, 0.22, 0.42), metal(0x2c3340, 0.45), (m) => m.position.set(-0.3, 0.3, 0));
+    for (let i = 0; i < 5; i++) add(new THREE.BoxGeometry(0.06, 0.03, 0.4), metal(0xf2c230, 0.4), (m) => m.position.set(-0.46 + i * 0.08, 0.425, 0));
+  });
+  mk('ecu', (g, add) => { // électronique de contrôle
+    sym(add, new THREE.BoxGeometry(0.26, 0.07, 0.17), metal(0x1f6b4a, 0.5), 0.12, 0.42, 0.46);
+    for (let i = 0; i < 3; i++) sym(add, new THREE.BoxGeometry(0.05, 0.02, 0.05), metal(0x1a1c20, 0.5), 0.05 + i * 0.07, 0.465, 0.46);
+  });
+  mk('radiators', (g, add) => { // radiateurs (faisceaux à ailettes)
+    const fins = document.createElement('canvas'); fins.width = 64; fins.height = 8; const fx = fins.getContext('2d');
+    for (let i = 0; i < 64; i += 4) { fx.fillStyle = i % 8 ? '#c6ccd4' : '#7c838d'; fx.fillRect(i, 0, 4, 8); }
+    const tex = new THREE.CanvasTexture(fins); tex.wrapS = THREE.RepeatWrapping; tex.repeat.set(4, 1);
+    const mat = new THREE.MeshStandardMaterial({ map: tex, metalness: 0.7, roughness: 0.4, emissive: 0x38d9ff, emissiveIntensity: 0 });
+    sym(add, new THREE.BoxGeometry(0.55, 0.32, 0.05), mat, 0.12, 0.36, 0.52, (m, s) => { m.rotation.y = s * 0.35; m.rotation.x = s * -0.25; });
+  });
+  mk('gearbox', (g, add) => { // boîte de vitesses (carter + arbres)
+    add(new THREE.CylinderGeometry(0.13, 0.19, 0.6, 6), metal(0x6f7680, 0.4), (m) => { m.rotation.z = Math.PI / 2; m.position.set(-1.8, 0.36, 0); });
+    sym(add, new THREE.CylinderGeometry(0.03, 0.03, 0.48, 10), metal(0xb7bec7), -1.96, 0.36, 0.25, (m) => { m.rotation.x = Math.PI / 2; });
+  });
+  mk('exhaust', (g, add) => { // échappement
+    const mat = metal(0xc9a55a, 0.25);
+    add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([[-1.3, 0.6, 0], [-1.7, 0.66, 0], [-2.1, 0.63, 0], [-2.36, 0.6, 0]].map((p) => new THREE.Vector3(...p))), 40, 0.045, 12), mat);
+    add(new THREE.CylinderGeometry(0.06, 0.05, 0.08, 16), metal(0x2a2d33, 0.5), (m) => { m.rotation.z = Math.PI / 2; m.position.set(-2.38, 0.6, 0); });
+  });
+  const brake = (id, x, z) => mk(id, (g, add) => { // disque ventilé incandescent + étrier
+    const disc = new THREE.MeshStandardMaterial({ color: 0x3a3c42, metalness: 0.7, roughness: 0.45, emissive: 0xff5a14, emissiveIntensity: 0.6 });
+    sym(add, new THREE.CylinderGeometry(0.2, 0.2, 0.035, 36), disc, x, 0.362, z, (m) => { m.rotation.x = Math.PI / 2; });
+    sym(add, new THREE.BoxGeometry(0.16, 0.1, 0.06), metal(0xd8261c, 0.35), x - 0.02, 0.52, z, null);
+  });
+  brake('brakeF', 1.498, 0.66); brake('brakeR', -1.959, 0.6);
+  mk('ballast', (g, add) => { for (let i = 0; i < 4; i++) add(new THREE.BoxGeometry(0.16, 0.05, 0.14), metal(0x6b6f76, 0.5), (m) => m.position.set(0.15 + i * 0.2, 0.05, 0)); });
+  return groups;
+}
+
+function buildCar(teamId, { xray = false } = {}) {
   const M = materials(teamId);
   const car = new THREE.Group();
+  const U = xray ? xrayUniforms() : null;
+  if (U) Object.values(M).forEach((m) => applyXray(m, U));
   for (const p of PARTS) {
     const m = new THREE.Mesh(p.geometry, M[p.name] || M.body);
     m.castShadow = true; m.receiveShadow = true;
     car.add(m);
   }
+  car.userData.xray = U;
   return car;
 }
 
 /* ---------- Scène ---------- */
-function makeScene(renderer, teamId, { ground = true } = {}) {
+function makeScene(renderer, teamId, { ground = true, xray = false } = {}) {
   const scene = new THREE.Scene();
   if (!renderer.__env) renderer.__env = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
   scene.environment = renderer.__env;
@@ -175,7 +358,7 @@ function makeScene(renderer, teamId, { ground = true } = {}) {
     const blob = new THREE.Mesh(new THREE.PlaneGeometry(6.6, 2.8), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cv), transparent: true, depthWrite: false }));
     blob.rotation.x = -Math.PI / 2; blob.position.y = 0.002; scene.add(blob);
   }
-  const car = buildCar(teamId);
+  const car = buildCar(teamId, { xray });
   scene.add(car);
   return { scene, car };
 }
@@ -215,7 +398,7 @@ function snapshot(teamId, { view = '34', w = 960, h = 520 } = {}) {
 
 /* ---------- API : visionneuse interactive ---------- */
 const viewers = new Set();
-function mount(el, teamId, { autoRotate = true, view = '34', speed = 1.2, focus = null } = {}) {
+function mount(el, teamId, { autoRotate = true, view = '34', speed = 1.2, focus = null, part = null, workshop = false } = {}) {
   const canvas = document.createElement('canvas');
   canvas.className = 'car3d-canvas';
   el.innerHTML = ''; el.appendChild(canvas);
@@ -223,9 +406,20 @@ function mount(el, teamId, { autoRotate = true, view = '34', speed = 1.2, focus 
   let [w, h] = size();
   const r = newRenderer(canvas, w, h);
   r.setPixelRatio(Math.min(2, window.devicePixelRatio || 1)); r.setSize(w, h, false);
-  const { scene, car } = makeScene(r, teamId);
+  const { scene, car } = makeScene(r, teamId, { xray: workshop });
   const v = VIEWS[view] || VIEWS['34'];
   const cam = new THREE.PerspectiveCamera(v.fov, w / h, 0.1, 60);
+  // atelier : pièces internes + carrosserie fantôme
+  const U = car.userData.xray;
+  const inner = workshop ? buildInner() : {};
+  Object.values(inner).forEach((g) => { g.userData.base = g.position.clone(); car.add(g); });
+  const ghostCut = { min: { value: new THREE.Vector3() }, max: { value: new THREE.Vector3() }, lift: { value: new THREE.Vector3() } };
+  const ghosts = [];
+  if (workshop) {
+    const gm = ghostMaterial(ghostCut.min, ghostCut.max, ghostCut.lift);
+    for (const p of PARTS) { const m = new THREE.Mesh(p.geometry, gm); m.visible = false; m.renderOrder = 5; car.add(m); ghosts.push(m); }
+  }
+  let anim = null; // animation de la pièce affichée
   // écran étroit (mobile) : on recule la caméra pour que la voiture tienne en entier
   const fit = (pos, target, k = Math.max(1, Math.min(2, Math.pow(1.9 / (w / h), 0.85)))) => pos.map((p, i) => target[i] + (p - target[i]) * k);
   cam.position.set(...fit(v.pos, v.target));
@@ -260,11 +454,53 @@ function mount(el, teamId, { autoRotate = true, view = '34', speed = 1.2, focus 
       if (k >= 1) tween = null;
     }
     if (marker.visible) { const ph = performance.now() / 500; const sc = 0.32 + Math.sin(ph) * 0.06; marker.scale.set(sc, sc, sc); }
+    if (U) {
+      const now = performance.now();
+      U.uTime.value = now / 1000;
+      if (anim) {
+        const k = Math.min(1, (now - anim.start) / 900), e = ease(k), e2 = ease(Math.min(1, Math.max(0, (now - anim.start - 350) / 900)));
+        const S = anim.spec;
+        U.uCutT.value = S && S.cut ? e : 0;
+        U.uGlowT.value = S && (S.glow || S.inner) ? e : 0;
+        U.uDim.value = S ? 0.78 * e : 0;
+        if (S && S.lift) ghostCut.lift.value.set(S.lift[0] * e2, S.lift[1] * e2, S.lift[2] * e2);
+        ghosts.forEach((m) => { m.visible = !!(S && S.cut); });
+        Object.values(inner).forEach((g) => {
+          const main = S && S.inner === g.userData.id, ctx = S && S.bay && S.bay.includes(g.userData.id);
+          g.visible = !!(main || ctx);
+          if (!g.visible) return;
+          const rise = main && S.cut ? 0.32 * e2 : 0;
+          g.position.set(g.userData.base.x, g.userData.base.y + rise, g.userData.base.z);
+          const pulse = 0.55 + 0.45 * Math.sin(now / 1000 * 3.2);
+          g.userData.mats.forEach((m) => { if (m.emissive && m.userData.keepEmissive === undefined) m.emissiveIntensity = main ? 0.12 + 0.28 * pulse * e : 0; });
+          g.traverse((o) => { if (o.material) o.material.opacity = 1; });
+        });
+        if (!S && k >= 1) { anim = null; U.uCutT.value = 0; U.uGlowT.value = 0; U.uDim.value = 0; }
+      }
+    }
     ctl.update();
     r.render(scene, cam);
   };
   loop();
   const api = {
+    // atelier R&D : ouvre la carrosserie / met la pièce en surbrillance / la fait ressortir, puis cadre la caméra
+    part(id) {
+      const S = id ? PART3D[id] : null;
+      if (!U) return S ? api.focus({ t: S.cam.slice(0, 3), d: S.cam.slice(3) }) : api.reset();
+      if (S) {
+        if (S.cut) { U.uCutMin.value.set(...S.cut[0]); U.uCutMax.value.set(...S.cut[1]); ghostCut.min.value.set(...S.cut[0]); ghostCut.max.value.set(...S.cut[1]); ghostCut.lift.value.set(0, 0, 0); }
+        const gb = S.glow || (S.cut && [[S.cut[0][0], S.cut[0][1], S.cut[0][2]], [S.cut[1][0], S.cut[1][1], S.cut[1][2]]]);
+        if (S.glow) { U.uGlowMin.value.set(...S.glow[0]); U.uGlowMax.value.set(...S.glow[1]); } else if (gb) { U.uGlowMin.value.set(0, -9, 0); U.uGlowMax.value.set(0, -9, 0); }
+        anim = { spec: S, start: performance.now() };
+        ctl.autoRotate = false; ctl.minPolarAngle = 0.05; ctl.maxPolarAngle = 1.53;
+        const t = S.cam.slice(0, 3), d = S.cam.slice(3);
+        flyTo(fit([t[0] + d[0], t[1] + d[1], t[2] + d[2]], t, Math.max(1, Math.min(1.6, Math.pow(1.9 / (w / h), 0.6)))), t);
+        marker.visible = false;
+      } else {
+        anim = { spec: null, start: performance.now() };
+        api.reset();
+      }
+    },
     // zoom animé sur une pièce : f = { t: [x, y, z] (point visé), d: [dx, dy, dz] (position de la caméra relative) }
     focus(f) {
       if (!f) return api.reset();
@@ -285,7 +521,8 @@ function mount(el, teamId, { autoRotate = true, view = '34', speed = 1.2, focus 
     },
   };
   viewers.add(api);
-  if (focus) setTimeout(() => api.focus(focus), 300);
+  if (part) setTimeout(() => api.part(part), 300);
+  else if (focus) setTimeout(() => api.focus(focus), 300);
   return api;
 }
 /* ---------- Scène « drift » pilotée par le scroll ----------
