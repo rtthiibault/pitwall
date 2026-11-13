@@ -68,6 +68,21 @@
       best_odds: Math.round((st.bestOdds || 0) * 100) / 100, achievements: Object.keys(p.ach || {}).length, updated_at: new Date().toISOString(),
     };
   }
+  // Colonnes du mode manager (ajoutées par supabase/migration-manager.sql) : envoyées seulement si elles existent
+  let mgrCols = true;
+  function mgrRow() {
+    const m = F1.store.get().manager;
+    if (!m || !F1.manager) return {};
+    return { lp: m.lp, league: F1.manager.leagueOf(m.lp).id, mgr_driver: m.driver ? m.driver.id : null, mgr_team: m.chassis ? m.chassis.id : null };
+  }
+  async function updateMe(row) {
+    let r = await S.client.from('profiles').update(mgrCols ? { ...row, ...mgrRow() } : row).eq('id', S.user.id);
+    if (r.error && mgrCols && /column|schema cache|PGRST204/i.test((r.error.message || '') + (r.error.code || ''))) {
+      mgrCols = false;
+      r = await S.client.from('profiles').update(row).eq('id', S.user.id);
+    }
+    return r;
+  }
 
   // Création / modification du pseudo public
   async function claim(username, team) {
@@ -91,11 +106,17 @@
     clearTimeout(syncT);
     syncT = setTimeout(async () => {
       const row = statsRow();
-      const r = await S.client.from('profiles').update(row).eq('id', S.user.id);
-      if (!r.error) { Object.assign(S.me, row); emit(); }
+      const r = await updateMe(row);
+      if (!r.error) { Object.assign(S.me, row, mgrCols ? mgrRow() : {}); emit(); }
     }, now ? 0 : 2500);
   }
 
+  // Classement mondial des managers (null si la migration n'a pas été appliquée)
+  async function leaderboard() {
+    const r = await S.client.from('profiles').select('id,username,team,lp,league').order('lp', { ascending: false }).limit(30);
+    if (r.error) return null;
+    return r.data || [];
+  }
   async function search(q) {
     q = String(q || '').trim();
     if (q.length < 2) return [];
@@ -160,5 +181,5 @@
   // Rafraîchissement périodique des demandes (toutes les 60 s quand l'onglet est visible)
   setInterval(() => { if (S.ready && S.me && !document.hidden) refresh().catch(() => {}); }, 60000);
 
-  F1.social = { state: S, init, claim, sync, search, byUsername, refresh, relation, linkWith, request, accept, remove, onChange: (f) => listeners.push(f), cleanName, USER_RE };
+  F1.social = { state: S, leaderboard, init, claim, sync, search, byUsername, refresh, relation, linkWith, request, accept, remove, onChange: (f) => listeners.push(f), cleanName, USER_RE };
 })(globalThis.F1 = globalThis.F1 || {});

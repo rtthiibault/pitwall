@@ -25,6 +25,32 @@ Site de paris **à jetons virtuels** sur la Formule 1. Il est 100 % statique (HT
 - **Pages** : calendrier, classements (avec un graphique d'évolution interactif), résultats détaillés de chaque GP.
 - **Sauvegarde** : export/import d'un code, pour passer d'un appareil à l'autre.
 
+## Mode manager (page « Écurie »)
+- **PitCoins (PC)** : c'est une seconde monnaie, séparée des jetons de paris. On démarre avec 300 PC, sans pilote ni voiture.
+  - **Chaque pari gagné rapporte** de 5 à 80 PC, selon le bénéfice, avec un bonus si la cote est d'au moins 5.
+  - **Les courses du mode manager rapportent** aussi des PC, selon la position et la ligue.
+- **Marché des pilotes** : la note de chaque pilote combine un talent de base (`TALENT` dans `js/manager.js`) et sa **forme réelle** de la saison. La note et le prix sont donc mis à jour chaque semaine (de 35 PC pour un rookie à 180 PC pour Verstappen). Chaque pilote a trois caractéristiques : Rythme, Combativité, Régularité.
+- **Châssis** : de 60 à 250 PC, selon le niveau réel de l'écurie. Chacun a son profil de Vitesse de pointe, Appui aérodynamique et Fiabilité (`TEAM_PROFILE`).
+- **Transferts** : un pilote ou un châssis se revend à 70 % de sa valeur. Changer de châssis remet la R&D à zéro, mais rembourse 50 % de l'argent investi.
+- **R&D** : 10 niveaux par caractéristique, chacun ajoute +2,5 points. Le coût augmente à chaque niveau (25, 33, 44… PC).
+- **Stratégie** :
+  - Chaque circuit a un profil (`CIRCUIT`) : Monza demande de la vitesse, Monaco de l'appui, Singapour de la fiabilité…
+  - Les courses se disputent sur le circuit du **prochain Grand Prix réel**.
+  - Un **réglage aéro** (faible ou fort appui) s'ajuste avant chaque course.
+  - Le site affiche l'indice de la voiture et la **position moyenne estimée**, calculée sur 150 courses simulées.
+- **Moteur de course** : 20 tours contre 19 managers IA. La performance combine le niveau du pilote, les caractéristiques de la voiture avec les améliorations et la compatibilité avec le circuit, plus une part d'aléa :
+  - la forme du jour ;
+  - les qualifications, puis l'écart sur la grille au départ ;
+  - les casses mécaniques, plus fréquentes avec une faible fiabilité ;
+  - les accidents et les tête-à-queue, plus fréquents avec une faible régularité ;
+  - une éventuelle voiture de sécurité.
+
+  La course est animée tour par tour, avec une tour de classement et le fil des faits de course. Le joueur dispose de 5 courses par jour.
+- **Ligues** : Bronze (0 LP), Argent (100), Or (250), Platine (450), Diamant (700), Légende (1000).
+  - Les points de ligue (LP) vont de +30 pour une victoire à −10 pour la dernière place, et −8 pour un abandon.
+  - Plus la ligue est haute, plus les adversaires IA sont forts, et plus les gains sont multipliés (×1 à ×4).
+- **Classement mondial des managers** : il est disponible si Supabase est configuré. Il faut exécuter **une fois** `supabase/migration-manager.sql` dans le SQL Editor de Supabase.
+
 ## Système d'amis
 La page **Amis** permet de :
 - rechercher un joueur par son pseudo ;
@@ -123,6 +149,8 @@ Ouvrez ensuite http://localhost:8000.
 | `js/social.js` | Système d'amis (Supabase) |
 | `js/config.js` | Configuration Supabase (URL + clé anon) |
 | `supabase/schema.sql` | Tables et règles de sécurité du système d'amis |
+| `js/manager.js` | Mode manager : marché, R&D, circuits, moteur de course, ligues |
+| `supabase/migration-manager.sql` | Colonnes du classement des ligues |
 | `js/data.js` | Appels API, cache, normalisation, couleurs des écuries, drapeaux |
 | `js/model.js` | Simulation Monte-Carlo, conversion probabilité → cote |
 | `js/markets.js` | Définition des marchés et règles de règlement |

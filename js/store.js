@@ -16,17 +16,23 @@
     { id: 'rich', icon: '💎', title: 'Budget cap explosé', desc: 'Atteindre 5 000 jetons' },
     { id: 'season', icon: '🏆', title: 'Visionnaire', desc: 'Parier sur le champion du monde' },
     { id: 'loyal', icon: '📅', title: 'Abonné du paddock', desc: 'Récupérer 5 primes de week-end' },
+    { id: 'mgr_team', icon: '🏗️', title: 'Team principal', desc: 'Posséder un pilote et un châssis' },
+    { id: 'mgr_win', icon: '🏁', title: 'Victoire constructeur', desc: 'Gagner une course de manager' },
+    { id: 'mgr_or', icon: '🥇', title: 'Ligue Or', desc: 'Atteindre la ligue Or en mode manager' },
+    { id: 'mgr_rd', icon: '🔬', title: 'Bureau d\'études', desc: 'Monter une caractéristique au niveau 5' },
   ];
 
   let state = null;
   const listeners = [];
 
   function blank() {
-    return { v: 1, name: '', created: Date.now(), balance: START, bets: [], claimed: {}, rescues: {}, ach: {}, history: [{ t: Date.now(), b: START }] };
+    return { v: 1, name: '', created: Date.now(), balance: START, bets: [], claimed: {}, rescues: {}, ach: {}, history: [{ t: Date.now(), b: START }], manager: blankManager() };
   }
+  const blankManager = () => ({ pc: (F1.manager && F1.manager.START_PC) || 300, driver: null, chassis: null, ups: { speed: 0, df: 0, rel: 0 }, rdSpent: 0, setup: 0, lp: 0, best: 0, races: [], day: { key: '', n: 0 }, log: [] });
   function load() {
     try { state = JSON.parse(localStorage.getItem(KEY)); } catch (e) { state = null; }
     if (!state || state.v !== 1) state = blank();
+    if (!state.manager) state.manager = blankManager();
     return state;
   }
   function save() {
@@ -82,6 +88,8 @@
       state.balance = Math.round((state.balance + bet.payout) * 100) / 100;
       settled.push(bet);
       if (bet.status === 'won') {
+        const pcGain = F1.manager ? F1.manager.betReward(bet) : 0;
+        if (pcGain) { bet.pcReward = pcGain; addPC(pcGain, 'Pari gagné'); }
         unlock('win1');
         if (bet.legs.length >= 3) unlock('combo');
         if (bet.effOdds >= 10) unlock('long');
@@ -145,6 +153,65 @@
       openStake: open.reduce((a, b) => a + b.stake, 0), open: open.length,
     };
   }
+  /* ---------- Mode manager ---------- */
+  const mgr = () => get().manager;
+  function addPC(n, reason) {
+    const m = mgr();
+    m.pc = Math.round((m.pc + n) * 100) / 100;
+    m.log.unshift({ t: Date.now(), n, reason }); if (m.log.length > 40) m.log.pop();
+  }
+  function spendPC(n, reason) {
+    if (mgr().pc + 1e-9 < n) throw new Error('PitCoins insuffisants');
+    addPC(-n, reason);
+  }
+  function buyDriver(d, resale) {
+    const m = mgr();
+    if (m.driver && m.driver.id === d.id) throw new Error('Ce pilote est déjà dans votre écurie');
+    const net = d.price - (resale || 0);
+    if (m.pc + 1e-9 < net) throw new Error(`Il vous manque ${Math.ceil(net - m.pc)} PitCoins`);
+    if (resale) addPC(resale, `Transfert : vente de ${m.driver.name}`);
+    spendPC(d.price, `Recrutement : ${d.name}`);
+    m.driver = { id: d.id, name: d.name, price: d.price, at: Date.now() };
+    if (m.chassis) unlock('mgr_team');
+    save();
+  }
+  function buyChassis(c, resale) {
+    const m = mgr();
+    if (m.chassis && m.chassis.id === c.id) throw new Error('Vous possédez déjà ce châssis');
+    const net = c.price - (resale || 0);
+    if (m.pc + 1e-9 < net) throw new Error(`Il vous manque ${Math.ceil(net - m.pc)} PitCoins`);
+    if (resale) addPC(resale, `Revente du châssis ${m.chassis.name}`);
+    spendPC(c.price, `Achat du châssis ${c.name}`);
+    m.chassis = { id: c.id, name: c.name, price: c.price, at: Date.now() };
+    m.ups = { speed: 0, df: 0, rel: 0 }; m.rdSpent = 0; m.setup = 0;
+    if (m.driver) unlock('mgr_team');
+    save();
+  }
+  function upgrade(stat, cost) {
+    const m = mgr();
+    if (!m.chassis) throw new Error('Achetez d\'abord un châssis');
+    spendPC(cost, `R&D : ${stat}`);
+    m.ups[stat] = (m.ups[stat] || 0) + 1; m.rdSpent += cost;
+    if (m.ups[stat] >= 5) unlock('mgr_rd');
+    save();
+  }
+  function setSetup(v) { mgr().setup = v; save(); }
+  const dayKey = () => new Date().toLocaleDateString('fr-CA');
+  function racesLeft() { const m = mgr(); return (F1.manager ? F1.manager.RACES_PER_DAY : 5) - (m.day.key === dayKey() ? m.day.n : 0); }
+  function recordRace(r) {
+    const m = mgr();
+    if (m.day.key !== dayKey()) m.day = { key: dayKey(), n: 0 };
+    m.day.n++;
+    const before = m.lp;
+    m.lp = Math.max(0, m.lp + r.lp);
+    m.best = Math.max(m.best, m.lp);
+    addPC(r.pc, `Course : P${r.pos}${r.dnf ? ' (abandon)' : ''}`);
+    m.races.unshift({ ...r, t: Date.now(), lpBefore: before, lpAfter: m.lp }); if (m.races.length > 30) m.races.pop();
+    if (r.pos === 1 && !r.dnf) unlock('mgr_win');
+    if (F1.manager && m.lp >= F1.manager.LEAGUES[2].min) unlock('mgr_or');
+    save();
+  }
+
   function setName(n) { get().name = String(n).slice(0, 24); save(); }
   function exportCode() { return btoa(unescape(encodeURIComponent(JSON.stringify(get())))); }
   function importCode(code) {
@@ -155,5 +222,5 @@
   function reset() { const n = get().name; state = blank(); state.name = n; save(); }
   const popUnlocked = () => unlocked.splice(0);
 
-  F1.store = { load, get, save, onChange, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
+  F1.store = { load, get, save, onChange, mgr, addPC, buyDriver, buyChassis, upgrade, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
 })(globalThis.F1 = globalThis.F1 || {});
