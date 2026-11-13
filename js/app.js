@@ -125,7 +125,7 @@
         clearInterval(timer);
         await new Promise((r) => setTimeout(r, seen ? 150 : 400 + Math.random() * 600));
         pods.forEach((p) => p.classList.remove('on'));
-        $('#lightsCaption').innerHTML = '<b>Extinction des feux</b> — c\'est parti !';
+        $('#lightsCaption').textContent = 'Extinction des feux, c\'est parti !';
         await new Promise((r) => setTimeout(r, seen ? 150 : 450));
         el.classList.add('out');
         try { sessionStorage.setItem('pitwall:lights', '1'); } catch (e) { /* */ }
@@ -1267,7 +1267,7 @@
     const src = { live: 'API live', snapshot: 'instantané hebdomadaire', cache: 'cache local', fallback: 'données de secours', embedded: 'calendrier ' + s.year + ' intégré' }[s.source];
     const meta = S.meta && S.meta.updated ? ` · données vérifiées automatiquement le ${DTF.format(new Date(S.meta.updated))}` : '';
     $('#footer').innerHTML = `<div style="max-width:760px;margin:0 auto">
-      <div class="logo" style="justify-content:center;font-size:18px;margin-bottom:10px"><span>PIT<em>WALL</em></span></div>
+      <div class="logo foot-logo"><span class="logo-word">PITWALL</span></div>
       Données : <a href="https://github.com/jolpica/jolpica-f1" target="_blank" rel="noopener">Jolpica F1 API</a> (successeur d'Ergast) · Météo : <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> · Source : ${src}${s.updated ? ' · maj ' + DTF.format(s.updated) : ''}${meta}
       · <button class="link" data-action="reload" style="text-decoration:underline">Actualiser</button><br><br>
       Photos des pilotes : Wikimedia Commons, licences libres — <button class="link" data-action="credits" style="text-decoration:underline">crédits photos</button> · Monoplaces : illustrations originales.<br><br>

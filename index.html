@@ -5,17 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>PITWALL — Pronostics Formule 1</title>
   <meta name="description" content="Pariez (en jetons virtuels) sur chaque Grand Prix de Formule 1 : vainqueur, podium, duels, tiercé, meilleur tour… Cotes recalculées après chaque course.">
-  <meta name="theme-color" content="#07070b">
+  <meta name="theme-color" content="#1A1D23">
   <meta property="og:title" content="PITWALL — Pronostics Formule 1">
   <meta property="og:description" content="Le jeu de pronostics F1 gratuit, cotes mises à jour à chaque Grand Prix.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2307070b'/%3E%3Cpath d='M10 44 L30 20 H54 L50 26 H33 L28 32 H46 L42 38 H23 L18 44Z' fill='%23e10600'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='9' fill='%231A1D23'/%3E%3Cpath d='M11 36 V7 H22 A10.5 10.5 0 0 1 22 28 H11' fill='none' stroke='%23ECEEF2' stroke-width='6.5' stroke-linejoin='round'/%3E%3Cpath d='M22 13.2 A4.3 4.3 0 0 1 22 21.8' fill='none' stroke='%23E2231A' stroke-width='2.6'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,300;0,400;0,600;0,700;0,900;1,700;1,900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=202611131833">
+  <link href="https://fonts.googleapis.com/css2?family=Saira:ital,wght@0,400;0,500;0,600;0,700;1,600&family=Saira+Condensed:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=202611131844">
 </head>
 <body>
-  <div class="aurora" aria-hidden="true"></div>
   <div class="lights" id="lights" aria-hidden="true">
     <div class="lights-gantry">
       <div class="pod"><i></i><i></i><i></i><i></i></div>
@@ -24,13 +23,13 @@
       <div class="pod"><i></i><i></i><i></i><i></i></div>
       <div class="pod"><i></i><i></i><i></i><i></i></div>
     </div>
-    <div class="lights-caption" id="lightsCaption">Connexion au <b>muret des stands</b>…</div>
+    <div class="lights-caption" id="lightsCaption">Connexion au muret des stands…</div>
   </div>
 
   <header class="topbar">
     <a href="#/" class="logo" aria-label="PITWALL accueil">
-      <svg viewBox="0 0 64 36" aria-hidden="true"><path d="M2 34 L26 4 H62 L56 12 H33 L28 18 H52 L46 26 H22 L16 34Z" fill="#e10600"/></svg>
-      <span>PIT<em>WALL</em></span>
+      <svg class="logo-mark" viewBox="0 0 40 40" aria-hidden="true"><path d="M11 36 V7 H22 A10.5 10.5 0 0 1 22 28 H11" fill="none" stroke="currentColor" stroke-width="6.5" stroke-linejoin="round"/><path d="M22 13.2 A4.3 4.3 0 0 1 22 21.8" fill="none" stroke="#fff" stroke-width="2.6"/><path d="M22 13.2 A4.3 4.3 0 0 1 22 21.8" fill="none" stroke="#E2231A" stroke-width="2.6" stroke-dasharray="2.2 2.2"/><path d="M22 7 A10.5 10.5 0 0 1 22 28" fill="none" stroke="#1A1D23" stroke-width=".9" stroke-dasharray="2 2.4" opacity=".55"/><g transform="translate(7.75 31)"><rect width="6.5" height="5" fill="#fff"/><rect x="0" y="0" width="1.625" height="1.25" fill="#111"/><rect x="3.25" y="0" width="1.625" height="1.25" fill="#111"/><rect x="1.625" y="1.25" width="1.625" height="1.25" fill="#111"/><rect x="4.875" y="1.25" width="1.625" height="1.25" fill="#111"/><rect x="0" y="2.5" width="1.625" height="1.25" fill="#111"/><rect x="3.25" y="2.5" width="1.625" height="1.25" fill="#111"/><rect x="1.625" y="3.75" width="1.625" height="1.25" fill="#111"/><rect x="4.875" y="3.75" width="1.625" height="1.25" fill="#111"/></g></svg>
+      <span class="logo-word">PITWALL</span>
     </a>
     <nav class="nav" id="nav">
       <a href="#/" data-r="">Accueil</a>
@@ -73,17 +72,17 @@
   <canvas id="confetti"></canvas>
 
   <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
-  <script src="js/config.js?v=202611131833"></script>
-  <script src="js/fallback.js?v=202611131833"></script>
-  <script src="js/season2027.js?v=202611131833"></script>
-  <script src="js/data.js?v=202611131833"></script>
-  <script src="js/model.js?v=202611131833"></script>
-  <script src="js/markets.js?v=202611131833"></script>
-  <script src="js/manager.js?v=202611131833"></script>
-  <script src="js/store.js?v=202611131833"></script>
-  <script src="js/visuals.js?v=202611131833"></script>
-  <script src="js/social.js?v=202611131833"></script>
-  <script src="js/app.js?v=202611131833"></script>
-  <script type="module" src="js/car3d.js?v=202611131833"></script>
+  <script src="js/config.js?v=202611131844"></script>
+  <script src="js/fallback.js?v=202611131844"></script>
+  <script src="js/season2027.js?v=202611131844"></script>
+  <script src="js/data.js?v=202611131844"></script>
+  <script src="js/model.js?v=202611131844"></script>
+  <script src="js/markets.js?v=202611131844"></script>
+  <script src="js/manager.js?v=202611131844"></script>
+  <script src="js/store.js?v=202611131844"></script>
+  <script src="js/visuals.js?v=202611131844"></script>
+  <script src="js/social.js?v=202611131844"></script>
+  <script src="js/app.js?v=202611131844"></script>
+  <script type="module" src="js/car3d.js?v=202611131844"></script>
 </body>
 </html>
