@@ -47,36 +47,90 @@ async function loadModel() {
 
 /* ---------- Livrées ---------- */
 const livery = (id) => (F1.visuals && F1.visuals.livery ? F1.visuals.livery(id) : { body: '#e10600', accent: '#111', detail: '#222', helmet: '#fff' });
-// Couleur de chaque sommet selon la livrée 2026 de l'écurie (zones, dégradés, filets)
-function paintGeometry(part, fn) {
-  const pos = part.geometry.attributes.position, nrm = part.geometry.attributes.normal;
-  const col = new Uint8Array(pos.count * 3);
-  const { x0, x1, y1, z1 } = BOUNDS;
-  const c = new THREE.Color();
-  const cache = new Map();
-  for (let i = 0; i < pos.count; i++) {
-    const u = (pos.getX(i) - x0) / (x1 - x0), v = pos.getY(i) / y1, s = Math.abs(pos.getZ(i)) / z1;
-    const hex = fn(u, v, s, part.name, nrm.getY(i)) || '#101114';
-    let rgb = cache.get(hex);
-    if (!rgb) { c.set(hex); rgb = [c.r, c.g, c.b].map((x) => Math.round(x * 255)); cache.set(hex, rgb); } // espace linéaire
-    col[i * 3] = rgb[0]; col[i * 3 + 1] = rgb[1]; col[i * 3 + 2] = rgb[2];
+/* ---------- Peinture des livrées au pixel près (shader) ----------
+   Chaque pixel de la carrosserie évalue la liste de règles de l'écurie (zones nettes, dégradés),
+   puis un filet fin (≈1,5 px) est tracé à chaque frontière de zone : plus aucune « bavure ». */
+const MAXR = 20;
+const PART_BIT = { body: 1, accent: 2, lower: 4, carbon: 8 };
+const LIVERY_GLSL = `
+uniform int uN; uniform float uPart; uniform vec4 uB; uniform vec3 uBase; uniform vec3 uLineCol;
+uniform vec4 uR0[${MAXR}]; uniform vec4 uR1[${MAXR}]; uniform vec4 uR2[${MAXR}];
+uniform vec4 uR3[${MAXR}]; uniform vec4 uR4[${MAXR}]; uniform vec4 uR5[${MAXR}];
+varying vec3 vLP; varying float vNY;
+float lvBit(float m, float b) { return mod(floor(m / b + 0.5), 2.0); }
+vec3 liveryColor(out float lineA) {
+  float u = (vLP.x - uB.x) / (uB.y - uB.x), v = vLP.y / uB.z, s = abs(vLP.z) / uB.w, ny = vNY;
+  float fu = max(fwidth(u), 1e-6), fv = max(fwidth(v), 1e-6), fs = max(fwidth(s), 1e-6);
+  lineA = 0.0;
+  for (int i = 0; i < ${MAXR}; i++) {
+    if (i >= uN) break;
+    vec4 a = uR0[i], b = uR1[i], h = uR2[i], c1 = uR3[i], c2 = uR4[i], g = uR5[i];
+    if (lvBit(c2.w, uPart) < 0.5) continue;
+    if (u < a.x || u > a.y || v < a.z || v > a.w || s < b.x || s > b.y || ny < b.z || ny > b.w) continue;
+    float hv = h.x * u + h.y * v + h.z;
+    if (h.w > 0.5 && hv < 0.0) continue;
+    vec3 col = c1.rgb;
+    if (g.x > 0.5) { float t = g.x < 1.5 ? u : v; col = mix(c1.rgb, c2.rgb, smoothstep(g.y, g.z, t)); }
+    if (c1.w > 0.5) {
+      float e = 1e3;
+      if (a.x > -5.0) e = min(e, (u - a.x) / fu);
+      if (a.y < 5.0) e = min(e, (a.y - u) / fu);
+      if (a.z > -5.0) e = min(e, (v - a.z) / fv);
+      if (a.w < 5.0) e = min(e, (a.w - v) / fv);
+      if (b.x > -5.0) e = min(e, (s - b.x) / fs);
+      if (b.y < 5.0) e = min(e, (b.y - s) / fs);
+      if (h.w > 0.5) e = min(e, hv / max(abs(h.x) * fu + abs(h.y) * fv, 1e-6));
+      lineA = 1.0 - smoothstep(0.6, 1.7, e);
+    }
+    return col;
   }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', pos);
-  g.setAttribute('normal', part.geometry.attributes.normal);
-  g.setIndex(part.geometry.index);
-  g.setAttribute('color', new THREE.BufferAttribute(col, 3, true));
-  g.boundingSphere = part.geometry.boundingSphere; g.boundingBox = part.geometry.boundingBox;
-  return g;
+  return uBase;
+}
+`;
+function ruleUniforms(rules) {
+  const z = () => Array.from({ length: MAXR }, () => new THREE.Vector4());
+  const R0 = z(), R1 = z(), R2 = z(), R3 = z(), R4 = z(), R5 = z();
+  const lin = (hex) => new THREE.Color(hex);
+  rules.slice(0, MAXR).forEach((r, i) => {
+    const rg = (k) => r[k] || [-9, 9];
+    const [ul, uh] = rg('u'), [vl, vh] = rg('v'), [sl, sh] = rg('s'), [nl, nh] = rg('ny');
+    R0[i].set(ul, uh, vl, vh); R1[i].set(sl, sh, nl, nh);
+    if (r.h) R2[i].set(r.h[0], r.h[1], r.h[2], 1); else R2[i].set(0, 0, 0, 0);
+    const c1 = lin(r.c), c2 = lin(r.c2 || r.c);
+    const mask = (r.parts || ['body']).reduce((m, p) => m + (PART_BIT[p] || 0), 0);
+    const hasBounds = ['u', 'v', 's'].some((k) => r[k]) || !!r.h;
+    R3[i].set(c1.r, c1.g, c1.b, r.line !== false && hasBounds ? 1 : 0);
+    R4[i].set(c2.r, c2.g, c2.b, mask);
+    R5[i].set(r.g === 'u' ? 1 : r.g === 'v' ? 2 : 0, r.a || 0, r.b || 1, 0);
+  });
+  return { uN: { value: Math.min(rules.length, MAXR) }, uR0: { value: R0 }, uR1: { value: R1 }, uR2: { value: R2 }, uR3: { value: R3 }, uR4: { value: R4 }, uR5: { value: R5 } };
+}
+function liveryMaterial(def, part, fin) {
+  const m = new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0.25, roughness: fin.rough, clearcoat: fin.clear, clearcoatRoughness: 0.06 });
+  m.extensions = { derivatives: true };
+  const ru = ruleUniforms(def.rules);
+  const extra = {
+    ...ru, uPart: { value: PART_BIT[part] }, uB: { value: new THREE.Vector4(BOUNDS.x0, BOUNDS.x1, BOUNDS.y1, BOUNDS.z1) },
+    uBase: { value: new THREE.Color(part === 'carbon' ? 0x101114 : 0x111114) }, uLineCol: { value: new THREE.Color(def.line || '#0b0b0d') },
+  };
+  m.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, extra);
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vLP; varying float vNY;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvLP = position; vNY = normal.y;');
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\n' + LIVERY_GLSL)
+      .replace('vec4 diffuseColor = vec4( diffuse, opacity );', 'float lvLine; vec3 lvCol = liveryColor(lvLine); lvCol = mix(lvCol, uLineCol, lvLine * 0.92); vec4 diffuseColor = vec4( lvCol, opacity );');
+  };
+  m.customProgramCacheKey = () => 'pitwall-livery';
+  return m;
 }
 function materials(teamId) {
   const L = livery(teamId);
-  const LV = F1.visuals && F1.visuals.liveryPaint ? F1.visuals.liveryPaint(teamId) : null;
-  const fin = (LV && LV.finish) || { rough: 0.3, clear: 1 };
+  const def = F1.visuals && F1.visuals.liveryRules ? F1.visuals.liveryRules(teamId) : null;
+  const fin = (def && def.finish) || { rough: 0.3, clear: 1 };
   const paint = (c, rough = 0.3) => new THREE.MeshPhysicalMaterial({ color: c, metalness: 0.3, roughness: rough, clearcoat: 1, clearcoatRoughness: 0.05 });
-  return {
-    LV,
-    livery: new THREE.MeshPhysicalMaterial({ vertexColors: true, metalness: 0.25, roughness: fin.rough, clearcoat: fin.clear, clearcoatRoughness: 0.06 }),
+  const M = {
     body: paint(L.body),
     accent: paint(L.accent, 0.3),
     lower: new THREE.MeshPhysicalMaterial({ color: new THREE.Color(L.body).lerp(new THREE.Color(0x0b0b0e), 0.9), metalness: 0.2, roughness: 0.5, clearcoat: 0.6 }),
@@ -84,15 +138,14 @@ function materials(teamId) {
     tyre: new THREE.MeshStandardMaterial({ color: 0x151517, metalness: 0, roughness: 0.82 }),
     rim: new THREE.MeshStandardMaterial({ color: 0xa9adb5, metalness: 0.75, roughness: 0.3 }),
   };
+  if (def) for (const p of ['body', 'accent', 'lower', 'carbon']) M[p] = liveryMaterial(def, p, p === 'carbon' ? { rough: 0.5, clear: 0.4 } : fin);
+  return M;
 }
 function buildCar(teamId) {
   const M = materials(teamId);
   const car = new THREE.Group();
   for (const p of PARTS) {
-    const painted = M.LV && ['body', 'accent', 'lower', 'carbon'].includes(p.name);
-    const geo = painted ? paintGeometry(p, M.LV.paint) : p.geometry;
-    const m = new THREE.Mesh(geo, painted ? M.livery : (M[p.name] || M.body));
-    if (painted) m.userData.ownGeometry = true;
+    const m = new THREE.Mesh(p.geometry, M[p.name] || M.body);
     m.castShadow = true; m.receiveShadow = true;
     car.add(m);
   }
