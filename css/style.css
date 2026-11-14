@@ -895,3 +895,63 @@ body:not(.on-home) { --panel: rgba(16, 17, 25, .72); }
 .obj.claimed { opacity: .65; }
 .ev.pit { color: #8ecbff; }
 @media (max-width: 720px) { .mk-ladder { grid-template-columns: repeat(5, minmax(56px, 1fr)); overflow-x: auto; } .mk small { white-space: normal; } }
+
+/* ---------- R&D : groupe propulseur en vue éclatée ---------- */
+.pu3d { position: absolute; inset: 0; opacity: 0; transition: opacity .6s var(--ease); cursor: grab; } .pu3d.ok { opacity: 1; } .pu3d:active { cursor: grabbing; }
+.pu-tags { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.pu-tag { position: absolute; left: 0; top: 0; padding: 4px 9px; border-radius: 3px; background: #f2a900; color: #1a1300; font-family: 'Titillium Web', sans-serif; font-weight: 900; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; transition: opacity .25s, background .2s; box-shadow: 0 6px 16px -6px rgba(0,0,0,.8); }
+.pu-tag::after { content: ''; position: absolute; left: 50%; top: 100%; width: 1.5px; height: var(--ll, 14px); background: #f2a900; }
+.pu-tag:hover, .pu-tag.on { background: #fff; } .pu-tag.on::after, .pu-tag:hover::after { background: #fff; }
+.rd-view { position: absolute; left: 12px; top: 12px; z-index: 3; background: rgba(8,9,14,.7); backdrop-filter: blur(8px); }
+.rd-view button { font-size: 12px; padding: 6px 10px; }
+@media (max-width: 720px) { .pu-tag { font-size: 9px; padding: 3px 6px; } .rd-view button { font-size: 11px; padding: 5px 8px; } }
+
+/* ---------- Muret des stands et garage ---------- */
+.wall-scene, .garage-scene { position: relative; border-radius: 22px; overflow: hidden; border: 1px solid transparent; background: linear-gradient(#0b0d12, #0b0d12) padding-box, linear-gradient(145deg, color-mix(in srgb, var(--tc) 60%, transparent), rgba(255,255,255,.05) 50%) border-box; box-shadow: 0 30px 80px -40px color-mix(in srgb, var(--tc) 70%, transparent); }
+.wall-scene, .garage-scene { overflow-x: auto; scrollbar-width: thin; }
+.scene-in { position: relative; min-width: 860px; }
+.wall-scene svg, .garage-scene svg { display: block; width: 100%; height: auto; font-family: 'Titillium Web', sans-serif; }
+.bay .bay-hit { transition: fill .2s, stroke .2s; stroke: transparent; stroke-width: 2; }
+.bay:hover .bay-hit { fill: rgba(255,255,255,.05); } .bay.sel .bay-hit { fill: rgba(255,255,255,.07); stroke: #fff; }
+.wall-person { animation: breathe 3.4s ease-in-out infinite; transform-origin: 50% 100%; transform-box: fill-box; }
+.bay:nth-child(odd) .wall-person { animation-delay: -1.5s; }
+@keyframes breathe { 50% { transform: translateY(-2px) rotate(.6deg); } }
+.scr-line { stroke-dasharray: 220; stroke-dashoffset: 220; animation: scrDraw 2.6s linear infinite; }
+@keyframes scrDraw { 60%, 100% { stroke-dashoffset: 0; } }
+.scr-bar { animation: scrBar 2.2s ease-in-out infinite; transform-origin: left; transform-box: fill-box; } @keyframes scrBar { 50% { transform: scaleX(.55); } }
+.scr-flow { animation: scrFlow 1s linear infinite; } @keyframes scrFlow { to { stroke-dashoffset: -15; } }
+.scr-blink { animation: scrBlink 1.4s steps(2) infinite; } @keyframes scrBlink { 50% { opacity: .25; } }
+.wall-car { animation: wallCar 3.2s linear infinite; } @keyframes wallCar { from { transform: translateX(-140px); } 35%, to { transform: translateX(1300px); } }
+.radar-sweep { transform-origin: 1108px 225px; animation: sweep 2.4s linear infinite; } @keyframes sweep { to { transform: rotate(360deg); } }
+.g-green { fill: #2ee59d !important; animation: scrBlink 1.8s steps(2) infinite; }
+.mech { animation: mechIdle 2.8s ease-in-out infinite; } .mech:nth-of-type(odd) { animation-delay: -1.2s; } @keyframes mechIdle { 50% { translate: 0 -2px; } }
+.garage-car2 { position: absolute; left: 50%; bottom: 5%; width: min(54%, 660px); transform: translateX(-50%); pointer-events: none; }
+.garage-car2 .car3d img { filter: drop-shadow(0 16px 14px rgba(0,0,0,.7)); }
+.garage-cap { position: absolute; right: 14px; top: 12px; padding: 6px 12px; border-radius: 10px; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.1); font-size: 12px; backdrop-filter: blur(6px); }
+.staff-ava { flex: none; width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; font-size: 26px; background: linear-gradient(145deg, color-mix(in srgb, var(--tc, #e10600) 45%, #10121a), #10121a); border: 1px solid rgba(255,255,255,.1); }
+.stars { color: var(--gold); font-size: 12px; letter-spacing: 1px; } .stars i { color: rgba(255,255,255,.15); font-style: normal; }
+.gcard .pips i { width: 20px; }
+
+/* ---------- Course 3D et météo ---------- */
+.race-box { width: min(1080px, 100%); }
+.race-h { gap: 12px; }
+.wx-now { display: flex; align-items: center; gap: 10px; padding: 6px 14px; border-radius: 12px; background: rgba(255,255,255,.05); border: 1px solid var(--line); }
+.wx-now .wx-ic { font-size: 26px; line-height: 1; } .wx-now b { display: block; font-size: 14px; } .wx-now small { color: var(--muted); font-size: 11px; }
+.race-stage { position: relative; height: clamp(230px, 40vh, 400px); margin-top: 10px; border-radius: 14px; overflow: hidden; background: #0b0d12; border: 1px solid var(--line); }
+.race-stage.off { display: none; }
+.race-3d { position: absolute; inset: 0; }
+.race-cams { position: absolute; left: 10px; bottom: 10px; display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: rgba(8,9,14,.72); backdrop-filter: blur(8px); }
+.race-cams button { padding: 5px 10px; border-radius: 9px; font-size: 12px; font-weight: 700; color: #cfd2dc; } .race-cams button.on { background: #fff; color: #111; }
+.race-flag { position: absolute; left: 50%; top: 12px; transform: translate(-50%, -30px); opacity: 0; padding: 7px 16px; border-radius: 10px; font-weight: 900; font-style: italic; text-transform: uppercase; font-size: 14px; white-space: nowrap; transition: .35s var(--ease); background: rgba(8,9,14,.85); border: 1px solid rgba(255,255,255,.15); max-width: 94%; overflow: hidden; text-overflow: ellipsis; }
+.race-flag.on { transform: translate(-50%, 0); opacity: 1; }
+.race-flag.yellow { background: #ffd400; color: #1a1500; border-color: #fff; animation: flagBlink .5s steps(2) 4; } .race-flag.sc { background: #ff8a00; color: #1a0d00; } .race-flag.mech { background: rgba(20,22,28,.92); }
+@keyframes flagBlink { 50% { filter: brightness(1.5); } }
+.race-tyre { position: absolute; right: 10px; bottom: 10px; display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 12px; background: rgba(8,9,14,.72); backdrop-filter: blur(8px); font-size: 12px; font-weight: 700; } .race-tyre:empty { display: none; }
+.tyre { width: 18px; height: 18px; border-radius: 50%; border: 4px solid #e10600; background: #0c0c0e; } .tyre.inter { border-color: #2ee59d; }
+.wx-strip { display: grid; grid-template-columns: repeat(20, 1fr); gap: 3px; margin-top: 8px; }
+.wx-strip i { height: 9px; border-radius: 3px; background: #ffd66b; transition: background .4s, opacity .4s; position: relative; }
+.wx-strip i.cloud { background: #9aa3ad; } .wx-strip i.wet { background: #5b8fb8; } .wx-strip i.drizzle { background: #5aa9e6; } .wx-strip i.rain { background: #2d7fd6; } .wx-strip i.heavy { background: #7a4ff0; }
+.wx-strip i.unk { background: repeating-linear-gradient(45deg, rgba(255,255,255,.08) 0 3px, rgba(255,255,255,.02) 3px 6px); }
+.wx-strip i.past { opacity: .45; } .wx-strip i.now { opacity: 1; box-shadow: 0 0 0 1.5px #fff; }
+.ev.wx { color: #9fd0ff; border-left-color: #2d7fd6; }
+@media (max-width: 760px) { .wx-now small { display: none; } .wx-now { padding: 4px 8px; } .race-cams button { padding: 4px 6px; font-size: 11px; } .race-flag { font-size: 11px; } }

@@ -23,6 +23,9 @@
     { id: 'mgr_mk5', icon: '🧬', title: 'Spécification ultime', desc: 'Amener une pièce au niveau Mk V' },
     { id: 'mgr_pkg', icon: '📦', title: 'Package complet', desc: 'Toutes les pièces d\'une branche de R&D développées' },
     { id: 'mgr_tunnel', icon: '🎲', title: 'Coup de poker', desc: 'Réussir un pari soufflerie' },
+    { id: 'mgr_staff', icon: '🎧', title: 'Muret au complet', desc: 'Pourvoir les 5 postes du muret des stands' },
+    { id: 'mgr_garage', icon: '🧰', title: 'Garage dernier cri', desc: 'Cumuler 25 niveaux d\'équipements de garage' },
+    { id: 'mgr_rain', icon: '🌧️', title: 'Maître de la pluie', desc: 'Gagner une course manager sous la pluie' },
     { id: 'mgr_obj', icon: '🎯', title: 'Feuille de route', desc: 'Remplir les 3 objectifs d\'une journée' },
   ];
 
@@ -32,7 +35,7 @@
   function blank() {
     return { v: 1, name: '', created: Date.now(), balance: START, bets: [], claimed: {}, rescues: {}, ach: {}, history: [{ t: Date.now(), b: START }], manager: blankManager() };
   }
-  const blankManager = () => ({ pc: (F1.manager && F1.manager.START_PC) || 300, driver: null, chassis: null, ups: { speed: 0, df: 0, rel: 0 }, parts: {}, rdSpent: 0, setup: 0, lp: 0, best: 0, races: [], day: { key: '', n: 0 }, log: [] });
+  const blankManager = () => ({ pc: (F1.manager && F1.manager.START_PC) || 300, driver: null, chassis: null, ups: { speed: 0, df: 0, rel: 0 }, parts: {}, rdSpent: 0, setup: 0, lp: 0, best: 0, races: [], day: { key: '', n: 0 }, log: [], staff: {}, garage: {}, fails: {}, daily: { key: '' } });
   function load() {
     try { state = JSON.parse(localStorage.getItem(KEY)); } catch (e) { state = null; }
     if (!state || state.v !== 1) state = blank();
@@ -43,6 +46,8 @@
     for (const k in m.parts) if (m.parts[k] > 5) m.parts[k] = 1;
     if (!m.fails) m.fails = {};
     if (!m.daily) m.daily = { key: '' };
+    if (!m.staff) m.staff = {};
+    if (!m.garage) m.garage = {};
     return state;
   }
   function save() {
@@ -232,10 +237,11 @@
     const lv = MG.partLevel(m.parts, part.id);
     if (lv >= MG.MAX_LV) throw new Error('Pièce déjà au niveau maximal');
     if (!lv && MG.partState(part, m.parts) !== 'available') throw new Error('Développez d\'abord la pièce précédente de cette branche');
-    const full = MG.levelCost(part, lv + 1);
+    const tb = MG.teamBonus(m);
+    const full = Math.round(MG.levelCost(part, lv + 1) * (1 - tb.rd));
     const tunnel = mode === 'tunnel';
     const cost = tunnel ? Math.round(full / 2) : full;
-    const chance = tunnel ? MG.tunnelChance(m.fails[part.id] || 0) : 1;
+    const chance = tunnel ? Math.min(0.95, MG.tunnelChance(m.fails[part.id] || 0) + tb.tunnel) : 1;
     spendPC(cost, `R&D${tunnel ? ' (soufflerie)' : ''} : ${part.name} ${MG.LV_NAME[lv + 1]}`);
     m.rdSpent += cost;
     const ok = Math.random() < chance;
@@ -250,9 +256,38 @@
     save();
     return { ok, level: m.parts[part.id] || 0, chance, cost };
   }
+  // Personnel : recruter un membre du muret des stands (l'ancien titulaire est repris à 50 %)
+  function hireStaff(role, id) {
+    const m = mgr(), MG = F1.manager;
+    const x = MG.STAFF[role].find((c) => c.id === id);
+    if (!x) throw new Error('Candidat inconnu');
+    const cur = MG.staffOf(m, role);
+    if (cur && cur.id === id) throw new Error('Déjà en poste');
+    const refund = cur ? Math.round(cur.price * 0.5) : 0;
+    if (m.pc + refund + 1e-9 < x.price) throw new Error(`Il vous manque ${Math.ceil(x.price - refund - m.pc)} PitCoins`);
+    if (refund) addPC(refund, `Départ de ${cur.name}`);
+    spendPC(x.price, `Recrutement : ${x.name}`);
+    m.staff[role] = id;
+    if (MG.STAFF_ROLES.every((r) => m.staff[r.id])) unlock('mgr_staff');
+    save();
+    return x;
+  }
+  // Garage : améliorer un équipement d'un niveau
+  function upgradeGarage(id) {
+    const m = mgr(), MG = F1.manager;
+    const g = MG.GARAGE_BY_ID.get(id);
+    const l = MG.garageLevel(m, id);
+    if (!g || l >= MG.MAX_LV) throw new Error('Équipement déjà au niveau maximal');
+    spendPC(MG.garageCost(g, l + 1), `Garage : ${g.name} niv. ${l + 1}`);
+    m.garage[id] = l + 1;
+    if (Object.values(m.garage).reduce((a, v) => a + v, 0) >= 25) unlock('mgr_garage');
+    save();
+    return l + 1;
+  }
   function setSetup(v) { mgr().setup = v; save(); }
   const dayKey = () => new Date().toLocaleDateString('fr-CA');
-  function racesLeft() { const m = mgr(); return (F1.manager ? F1.manager.RACES_PER_DAY : 5) - (m.day.key === dayKey() ? m.day.n : 0); }
+  function racesPerDay() { return (F1.manager ? F1.manager.RACES_PER_DAY + F1.manager.teamBonus(mgr()).races : 5); }
+  function racesLeft() { const m = mgr(); return racesPerDay() - (m.day.key === dayKey() ? m.day.n : 0); }
   function recordRace(r) {
     const m = mgr();
     if (m.day.key !== dayKey()) m.day = { key: dayKey(), n: 0 };
@@ -267,6 +302,7 @@
     if (!r.dnf) { d.finish++; if (r.pos <= 5) d.top5++; if (r.pos <= 3) d.podium++; if (r.pos === 1) d.win++; d.gainMax = Math.max(d.gainMax, (r.grid || r.pos) - r.pos); }
     if (r.fastest) d.fastest++;
     if (r.pos === 1 && !r.dnf) unlock('mgr_win');
+    if (r.pos === 1 && !r.dnf && r.rain) unlock('mgr_rain');
     if (F1.manager && m.lp >= F1.manager.LEAGUES[2].min) unlock('mgr_or');
     save();
   }
@@ -281,5 +317,5 @@
   function reset() { const n = get().name; state = blank(); state.name = n; save(); }
   const popUnlocked = () => unlocked.splice(0);
 
-  F1.store = { load, get, save, onChange, mgr, addPC, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
+  F1.store = { load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
 })(globalThis.F1 = globalThis.F1 || {});

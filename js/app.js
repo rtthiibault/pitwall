@@ -806,17 +806,19 @@
     const w = MG().circuitProfile(race);
     const drvM = m.driver ? mk.byDriver.get(m.driver.id) || null : null;
     const ch = m.chassis ? mk.byChassis.get(m.chassis.id) || null : null;
-    const car = ch ? MG().carStats(ch, m.ups, m.parts) : null;
+    const tb = MG().teamBonus(m);
+    const car = ch ? MG().carStats(ch, m.ups, m.parts, tb) : null;
+    const wxIn = { rainProb: S.weather ? Math.min(0.9, S.weather.rain / 100) : 0.25, temp: S.weather ? S.weather.temp : 24 };
     const league = MG().leagueOf(m.lp);
     const bots = MG().botField(mk, league, `${F1.store.dayKey()}-${race ? race.round : 0}`);
-    return { m, mk, race, w, drvM, ch, car, league, bots };
+    return { m, mk, race, w, drvM, ch, car, league, bots, tb, wxIn };
   }
   // Position moyenne attendue : 150 courses simulées contre le plateau IA du jour (mêmes graines -> stable)
   function expectedPos(ctx, setup) {
     const player = { name: 'x', driver: ctx.drvM, car: ctx.car, setup };
     let sum = 0, wins = 0, pod = 0; const N = 150;
     for (let k = 0; k < N; k++) {
-      const me = MG().simulate({ player, bots: ctx.bots, race: ctx.race, seed: 1000 + k * 7919 }).final.find((x) => x.i === 0);
+      const me = MG().simulate({ player, bots: ctx.bots, race: ctx.race, seed: 1000 + k * 7919, ...ctx.wxIn }).final.find((x) => x.i === 0);
       sum += me.pos; if (me.pos === 1 && !me.out) wins++; if (me.pos <= 3 && !me.out) pod++;
     }
     return { avg: Math.round((sum / N) * 10) / 10, win: wins / N, pod: pod / N };
@@ -828,7 +830,7 @@
   const resaleD = (ctx) => (ctx.m.driver ? Math.round(((ctx.drvM ? ctx.drvM.price : ctx.m.driver.price) * 0.7) / 5) * 5 : 0);
   const resaleC = (ctx) => (ctx.m.chassis ? Math.round(((ctx.ch ? ctx.ch.price : ctx.m.chassis.price) * 0.7 + ctx.m.rdSpent * 0.5) / 5) * 5 : 0);
 
-  const MTABS = [['ecurie', '🏎️ Mon écurie'], ['pilotes', '👤 Pilotes'], ['chassis', '🔩 Châssis'], ['rd', '🔬 R&D'], ['ligues', '🏆 Ligues']];
+  const MTABS = [['ecurie', '🏎️ Mon écurie'], ['pilotes', '👤 Pilotes'], ['chassis', '🔩 Châssis'], ['rd', '🔬 R&D'], ['muret', '🎧 Muret'], ['garage', '🧰 Garage'], ['ligues', '🏆 Ligues']];
   function pageManager(tab) {
     tab = tab || 'ecurie';
     const ctx = mgrCtx();
@@ -841,6 +843,8 @@
     if (tab === 'pilotes') h += mgrDrivers(ctx);
     else if (tab === 'chassis') h += mgrChassis(ctx);
     else if (tab === 'rd') h += mgrRD(ctx);
+    else if (tab === 'muret') h += mgrStaff(ctx);
+    else if (tab === 'garage') h += mgrGarage(ctx);
     else if (tab === 'ligues') h += mgrLeagues(ctx, nl);
     else h += mgrHome(ctx, nl);
     return h + '</div>';
@@ -862,7 +866,7 @@
         <p class="muted" style="font-size:14px">💡 Gagnez des PitCoins en <b>réussissant vos paris</b> (chaque pari gagné rapporte) et en <b>courant</b> en mode manager.</p></div>
         <div class="grid g3" style="margin-top:16px">${step(!!drvM, 1, 'Recruter un pilote', drvM ? drvM.name : 'De 35 PC (rookies) à 180 PC (les cracks).', '#/manager/pilotes', 'Voir le marché')}
         ${step(!!ch, 2, 'Acheter un châssis', ch ? ch.name : 'De 60 PC à 250 PC selon le niveau de l\'écurie.', '#/manager/chassis', 'Voir les châssis')}
-        ${step(false, 3, 'Courir !', `${MG().RACES_PER_DAY} courses simulées par jour, sur le circuit du prochain Grand Prix.`, '#', '')}</div>`;
+        ${step(false, 3, 'Courir !', `${F1.store.racesPerDay()} courses simulées par jour, sur le circuit du prochain Grand Prix.`, '#', '')}</div>`;
     }
     const exp = expectedPos(ctx, m.setup);
     const best = MG().bestSetup(car, w);
@@ -880,7 +884,7 @@
           <div class="grid g2" style="margin-top:14px;gap:10px 18px">
             ${MG().STATS.map((st) => statBar(st.short, car[st.k], ch[st.k], F1.teamColor(ch.id), st.icon)).join('')}
             ${statBar('Pilote', drvM.rating, drvM.rating, 'var(--gold)', '👤')}
-          </div>${mechChips(car)}<div class="row" style="margin-top:12px"><span class="chip">🏎️ Note voiture <b style="margin-left:4px">${MG().carRating(car)}</b></span><a class="btn sm ghost" href="#/manager/rd">🔬 Développer la voiture</a></div></div></div>
+          </div>${mechChips(car)}<div class="row" style="margin-top:12px"><span class="chip">🏎️ Note voiture <b style="margin-left:4px">${MG().carRating(car)}</b></span><a class="btn sm ghost" href="#/manager/rd">🔬 R&D</a><a class="btn sm ghost" href="#/manager/muret">🎧 Muret</a><a class="btn sm ghost" href="#/manager/garage">🧰 Garage</a></div></div></div>
       <div class="grid g2" style="margin-top:16px">
         <div class="card"><div class="market-h"><div><h3>${flag(race.iso, 'sm')} ${esc(race.nameFr)}</h3><div class="sub">Circuit des courses manager · ${esc(w.kind)}</div></div></div>
           <div class="cprof">${[['⚡ Vitesse', w.speed], ['🌀 Appui', w.df], ['🔧 Fiabilité', w.rel]].map(([l, v]) => `<div><small>${l}</small><div class="sbar-t"><i style="width:${v * 100 / 0.7}%;background:var(--red2)"></i></div><b>${Math.round(v * 100)} %</b></div>`).join('')}</div>
@@ -893,9 +897,9 @@
         </div>
         <div class="card league-card" style="--lc:${league.color}"><div class="market-h"><div><h3>Ligue ${esc(league.name)}</h3><div class="sub">Gains ×${league.mult} · plateau de ${MG().FIELD - 1} managers IA</div></div>${leagueBadge(league, 'lg')}</div>
           <div style="margin-top:14px"><div class="row" style="justify-content:space-between;font-size:13px"><span>${fmt(m.lp)} LP</span><span class="muted">${nl ? `${nl.icon} ${nl.name} à ${nl.min} LP` : 'Sommet atteint !'}</span></div><div class="ptsbar" style="height:10px;margin-top:6px"><i style="width:${prog}%;background:linear-gradient(90deg,var(--lc),#fff)"></i></div></div>
-          <div class="grid g2" style="margin-top:14px;gap:10px"><div class="stat"><small>Courses aujourd'hui</small><b>${left} / ${MG().RACES_PER_DAY}</b></div><div class="stat"><small>Victoire</small><b>${fmtPC(MG().PC_TABLE[0] * league.mult)}</b><span class="muted" style="font-size:12px">+${MG().LP_TABLE[0]} LP</span></div></div>
+          <div class="grid g2" style="margin-top:14px;gap:10px"><div class="stat"><small>Courses aujourd'hui</small><b>${left} / ${F1.store.racesPerDay()}</b></div><div class="stat"><small>Victoire</small><b>${fmtPC(MG().PC_TABLE[0] * league.mult * (1 + ctx.tb.pc))}</b><span class="muted" style="font-size:12px">+${MG().LP_TABLE[0]} LP</span></div></div>
           <button class="btn block" style="margin-top:16px;font-size:16px;padding:16px" data-action="m-race" ${left > 0 ? '' : 'disabled'}>${left > 0 ? '🚦 Lancer une course' : '⏳ Revenez demain'}</button>
-          <div class="muted" style="font-size:12px;margin-top:8px;text-align:center">${left > 0 ? 'Résultat : niveau du pilote + voiture × compatibilité du circuit + aléa (incidents, voiture de sécurité…)' : `Limite de ${MG().RACES_PER_DAY} courses par jour atteinte.`}</div></div>
+          <div class="muted" style="font-size:12px;margin-top:8px;text-align:center">${left > 0 ? 'Résultat : niveau du pilote + voiture × compatibilité du circuit + aléa (incidents, voiture de sécurité…)' : `Limite de ${F1.store.racesPerDay()} courses par jour atteinte.`}</div></div>
       </div>
       ${objectivesCard(ctx)}
       ${m.races.length ? `<section class="section"><div class="section-h"><h2>Dernières courses</h2></div><div class="card pad0"><div class="table-wrap"><table class="tbl"><thead><tr><th>Date</th><th>Circuit</th><th>Ligue</th><th class="c">Départ</th><th class="c">Arrivée</th><th class="r">LP</th><th class="r">PitCoins</th></tr></thead><tbody>
@@ -968,11 +972,11 @@
     hydraulic: '<path d="M14 30 H50 C60 30 60 46 50 46 H30 C20 46 20 58 30 58 H66"/><circle cx="14" cy="30" r="5"/><circle cx="66" cy="58" r="5"/>',
   };
   const rdIcon = (k, col) => `<svg viewBox="0 0 80 70" class="rd-ico" fill="none" stroke="${col}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${RD_ICON[k] || RD_ICON.chip}</svg>`;
-  const FX_LBL = { speed: '⚡ Vitesse', df: '🌀 Appui', rel: '🔧 Fiabilité', launch: '🚦 Départ', tyre: '🛞 Pneus', push: '🔋 Dépassement', pit: '🔧 Stand', sc: '📻 Stratégie SC', drv: '🎮 Pilote' };
-  const fxVal = (k, v) => (['speed', 'df', 'rel'].includes(k) ? `+${fmt(v, v % 1 ? 1 : 0)}` : `+${Math.round(v * 40)} %`);
+  const FX_LBL = { speed: '⚡ Vitesse', df: '🌀 Appui', rel: '🔧 Fiabilité', launch: '🚦 Départ', tyre: '🛞 Pneus', push: '🔋 Dépassement', pit: '🔧 Stand', sc: '📻 Stratégie SC', drv: '🎮 Pilote', wx: '🌧️ Réaction météo', pc: '💰 PitCoins', rd: '🔬 Coût R&D', tunnel: '🌬️ Soufflerie', races: '🏁 Courses/jour' };
+  const fxVal = (k, v) => (['speed', 'df', 'rel'].includes(k) ? `+${fmt(v, Math.abs(v % 1) > 0.01 ? 1 : 0)}` : k === 'races' ? `+${v}` : k === 'rd' ? `−${Math.round(v * 100)} %` : k === 'pc' || k === 'tunnel' ? `+${Math.round(v * 100)} %` : `+${Math.round(v * 40)} %`);
   const pips = (lv) => `<span class="pips">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= lv ? 'on' : ''}"></i>`).join('')}</span>`;
 
-  const mechChips = (car) => { const e = Object.entries(car.mech || {}).filter(([, v]) => v > 0.01); return e.length ? `<div class="row" style="gap:6px;margin-top:12px">${e.map(([k, v]) => `<span class="chip">${MG().MECH[k].icon} ${MG().MECH[k].label} ${fxVal(k, v)}</span>`).join('')}</div>` : ''; };
+  const mechChips = (car) => { const e = Object.entries(car.mech || {}).filter(([, v]) => v > 0.01); return e.length ? `<div class="row" style="gap:6px;margin-top:12px">${e.map(([k, v]) => `<span class="chip">${FX_LBL[k]} ${fxVal(k, v)}</span>`).join('')}</div>` : ''; };
   function mgrRD(ctx) {
     const { m, ch, car, w, race, league, bots } = ctx;
     if (!ch) return `<div class="empty"><div class="ic">🔬</div>Achetez d'abord un châssis pour lancer la R&D.<div style="margin-top:14px"><a class="btn" href="#/manager/chassis">Voir les châssis</a></div></div>`;
@@ -985,8 +989,8 @@
     if (sel && sel.cat !== cat.id) sel = null;
     // pièce conseillée pour le prochain GP : meilleur gain d'indice par PitCoin parmi les pièces disponibles
     const LV = (p) => MG().partLevel(owned, p.id);
-    const nextCost = (p) => MG().levelCost(p, LV(p) + 1);
-    const gainOf = (p) => { if (LV(p) >= MG().MAX_LV) return 0; const nc = MG().carStats(ch, m.ups, { ...owned, [p.id]: LV(p) + 1 }); return Math.round((MG().compat(nc, w, m.setup) - MG().compat(car, w, m.setup)) * 10) / 10; };
+    const nextCost = (p) => Math.round(MG().levelCost(p, LV(p) + 1) * (1 - ctx.tb.rd));
+    const gainOf = (p) => { if (LV(p) >= MG().MAX_LV) return 0; const nc = MG().carStats(ch, m.ups, { ...owned, [p.id]: LV(p) + 1 }, ctx.tb); return Math.round((MG().compat(nc, w, m.setup) - MG().compat(car, w, m.setup)) * 10) / 10; };
     const avail = all.filter((p) => { const st = MG().partState(p, owned); return (st === 'available' || st === 'done') && LV(p) < MG().MAX_LV && p.cat !== 'strat'; });
     const reco = avail.sort((a, b) => gainOf(b) / nextCost(b) - gainOf(a) / nextCost(a))[0];
     const botAvg = (k) => bots.reduce((a, b) => a + b.car[k], 0) / bots.length;
@@ -1028,9 +1032,9 @@
           <button class="rd-close" data-action="rd-sel" data-p="" aria-label="Vue d'ensemble">✕</button></div>
         ${st === 'unknown' ? '' : (() => {
           const lv = LV(sel), max = lv >= MG().MAX_LV, nl = lv + 1;
-          const cost = nextCost(sel), half = Math.round(cost / 2), fails = (m.fails || {})[sel.id] || 0, ch2 = MG().tunnelChance(fails);
+          const cost = nextCost(sel), half = Math.round(cost / 2), fails = (m.fails || {})[sel.id] || 0, ch2 = Math.min(0.95, MG().tunnelChance(fails) + ctx.tb.tunnel);
           const step = max ? 0 : MG().LV_GAIN[lv];
-          const ladder = `<div class="mk-ladder">${[1, 2, 3, 4, 5].map((i) => `<div class="mk ${i <= lv ? 'on' : ''} ${i === nl ? 'next' : ''}"><b>${MG().LV_NAME[i]}</b><small>${Object.entries(sel.fx).map(([k, v]) => fxVal(k, v * MG().LV_GAIN[i - 1])).join(' ')}</small>${i <= lv ? '' : `<small class="muted">${fmt(MG().levelCost(sel, i))} PC</small>`}</div>`).join('')}</div>`;
+          const ladder = `<div class="mk-ladder">${[1, 2, 3, 4, 5].map((i) => `<div class="mk ${i <= lv ? 'on' : ''} ${i === nl ? 'next' : ''}"><b>${MG().LV_NAME[i]}</b><small>${Object.entries(sel.fx).map(([k, v]) => fxVal(k, v * MG().LV_GAIN[i - 1])).join(' ')}</small>${i <= lv ? '' : `<small class="muted">${fmt(Math.round(MG().levelCost(sel, i) * (1 - ctx.tb.rd)))} PC</small>`}</div>`).join('')}</div>`;
           const can = st === 'available' || st === 'done';
           return `${ladder}<div class="row" style="margin-top:12px;gap:8px">${max ? '' : Object.entries(sel.fx).map(([k, v]) => `<span class="chip green">${FX_LBL[k]} ${fxVal(k, v * step)}</span>`).join('')}${max || sel.cat === 'strat' ? '' : `<span class="chip ${g > 0 ? 'gold' : ''}">Indice au ${esc(race.nameFr.replace('Grand Prix', 'GP'))} : +${fmt(g, g % 1 ? 1 : 0)}</span>`}${sel.cat === 'strat' && !max ? '<span class="chip">Agit pendant la course</span>' : ''}</div>
           <div class="row" style="margin-top:14px;gap:10px">${max ? '<span class="chip green">🧬 Spécification maximale atteinte</span>' : !can ? '<span class="chip">🔒 Développez d\'abord la pièce précédente</span>'
@@ -1044,12 +1048,14 @@
     }
     const cmp = MG().STATS.map((st) => `<div class="cmp-row"><span>${st.icon} ${st.short}</span><div class="cmp-bars"><i class="me" style="width:${Math.min(100, car[st.k])}%"></i><i class="bot" style="width:${Math.min(100, botAvg(st.k))}%"></i></div><b class="num">${Math.round(car[st.k])}<small class="muted"> / ${Math.round(botAvg(st.k))}</small></b></div>`).join('');
     const showId = sel && MG().partState(sel, owned) !== 'unknown' ? sel.id : '';
-    const carHtml = F1.visuals.car(ch.id, { live: true, view: '34' }).replace('class="car3d', `data-workshop="1" ${showId ? `data-part="${showId}" ` : ''}class="car3d`);
+    const puMode = S.rdView === 'pu' || (S.rdView == null && cat.id === 'pu');
+    const carHtml = puMode ? `<div class="pu3d" id="pu3d" data-part="${showId}"></div>` : F1.visuals.car(ch.id, { live: true, view: '34' }).replace('class="car3d', `data-workshop="1" ${showId ? `data-part="${showId}" ` : ''}class="car3d`);
+    const viewSw = `<div class="rd-view seg"><button class="${puMode ? '' : 'on'}" data-action="rd-view" data-v="car">🏎️ Monoplace</button><button class="${puMode ? 'on' : ''}" data-action="rd-view" data-v="pu">⚙️ Groupe propulseur éclaté</button></div>`;
 
     return `<div class="rd-head"><div><h2 class="rd-title">Recherche</h2><div class="rd-tabs" id="rdTabs">${tabs}</div></div>
         <div class="rd-kpis" id="rdKpis"><div><small>Note voiture</small><b>${MG().carRating(car)}</b></div><div><small>Niveaux R&D</small><b>${all.reduce((a, p) => a + LV(p), 0)}/${all.length * MG().MAX_LV}</b></div><div><small>R&D investie</small><b>${fmtPC(m.rdSpent)}</b></div><div><small>PitCoins</small><b>${fmtPC(m.pc)}</b></div></div></div>
-      <div class="rd-stage" style="--cc:${cat.color}"><div class="stage-glow" style="--tc:${cat.color}"></div>${carHtml}
-        <div class="rd-stage-cap" id="rdCap">${sel && MG().partState(sel, owned) !== 'unknown' ? `<span class="pulse-dot"></span><b>${esc(sel.name)}</b>` : `<span class="muted">⟲ Faites pivoter votre ${esc(ch.name)} · sélectionnez une pièce pour zoomer</span>`}</div></div>
+      <div class="rd-stage" style="--cc:${cat.color}"><div class="stage-glow" style="--tc:${cat.color}"></div>${carHtml}${viewSw}
+        <div class="rd-stage-cap" id="rdCap">${sel && MG().partState(sel, owned) !== 'unknown' ? `<span class="pulse-dot"></span><b>${esc(sel.name)}</b>` : `<span class="muted">${puMode ? '⟲ Groupe propulseur 2026 en vue éclatée · cliquez une étiquette ou une pièce' : `⟲ Faites pivoter votre ${esc(ch.name)} · sélectionnez une pièce pour zoomer`}</span>`}</div></div>
       <div id="rdDetail">${detail}</div>
       <div class="rd-tree" id="rdTree">${rows}</div>
       <div class="grid g2" style="margin-top:16px" id="rdBottom"><div class="card"><h3>Comparaison des performances</h3><div class="sub">Votre voiture (couleur) face à la moyenne des managers de la ligue ${esc(league.name)} (gris)</div><div style="margin-top:12px;display:grid;gap:10px">${cmp}</div></div>
@@ -1094,7 +1100,126 @@
     const p = S.rdSel && MG().RD_BY_ID.get(S.rdSel);
     const id = p && MG().partState(p, F1.store.mgr().parts) !== 'unknown' ? p.id : '';
     if (el) { el.dataset.part = id; if (el.__car3d) el.__car3d.part(id || null); }
+    const pu = $('#pu3d'); if (pu) { pu.dataset.part = id; if (pu.__pu) pu.__pu.part(id || null); }
     const pc = $('.pc-big b'); if (pc) pc.innerHTML = fmtPC(F1.store.mgr().pc);
+  }
+
+  /* ---------- Muret des stands : personnel ---------- */
+  const stars = (n) => `<span class="stars">${'★'.repeat(n)}<i>${'★'.repeat(5 - n)}</i></span>`;
+  const teamFx = (fx, mult = 1) => Object.entries(fx).map(([k, v]) => `<span class="chip green">${FX_LBL[k]} ${fxVal(k, v * mult)}</span>`).join('');
+  // écran du muret : contenu animé selon le poste
+  function wallScreen(role, x, y, w, h, on) {
+    const g = (c) => `<g transform="translate(${x} ${y})">${c}</g>`;
+    const frame = `<rect width="${w}" height="${h}" rx="5" fill="#05070b" stroke="#3a3f4a" stroke-width="2"/>`;
+    if (!on) return g(frame + `<text x="${w / 2}" y="${h / 2 + 4}" text-anchor="middle" font-size="11" fill="#444b57">HORS LIGNE</text>`);
+    let c = '';
+    if (role === 'tp') for (let i = 0; i < 6; i++) c += `<rect x="6" y="${7 + i * 9}" width="${10}" height="5" fill="${['#e10600', '#27f4d2', '#ff8000', '#3671c6', '#fff', '#229971'][i]}"/><rect class="scr-bar" style="animation-delay:${i * 0.3}s" x="20" y="${7 + i * 9}" width="${w - 50 - (i * 7) % 20}" height="5" fill="#8b93a1"/><rect x="${w - 24}" y="${7 + i * 9}" width="18" height="5" fill="${i < 2 ? '#a259ff' : '#2ee59d'}"/>`;
+    else if (role === 'td') c = `<path d="M8 ${h - 14} C${w * 0.3} ${h - 40} ${w * 0.6} ${h - 46} ${w - 8} ${h - 20}" fill="none" stroke="#27b4f4" stroke-width="2"/><path class="scr-line" d="M8 ${h - 22} C${w * 0.3} ${h - 52} ${w * 0.6} ${h - 30} ${w - 8} ${h - 44}" fill="none" stroke="#ff4fa3" stroke-width="1.5"/>${[0, 1, 2, 3, 4].map((i) => `<path class="scr-flow" style="animation-delay:${i * 0.25}s" d="M4 ${12 + i * 7} h${w - 8}" stroke="#7fe3d6" stroke-width="1" stroke-dasharray="6 9" opacity=".7"/>`).join('')}`;
+    else if (role === 're') c = ['#2ee59d', '#e10600', '#ffd400'].map((col, i) => `<polyline class="scr-line" style="animation-delay:${i * 0.4}s" fill="none" stroke="${col}" stroke-width="1.6" points="${Array.from({ length: 14 }, (_, k) => `${6 + k * (w - 12) / 13},${14 + i * 17 + Math.sin(k * (1.1 + i * 0.4) + i) * 6}`).join(' ')}"/>`).join('');
+    else if (role === 'st') c = [0, 1, 2, 3].map((i) => `<rect x="6" y="${8 + i * 13}" width="${(w - 12) * (0.35 + (i * 0.17) % 0.3)}" height="8" rx="2" fill="${['#e10600', '#ffd400', '#f2f2f2', '#2ee59d'][i]}"/><rect class="scr-bar" style="animation-delay:${i * 0.5}s" x="${6 + (w - 12) * (0.37 + (i * 0.17) % 0.3)}" y="${8 + i * 13}" width="${(w - 12) * 0.3}" height="8" rx="2" fill="${['#ffd400', '#f2f2f2', '#27b4f4', '#ffd400'][i]}"/>`).join('') + `<path d="M${w * 0.55} 4 V${h - 4}" stroke="#fff" stroke-dasharray="2 3"/>`;
+    else c = `<text x="${w / 2}" y="${h / 2 + 8}" text-anchor="middle" font-size="24" font-weight="900" font-style="italic" fill="#2ee59d" class="scr-blink">2.1 s</text>${[[10, 10], [w - 22, 10], [10, h - 20], [w - 22, h - 20]].map(([a, b], i) => `<rect class="scr-blink" style="animation-delay:${i * 0.2}s" x="${a}" y="${b}" width="12" height="10" rx="2" fill="#2ee59d"/>`).join('')}`;
+    return g(frame + `<g class="scr-on">${c}</g>`);
+  }
+  // personne assise vue de dos, casque audio sur les oreilles
+  function wallPerson(cx, col, hair, on) {
+    if (!on) return `<g opacity=".5"><rect x="${cx - 24}" y="318" width="48" height="10" rx="4" fill="#2a2e37"/><rect x="${cx - 4}" y="328" width="8" height="52" fill="#2a2e37"/><circle cx="${cx}" cy="268" r="22" fill="none" stroke="#8b93a1" stroke-width="2" stroke-dasharray="5 5"/><text x="${cx}" y="276" text-anchor="middle" font-size="26" fill="#8b93a1">+</text></g>`;
+    return `<g class="wall-person"><rect x="${cx - 26}" y="322" width="52" height="10" rx="4" fill="#1b1e25"/><rect x="${cx - 4}" y="332" width="8" height="48" fill="#1b1e25"/>
+      <path d="M${cx - 46} 326 C${cx - 48} 268 ${cx - 30} 246 ${cx} 246 C${cx + 30} 246 ${cx + 48} 268 ${cx + 46} 326 Z" fill="${col}"/><path d="M${cx - 46} 300 H${cx + 46}" stroke="rgba(0,0,0,.35)" stroke-width="7"/><path d="M${cx - 14} 250 H${cx + 14} V262 H${cx - 14}Z" fill="rgba(255,255,255,.85)"/>
+      <rect x="${cx - 8}" y="232" width="16" height="18" fill="#d9a77e"/><circle cx="${cx}" cy="214" r="22" fill="#d9a77e"/><path d="M${cx - 22} 214 A22 22 0 0 1 ${cx + 22} 214 L${cx + 20} 222 C${cx + 8} 204 ${cx - 8} 204 ${cx - 20} 222Z" fill="${hair}"/>
+      <path d="M${cx - 25} 216 A25 26 0 0 1 ${cx + 25} 216" fill="none" stroke="#0c0d10" stroke-width="5"/><rect x="${cx - 31}" y="206" width="10" height="22" rx="4" fill="#0c0d10"/><rect x="${cx + 21}" y="206" width="10" height="22" rx="4" fill="#0c0d10"/><path d="M${cx + 26} 226 q10 16 -8 20" fill="none" stroke="#0c0d10" stroke-width="2.5"/></g>`;
+  }
+  function mgrStaff(ctx) {
+    const { m, ch, tb } = ctx;
+    const col = ch ? F1.teamColor(ch.id) : '#e10600';
+    const roles = MG().STAFF_ROLES;
+    const role = roles.find((r) => r.id === S.staffRole) || roles[0];
+    const HAIR = ['#3b2a1e', '#6b4a2a', '#111', '#b98a4a', '#7a7d84'];
+    const bays = roles.map((r, i) => {
+      const x = 60 + i * 220, cur = MG().staffOf(m, r.id), on = !!cur;
+      return `<g class="bay ${r.id === role.id ? 'sel' : ''}" data-action="staff-sel" data-r="${r.id}" style="cursor:pointer">
+        <rect x="${x - 6}" y="78" width="212" height="322" rx="10" fill="rgba(255,255,255,.001)" class="bay-hit"/>
+        ${wallScreen(r.id, x, 92, 96, 62, on)}${wallScreen(r.id === 'tp' ? 're' : r.id === 'cm' ? 'st' : 'tp', x + 104, 92, 96, 62, on)}
+        <rect x="${x + 40}" y="154" width="6" height="26" fill="#23262d"/><rect x="${x + 154}" y="154" width="6" height="26" fill="#23262d"/>
+        ${wallPerson(x + 100, col, HAIR[(i + (cur ? cur.tier : 0)) % 5], on)}
+        <text x="${x + 100}" y="408" text-anchor="middle" font-size="13" font-weight="900" font-style="italic" fill="#fff" style="text-transform:uppercase">${r.icon} ${esc(r.name)}</text>
+        <text x="${x + 100}" y="426" text-anchor="middle" font-size="12" fill="${on ? '#cfd2dc' : '#8b93a1'}">${on ? esc(cur.name) : 'Poste vacant'}</text></g>`;
+    }).join('');
+    const scene = `<div class="wall-scene" style="--tc:${col}"><div class="scene-in"><svg viewBox="0 0 1200 440" role="img" aria-label="Muret des stands">
+      <defs><linearGradient id="wsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#101622"/><stop offset=".5" stop-color="#1b2433"/><stop offset="1" stop-color="#0b0d12"/></linearGradient>
+      <pattern id="wkerb" width="60" height="10" patternUnits="userSpaceOnUse"><rect width="30" height="10" fill="#e10600"/><rect x="30" width="30" height="10" fill="#f2f2f2"/></pattern>
+      <pattern id="wfence" width="14" height="14" patternUnits="userSpaceOnUse"><path d="M0 0 L14 14 M14 0 L0 14" stroke="rgba(255,255,255,.07)" stroke-width="1"/></pattern></defs>
+      <rect width="1200" height="440" fill="url(#wsky)"/>
+      <g opacity=".8">${Array.from({ length: 40 }, (_, i) => `<circle cx="${20 + i * 30}" cy="${26 + (i % 3) * 9}" r="2" fill="#ffe9b0"/>`).join('')}<rect y="44" width="1200" height="34" fill="#141a26"/>${Array.from({ length: 150 }, (_, i) => `<rect x="${(i * 53) % 1200}" y="${48 + (i * 7) % 26}" width="4" height="4" fill="${['#e33', '#fff', '#fc3', '#39f'][i % 4]}" opacity=".5"/>`).join('')}</g>
+      <rect y="196" width="1200" height="52" fill="#2a2d34"/><rect y="188" width="1200" height="8" fill="url(#wkerb)"/><path d="M0 222 H1200" stroke="#fff" stroke-width="2" stroke-dasharray="40 30" opacity=".5"/>
+      <g class="wall-car"><rect x="0" y="206" width="90" height="16" rx="6" fill="${col}"/><rect x="8" y="198" width="14" height="30" rx="3" fill="#0c0c0e"/><rect x="66" y="198" width="14" height="30" rx="3" fill="#0c0c0e"/></g>
+      <rect y="78" width="1200" height="120" fill="url(#wfence)"/>
+      <rect x="30" y="58" width="1140" height="22" rx="4" fill="${col}"/><rect x="30" y="74" width="1140" height="6" fill="rgba(0,0,0,.35)"/><text x="600" y="75" text-anchor="middle" font-size="15" font-weight="900" font-style="italic" fill="#fff" letter-spacing="6">PITWALL</text>
+      ${[40, 260, 480, 700, 920, 1150].map((x) => `<rect x="${x}" y="78" width="8" height="180" fill="#23262d"/>`).join('')}
+      <rect x="30" y="178" width="1140" height="14" rx="3" fill="#2f333c"/>
+      <rect y="380" width="1200" height="60" fill="#0b0c10"/><rect y="378" width="1200" height="4" fill="#3a3f4a"/>
+      ${bays}</svg></div></div>`;
+    const cur = MG().staffOf(m, role.id);
+    const cards = MG().STAFF[role.id].map((x) => {
+      const own = cur && cur.id === x.id, refund = cur ? Math.round(cur.price * 0.5) : 0, net = x.price - refund;
+      return `<div class="mcard ${own ? 'own' : ''}" style="--tc:${col}"><div class="row" style="flex-wrap:nowrap;align-items:start"><div class="staff-ava" style="--tc:${col}">${role.icon}</div>
+        <div style="flex:1;min-width:0"><div class="muted" style="font-size:12px">${flag(x.iso, 'sm')} ${esc(role.name)}</div><div style="font-weight:900;font-style:italic;text-transform:uppercase;font-size:17px;line-height:1.15">${esc(x.name)}</div>${stars(x.tier)}</div><div class="rating-big sm">${x.rating}</div></div>
+        <div class="muted" style="font-size:13px;margin:10px 0">${esc(x.bio)}</div><div class="row" style="gap:6px">${teamFx(role.fx, x.tier)}</div>
+        <div class="row" style="justify-content:space-between;margin-top:14px"><b style="font-size:18px">${x.price ? fmtPC(x.price) : 'Gratuit'}</b>${own ? '<span class="chip green">En poste</span>' : `<button class="btn sm" data-action="staff-hire" data-r="${role.id}" data-id="${x.id}" ${net > m.pc + 1e-9 ? 'disabled' : ''}>${cur ? `Remplacer (${net >= 0 ? '−' : '+'}${Math.abs(net)})` : 'Recruter'}</button>`}</div></div>`;
+    }).join('');
+    const sum = Object.entries(tb).filter(([k, v]) => v > 0.001 && FX_LBL[k]).map(([k, v]) => `<span class="chip">${FX_LBL[k]} ${fxVal(k, v)}</span>`).join('');
+    return `${scene}<div class="notice" style="margin:16px 0">🎧 Cliquez sur un poste du muret pour voir les candidats. Remplacer quelqu'un vous rembourse 50 % de son prix. ${sum ? `<div class="row" style="gap:6px;margin-top:8px"><span class="muted" style="font-size:12px">Bonus actuels (personnel + garage) :</span>${sum}</div>` : ''}</div>
+      <div class="section-h" style="margin-top:8px"><h2>${role.icon} ${esc(role.name)}</h2><span class="muted" style="font-size:13px;max-width:560px">${esc(role.desc)}</span></div><div class="mgrid">${cards}</div>`;
+  }
+
+  /* ---------- Garage : équipements et mécaniciens ---------- */
+  function mech(x, y, k, col, pose = 0) { // mécanicien casqué, vu de face
+    return `<g transform="translate(${x} ${y}) scale(${k})" class="mech"><ellipse cx="0" cy="118" rx="22" ry="5" fill="rgba(0,0,0,.4)"/><rect x="-13" y="62" width="11" height="54" rx="4" fill="#15171c"/><rect x="2" y="62" width="11" height="54" rx="4" fill="#15171c"/>
+      <path d="M-18 14 H18 L16 68 H-16Z" fill="${col}"/><path d="M-17 34 H17" stroke="rgba(0,0,0,.3)" stroke-width="5"/><rect x="${pose ? -34 : -26}" y="${pose ? 22 : 16}" width="10" height="${pose ? 14 : 42}" rx="4" fill="${col}" ${pose ? 'transform="rotate(-50 -26 22)"' : ''}/><rect x="16" y="16" width="10" height="42" rx="4" fill="${col}"/>
+      <circle cx="0" cy="0" r="15" fill="#e9eaee"/><path d="M-12 -3 H12 V5 H-12Z" fill="#101216"/><path d="M-15 0 A15 15 0 0 1 15 0" fill="none" stroke="${col}" stroke-width="4"/></g>`;
+  }
+  function mgrGarage(ctx) {
+    const { m, ch, tb } = ctx;
+    const col = ch ? F1.teamColor(ch.id) : '#e10600';
+    const L = (id) => MG().garageLevel(m, id);
+    const zones = MG().GARAGE_ZONES;
+    const zone = zones.find((z) => z.id === S.garageZone) || zones[0];
+    const tot = MG().GARAGE.reduce((a, g) => a + L(g.id), 0), max = MG().GARAGE.length * MG().MAX_LV;
+    const o = (id) => (L(id) ? 1 : 0.22);
+    const badge = (id, x, y) => (L(id) ? `<g transform="translate(${x} ${y})"><rect x="-17" y="-10" width="34" height="18" rx="9" fill="#0b0c10" stroke="${col}"/><text y="4" text-anchor="middle" font-size="11" font-weight="900" fill="#fff">N${L(id)}</text></g>` : '');
+    const nMech = 2 + L('crew') * 2;
+    const spots = [[250, 286, 0.95, 0], [948, 286, 0.95, 1], [356, 300, 1, 1], [842, 300, 1, 0], [150, 280, 0.9, 0], [1046, 280, 0.9, 0], [452, 262, 0.82, 0], [748, 262, 0.82, 1], [60, 300, 1, 0], [1140, 300, 1, 0], [560, 256, 0.78, 0], [640, 256, 0.78, 0]];
+    const scene = `<div class="garage-scene" style="--tc:${col}"><div class="scene-in"><svg viewBox="0 0 1200 460" role="img" aria-label="Garage de l'écurie">
+      <defs><linearGradient id="gfloor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3e47"/><stop offset="1" stop-color="#15171c"/></linearGradient><linearGradient id="gwall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d0f14"/><stop offset="1" stop-color="#1c2029"/></linearGradient></defs>
+      <rect width="1200" height="300" fill="url(#gwall)"/><rect y="300" width="1200" height="160" fill="url(#gfloor)"/>
+      ${Array.from({ length: 8 }, (_, i) => `<rect x="${i * 150 + 4}" y="70" width="142" height="226" rx="4" fill="${i % 2 ? '#181b22' : '#1e222b'}" stroke="rgba(255,255,255,.04)"/>`).join('')}
+      <rect y="150" width="1200" height="26" fill="${col}"/><rect y="176" width="1200" height="5" fill="rgba(0,0,0,.4)"/><text x="600" y="170" text-anchor="middle" font-size="18" font-weight="900" font-style="italic" fill="#fff" letter-spacing="10">PITWALL RACING</text>
+      ${[150, 450, 750, 1050].map((x) => `<rect x="${x - 110}" y="18" width="220" height="12" rx="6" fill="#f4f6fb"/><path d="M${x - 130} 30 L${x - 200} 300 H${x + 200} L${x + 130} 30Z" fill="rgba(255,255,255,.035)"/>`).join('')}
+      <g opacity="${o('gantry')}"><rect x="330" y="40" width="540" height="12" fill="#2c3039"/><rect x="330" y="40" width="10" height="70" fill="#2c3039"/><rect x="860" y="40" width="10" height="70" fill="#2c3039"/><rect x="585" y="52" width="30" height="46" rx="5" fill="#0b0c10" stroke="#3a3f4a"/><circle cx="600" cy="66" r="7" fill="${L('gantry') ? '#e10600' : '#3a1010'}"/><circle cx="600" cy="84" r="7" class="${L('gantry') ? 'g-green' : ''}" fill="#12351f"/>${badge('gantry', 640, 70)}</g>
+      <g opacity="${o('guns')}">${[400, 800].map((x) => `<path d="M${x} 52 q${x < 600 ? 30 : -30} 70 0 120" fill="none" stroke="#e10600" stroke-width="3"/><rect x="${x - 14}" y="168" width="28" height="12" rx="3" fill="#d9dde3"/><rect x="${x - 4}" y="178" width="8" height="16" fill="#8b93a1"/>`).join('')}${badge('guns', 400, 210)}</g>
+      <g opacity="${o('telemetry')}">${[60, 170].map((x) => `<rect x="${x}" y="196" width="96" height="58" rx="4" fill="#05070b" stroke="#3a3f4a"/><polyline class="scr-line" fill="none" stroke="#2ee59d" stroke-width="1.6" points="${Array.from({ length: 10 }, (_, k) => `${x + 8 + k * 9},${226 + Math.sin(k * 1.3 + x) * 12}`).join(' ')}"/>`).join('')}${badge('telemetry', 160, 190)}</g>
+      <g opacity="${o('pitwall')}"><rect x="950" y="196" width="96" height="58" rx="4" fill="#05070b" stroke="#3a3f4a"/>${[0, 1, 2, 3].map((i) => `<rect class="scr-bar" style="animation-delay:${i * 0.3}s" x="958" y="${204 + i * 12}" width="${60 - i * 9}" height="6" fill="#8b93a1"/>`).join('')}${badge('pitwall', 998, 190)}</g>
+      <g opacity="${o('radar')}"><rect x="1060" y="196" width="96" height="58" rx="4" fill="#05070b" stroke="#3a3f4a"/><circle cx="1108" cy="225" r="22" fill="none" stroke="#27b4f4"/><path class="radar-sweep" d="M1108 225 L1108 203" stroke="#27f4d2" stroke-width="2"/><circle cx="1118" cy="216" r="6" fill="rgba(39,180,244,.5)"/>${badge('radar', 1108, 190)}</g>
+      <g opacity="${o('tyrerack')}">${[0, 1, 2].map((i) => `<g transform="translate(${40 + i * 44} 300)"><ellipse cx="0" cy="62" rx="24" ry="6" fill="rgba(0,0,0,.4)"/>${[0, 1, 2, 3].map((k) => `<rect x="-20" y="${44 - k * 17}" width="40" height="15" rx="6" fill="${L('blankets') ? '#c2161c' : '#0c0c0e'}" stroke="#2a2d34"/><rect x="-20" y="${50 - k * 17}" width="40" height="3" fill="${['#e10600', '#ffd400', '#f2f2f2'][i]}"/>`).join('')}</g>`).join('')}${badge('tyrerack', 84, 232)}${L('blankets') ? badge('blankets', 128, 232) : ''}</g>
+      <g opacity="${o('spares')}"><rect x="1010" y="300" width="150" height="72" rx="5" fill="#b0141a"/><rect x="1018" y="310" width="134" height="14" fill="#7c0d12"/><rect x="1018" y="330" width="134" height="14" fill="#7c0d12"/><rect x="1018" y="350" width="134" height="14" fill="#7c0d12"/><circle cx="1030" cy="378" r="7" fill="#0c0c0e"/><circle cx="1140" cy="378" r="7" fill="#0c0c0e"/>${badge('spares', 1085, 292)}</g>
+      <g opacity="${o('fuelrig')}"><rect x="910" y="304" width="46" height="70" rx="6" fill="#d9dde3"/><rect x="918" y="312" width="30" height="20" fill="#0b0c10"/><path d="M956 330 q40 10 20 50" fill="none" stroke="#111" stroke-width="5"/>${badge('fuelrig', 933, 296)}</g>
+      <g opacity="${o('jacks')}"><path d="M360 398 h60 l14 -14" fill="none" stroke="#d9dde3" stroke-width="6" stroke-linecap="round"/><circle cx="366" cy="404" r="6" fill="#0c0c0e"/><path d="M840 398 h-60 l-14 -14" fill="none" stroke="#d9dde3" stroke-width="6" stroke-linecap="round"/><circle cx="834" cy="404" r="6" fill="#0c0c0e"/>${badge('jacks', 330, 392)}</g>
+      <g opacity="${o('rig')}">${[470, 560, 640, 730].map((x) => `<rect x="${x - 9}" y="392" width="18" height="14" rx="2" fill="#3b6fd0"/>`).join('')}${badge('rig', 600, 424)}</g>
+      <g opacity="${o('startsim')}"><rect x="232" y="64" width="70" height="20" rx="4" fill="#0b0c10" stroke="#3a3f4a"/>${[0, 1, 2, 3, 4].map((i) => `<circle cx="${242 + i * 12.5}" cy="74" r="4" class="${L('startsim') ? 'scr-blink' : ''}" style="animation-delay:${i * 0.25}s" fill="#e10600"/>`).join('')}${badge('startsim', 267, 100)}</g>
+      ${spots.slice(0, nMech).map(([x, y, k, p]) => mech(x, y, k, col, p)).join('')}
+      </svg><div class="garage-car2">${ch ? F1.visuals.car(ch.id, { view: 'side', shadow: false }) : ''}</div>
+      <div class="garage-cap"><b>${nMech} mécaniciens</b> · équipement ${tot}/${max} niveaux</div></div></div>`;
+    const tabs = zones.map((z) => { const it = MG().GARAGE.filter((g) => g.zone === z.id); return `<button class="rd-tab ${z.id === zone.id ? 'on' : ''}" data-action="garage-zone" data-z="${z.id}" style="--cc:${col}"><span>${z.icon}</span>${esc(z.name)}<small>${it.reduce((a, g) => a + L(g.id), 0)}/${it.length * MG().MAX_LV}</small></button>`; }).join('');
+    const cards = MG().GARAGE.filter((g) => g.zone === zone.id).map((g) => {
+      const l = L(g.id), maxed = l >= MG().MAX_LV, cost = maxed ? 0 : MG().garageCost(g, l + 1);
+      const fx = g.id === 'trucks' ? `<span class="chip green">🏁 +${l >= 5 ? 2 : l >= 3 ? 1 : 0} course/jour</span>${maxed ? '' : `<span class="chip">Prochain palier : niveau ${l < 3 ? 3 : 5}</span>`}`
+        : Object.entries(g.fx).map(([k, v]) => `<span class="chip ${l ? 'green' : ''}">${FX_LBL[k]} ${fxVal(k, v * l)}${maxed ? '' : ` → ${fxVal(k, v * (l + 1))}`}</span>`).join('');
+      return `<div class="mcard gcard ${maxed ? 'own' : ''}" style="--tc:${col};--cc:${col}"><div class="row" style="flex-wrap:nowrap;align-items:start"><div class="staff-ava">${g.icon}</div><div style="flex:1;min-width:0"><div style="font-weight:900;font-style:italic;text-transform:uppercase;font-size:16px;line-height:1.15">${esc(g.name)}</div><div style="margin-top:5px">${pips(l)}</div></div></div>
+        <div class="muted" style="font-size:13px;margin:10px 0">${esc(g.desc)}</div><div class="row" style="gap:6px">${fx}</div>
+        <div class="row" style="justify-content:space-between;margin-top:14px">${maxed ? '<span class="chip green">Niveau maximal</span>' : `<b style="font-size:18px">${fmtPC(cost)}</b><button class="btn sm" data-action="garage-up" data-id="${g.id}" ${cost > m.pc + 1e-9 ? 'disabled' : ''}>${l ? `Niveau ${l + 1}` : 'Installer'}</button>`}</div></div>`;
+    }).join('');
+    const sum = Object.entries(tb).filter(([k, v]) => v > 0.001 && FX_LBL[k]).map(([k, v]) => `<span class="chip">${FX_LBL[k]} ${fxVal(k, v)}</span>`).join('');
+    return `${scene}${sum ? `<div class="notice" style="margin:16px 0"><div class="row" style="gap:6px"><span class="muted" style="font-size:12px">Bonus actuels (personnel + garage) :</span>${sum}</div></div>` : '<div class="notice" style="margin:16px 0">🧰 Chaque équipement a 5 niveaux. Les éléments installés apparaissent dans le garage, et chaque niveau de « Mécaniciens » ajoute deux personnes à l\'équipe.</div>'}
+      <div class="rd-tabs" style="margin-bottom:16px">${tabs}</div><div class="mgrid">${cards}</div>`;
   }
 
   function mgrLeagues(ctx, nl) {
@@ -1108,6 +1233,13 @@
       <div class="card"><h3>🌍 Classement des managers</h3><div id="mgrBoard" class="plist"><div class="skeleton" style="height:60px"></div></div></div></div></div>`;
   }
   function mountManager(tab) {
+    const pu = $('#pu3d');
+    if (pu) {
+      const go = () => { if (!pu.isConnected || pu.__pu || !F1.car3d || !F1.car3d.supported) return; try { pu.__pu = F1.car3d.mountPU(pu, { part: pu.dataset.part || null }); pu.classList.add('ok'); } catch (e) { console.warn(e); } };
+      if (F1.car3d && F1.car3d.ready) go(); else window.addEventListener('car3d-ready', go, { once: true });
+      // clic sur une étiquette : sélectionne la première pièce de R&D liée à cet organe
+      pu.addEventListener('click', (e) => { const t = e.target.closest('.pu-tag'); if (!t) return; const p = MG().RD_PARTS.find((x) => F1.car3d.PU_OF[x.id] === t.dataset.pu && MG().partState(x, F1.store.mgr().parts) !== 'unknown'); if (p) { S.rdCat = p.cat; S.rdSel = p.id; rdRefresh(); } else if (pu.__pu) pu.__pu.part(t.dataset.pu); });
+    }
     const si = $('#setupIn');
     if (si) si.addEventListener('input', () => {
       const ctx = mgrCtx(); const v = +si.value;
@@ -1139,31 +1271,52 @@
     const meName = (F1.social.state.me && F1.social.state.me.username) || F1.store.get().name || 'Mon écurie';
     const player = { name: meName, driver: ctx.drvM, car: ctx.car, setup: ctx.m.setup, chassisId: ctx.ch.id };
     const seed = MG().hash(`${Date.now()}-${Math.random()}`);
-    const res = MG().simulate({ player, bots: ctx.bots, race: ctx.race, seed });
+    const res = MG().simulate({ player, bots: ctx.bots, race: ctx.race, seed, ...ctx.wxIn });
     const meF = res.final.find((x) => x.i === 0);
     const meField = res.field.find((x) => x.c.me);
     const rw = MG().rewards(meF.pos, meF.out, ctx.league);
+    rw.pc = Math.round(rw.pc * (1 + ctx.tb.pc));
     const leagueBefore = ctx.league;
     // le résultat est enregistré tout de suite (fermer la fenêtre ne permet pas d'annuler une course)
-    F1.store.recordRace({ pos: meF.pos, dnf: meF.out, grid: meField.grid, fastest: res.fastest.who === 0, lp: rw.lp, pc: rw.pc, gp: ctx.race.nameFr.replace('Grand Prix', 'GP'), league: leagueBefore.name, driver: ctx.drvM.family, chassis: ctx.ch.name });
+    F1.store.recordRace({ pos: meF.pos, dnf: meF.out, grid: meField.grid, fastest: res.fastest.who === 0, rain: res.weather.some((x) => x.rain > 0.25), lp: rw.lp, pc: rw.pc, gp: ctx.race.nameFr.replace('Grand Prix', 'GP'), league: leagueBefore.name, driver: ctx.drvM.family, chassis: ctx.ch.name });
     F1.social.sync(true);
     showRace(res, ctx, rw, leagueBefore);
   }
   function showRace(res, ctx, rw, leagueBefore) {
     const byI = new Map(res.field.map((x) => [x.i, x]));
-    const ROW = 30;
-    const tower = res.field.map((x) => {
-      const col = F1.teamColor(x.c.chassisId || (ctx.ch && ctx.ch.id));
-      return `<div class="trow ${x.c.me ? 'me' : ''}" data-i="${x.i}" style="transform:translateY(${(x.grid - 1) * ROW}px)"><b class="tp">${x.grid}</b><span class="tstripe" style="background:${col};height:16px"></span><span class="tn">${esc(x.c.me ? x.name : x.name)}</span><span class="tc">${esc(x.driver.code)}</span><span class="tg num">—</span></div>`;
-    }).join('');
+    const ROW = 30, LAPS = MG().LAPS;
+    const meX = res.field.find((x) => x.c.me);
+    const colorOf = (x) => F1.teamColor(x.c.chassisId || (ctx.ch && ctx.ch.id));
+    const tower = res.field.map((x) => `<div class="trow ${x.c.me ? 'me' : ''}" data-i="${x.i}" style="transform:translateY(${(x.grid - 1) * ROW}px)"><b class="tp">${x.grid}</b><span class="tstripe" style="background:${colorOf(x)};height:16px"></span><span class="tn">${esc(x.name)}</span><span class="tc">${esc(x.driver.code)}</span><span class="tg num">—</span></div>`).join('');
+    // portée du radar : tours de prévision visibles à l'avance
+    const sg = MG().staffOf(ctx.m, 'st');
+    const range = 1 + MG().garageLevel(ctx.m, 'radar') + (sg && sg.tier >= 4 ? 1 : 0);
+    const wxCls = (x) => (x.rain > 0.6 ? 'heavy' : x.rain > 0.25 ? 'rain' : x.rain > 0.05 ? 'drizzle' : x.wet > 0.35 ? 'wet' : x.cloud > 0.5 ? 'cloud' : 'dry');
+    const use3d = F1.car3d && F1.car3d.supported;
     $('#modal').innerHTML = `<div class="modal race-modal"><div class="modal-box race-box">
-      <div class="race-h"><div><div class="muted upper" style="font-size:11px;font-weight:700">${leagueBadge(leagueBefore)} · ${esc(ctx.race.nameFr)}</div><div class="race-lap">Tour <b id="lapN">0</b> / ${MG().LAPS}</div></div><button class="btn sm ghost" data-action="m-skip">Passer ⏭</button></div>
+      <div class="race-h"><div><div class="muted upper" style="font-size:11px;font-weight:700">${leagueBadge(leagueBefore)} · ${esc(ctx.race.nameFr)}</div><div class="race-lap">Tour <b id="lapN">0</b> / ${LAPS}</div></div>
+        <div class="wx-now" id="wxNow"></div>
+        <div class="row" style="gap:6px;flex-wrap:nowrap"><button class="btn sm ghost" data-action="race-speed">×1</button><button class="btn sm ghost" data-action="m-skip">Passer ⏭</button></div></div>
       <div id="raceEnd"></div>
-      <div class="race-car">${F1.visuals.car(ctx.ch.id, { view: 'side', number: ctx.drvM.number, spin: true })}</div>
-      <div class="race-body"><div class="tower" style="height:${res.field.length * ROW}px">${tower}</div><div class="feed" id="feed"><div class="ev"><b>Départ</b> — vous partez P${res.field.find((x) => x.c.me).grid} sur la grille</div></div></div>
+      <div class="race-stage ${use3d ? '' : 'off'}"><div class="race-3d" id="race3d"></div>
+        <div class="race-cams">${[['tv', '📺 TV'], ['onboard', '🎥 Embarquée'], ['heli', '🚁 Hélico'], ['map', '🗺️ Circuit']].map(([k, l], i) => `<button class="${i ? '' : 'on'}" data-action="race-cam" data-c="${k}">${l}</button>`).join('')}</div>
+        <div class="race-flag" id="raceFlag"></div><div class="race-tyre" id="raceTyre"></div></div>
+      <div class="wx-strip" id="wxStrip" title="Radar météo : ${range} tour${range > 1 ? 's' : ''} de prévision (améliorez la station météo du garage pour voir plus loin)">${res.weather.slice(1).map((x, i) => `<i data-l="${i + 1}"></i>`).join('')}</div>
+      <div class="race-body"><div class="tower" style="height:${res.field.length * ROW}px">${tower}</div><div class="feed" id="feed"><div class="ev"><b>Départ</b> — vous partez P${meX.grid} sur la grille${res.weather[0].wet > 0.35 ? ', sur piste mouillée en pneus pluie' : ''}</div></div></div>
       </div></div>`;
-    let lap = 0;
+    const STEP = 50, LAP_MS = 6000;
+    let lap = 0, T = -0.5, flagT = 0, started = false; // T < 0 : procédure de départ (5 feux rouges)
+    S.raceSpeed = 1;
     const evs = res.events.slice();
+    const flagEl = $('#raceFlag');
+    const showFlag = (html, cls, ms = 3800) => { flagEl.innerHTML = html; flagEl.className = 'race-flag on ' + cls; flagT = performance.now() + ms; };
+    const wx = (L) => {
+      const x = res.weather[Math.min(LAPS, L)];
+      $('#wxNow').innerHTML = `<span class="wx-ic">${MG().wxIcon(x)}</span><div><b>${MG().wxLabel(x)}</b><small>Air ${x.air} °C · Piste ${x.track} °C</small></div>`;
+      $$('#wxStrip i').forEach((el) => { const l = +el.dataset.l; el.className = l <= L ? wxCls(res.weather[l]) + ' past' : l <= L + range ? wxCls(res.weather[l]) : 'unk'; el.classList.toggle('now', l === Math.max(1, L)); });
+      const ty = meX.tyreLog[Math.max(1, Math.min(L, meX.lapsDone || 1))] || meX.tyre;
+      $('#raceTyre').innerHTML = meX.out && L >= meX.out.lap ? '' : `<span class="tyre ${ty === 'I' ? 'inter' : 'slick'}"></span>${ty === 'I' ? 'Pneus pluie' : 'Slicks'}`;
+    };
     const render = (L) => {
       const order = res.laps[L - 1];
       order.forEach((o, k) => {
@@ -1174,18 +1327,20 @@
         el.classList.toggle('out', o.out);
       });
       $('#lapN').textContent = L;
+      wx(L);
       const feed = $('#feed');
       while (evs.length && evs[0].lap <= L) {
         const e = evs.shift();
         const who = e.who != null ? byI.get(e.who) : null;
-        if (e.type !== 'sc' && who && !who.c.me && e.type !== 'dnf') continue; // n'affiche que les faits marquants
+        if (e.type === 'sc') showFlag('🚨 VOITURE DE SÉCURITÉ', 'sc', 4500);
+        if (e.type !== 'sc' && e.type !== 'wx' && who && !who.c.me && e.type !== 'dnf') continue; // n'affiche que les faits marquants
         const nm = who ? (who.c.me ? '<b class="me-t">Vous</b>' : `<b>${esc(who.name)}</b>`) : '';
-        feed.insertAdjacentHTML('afterbegin', `<div class="ev ${e.type} ${who && who.c.me ? 'mine' : ''}"><span class="muted">T${e.lap}</span> ${e.type === 'sc' ? '🚨 ' + esc(e.txt) : nm + ' ' + esc(e.txt)}</div>`);
+        feed.insertAdjacentHTML('afterbegin', `<div class="ev ${e.type} ${who && who.c.me ? 'mine' : ''}"><span class="muted">T${e.lap}</span> ${e.type === 'sc' ? '🚨 ' + esc(e.txt) : e.type === 'wx' ? esc(e.txt) : nm + ' ' + esc(e.txt)}</div>`);
       }
     };
     const finish = () => {
       clearInterval(raceTimer); raceTimer = null;
-      render(MG().LAPS);
+      T = LAPS; render(LAPS);
       const me = res.final.find((x) => x.i === 0);
       const m = F1.store.mgr();
       const Lnow = MG().leagueOf(m.lp);
@@ -1193,19 +1348,39 @@
       const fl = byI.get(res.fastest.who);
       $('#raceEnd').innerHTML = `<div class="race-res ${me.out ? 'dnf' : me.pos <= 3 ? 'podium' : ''}">
         <div class="big-pos">${me.out ? 'ABANDON' : 'P' + me.pos}</div>
-        <div class="row" style="justify-content:center;gap:10px;margin:10px 0"><span class="chip ${rw.lp >= 0 ? 'green' : 'red'}">${rw.lp >= 0 ? '+' : ''}${rw.lp} LP</span><span class="chip gold">+${rw.pc} PitCoins</span>${fl ? `<span class="chip">⏱ Meilleur tour : ${esc(fl.c.me ? 'vous' : fl.name)}</span>` : ''}</div>
+        <div class="row" style="justify-content:center;gap:10px;margin:10px 0"><span class="chip ${rw.lp >= 0 ? 'green' : 'red'}">${rw.lp >= 0 ? '+' : ''}${rw.lp} LP</span><span class="chip gold">+${rw.pc} PitCoins</span>${fl ? `<span class="chip">⏱ Meilleur tour : ${esc(fl.c.me ? 'vous' : fl.name)}</span>` : ''}${meX.pits ? `<span class="chip">🔧 ${meX.pits} arrêt${meX.pits > 1 ? 's' : ''}</span>` : ''}${me.out ? `<span class="chip red">${esc(meX.out.why)}</span>` : ''}</div>
         ${promo ? `<div class="promo">🎉 PROMOTION ! Bienvenue en ligue ${Lnow.icon} ${Lnow.name} (gains ×${Lnow.mult})</div>` : demo ? `<div class="promo down">Relégation en ligue ${Lnow.icon} ${Lnow.name}. Améliorez la voiture et revenez plus fort !</div>` : ''}
         <div class="row" style="justify-content:center;margin-top:12px"><button class="btn ghost sm" data-action="m-close">Fermer</button>${F1.store.racesLeft() > 0 ? `<button class="btn sm" data-action="m-again">🚦 Nouvelle course (${F1.store.racesLeft()} restante${F1.store.racesLeft() > 1 ? 's' : ''})</button>` : ''}</div></div>`;
-      $('[data-action="m-skip"]').style.display = 'none';
-      const rc = $('.race-car'); if (rc) rc.style.display = 'none';
+      $('[data-action="m-skip"]').style.display = 'none'; $('[data-action="race-speed"]').style.display = 'none';
+      if (S.race3d) { S.race3d.setCam('map'); $$('[data-action="race-cam"]').forEach((b) => b.classList.toggle('on', b.dataset.c === 'map')); }
       const box = $('.race-box'); if (box) box.scrollTop = 0;
       if (!me.out && me.pos <= 3) confetti(me.pos === 1 ? 220 : 90);
       if (promo) setTimeout(() => confetti(260), 400);
       showAchievements();
     };
     S.raceFinish = finish;
-    F1.visuals.hydrate($('#modal'));
-    raceTimer = setInterval(() => { lap++; if (lap >= MG().LAPS) finish(); else render(lap); }, 650);
+    wx(0);
+    // scène 3D : circuit, voitures, météo, accidents
+    const go3d = () => {
+      const el = $('#race3d'); if (!el || S.race3d || !F1.race3d) return;
+      try {
+        S.race3d = F1.race3d.mount(el, {
+          res, seedStr: ctx.race.circuitId || ctx.race.nameFr, colorOf, getT: () => T, lapSec: LAP_MS / 1000,
+          onIncident: (x, out) => showFlag(out.crash ? `🟡 DRAPEAU JAUNE · accident de <b>${esc(x.c.me ? 'votre voiture' : x.name)}</b>` : `💨 ${esc(out.why)} · <b>${esc(x.c.me ? 'votre voiture' : x.name)}</b> s'arrête`, out.crash ? 'yellow' : 'mech'),
+        });
+      } catch (e) { console.warn(e); const st = $('.race-stage'); if (st) st.classList.add('off'); }
+    };
+    if (use3d) { if (F1.race3d) go3d(); else window.addEventListener('race3d-ready', go3d, { once: true }); }
+    let lastTick = performance.now();
+    raceTimer = setInterval(() => {
+      // temps réel écoulé (et non nombre de ticks) : la course garde son rythme même sur un appareil lent
+      const nowT = performance.now(), el = Math.min(500, nowT - lastTick); lastTick = nowT;
+      T = Math.min(LAPS, T + (el / LAP_MS) * (T < 0 ? 1 : S.raceSpeed || 1));
+      if (!started && T >= 0) { started = true; showFlag('🚦 Extinction des feux : c\'est parti !', 'mech', 2200); }
+      if (flagT && performance.now() > flagT) { flagEl.classList.remove('on'); flagT = 0; }
+      const L = Math.floor(T + 1e-6);
+      if (L > lap) { lap = L; if (lap >= LAPS) finish(); else render(lap); }
+    }, STEP);
   }
 
   /* =================== Mes paris =================== */
@@ -1364,7 +1539,7 @@
     $('#modal').innerHTML = `<div class="modal" data-action="modal-bg"><div class="modal-box">${html}</div></div>`;
     const f = $('#modal input'); if (f) setTimeout(() => f.focus(), 50);
   }
-  const closeModal = () => { if (raceTimer) { clearInterval(raceTimer); raceTimer = null; } const wasRace = !!$('#modal .race-modal'); $('#modal').innerHTML = ''; if (wasRace && /^#\/manager/.test(location.hash)) route(); };
+  const closeModal = () => { if (raceTimer) { clearInterval(raceTimer); raceTimer = null; } if (S.race3d) { S.race3d.dispose(); S.race3d = null; } const wasRace = !!$('#modal .race-modal'); $('#modal').innerHTML = ''; if (wasRace && /^#\/manager/.test(location.hash)) route(); };
   function welcome() {
     modal(`<div style="font-size:42px">🏎️</div><h2>Bienvenue au muret des stands</h2>
       <p class="muted">PITWALL est un jeu de pronostics <b>gratuit</b> sur la Formule 1. Vous démarrez avec <b style="color:var(--gold)">${fmt(F1.store.START)} jetons virtuels</b> et recevez une prime à chaque Grand Prix. Les cotes sont recalculées après chaque course à partir des résultats officiels, et vos paris sont réglés automatiquement.</p>
@@ -1460,7 +1635,14 @@
       case 'credits': credits(); break;
       case 'm-buy-d': { const ctx = mgrCtx(); const d = ctx.mk.byDriver.get(a.dataset.id); try { F1.store.buyDriver(d, resaleD(ctx)); toast('🤝', `<b>${esc(d.name)}</b> rejoint votre écurie !`, 'win'); confetti(80); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'm-buy-c': { const ctx = mgrCtx(); const c = ctx.mk.byChassis.get(a.dataset.id); if (ctx.m.chassis && ctx.m.rdSpent > 0 && !confirm('Changer de châssis remet votre R&D à zéro. Continuer ?')) break; try { F1.store.buyChassis(c, resaleC(ctx)); toast('🔩', `Châssis <b>${esc(c.name)}</b> livré au garage !`, 'win'); confetti(80); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
-      case 'rd-cat': S.rdCat = a.dataset.c; S.rdSel = null; rdRefresh(); break;
+      case 'rd-cat': { const was = $('#pu3d') ? 'pu' : 'car'; S.rdCat = a.dataset.c; S.rdSel = null; S.rdView = null; if ((a.dataset.c === 'pu' ? 'pu' : 'car') !== was) route(); else rdRefresh(); break; }
+      case 'rd-view': S.rdView = a.dataset.v; route(); break;
+      case 'staff-sel': S.staffRole = a.dataset.r; route(); break;
+      case 'staff-hire': { try { const x = F1.store.hireStaff(a.dataset.r, a.dataset.id); toast('🎧', `<b>${esc(x.name)}</b> rejoint votre muret des stands !`, 'win'); confetti(80); showAchievements(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
+      case 'garage-zone': S.garageZone = a.dataset.z; route(); break;
+      case 'garage-up': { try { const g = MG().GARAGE_BY_ID.get(a.dataset.id); const l = F1.store.upgradeGarage(a.dataset.id); toast(g.icon, `<b>${esc(g.name)}</b> : niveau ${l} installé au garage`, 'win'); if (l >= MG().MAX_LV) confetti(120); showAchievements(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
+      case 'race-cam': if (S.race3d) { S.race3d.setCam(a.dataset.c); $$('[data-action="race-cam"]').forEach((b) => b.classList.toggle('on', b === a)); } break;
+      case 'race-speed': S.raceSpeed = S.raceSpeed === 1 ? 2 : S.raceSpeed === 2 ? 4 : 1; a.textContent = '×' + S.raceSpeed; break;
       case 'rd-sel': S.rdSel = a.dataset.p || null; rdRefresh(); break;
       case 'rd-buy': {
         const p = MG().RD_BY_ID.get(a.dataset.p), mode = a.dataset.mode || 'safe';

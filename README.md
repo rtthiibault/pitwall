@@ -39,12 +39,18 @@ Site de paris **à jetons virtuels** sur la Formule 1. Il est 100 % statique (HT
   - **Packages** : quand toutes les pièces d'une branche atteignent un niveau, la branche donne un bonus supplémentaire.
   - **Pari soufflerie** : développer à moitié prix avec 55 % de réussite ; chaque échec augmente les chances suivantes (+12 points, jusqu'à 85 %).
   - **Objectifs du jour** : 3 défis tirés chaque jour (podium, places gagnées, meilleur tour, R&D…) qui rapportent des PitCoins.
-  - **38 pièces en 10 branches** (`RD_PARTS` dans `js/manager.js`) : aileron avant, volet Gurney, fond plat, diffuseur, rétroviseurs, jantes, aileron arrière actif, suspensions, freins, V6 turbo, MGU-K, batterie, radiateurs…
+  - **65 pièces en 16 branches** (325 niveaux) : groupe propulseur détaillé (plenum, échangeur, injection, collecteurs, soupape de décharge, embrayage, rapports, arbres de transmission, lubrification, récupération d'énergie…), flux aérodynamiques, liaisons au sol, fluides et sécurité.
+  - **Groupe propulseur en vue éclatée** (`mountPU` dans `js/car3d.js`) : V6, collecteurs, turbo, plenum carbone, batterie, MGU-K, boîte et différentiel modélisés en 3D, avec étiquettes cliquables.
+  - Détail historique : **38 pièces en 10 branches** à l'origine (`RD_PARTS` dans `js/manager.js`) : aileron avant, volet Gurney, fond plat, diffuseur, rétroviseurs, jantes, aileron arrière actif, suspensions, freins, V6 turbo, MGU-K, batterie, radiateurs…
   - **Déblocage** : les pièces d'une branche se débloquent dans l'ordre. Au-delà de la prochaine pièce, elles restent des « Améliorations inconnues ».
   - **Effets** : chaque pièce ajoute des points de Vitesse, d'Appui ou de Fiabilité.
   - **Conseil** : la pièce au meilleur rapport gain/prix pour le prochain GP est signalée.
   - **Voiture 3D** : votre monoplace s'affiche en haut de la page. Quand on sélectionne une pièce, la caméra zoome dessus (point `focus` de chaque pièce), avec un repère lumineux.
   - **Comparaison** : vos caractéristiques sont comparées à la moyenne des managers de votre ligue.
+- **Muret des stands** (onglet Muret) : 5 postes (team principal, directeur technique, ingénieur de course, stratège, chef mécanicien), 5 candidats fictifs par poste. Chaque recrue apporte des bonus (PitCoins, coût de R&D, pneus, stratégie, arrêts au stand). `STAFF_ROLES` et `STAFF` dans `js/manager.js`.
+- **Garage** (onglet Garage) : 20 équipements à 5 niveaux en 4 zones (voie des stands, box et mécaniciens, ingénierie, usine). Les équipements installés et les mécaniciens apparaissent dans la scène du garage. `GARAGE` dans `js/manager.js`.
+- **Course en 3D** (`js/race3d.js`) : circuit stylisé généré à partir du profil du circuit, 20 monoplaces, 4 caméras (TV, embarquée, hélico, vue du circuit), départ aux feux, voiture de sécurité, accidents (sortie dans le mur de pneus) et pannes (fumée, flammes).
+- **Météo en direct** : pluie et humidité de la piste évoluent tour par tour (`weatherTimeline`), à partir de la prévision réelle du prochain Grand Prix quand elle est disponible. Pneus pluie ou slicks : le stratège et la station météo décident de la vitesse de réaction. Un radar affiche les tours à venir.
 - **Stratégie** :
   - Chaque circuit a un profil (`CIRCUIT`) : Monza demande de la vitesse, Monaco de l'appui, Singapour de la fiabilité…
   - Les courses se disputent sur le circuit du **prochain Grand Prix réel**.
@@ -176,6 +182,7 @@ Ouvrez ensuite http://localhost:8000.
 | `js/markets.js` | Définition des marchés et règles de règlement |
 | `js/store.js` | Portefeuille, paris, succès (localStorage) |
 | `js/app.js` | Interface : pages, ticket, graphiques, animations |
+| `js/race3d.js` | Course manager en 3D : circuit, voitures, météo, incidents |
 | `js/fx.js` | Effets course auto : drapeau à damier entre les onglets, étincelles au clic, lignes de vitesse, apparitions en cascade, vibreur de navigation |
 
 Pour ajuster le modèle : `TEAM_PRIOR` (niveau supposé des écuries en début de saison) se trouve dans `data.js`, et les exposants et l'effet de la grille dans `model.js`. La marge du « bookmaker » se règle par marché dans `markets.js` (`margin`).

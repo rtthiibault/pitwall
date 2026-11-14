@@ -129,6 +129,7 @@
     { id: 'strat', name: 'Stratégie & équipe', icon: '🧠', color: '#a259ff' },
   ];
   const P = (cat, br, id, name, desc, icon, fx, cost, t, d) => ({ cat, br, id, name, desc, icon, fx, cost, focus: { t, d } });
+  const Q = (cat, br, id, name, desc, icon, fx, cost) => P(cat, br, id, name, desc, icon, fx, cost, [0, 0.4, 0], [1, 1, 2]);
   const RD_PARTS = [
     // Aérodynamique — appui
     P('aero', 'Appui aérodynamique', 'fw_main', 'Aileron avant – plan principal', 'Nouveau profil du plan principal : plus d\'appui à l\'avant, moins de sous-virage.', 'wing', { df: 3 }, 30, [2.45, 0.1, 0.35], [1.7, 0.75, 1.6]),
@@ -170,6 +171,39 @@
     P('rel', 'Usure', 'gearbox_rel', 'Fiabilité de la boîte', 'Pignons renforcés.', 'gearbox', { rel: 4 }, 70, [-1.7, 0.35, 0], [-1.4, 0.6, 1.75]),
     P('rel', 'Usure', 'engine_life', 'Longévité moteur', 'Pièces internes plus résistantes : moins de casses.', 'engine', { rel: 4 }, 110, [-0.6, 0.55, 0], [0.2, 1.5, 2.3]),
     P('rel', 'Usure', 'brake_life', 'Endurance des freins', 'Disques à l\'usure mieux maîtrisée.', 'brake', { rel: 3 }, 150, [1.73, 0.36, 0.72], [0.45, 0.2, 1.15]),
+    // Aérodynamique — efficacité des flux
+    Q('aero', 'Efficacité des flux', 'nose', 'Nez et museau', 'Nez plus fin et plus court : le flux d\'air arrive propre sous la voiture.', 'mono', { df: 2, speed: 1 }, 40),
+    Q('aero', 'Efficacité des flux', 'floor_edge', 'Bords de fond plat', 'Découpes et ailettes sur les bords du plancher : elles scellent l\'effet de sol.', 'floor', { df: 3 }, 60),
+    Q('aero', 'Efficacité des flux', 'brake_ducts', 'Écopes de frein', 'Écopes sculptées : elles refroidissent les freins et détournent le sillage des roues.', 'brake', { df: 2, rel: 1 }, 85),
+    Q('aero', 'Efficacité des flux', 'engine_cover', 'Capot moteur resserré', 'Carrosserie « taille de guêpe » à l\'arrière : moins de traînée, plus d\'air vers le diffuseur.', 'sidepod', { speed: 3, df: 1 }, 115),
+    Q('aero', 'Efficacité des flux', 'beam_wing', 'Aileron inférieur (beam wing)', 'Petit aileron bas qui fait travailler ensemble le diffuseur et l\'aileron arrière.', 'rwing', { df: 4 }, 155),
+    // Châssis — liaisons au sol
+    Q('chassis', 'Liaisons au sol', 'dampers', 'Amortisseurs et ressort central', 'Amortisseurs inboard et troisième élément : la voiture reste stable à haute vitesse.', 'susp', { df: 2 }, 40),
+    Q('chassis', 'Liaisons au sol', 'arb', 'Barres anti-roulis', 'Barres plus fines et réglables : moins de roulis en virage.', 'susp', { df: 2 }, 60),
+    Q('chassis', 'Liaisons au sol', 'steering', 'Crémaillère de direction', 'Direction assistée plus précise, moins de frottements.', 'balance', { df: 2, rel: 1 }, 85),
+    Q('chassis', 'Liaisons au sol', 'hubs', 'Moyeux et roulements', 'Roulements céramique à faible friction.', 'rim', { speed: 2, rel: 1 }, 115),
+    Q('chassis', 'Liaisons au sol', 'diff', 'Différentiel', 'Différentiel à glissement piloté : motricité en sortie de virage lent.', 'gearbox', { df: 3 }, 150),
+    // Chaîne motrice — admission & suralimentation
+    Q('pu', 'Admission & suralimentation', 'plenum', 'Plenum d\'admission carbone', 'Boîte à air en carbone et trompettes d\'admission : chaque cylindre respire mieux.', 'airbox', { speed: 2 }, 45),
+    Q('pu', 'Admission & suralimentation', 'intercooler', 'Échangeur air-air', 'L\'air comprimé par le turbo est refroidi avant d\'entrer dans le moteur : il est plus dense.', 'radiator', { speed: 2, rel: 1 }, 65),
+    Q('pu', 'Admission & suralimentation', 'injection', 'Injection directe 500 bar', 'Injecteurs haute pression pour le carburant durable.', 'engine', { speed: 3 }, 90),
+    Q('pu', 'Admission & suralimentation', 'manifolds', 'Collecteurs d\'échappement', 'Collecteurs en Inconel de longueur égale : les gaz arrivent en rythme sur la turbine.', 'exhaust', { speed: 3 }, 120),
+    Q('pu', 'Admission & suralimentation', 'wastegate', 'Soupape de décharge', 'Pilotage fin de la pression de suralimentation.', 'turbo', { speed: 2, rel: 2 }, 155),
+    // Chaîne motrice — transmission
+    Q('pu', 'Transmission', 'clutch', 'Embrayage carbone', 'Embrayage multidisque de moins de 10 cm de diamètre.', 'rim', { speed: 1, rel: 2 }, 45),
+    Q('pu', 'Transmission', 'ratios', 'Étagement des 8 rapports', 'Rapports choisis pour garder le moteur dans sa meilleure plage.', 'gearbox', { speed: 3 }, 70),
+    Q('pu', 'Transmission', 'driveshafts', 'Arbres de transmission', 'Arbres et joints tripodes allégés.', 'susp', { speed: 2, rel: 1 }, 100),
+    Q('pu', 'Transmission', 'oil', 'Lubrification à carter sec', 'Pompes de vidange et réservoir d\'huile optimisés : moins de pertes par barbotage.', 'hydraulic', { speed: 2, rel: 2 }, 135),
+    // Chaîne motrice — récupération d'énergie
+    Q('pu', 'Récupération d\'énergie', 'regen', 'Récupération au freinage', 'Le MGU-K recharge la batterie plus fort à chaque freinage.', 'motor', { speed: 3 }, 55),
+    Q('pu', 'Récupération d\'énergie', 'inverter', 'Onduleur et électronique de puissance', 'Conversion du courant avec moins de pertes thermiques.', 'chip', { speed: 2, rel: 1 }, 90),
+    Q('pu', 'Récupération d\'énergie', 'hv', 'Câblage haute tension', 'Câbles orange 800 V plus courts et mieux refroidis.', 'battery', { speed: 2, rel: 2 }, 130),
+    // Durabilité — fluides & sécurité
+    Q('rel', 'Fluides & sécurité', 'oiltank', 'Réservoir d\'huile', 'Réservoir cloisonné : la pompe ne désamorce plus dans les longs virages.', 'hydraulic', { rel: 3 }, 40),
+    Q('rel', 'Fluides & sécurité', 'fuel', 'Réservoir et pompes à carburant', 'Cellule souple et pompes de gavage doublées.', 'battery', { rel: 3 }, 60),
+    Q('rel', 'Fluides & sécurité', 'wiring', 'Faisceau électrique', 'Connecteurs aéronautiques verrouillés.', 'chip', { rel: 3 }, 85),
+    Q('rel', 'Fluides & sécurité', 'sensors', 'Capteurs et télémétrie embarquée', 'Plus de 300 capteurs : une panne se voit venir avant la casse.', 'radio', { rel: 4 }, 115),
+    Q('rel', 'Fluides & sécurité', 'heatshield', 'Écrans thermiques', 'Feuilles d\'or et céramique autour de l\'échappement.', 'louvre', { rel: 4 }, 150),
     // Stratégie & équipe — ces pièces agissent directement sur le déroulement de la course
     P('strat', 'Départ & course', 'launch', 'Embrayage de départ', 'Logiciel d\'embrayage et cartographie anti-patinage : un meilleur envol quand les feux s\'éteignent.', 'gearbox', { launch: 1 }, 45, [-1.7, 0.35, 0], [-1.4, 0.6, 1.75]),
     P('strat', 'Départ & course', 'tyres', 'Gestion des pneus', 'Capteurs de température et carrossage optimisé : les pneus s\'usent moins, moins de tête-à-queue en fin de course.', 'rim', { tyre: 1 }, 70, [-1.95, 0.36, 0.8], [-0.6, 0.3, 1.6]),
@@ -186,6 +220,9 @@
   const partLevel = (owned, id) => { const v = owned && owned[id]; return !v ? 0 : v > MAX_LV ? 1 : v; };
   const levelCost = (p, l) => Math.round((p.cost * Math.pow(1.55, l - 1)) / 5) * 5; // coût pour atteindre le niveau l
   const STAT_KEYS = ['speed', 'df', 'rel'];
+  // avec 65 pièces, chaque pièce pèse un peu moins qu'à l'origine
+  const PART_K = 0.55;
+  RD_PARTS.forEach((p) => STAT_KEYS.forEach((k) => { if (p.fx[k]) p.fx[k] = Math.round(p.fx[k] * PART_K * 10) / 10; }));
   const MECH = {
     launch: { label: 'Départ', icon: '🚦' }, tyre: { label: 'Pneus', icon: '🛞' }, push: { label: 'Dépassement', icon: '🔋' },
     pit: { label: 'Arrêts au stand', icon: '🔧' }, sc: { label: 'Stratégie SC', icon: '📻' }, drv: { label: 'Pilote', icon: '🎮' },
@@ -200,8 +237,8 @@
     const tot = {}; list.forEach((x) => { for (const k in x.fx) tot[k] = (tot[k] || 0) + x.fx[k]; });
     const key = Object.keys(tot).sort((a, b) => tot[b] - tot[a])[0];
     const isStat = STAT_KEYS.includes(key);
-    const bonus = PKG.slice(0, minL + 1).reduce((a, b) => a + b, 0) * (isStat ? 1 : 0.06);
-    const next = minL < MAX_LV ? PKG[minL + 1] * (isStat ? 1 : 0.06) : 0;
+    const bonus = PKG.slice(0, minL + 1).reduce((a, b) => a + b, 0) * (isStat ? 0.6 : 0.06);
+    const next = minL < MAX_LV ? PKG[minL + 1] * (isStat ? 0.6 : 0.06) : 0;
     return { minL, key, bonus, next, isStat };
   }
   const RD_BY_ID = new Map(RD_PARTS.map((p) => [p.id, p]));
@@ -225,9 +262,69 @@
     b.mech = mech;
     return b;
   }
-  function carStats(chassis, ups = {}, parts = null) {
+  /* ---------- Personnel du muret des stands (noms fictifs) ---------- */
+  const STAFF_ROLES = [
+    { id: 'tp', name: 'Team principal', icon: '👔', desc: 'Dirige l\'écurie, négocie avec les sponsors : plus de PitCoins à chaque course.', fx: { pc: 0.06 } },
+    { id: 'td', name: 'Directeur technique', icon: '📐', desc: 'Pilote le bureau d\'études : la R&D coûte moins cher et la soufflerie réussit plus souvent.', fx: { rd: 0.04, tunnel: 0.02 } },
+    { id: 're', name: 'Ingénieur de course', icon: '🎧', desc: 'La voix dans le casque du pilote : gestion des pneus et rythme de course.', fx: { tyre: 0.3, drv: 0.12 } },
+    { id: 'st', name: 'Stratège', icon: '♟️', desc: 'Décide des arrêts : voiture de sécurité et changements de météo.', fx: { sc: 0.35, wx: 0.5 } },
+    { id: 'cm', name: 'Chef mécanicien', icon: '🔧', desc: 'Dirige les arrêts au stand et la préparation de la voiture.', fx: { pit: 0.3, rel: 0.8 } },
+  ];
+  const STAFF_PRICE = [0, 60, 150, 320, 600];
+  const STAFF_NAMES = {
+    tp: [['Léo Marchetti', 'Ancien chef de projet, sa première saison à ce poste.', 'it'], ['Hélène Vasseur', 'Gestionnaire rigoureuse venue de l\'endurance.', 'fr'], ['Tobias Lindqvist', 'Ex-pilote reconverti, respecté dans le paddock.', 'se'], ['Amara Okonkwo', 'Négociatrice redoutable, les sponsors l\'adorent.', 'gb'], ['Viktor Albrecht', 'Vingt ans de titres : une légende du muret.', 'at']],
+    td: [['Paul Renaudin', 'Jeune aérodynamicien prometteur.', 'fr'], ['Kenji Morimoto', 'Spécialiste des suspensions.', 'jp'], ['Sofia Bellandi', 'A conçu trois voitures victorieuses.', 'it'], ['Ewan MacAllister', 'Maître de l\'effet de sol.', 'gb'], ['Adrián Navarro', 'Génie de l\'aéro, ses concepts sont copiés partout.', 'es']],
+    re: [['Mathis Leroy', 'Sort tout juste de la filière jeunes.', 'fr'], ['Giulia Ferrante', 'Calme en toutes circonstances.', 'it'], ['Daniel Hoffmann', 'Excellent sur la gestion des pneus.', 'de'], ['Priya Raman', 'Lit la télémétrie comme un roman.', 'in'], ['Jack Whitmore', 'A accompagné deux champions du monde.', 'gb']],
+    st: [['Noé Gautier', 'Applique le plan, improvise peu.', 'fr'], ['Lars Pedersen', 'Bon lecteur des fenêtres d\'arrêt.', 'dk'], ['Camila Duarte', 'Audacieuse sous voiture de sécurité.', 'br'], ['Hannah Schreiber', 'Ses modèles météo se trompent rarement.', 'de'], ['Rui Tanaka', 'Voit la course trois tours avant tout le monde.', 'jp']],
+    cm: [['Tom Vidal', 'Motivé, encore un peu vert.', 'fr'], ['Marco Esposito', 'Vingt ans de garage derrière lui.', 'it'], ['Jonas Keller', 'Organise les arrêts comme un ballet.', 'ch'], ['Aisha Farouk', 'Zéro arrêt raté la saison passée.', 'ae'], ['Bram de Vries', 'Détenteur du record de l\'arrêt le plus rapide.', 'nl']],
+  };
+  const STAFF = {};
+  STAFF_ROLES.forEach((r) => { STAFF[r.id] = STAFF_NAMES[r.id].map(([name, bio, iso], k) => ({ id: `${r.id}${k + 1}`, role: r.id, tier: k + 1, name, bio, iso, rating: 62 + k * 8, price: STAFF_PRICE[k] })); });
+  const staffOf = (m, role) => { const id = m && m.staff && m.staff[role]; return (id && STAFF[role].find((x) => x.id === id)) || null; };
+
+  /* ---------- Garage : équipements améliorables (niveau 0 à 5) ---------- */
+  const G = (id, zone, name, desc, icon, fx, cost) => ({ id, zone, name, desc, icon, fx, cost });
+  const GARAGE_ZONES = [{ id: 'pit', name: 'Voie des stands', icon: '🛞' }, { id: 'bay', name: 'Box & mécaniciens', icon: '🧰' }, { id: 'eng', name: 'Ingénierie', icon: '📡' }, { id: 'fac', name: 'Usine', icon: '🏭' }];
+  const GARAGE = [
+    G('guns', 'pit', 'Pistolets pneumatiques', 'Pistolets à azote : l\'écrou saute en un dixième de seconde.', '🔫', { pit: 0.2 }, 30),
+    G('jacks', 'pit', 'Crics rapides', 'Crics avant et arrière à relâchement automatique.', '🛗', { pit: 0.15 }, 25),
+    G('gantry', 'pit', 'Portique et feux de stand', 'Le feu passe au vert dès que les quatre roues sont serrées.', '🚥', { pit: 0.12 }, 35),
+    G('blankets', 'pit', 'Couvertures chauffantes', 'Pneus à température dès la sortie du stand.', '🔥', { launch: 0.15, tyre: 0.08 }, 30),
+    G('startsim', 'pit', 'Banc de départ', 'Le pilote répète ses envols : point de patinage maîtrisé.', '🚦', { launch: 0.2 }, 40),
+    G('crew', 'bay', 'Mécaniciens', 'Recrutement et entraînement de l\'équipe : chaque niveau ajoute des mécanos au garage.', '👨‍🔧', { pit: 0.18, rel: 0.5 }, 45),
+    G('tyrerack', 'bay', 'Station pneus', 'Pressions, températures et carrossage contrôlés train par train.', '🛞', { tyre: 0.18 }, 35),
+    G('spares', 'bay', 'Stock de pièces de rechange', 'Chaque pièce à durée de vie limitée est changée à temps.', '📦', { rel: 1.4 }, 40),
+    G('fuelrig', 'bay', 'Rampe carburant et lubrifiants', 'Carburant et huiles analysés avant chaque course.', '⛽', { speed: 0.5, rel: 0.5 }, 40),
+    G('rig', 'bay', 'Banc à 7 vérins', 'Les suspensions sont réglées sur un banc qui reproduit le circuit.', '🪛', { df: 0.6, tyre: 0.06 }, 50),
+    G('pitwall', 'eng', 'Muret des stands', 'Écrans, intercom et chronométrage : la stratégie réagit plus vite.', '🖥️', { sc: 0.15, wx: 0.12 }, 45),
+    G('radar', 'eng', 'Station météo et radar', 'Vous voyez la pluie arriver : un tour de prévision par niveau pendant la course.', '🌧️', { wx: 0.22 }, 40),
+    G('telemetry', 'eng', 'Baie de télémétrie', 'Analyse en direct des données de la voiture.', '📈', { drv: 0.08, sc: 0.08 }, 45),
+    G('simulator', 'eng', 'Simulateur pilote', 'Le pilote connaît chaque virage avant d\'arriver.', '🎮', { drv: 0.15 }, 60),
+    G('dyno', 'fac', 'Banc d\'essai moteur', 'Le groupe propulseur tourne des heures avant d\'être monté.', '⚙️', { rel: 1.1, speed: 0.6 }, 55),
+    G('composite', 'fac', 'Atelier composite', 'Autoclave et drapage carbone : pièces plus légères et plus précises.', '🧵', { df: 0.8, rd: 0.01 }, 55),
+    G('cfd', 'fac', 'Cluster de calcul CFD', 'Simulation numérique des écoulements : la R&D coûte moins cher.', '💻', { rd: 0.025 }, 60),
+    G('tunnel', 'fac', 'Soufflerie', 'Maquette à 60 % : les paris soufflerie réussissent plus souvent.', '🌬️', { tunnel: 0.03 }, 60),
+    G('hospitality', 'fac', 'Motorhome et hospitalité', 'Les sponsors sont bien reçus : plus de PitCoins à chaque course.', '🥂', { pc: 0.04 }, 50),
+    G('trucks', 'fac', 'Camions-ateliers', 'Logistique renforcée : une course de plus par jour aux niveaux 3 et 5.', '🚛', { races: 1 }, 70),
+  ];
+  const GARAGE_BY_ID = new Map(GARAGE.map((g) => [g.id, g]));
+  const garageCost = (g, l) => Math.round((g.cost * Math.pow(1.6, l - 1)) / 5) * 5;
+  const garageLevel = (m, id) => Math.min(MAX_LV, (m && m.garage && m.garage[id]) || 0);
+  // Bonus cumulés du personnel et du garage
+  function teamBonus(m) {
+    const b = { speed: 0, df: 0, rel: 0, launch: 0, tyre: 0, push: 0, pit: 0, sc: 0, drv: 0, wx: 0, pc: 0, rd: 0, tunnel: 0, races: 0 };
+    if (!m) return b;
+    STAFF_ROLES.forEach((r) => { const x = staffOf(m, r.id); if (x) for (const k in r.fx) b[k] += r.fx[k] * x.tier; });
+    GARAGE.forEach((g) => { const l = garageLevel(m, g.id); if (!l) return; for (const k in g.fx) b[k] += k === 'races' ? (l >= 5 ? 2 : l >= 3 ? 1 : 0) : g.fx[k] * l; });
+    b.rd = Math.min(0.4, b.rd);
+    return b;
+  }
+  function carStats(chassis, ups = {}, parts = null, team = null) {
     const b = partsBonus(parts || {});
-    return { speed: chassis.speed + UP_STEP * (ups.speed || 0) + b.speed, df: chassis.df + UP_STEP * (ups.df || 0) + b.df, rel: Math.min(99, chassis.rel + UP_STEP * (ups.rel || 0) + b.rel), mech: b.mech };
+    const t = team || {};
+    const mech = { ...b.mech, wx: 0 };
+    for (const k in mech) mech[k] += t[k] || 0;
+    return { speed: chassis.speed + UP_STEP * (ups.speed || 0) + b.speed + (t.speed || 0), df: chassis.df + UP_STEP * (ups.df || 0) + b.df + (t.df || 0), rel: Math.min(99, chassis.rel + UP_STEP * (ups.rel || 0) + b.rel + (t.rel || 0)), mech };
   }
   // Note globale de la monoplace (pour l'affichage)
   const carRating = (car) => Math.round(car.speed * 0.38 + car.df * 0.38 + car.rel * 0.24 + (car.mech ? Object.values(car.mech).reduce((a, v) => a + v, 0) * 2.5 : 0));
@@ -247,7 +344,7 @@
   const compat = (car, w, setup) => Math.round(carScore(withSetup(car, setup), w));
 
   /* ---------- Plateau IA (fixe pour la journée et la ligue) ---------- */
-  const BOT_EXTRA = [0, 4, 14, 28, 44, 62]; // développement moyen des managers IA selon la ligue
+  const BOT_EXTRA = [0, 6, 20, 38, 58, 80]; // développement moyen des managers IA selon la ligue
   const BOT_NAMES = ['Apex Racing', 'Scuderia Lumière', 'Vortex GP', 'Nordic Speed', 'Team Kerb', 'Blue Comet', 'Atlas Motorsport', 'Riviera F1', 'Phoenix Racing', 'Iron Horse GP',
     'Sakura Speed', 'Andes Racing', 'Celtic Motorsport', 'Orbit Team', 'Velocity Works', 'Gaucho Racing', 'Alpine Wolf', 'Tidewater GP', 'Crimson Arrow', 'Zenith Racing', 'Boreal F1', 'Midnight Motorsport'];
   function botField(mk, league, dayKey) {
@@ -268,25 +365,48 @@
       const car = carStats(c, ups), ex = BOT_EXTRA[li];
       car.speed += ex; car.df += ex; car.rel = Math.min(97, car.rel + ex * 0.5);
       const bm = li * 0.3;
-      car.mech = { launch: bm * r() * 1.4, tyre: bm, push: bm * r() * 1.4, pit: bm, sc: bm * r(), drv: 0 };
+      car.mech = { launch: bm * r() * 1.4, tyre: bm, push: bm * r() * 1.4, pit: bm, sc: bm * r(), drv: 0, wx: 0.4 + li * 0.35 + r() * 0.8 };
       return { bot: true, name, driver: d, chassisId: c.id, car, setup: Math.round((r() * 1.6 - 0.8) * 10) / 10 };
     });
   }
 
   /* ---------- Moteur de course ----------
      performance = (niveau pilote) + (stats voiture + améliorations) × (compatibilité circuit) + aléa/incidents */
-  function simulate({ player, bots, race, seed }) {
+  // Météo d'une course : pluie (0..1) et humidité de la piste (0..1) tour par tour
+  function weatherTimeline(r, rainProb = 0.25, temp = 24) {
+    const rain = new Array(LAPS + 1).fill(0);
+    const u = r();
+    if (u < rainProb) {
+      const wetStart = r() < 0.3;
+      const a = wetStart ? 0 : 3 + Math.floor(r() * (LAPS - 7));
+      const len = 4 + Math.floor(r() * 9), peak = 0.45 + r() * 0.55;
+      for (let l = a; l <= Math.min(LAPS, a + len); l++) { const k = (l - a) / len; rain[l] = peak * Math.sin(Math.PI * Math.min(1, wetStart ? 0.5 + k / 2 : k)) ** 0.7; }
+      if (wetStart) rain[0] = peak;
+    } else if (u < rainProb + 0.12) { const a = 4 + Math.floor(r() * (LAPS - 8)); rain[a] = 0.22; rain[a + 1] = 0.3; rain[a + 2] = 0.15; } // averse passagère
+    const out = []; let wet = rain[0] > 0.3 ? 0.75 : 0;
+    for (let l = 0; l <= LAPS; l++) {
+      if (l) wet = clamp(wet + rain[l] * 0.5 - 0.11 * (1 - rain[l]), 0, 1);
+      const cloud = clamp(Math.max(rain[l] * 1.4, ...[1, 2, 3].map((d) => (rain[l + d] || 0) * (1.1 - d * 0.25)), rainProb * 0.6), 0, 1);
+      out.push({ rain: Math.round(rain[l] * 100) / 100, wet: Math.round(wet * 100) / 100, cloud: Math.round(cloud * 100) / 100, air: Math.round(temp - 5 * cloud), track: Math.round(temp + 12 - 14 * cloud - 6 * wet) });
+    }
+    return out;
+  }
+  const wxLabel = (x) => (x.rain > 0.6 ? 'Forte pluie' : x.rain > 0.25 ? 'Pluie' : x.rain > 0.05 ? 'Bruine' : x.wet > 0.35 ? 'Piste mouillée' : x.wet > 0.08 ? 'Piste humide' : x.cloud > 0.5 ? 'Couvert' : 'Sec');
+  const wxIcon = (x) => (x.rain > 0.6 ? '⛈️' : x.rain > 0.25 ? '🌧️' : x.rain > 0.05 ? '🌦️' : x.cloud > 0.5 ? '☁️' : x.cloud > 0.2 ? '⛅' : '☀️');
+
+  function simulate({ player, bots, race, seed, rainProb, temp }) {
     const w = circuitProfile(race);
     const r = rng(seed);
+    const weather = weatherTimeline(rng(seed ^ 0x5bd1e995), rainProb, temp);
     const field = [{ ...player, me: true }, ...bots].map((c, i) => {
       const car = withSetup(c.car, c.setup);
       const cs = carScore(car, w);
       const mech = c.car.mech || {};
       const db = 2 * Math.min(2.5, mech.drv || 0);
       const d = db ? { ...c.driver, pace: Math.min(99, c.driver.pace + db), craft: Math.min(99, c.driver.craft + db), cons: Math.min(99, c.driver.cons + db) } : c.driver;
-      const M = (k) => Math.min(2.6, mech[k] || 0);
+      const M = (k) => 2.8 * Math.tanh((mech[k] || 0) / 2.8); // rendements décroissants
       const form = gauss(r) * 3.5; // forme du jour (pilote + voiture)
-      return { i, c, name: c.name, driver: d, cs, M, pitLap: 7 + Math.floor(r() * 6), perf: 0.42 * ((d.pace + d.craft) / 2) + 0.58 * cs + form, q: 0.5 * d.pace + 0.5 * cs + form + gauss(r) * 2.5, time: 0, out: null, lapsDone: 0, spins: 0 };
+      return { i, c, name: c.name, driver: d, cs, M, tyre: weather[0].wet > 0.35 ? 'I' : 'S', wrong: 0, tyreLog: [], pitLap: 7 + Math.floor(r() * 6), perf: 0.42 * ((d.pace + d.craft) / 2) + 0.58 * cs + form, q: 0.5 * d.pace + 0.5 * cs + form + gauss(r) * 2.5, time: 0, out: null, lapsDone: 0, spins: 0 };
     });
     // qualifications
     field.sort((a, b) => b.q - a.q).forEach((x, k) => { x.grid = k + 1; });
@@ -298,34 +418,50 @@
     let fastest = { t: 1e9, who: null, lap: 0 };
     let prevOrder = field.map((x) => x.i);
     for (let lap = 1; lap <= LAPS; lap++) {
+      const wx = weather[lap], wet = wx.wet;
+      if (wx.rain > 0.05 && weather[lap - 1].rain <= 0.05) events.push({ lap, type: 'wx', txt: `${wxIcon(wx)} La pluie arrive sur le circuit !` });
+      if (wx.rain <= 0.05 && weather[lap - 1].rain > 0.05) events.push({ lap, type: 'wx', txt: '🌤️ La pluie s\'arrête, la piste va sécher.' });
       for (const x of field) {
         if (x.out) continue;
         const d = x.driver;
         // abandons : fiabilité de la voiture et régularité du pilote
         const pMech = (0.1 * Math.pow(1 - x.c.car.rel / 100, 1.5) * (0.6 + w.rel * 2)) / LAPS;
-        const pCrash = (0.035 * (1 - d.cons / 100) * (0.5 + d.craft / 100)) / LAPS;
+        const need = wet > 0.35 ? 'I' : 'S';
+        const bad = x.tyre !== need;
+        const pCrash = ((0.035 * (1 - d.cons / 100) * (0.5 + d.craft / 100)) / LAPS) * (1 + 5 * wet) * (bad && need === 'I' ? 3 : 1);
         const u = r();
         if (u < pMech) { x.out = { lap, why: ['Moteur', 'Boîte de vitesses', 'Hydraulique', 'Surchauffe', 'Freins'][Math.floor(r() * 5)] }; events.push({ lap, type: 'dnf', who: x.i, txt: `abandonne (${x.out.why.toLowerCase()})` }); continue; }
-        if (u < pMech + pCrash) { x.out = { lap, why: 'Accident' }; events.push({ lap, type: 'dnf', who: x.i, txt: 'part dans le mur : abandon' }); continue; }
+        if (u < pMech + pCrash) { x.out = { lap, why: 'Accident' }; events.push({ lap, type: 'dnf', who: x.i, txt: wet > 0.35 ? 'part en aquaplaning et tape le mur : abandon' : 'part dans le mur : abandon' }); continue; }
         const ty = x.M('tyre');
         let t = 90 - x.perf * 0.045 + gauss(r) * 0.6 * (1.5 - d.cons / 100) * (1 - 0.12 * ty);
         // départ : l'embrayage fait la différence au premier tour
+        // piste mouillée : tout le monde ralentit, les pilotes combatifs s'en sortent mieux ; mauvais pneus = grosse perte
+        t += 7 * wet - (d.craft - 82) * 0.06 * wet;
+        if (bad) t += need === 'I' ? 4 + 9 * wet : 2.6;
         if (lap === 1) { const g = gauss(r) * 0.9 - 0.9 * x.M('launch'); t += g; if (x.c.me && x.M('launch') > 0.5 && g < -1.2) events.push({ lap, type: 'gain', who: x.i, txt: 'envol parfait au départ !' }); }
         // usure des pneus en fin de relais et mode dépassement dans les derniers tours
         const stint = lap >= x.pitLap ? lap - x.pitLap : lap;
         if (stint > 5) t += 0.09 * (stint - 5) * (1 - 0.28 * ty);
         if (lap > LAPS - 5) t -= 0.2 * x.M('push');
         if (r() < 0.035 * (1 - d.cons / 100) * 3 * (1 - 0.2 * ty)) { t += 4 + r() * 4; x.spins++; events.push({ lap, type: 'spin', who: x.i, txt: 'part en tête-à-queue et perd du temps' }); }
-        // arrêt au stand (un par course)
-        if (lap === x.pitLap) {
+        // changement de pneus imposé par la météo : le stratège réagit plus ou moins vite
+        x.wrong = bad ? x.wrong + 1 : 0;
+        const delay = Math.max(1, Math.round(3.4 - x.M('wx') + (x.i * 7 % 3) * 0.5));
+        const swap = bad && x.wrong >= delay && lap < LAPS - 1;
+        if (swap) { x.tyre = need; x.wrong = 0; }
+        // arrêt au stand (un par course, plus les arrêts météo)
+        if (lap === x.pitLap || swap) {
+          if (swap && lap < x.pitLap) x.pitLap = lap; // l'arrêt météo remplace l'arrêt prévu
           const crew = x.M('pit');
           let still = Math.max(1.8, 2.05 + Math.abs(gauss(r)) * 0.7 * (1 - 0.25 * crew) - 0.12 * crew);
           const botched = r() < 0.07 * (1 - 0.3 * crew);
           if (botched) still += 3 + r() * 5;
           t += 19 + still;
-          if (x.c.me) events.push({ lap, type: botched ? 'loss' : 'pit', who: x.i, txt: botched ? `arrêt au stand raté : ${still.toFixed(1).replace('.', ',')} s immobilisé !` : `arrêt au stand en ${still.toFixed(1).replace('.', ',')} s` });
+          x.pits = (x.pits || 0) + 1; x.pitLaps = (x.pitLaps || []).concat(lap);
+          const what = swap ? (need === 'I' ? ' → pneus pluie' : ' → pneus slicks') : '';
+          if (x.c.me) events.push({ lap, type: botched ? 'loss' : 'pit', who: x.i, txt: botched ? `arrêt au stand raté${what} : ${still.toFixed(1).replace('.', ',')} s immobilisé !` : `arrêt au stand en ${still.toFixed(1).replace('.', ',')} s${what}` });
         }
-        x.time += t; x.lapsDone = lap;
+        x.time += t; x.lapsDone = lap; x.tyreLog[lap] = x.tyre;
         if (t < fastest.t) fastest = { t, who: x.i, lap };
       }
       if (lap === scLap) {
@@ -352,7 +488,7 @@
       laps.push(order.map((x) => ({ i: x.i, gap: x.out ? null : x.time - leadT, out: !!x.out })));
     }
     const final = laps[laps.length - 1].map((x, k) => ({ ...x, pos: k + 1 }));
-    return { field, laps, final, events: events.sort((a, b) => a.lap - b.lap), fastest, scLap, w };
+    return { field, laps, final, events: events.sort((a, b) => a.lap - b.lap), fastest, scLap, w, weather, gridGap };
   }
 
   // Récompenses selon la position et la ligue
@@ -388,6 +524,7 @@
   }
 
   F1.manager = {
+    STAFF_ROLES, STAFF, staffOf, GARAGE, GARAGE_ZONES, GARAGE_BY_ID, garageCost, garageLevel, teamBonus, weatherTimeline, wxLabel, wxIcon,
     MAX_LV, LV_GAIN, LV_NAME, lvCum, partLevel, levelCost, MECH, tunnelChance, branchPackage, carRating, OBJECTIVES, dailyObjectives,
     START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, PC_TABLE,
     RD_CATS, RD_PARTS, RD_BY_ID, rdBranches, partState, partsBonus,
