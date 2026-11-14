@@ -93,7 +93,7 @@
     [/après le premier Grand Prix/g, 'après la première course'], [/Grands Prix/g, 'courses'], [/Parier sur ce GP/g, 'Parier sur cette course'], [/(\d+) GP\b/g, '$1 courses'], [/Championnat pilotes/g, 'Championnat équipages'],
     [/Matrice des cotes pilotes/g, 'Matrice des cotes par voiture'], [/Choisissez un pilote/g, 'Choisissez une voiture'], [/Un pilote qui ne prend pas/g, 'Une voiture qui ne prend pas'], [/Grille & monoplaces/g, 'Plateau & voitures'],
     [/^Grille (\d{4})$/g, 'Plateau Hypercar $1'], [/P(\d+) constructeurs/g, 'P$1 au championnat'], [/\bPilotes\b/g, 'Voitures'], [/\bPilote\b/g, 'Voiture'], [/\bpilotes\b/g, 'voitures'], [/Écuries/g, 'Constructeurs'], [/Écurie\b/g, 'Constructeur'], [/écuries/g, 'constructeurs'],
-    [/· 0 sprints?/g, ''], [/ · \d+ week-ends? Sprint/g, ''], [/Prochain GP/g, 'Prochaine course'], [/⟲ Faites pivoter/g, ''], [/Qualifications/g, 'Hyperpole']];
+    [/· 0 sprints?/g, ''], [/ · \d+ week-ends? Sprint/g, ''], [/Prochain GP/g, 'Prochaine course'], [/Qualifications/g, 'Hyperpole']];
   function wecText(root) {
     const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     const nodes = []; while (w.nextNode()) nodes.push(w.currentNode);

@@ -45,6 +45,51 @@ async function loadModel() {
   PARTS = parts;
 }
 
+/* ---------- Prototypes d'endurance (WEC) : un modèle par constructeur, chargé à la demande ----------
+   Modèles fournis (Ferrari 499P, Cadillac V-Series.R, Peugeot 9X8, BMW M Hybrid V8, Porsche 963), convertis sans
+   leurs textures : aucune livrée d'origine ni sponsor, la carrosserie est peinte aux couleurs du constructeur.
+   Les constructeurs sans modèle utilisent la Porsche 963 à leurs couleurs. */
+const WEC_MODEL = { w_ferrari: 'ferrari', w_cadillac: 'cadillac', w_peugeot: 'peugeot', w_bmw: 'bmw' };
+const wecKey = (teamId) => WEC_MODEL[teamId] || 'porsche';
+const isWec = (teamId) => String(teamId).startsWith('w_');
+const WEC_PARTS = new Map(), WEC_LOADING = new Map();
+function loadWec(key) {
+  if (WEC_PARTS.has(key)) return Promise.resolve();
+  if (!WEC_LOADING.has(key)) {
+    const url = new URL(`../assets/wec/${key}.glb`, import.meta.url).href;
+    WEC_LOADING.set(key, new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(url).then((gltf) => {
+      const parts = [];
+      gltf.scene.updateMatrixWorld(true);
+      gltf.scene.traverse((o) => {
+        if (!o.isMesh) return;
+        const src = o.geometry.attributes.position, arr = new Float32Array(src.count * 3);
+        for (let i = 0; i < src.count; i++) { arr[i * 3] = src.getX(i); arr[i * 3 + 1] = src.getY(i); arr[i * 3 + 2] = src.getZ(i); }
+        const g = new THREE.BufferGeometry();
+        g.setAttribute('position', new THREE.BufferAttribute(arr, 3));
+        if (o.geometry.index) g.setIndex(o.geometry.index.clone());
+        g.applyMatrix4(o.matrixWorld);
+        parts.push({ name: o.name, geometry: mergeVertices(toCreasedNormals(g, Math.PI / 3.4), 1e-4) });
+      });
+      WEC_PARTS.set(key, parts);
+    }).catch((e) => { WEC_LOADING.delete(key); throw e; }));
+  }
+  return WEC_LOADING.get(key);
+}
+function wecMaterials(teamId) {
+  const c = new THREE.Color(F1.teamColor ? F1.teamColor(teamId) : '#cccccc');
+  const dark = c.clone().lerp(new THREE.Color(0x08090c), 0.72);
+  return {
+    paint: new THREE.MeshPhysicalMaterial({ color: c, metalness: 0.35, roughness: 0.28, clearcoat: 1, clearcoatRoughness: 0.05 }),
+    accent: new THREE.MeshPhysicalMaterial({ color: dark, metalness: 0.3, roughness: 0.35, clearcoat: 0.8, clearcoatRoughness: 0.1 }),
+    carbon: new THREE.MeshStandardMaterial({ color: 0x0e0f12, metalness: 0.25, roughness: 0.5, envMapIntensity: 0.6 }),
+    interior: new THREE.MeshStandardMaterial({ color: 0x08080a, metalness: 0.1, roughness: 0.8 }),
+    glass: new THREE.MeshPhysicalMaterial({ color: 0x0a0d12, metalness: 0.6, roughness: 0.08, clearcoat: 1, transparent: true, opacity: 0.82, side: THREE.DoubleSide }),
+    tyre: new THREE.MeshStandardMaterial({ color: 0x131315, metalness: 0, roughness: 0.84 }),
+    rim: new THREE.MeshStandardMaterial({ color: 0x2a2c31, metalness: 0.8, roughness: 0.32, side: THREE.DoubleSide }),
+    light: new THREE.MeshStandardMaterial({ color: 0x9aa4b2, emissive: 0xcfe0ff, emissiveIntensity: 0.22, metalness: 0.7, roughness: 0.18, side: THREE.DoubleSide }),
+  };
+}
+
 /* ---------- Livrées ---------- */
 const livery = (id) => (F1.visuals && F1.visuals.livery ? F1.visuals.livery(id) : { body: '#e10600', accent: '#111', detail: '#222', helmet: '#fff' });
 /* ---------- Peinture des livrées au pixel près (shader) ----------
@@ -625,6 +670,13 @@ function mountPU(el, { part = null } = {}) {
 }
 
 function buildCar(teamId, { xray = false } = {}) {
+  if (isWec(teamId)) {
+    const parts = WEC_PARTS.get(wecKey(teamId));
+    if (!parts) throw new Error('modèle WEC pas encore chargé');
+    const W = wecMaterials(teamId), g = new THREE.Group();
+    for (const p of parts) { const m = new THREE.Mesh(p.geometry, W[p.name] || W.carbon); m.castShadow = true; m.receiveShadow = true; g.add(m); }
+    return g;
+  }
   const M = materials(teamId);
   const car = new THREE.Group();
   const U = xray ? xrayUniforms() : null;
@@ -1040,7 +1092,9 @@ function supported() {
   try { const c = document.createElement('canvas'); return !!(window.WebGLRenderingContext && (c.getContext('webgl2') || c.getContext('webgl'))); } catch (e) { return false; }
 }
 
-F1.car3d = { snapshot, mount, mountPU, PU_OF, mountTrack, disposeAll, supported: supported(), ready: false };
+F1.car3d = { snapshot, mount, mountPU, PU_OF, mountTrack, disposeAll, supported: supported(), ready: false,
+  // prototypes WEC : has() = modèle déjà chargé, ensure() = le charge si besoin
+  has: (teamId) => !isWec(teamId) || WEC_PARTS.has(wecKey(teamId)), ensure: (teamId) => (isWec(teamId) ? loadWec(wecKey(teamId)) : Promise.resolve()) };
 if (F1.car3d.supported) {
   loadModel()
     .then(() => { F1.car3d.ready = true; window.dispatchEvent(new Event('car3d-ready')); })

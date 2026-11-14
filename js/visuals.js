@@ -173,14 +173,21 @@
       <rect x="52" y="140" width="26" height="8" rx="3" fill="#fff8d6"/>${n ? `<rect x="322" y="106" width="${n.length > 2 ? 70 : 52}" height="38" rx="5" fill="#fff"/><text x="${n.length > 2 ? 357 : 348}" y="134" text-anchor="middle" font-size="28" font-weight="900" font-style="italic" fill="#111" font-family="Titillium Web, sans-serif">${n}</text>` : ''}</svg></div>`;
   }
   function car(teamId, opts = {}) {
-    if (String(teamId).startsWith('w_')) return proto(teamId, opts);
     const view = opts.view || (opts.live ? '34' : 'side');
-    return `<div class="car3d ${opts.live ? 'live' : ''} v-${view}" data-team="${teamId}" data-view="${view}"><div class="car3d-fb">${svgCar(teamId, opts)}</div></div>`;
+    // WEC : prototype 3D du constructeur ; le dessin 2D reste affiché le temps du chargement (ou sans WebGL)
+    const fb = String(teamId).startsWith('w_') ? proto(teamId, opts) : svgCar(teamId, opts);
+    return `<div class="car3d ${opts.live ? 'live' : ''} v-${view}" data-team="${teamId}" data-view="${view}"><div class="car3d-fb">${fb}</div></div>`;
   }
   let hydrating = false;
   function hydrate(root = document) {
     if (!F1.car3d || !F1.car3d.supported || !F1.car3d.ready) return;
-    const slots = [...root.querySelectorAll('.car3d:not(.ok)')];
+    let slots = [...root.querySelectorAll('.car3d:not(.ok)')];
+    // prototypes WEC pas encore chargés : on les charge, puis on repasse
+    const wait = [...new Set(slots.map((el) => el.dataset.team).filter((t) => !F1.car3d.has(t)))];
+    if (wait.length) {
+      slots = slots.filter((el) => F1.car3d.has(el.dataset.team));
+      wait.forEach((t) => F1.car3d.ensure(t).then(() => hydrate(root)).catch(() => { /* on garde le dessin 2D */ }));
+    }
     slots.filter((el) => el.classList.contains('live')).forEach((el) => {
       el.classList.add('ok');
       try { el.__car3d = F1.car3d.mount(el, el.dataset.team, { view: el.dataset.view, autoRotate: !el.dataset.focus && !el.dataset.part, speed: 1.1, focus: el.dataset.focus ? JSON.parse(el.dataset.focus) : null, part: el.dataset.part || null, workshop: el.dataset.workshop === '1' }); } catch (e) { el.classList.remove('ok'); }
@@ -201,7 +208,7 @@
           el.classList.add('ok');
         } catch (e) { /* on garde le dessin vectoriel */ }
       }
-      if (i < imgs.length) setTimeout(step, 16); else { hydrating = false; const more = root.querySelector('.car3d:not(.ok):not(.live)'); if (more) hydrate(root); }
+      if (i < imgs.length) setTimeout(step, 16); else { hydrating = false; const more = [...root.querySelectorAll('.car3d:not(.ok):not(.live)')].some((el) => F1.car3d.has(el.dataset.team)); if (more) hydrate(root); }
     };
     step();
   }
