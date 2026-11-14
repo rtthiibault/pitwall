@@ -201,7 +201,7 @@ Un sélecteur en haut de l'accueil bascule tout le site entre la **Formule 1** e
 ```
 
 - Les jetons, les succès et le classement entre amis sont communs aux deux championnats. Le mode manager reste basé sur la F1.
-- **Prototypes 3D** : `assets/wec/*.glb` (Ferrari 499P, Cadillac V-Series.R, Peugeot 9X8, BMW M Hybrid V8, Porsche 963), convertis depuis les modèles fournis, sans leurs textures (donc sans livrée d'origine ni sponsor) et peints aux couleurs du constructeur. Les constructeurs sans modèle (Toyota, Aston Martin, Genesis, McLaren, Ford) utilisent la Porsche 963 à leurs couleurs. Correspondance dans `WEC_MODEL` (`js/car3d.js`). Vérifiez la licence de chaque modèle avant diffusion.
+- **Prototypes 3D** : `assets/wec/*.glb` (Ferrari 499P, Cadillac V-Series.R, Peugeot 9X8, BMW M Hybrid V8, Toyota GR010 Hybrid, Aston Martin Valkyrie, Genesis GMR-001, Porsche 963), convertis depuis les modèles fournis, sans leurs textures (donc sans livrée d'origine ni sponsor) et peints aux couleurs du constructeur. Les constructeurs sans modèle (McLaren, Ford) utilisent la Porsche 963 à leurs couleurs. Correspondance dans `WEC_MODEL` (`js/car3d.js`). Vérifiez la licence de chaque modèle avant diffusion.
 - Les pictogrammes du sélecteur sont des dessins originaux, pas les logos officiels (marques déposées).
 
 ## Avertissement

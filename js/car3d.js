@@ -46,10 +46,11 @@ async function loadModel() {
 }
 
 /* ---------- Prototypes d'endurance (WEC) : un modèle par constructeur, chargé à la demande ----------
-   Modèles fournis (Ferrari 499P, Cadillac V-Series.R, Peugeot 9X8, BMW M Hybrid V8, Porsche 963), convertis sans
+   Modèles fournis (Ferrari 499P, Cadillac V-Series.R, Peugeot 9X8, BMW M Hybrid V8, Toyota GR010, Aston Martin Valkyrie,
+   Genesis GMR-001, Porsche 963), convertis sans
    leurs textures : aucune livrée d'origine ni sponsor, la carrosserie est peinte aux couleurs du constructeur.
    Les constructeurs sans modèle utilisent la Porsche 963 à leurs couleurs. */
-const WEC_MODEL = { w_ferrari: 'ferrari', w_cadillac: 'cadillac', w_peugeot: 'peugeot', w_bmw: 'bmw' };
+const WEC_MODEL = { w_ferrari: 'ferrari', w_cadillac: 'cadillac', w_peugeot: 'peugeot', w_bmw: 'bmw', w_toyota: 'toyota', w_aston: 'aston', w_genesis: 'genesis' };
 const wecKey = (teamId) => WEC_MODEL[teamId] || 'porsche';
 const isWec = (teamId) => String(teamId).startsWith('w_');
 const WEC_PARTS = new Map(), WEC_LOADING = new Map();
