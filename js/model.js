@@ -63,11 +63,11 @@
   function simulateRace(season, race, weather) {
     const st = strengths(season, race, weather);
     const N = st.length;
-    const seed = hash(`${season.year}-${race.round}-${st.map((x) => x.id + x.s.toFixed(3)).join()}-${race.qualifying ? 'q' : ''}`);
+    const seed = hash(`${season.key || season.year}-${race.round}-${st.map((x) => x.id + x.s.toFixed(3)).join()}-${race.qualifying ? 'q' : ''}`);
     const r = mulberry32(seed);
     const rain = weather ? (weather.rain || 0) / 100 : 0;
     const smax = Math.max(...st.map((x) => x.s));
-    const pDnf = st.map((x) => (race.street ? 0.085 : 0.055) * (1 + 0.6 * rain) * (1.25 - 0.45 * (x.s / smax)));
+    const pDnf = st.map((x) => (race.dnf || (race.street ? 0.085 : 0.055)) * (1 + 0.6 * rain) * (1.25 - 0.45 * (x.s / smax)));
 
     const knownGrid = race.qualifying ? new Map(race.qualifying.map((q) => [q.driverId, q.pos])) : null;
     const idx = new Map(st.map((x, i) => [x.id, i]));
@@ -79,7 +79,7 @@
       dnf: new Float64Array(N), fastest: new Float64Array(N), pole: new Float64Array(N), sprintWin: new Float64Array(N),
       beat: Array.from({ length: N }, () => new Float64Array(N)),
       teamWin: new Float64Array(teams.length), teamDouble: new Float64Array(teams.length), teamBoth: new Float64Array(teams.length),
-      finishers: new Float64Array(N + 1), margin: { 2: 0, 5: 0, 10: 0 }, poleWins: 0, wGrid: { p1: 0, p2: 0, p3: 0, p4: 0 },
+      finishers: new Float64Array(N + 1), margin: Object.fromEntries((race.marginLines || [2, 5, 10]).map((l) => [l, 0])), poleWins: 0, wGrid: { p1: 0, p2: 0, p3: 0, p4: 0 },
     };
     const gridPos = new Int32Array(N), key = new Float64Array(N), pos = new Int32Array(N);
     const order = Array.from({ length: N }, (_, i) => i);
@@ -128,10 +128,8 @@
       if (st[w0].teamId === st[w1].teamId) c.teamDouble[tw]++;
       // écart vainqueur
       const ratio = Math.exp(st[w1].ls - st[w0].ls);
-      const m = -Math.log(r() + 1e-9) * (2.8 + 9 * Math.max(0, 1 - ratio));
-      if (m > 2) c.margin[2]++;
-      if (m > 5) c.margin[5]++;
-      if (m > 10) c.margin[10]++;
+      const m = -Math.log(r() + 1e-9) * (2.8 + 9 * Math.max(0, 1 - ratio)) * (race.marginScale || 1);
+      for (const l in c.margin) if (m > +l) c.margin[l]++;
       // meilleur tour (parmi les classés, avantage aux pilotes de tête)
       const cl = order.slice(0, Math.max(classified, 1));
       const fl = pickWeighted(r, cl, (i) => Math.pow(st[i].s, 0.75) * (pos[i] < 5 ? 1.6 : 1));
@@ -160,7 +158,7 @@
       race, N, drivers, idx,
       h2h: (a, b) => { const i = idx.get(a), j = idx.get(b); return c.beat[i][j] / N_RACE; },
       teams: teams.map((t, i) => ({ id: t, win: P(c.teamWin[i]), double: P(c.teamDouble[i]), both: P(c.teamBoth[i]) })),
-      finishersOver: finCdf, margin: { 2: P(c.margin[2]), 5: P(c.margin[5]), 10: P(c.margin[10]) },
+      finishersOver: finCdf, margin: Object.fromEntries(Object.keys(c.margin).map((l) => [l, P(c.margin[l])])),
       poleWins: P(c.poleWins), wGrid: { p1: P(c.wGrid.p1), p2: P(c.wGrid.p2), p3: P(c.wGrid.p3), p4: P(c.wGrid.p4) },
       expFinishers: c.finishers.reduce((s, v, k) => s + v * k, 0) / N_RACE,
     };
@@ -172,7 +170,7 @@
     const ref = season.next || remaining[0] || season.races[season.races.length - 1];
     const st = strengths(season, ref, null);
     const N = st.length;
-    const r = mulberry32(hash('season' + season.year + season.doneCount));
+    const r = mulberry32(hash('season' + (season.key || season.year) + season.doneCount));
     const base = st.map((x) => season.drivers.get(x.id).points || 0);
     const teams = [...new Set(st.map((x) => x.teamId))];
     const tBase = teams.map((t) => (season.teams.get(t) || {}).points || 0);
@@ -195,9 +193,9 @@
       for (const rc of remaining) {
         const runs = rc.sprint && !rc.sprintResults ? [SPTS, PTS] : [PTS];
         for (const table of runs) {
-          for (let i = 0; i < N; i++) key[i] = r() < 0.06 ? -1e6 : shock[i] + gumbel(r);
+          for (let i = 0; i < N; i++) key[i] = r() < (rc.dnf || 0.06) ? -1e6 : shock[i] + gumbel(r);
           order.sort((a, b) => key[b] - key[a]);
-          for (let k = 0; k < table.length; k++) { const i = order[k]; if (key[i] > -1e5) { ptsArr[i] += table[k]; tPts[tIdx[i]] += table[k]; } }
+          for (let k = 0; k < table.length; k++) { const i = order[k]; if (key[i] > -1e5) { ptsArr[i] += table[k] * (rc.mult || 1); tPts[tIdx[i]] += table[k] * (rc.mult || 1); } }
         }
       }
       let bi = 0; for (let i = 1; i < N; i++) if (ptsArr[i] > ptsArr[bi] || (ptsArr[i] === ptsArr[bi] && r() < 0.5)) bi = i;

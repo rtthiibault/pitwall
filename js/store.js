@@ -88,7 +88,7 @@
       let changed = false;
       for (const leg of bet.legs) {
         if (leg.result) continue;
-        if (leg.season && leg.season !== season.year) continue;
+        if (leg.season ? leg.season !== (season.key || season.year) : season.series === 'wec') continue;
         const r = F1.markets.settle(leg, season);
         if (r) { leg.result = r; changed = true; }
       }

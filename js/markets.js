@@ -4,13 +4,23 @@
   const dn = (s, id) => { const d = s.drivers.get(id); return d ? d.family : id; };
   const tn = (s, id) => { const t = s.teams.get(id); return t ? t.short : id; };
 
+  // Vocabulaire des marchés selon le championnat
+  const LEX = {
+    f1: { win: 'Le pilote qui franchit la ligne en tête', pole: ['Pole position', 'Le plus rapide en qualifications'], team: ['Écurie victorieuse', 'L\'écurie du vainqueur'], mate: 'Duel de coéquipiers',
+      fin: 'Pilotes classés', unit: 's', wdc: (y) => `Champion du monde pilotes ${y}`, wcc: (y) => `Champion du monde constructeurs ${y}`, wccSub: 'Le titre des écuries' },
+    wec: { win: 'La voiture qui gagne au général (Hypercar)', pole: ['Hyperpole', 'La voiture la plus rapide en Hyperpole'], team: ['Constructeur vainqueur', 'La marque de la voiture victorieuse'], mate: 'Duel de voitures sœurs',
+      fin: 'Hypercars classées', unit: 's', wdc: (y) => `Champions du monde pilotes Hypercar ${y}`, wcc: (y) => `Champion du monde constructeurs Hypercar ${y}`, wccSub: 'Le titre des constructeurs' },
+  };
+  const lex = (s) => LEX[s.series === 'wec' ? 'wec' : 'f1'];
+  const skey = (s) => s.key || s.year;
+
   function sel(market, key, label, p, extra = {}) {
     return { mid: market.id, key, sid: market.id + '|' + key, label, prob: p, odds: toOdds(p, market.margin || 1.07), kind: market.kind, round: market.round, mtitle: market.title, ...extra };
   }
 
   /* Marchés d'un Grand Prix */
   function buildRace(season, race, sim) {
-    const R = race.round;
+    const R = race.round, X = lex(season);
     const M = [];
     const add = (m) => { m.round = R; M.push(m); return m; };
     const byP = (k) => [...sim.drivers].sort((a, b) => b.p[k] - a.p[k]);
@@ -21,17 +31,17 @@
       m.selections = byP(pk).map((d) => dsel(m, d, d.p[pk]));
       return m;
     };
-    driverMarket('win', 'win', 'Vainqueur de la course', 'Le pilote qui franchit la ligne en tête', 'win', race.date, 'top', 1.1);
+    driverMarket('win', 'win', 'Vainqueur de la course', X.win, 'win', race.date, 'top', 1.1);
     driverMarket('podium', 'podium', 'Sur le podium', 'Termine dans le top 3', 'podium', race.date, 'drivers', 1.08);
     driverMarket('top6', 'top6', 'Top 6', 'Termine parmi les 6 premiers', 'top6', race.date, 'drivers', 1.06);
     driverMarket('points', 'points', 'Dans les points', 'Termine dans le top 10', 'points', race.date, 'drivers', 1.05);
     driverMarket('fastest', 'fastest', 'Meilleur tour en course', 'Signe le tour le plus rapide', 'fastest', race.date, 'drivers', 1.12);
     driverMarket('dnf', 'dnf', 'Abandon', 'Non classé à l\'arrivée', 'dnf', race.date, 'drivers', 1.1);
-    if (!race.qualifying) driverMarket('pole', 'pole', 'Pole position', 'Le plus rapide en qualifications', 'pole', race.qualiDate || race.date, 'top', 1.1);
+    if (!race.qualifying) driverMarket('pole', 'pole', X.pole[0], X.pole[1], 'pole', race.qualiDate || race.date, 'top', 1.1);
     if (race.sprint && !race.sprintResults) driverMarket('sprintWin', 'sprint', 'Vainqueur du Sprint', 'Course sprint du samedi', 'sprintWin', race.sprintDate || race.date, 'top', 1.12);
 
     // Écuries
-    const tw = add({ id: `r${R}:team`, kind: 'teamWin', title: 'Écurie victorieuse', sub: 'L\'écurie du vainqueur', closes: race.date, group: 'teams', margin: 1.08, layout: 'teams' });
+    const tw = add({ id: `r${R}:team`, kind: 'teamWin', title: X.team[0], sub: X.team[1], closes: race.date, group: 'teams', margin: 1.08, layout: 'teams' });
     tw.selections = [...sim.teams].sort((a, b) => b.win - a.win).map((t) => sel(tw, t.id, tn(season, t.id), t.win, { teamId: t.id, args: { t: t.id } }));
     const td = add({ id: `r${R}:double`, kind: 'double', title: 'Doublé 1-2', sub: 'Les deux voitures aux deux premières places', closes: race.date, group: 'teams', margin: 1.12, layout: 'teams' });
     td.selections = [...sim.teams].sort((a, b) => b.double - a.double).filter((t) => t.double > 0.0005).map((t) => sel(td, t.id, tn(season, t.id), t.double, { teamId: t.id, args: { t: t.id } }));
@@ -50,7 +60,7 @@
       if (season.drivers.get(a).teamId !== season.drivers.get(b).teamId && !pairs.some((p) => p[0] === a && p[1] === b)) pairs.push([a, b, 'rival']);
     }
     pairs.forEach(([a, b, type]) => {
-      const m = add({ id: `r${R}:h2h:${a}:${b}`, kind: 'h2h', title: `${dn(season, a)} vs ${dn(season, b)}`, sub: type === 'mate' ? 'Duel de coéquipiers' : 'Duel au classement', closes: race.date, group: 'h2h', margin: 1.06, layout: 'h2h', h2hType: type, a, b });
+      const m = add({ id: `r${R}:h2h:${a}:${b}`, kind: 'h2h', title: `${dn(season, a)} vs ${dn(season, b)}`, sub: type === 'mate' ? X.mate : 'Duel au classement', closes: race.date, group: 'h2h', margin: 1.06, layout: 'h2h', h2hType: type, a, b });
       const pa = sim.h2h(a, b), pb = sim.h2h(b, a);
       const n = pa + pb || 1;
       m.selections = [
@@ -62,11 +72,11 @@
     // Spéciaux
     const fin = Math.round(sim.expFinishers - 0.5) + 0.5;
     [fin - 1, fin].forEach((line) => {
-      const m = add({ id: `r${R}:fin:${line}`, kind: 'finishers', title: `Pilotes classés : ${line}`, sub: 'Nombre de voitures classées à l\'arrivée', closes: race.date, group: 'specials', margin: 1.06, layout: 'ou' });
+      const m = add({ id: `r${R}:fin:${line}`, kind: 'finishers', title: `${X.fin} : ${line}`, sub: 'Nombre de voitures classées à l\'arrivée', closes: race.date, group: 'specials', margin: 1.06, layout: 'ou' });
       const po = sim.finishersOver(line);
       m.selections = [sel(m, 'over', `Plus de ${line}`, po, { args: { line, side: 'over' } }), sel(m, 'under', `Moins de ${line}`, 1 - po, { args: { line, side: 'under' } })];
     });
-    [2, 5, 10].forEach((line) => {
+    (race.marginLines || [2, 5, 10]).forEach((line) => {
       const m = add({ id: `r${R}:margin:${line}`, kind: 'margin', title: `Écart du vainqueur : ${line} s`, sub: 'Écart entre le 1er et le 2e sous le drapeau à damier', closes: race.date, group: 'specials', margin: 1.06, layout: 'ou' });
       const po = sim.margin[line];
       m.selections = [sel(m, 'over', `Plus de ${line} s`, po, { args: { line, side: 'over' } }), sel(m, 'under', `Moins de ${line} s`, 1 - po, { args: { line, side: 'under' } })];
@@ -79,10 +89,16 @@
       sel(wg, 'p3', '3e à 5e', sim.wGrid.p3, { args: { b: 'p3' } }), sel(wg, 'p4', '6e ou plus loin', sim.wGrid.p4, { args: { b: 'p4' } }),
     ];
 
+    // WEC : marque victorieuse en LMGT3 (plateau provisoire, catégorie très serrée)
+    if (season.series === 'wec' && season.gt3) {
+      const g = add({ id: `r${R}:gt3`, kind: 'gt3Win', title: 'Marque victorieuse en LMGT3', sub: 'La marque de la voiture qui gagne la catégorie LMGT3', closes: race.date, group: 'teams', margin: 1.12, layout: 'teams' });
+      g.selections = season.gt3.map(([id, name, p, color]) => sel(g, id, name, p, { color, args: { t: id } }));
+    }
+
     // Cote boostée (choisie de façon déterministe pour le GP)
     const pool = M.filter((m) => ['podium', 'h2h', 'top6', 'teamWin'].includes(m.kind)).flatMap((m) => m.selections.filter((s) => s.prob > 0.25 && s.prob < 0.7));
     if (pool.length) {
-      const base = pool[hash(`boost${season.year}${R}`) % pool.length];
+      const base = pool[hash(`boost${skey(season)}${R}`) % pool.length];
       const boosted = Math.round(base.odds * 1.35 * 20) / 20;
       const m = add({ id: `r${R}:boost`, kind: base.kind, title: 'Cote boostée', sub: `${base.mtitle} — ${base.label}`, closes: race.date, group: 'top', layout: 'boost' });
       m.selections = [{ ...base, mid: m.id, sid: m.id + '|' + base.key, odds: boosted, oldOdds: base.odds, boost: true, mtitle: `${base.mtitle} (boost)` }];
@@ -105,12 +121,13 @@
   /* Marchés de saison */
   function buildSeason(season, ss) {
     const closes = (season.races.filter((r) => !r.results).slice(-1)[0] || {}).date || null;
-    const m1 = { id: `s${season.year}:wdc`, kind: 'wdc', round: 0, title: `Champion du monde pilotes ${season.year}`, sub: season.doneCount ? `Simulation des ${ss.remaining} manches restantes` : `Avant-saison · simulation des ${ss.remaining} manches`, closes, group: 'season', margin: 1.1, layout: 'drivers' };
+    const X = lex(season);
+    const m1 = { id: `s${skey(season)}:wdc`, kind: 'wdc', round: 0, title: X.wdc(season.year), sub: season.doneCount ? `Simulation des ${ss.remaining} manches restantes` : `Avant-saison · simulation des ${ss.remaining} manches`, closes, group: 'season', margin: 1.1, layout: 'drivers' };
     m1.selections = [...ss.drivers].sort((a, b) => b.p - a.p).filter((d) => d.p >= 0.003).slice(0, 12)
-      .map((d) => sel(m1, d.id, dn(season, d.id), d.p, { driverId: d.id, teamId: d.teamId, season: season.year, args: { d: d.id } }));
-    const m2 = { id: `s${season.year}:wcc`, kind: 'wcc', round: 0, title: `Champion du monde constructeurs ${season.year}`, sub: 'Le titre des écuries', closes, group: 'season', margin: 1.1, layout: 'teams' };
+      .map((d) => sel(m1, d.id, dn(season, d.id), d.p, { driverId: d.id, teamId: d.teamId, season: skey(season), args: { d: d.id } }));
+    const m2 = { id: `s${skey(season)}:wcc`, kind: 'wcc', round: 0, title: X.wcc(season.year), sub: X.wccSub, closes, group: 'season', margin: 1.1, layout: 'teams' };
     m2.selections = [...ss.teams].sort((a, b) => b.p - a.p).filter((t) => t.p >= 0.003).slice(0, 8)
-      .map((t) => sel(m2, t.id, tn(season, t.id), t.p, { teamId: t.id, season: season.year, args: { t: t.id } }));
+      .map((t) => sel(m2, t.id, tn(season, t.id), t.p, { teamId: t.id, season: skey(season), args: { t: t.id } }));
     return [m1, m2].filter((m) => m.selections.length > 1);
   }
 
@@ -151,6 +168,7 @@
         return yes(fl.driverId === a.d);
       }
       case 'teamWin': return yes(winner.teamId === a.t);
+      case 'gt3Win': return race.gt3 ? yes(race.gt3 === a.t) : 'void';
       case 'double': return yes(R[0].teamId === a.t && R[1] && R[1].teamId === a.t && R[1].classified);
       case 'bothPts': return yes(R.filter((x) => x.classified && x.pos <= 10 && x.teamId === a.t).length >= 2);
       case 'h2h': { const x = find(a.a), y = find(a.b); if (!x || !y) return 'void'; return yes(x.pos < y.pos); }
@@ -175,7 +193,7 @@
   }
 
   // Groupes de corrélation (interdits ensemble dans un combiné)
-  const EXCLUSIVE = ['win', 'pole', 'sprintWin', 'teamWin', 'double', 'fastest', 'finishers', 'margin', 'poleWins', 'winnerGrid', 'tierce'];
+  const EXCLUSIVE = ['win', 'pole', 'sprintWin', 'teamWin', 'gt3Win', 'double', 'fastest', 'finishers', 'margin', 'poleWins', 'winnerGrid', 'tierce'];
   function corrKey(leg) {
     if (leg.kind === 'wdc' || leg.kind === 'wcc') return [leg.kind + (leg.season || '')];
     const keys = [EXCLUSIVE.includes(leg.kind) ? `r${leg.round}:${leg.kind}` : leg.mid.replace(':boost', ':' + leg.kind)];

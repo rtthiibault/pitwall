@@ -955,3 +955,22 @@ body:not(.on-home) { --panel: rgba(16, 17, 25, .72); }
 .wx-strip i.past { opacity: .45; } .wx-strip i.now { opacity: 1; box-shadow: 0 0 0 1.5px #fff; }
 .ev.wx { color: #9fd0ff; border-left-color: #2d7fd6; }
 @media (max-width: 760px) { .wx-now small { display: none; } .wx-now { padding: 4px 8px; } .race-cams button { padding: 4px 6px; font-size: 11px; } .race-flag { font-size: 11px; } }
+
+/* ---------- Sélecteur de championnat (F1 / WEC) ---------- */
+.series-sw { display: flex; gap: 14px; margin: 0 0 22px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.series-tile { display: grid; justify-items: center; gap: 6px; padding: 4px 6px; color: var(--muted); font-family: 'Titillium Web', sans-serif; transition: color .2s, transform .2s var(--ease); }
+.series-tile b { font-size: 15px; font-weight: 700; letter-spacing: .02em; } .series-tile small { font-size: 11px; margin-top: -5px; }
+.series-tile:hover { color: var(--text); transform: translateY(-2px); } .series-tile.on { color: var(--text); } .series-tile[disabled] { opacity: .4; cursor: not-allowed; }
+.series-ic { position: relative; width: 62px; height: 62px; border-radius: 14px; display: grid; place-items: center; filter: grayscale(.55) brightness(.8); transition: filter .25s, box-shadow .25s; }
+.series-ic svg { width: 46px; height: 46px; }
+.series-ic.f1 { background: linear-gradient(145deg, #ff2b1c, #a80500); } .series-ic.wec { background: linear-gradient(145deg, #1463ff, #0a2a8a); }
+.series-tile.on .series-ic, .series-tile:hover .series-ic { filter: none; }
+.series-tile.on .series-ic.f1 { box-shadow: 0 0 0 2px #fff, 0 14px 30px -12px rgba(225,6,0,.9); } .series-tile.on .series-ic.wec { box-shadow: 0 0 0 2px #fff, 0 14px 30px -12px rgba(20,99,255,.9); }
+.series-ck { position: absolute; left: -7px; top: -7px; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-style: normal; font-weight: 900; background: #fff; color: #111; box-shadow: 0 2px 6px rgba(0,0,0,.5); }
+/* thème WEC : l'accent passe au bleu endurance */
+body.wec { --red: #1463ff; --red2: #4b8bff; }
+body.wec .hero { background: linear-gradient(110deg, rgba(6,6,10,.92) 30%, rgba(6,6,10,.5) 75%, rgba(6,6,10,.3)) padding-box, radial-gradient(700px 400px at 80% 40%, rgba(20,99,255,.45), transparent 65%) padding-box, linear-gradient(160deg, #090d1a, #08080e) padding-box, var(--edge) border-box; box-shadow: 0 40px 120px -50px rgba(20,99,255,.55), var(--shadow); }
+body.wec .hero-bg .kerb { background: repeating-linear-gradient(90deg, #1463ff 0 40px, #fff 40px 80px); }
+/* prototype Hypercar */
+.proto { width: 100%; } .proto svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 18px 22px rgba(0,0,0,.5)); animation: carIn .6s var(--ease) both; }
+.hero-stage .proto { padding: 0 4%; }

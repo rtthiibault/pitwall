@@ -1,0 +1,5 @@
+{
+  "updated": "2026-11-14T00:00:00Z",
+  "_aide": "Ajoutez une entrée par manche disputée dans 'rounds' (clé = numéro de manche). hypercar = numéros des Hypercars classées, dans l'ordre d'arrivée. dnf = abandons. pole et fastest = numéro de voiture. margin = écart en secondes entre le 1er et le 2e, ou \"1 tour\". lmgt3 = marque victorieuse (corvette, bmw, ferrari, porsche, mclaren, aston, lexus, ford, mercedes). Exemple : \"1\": { \"hypercar\": [\"8\", \"51\", \"7\"], \"dnf\": [\"12\"], \"pole\": \"50\", \"fastest\": \"8\", \"margin\": 12.4, \"lmgt3\": \"bmw\" }. Facultatif : \"standings\": { \"crews\": { \"8\": 25 }, \"manufacturers\": { \"toyota\": 25 } } pour imposer les points officiels.",
+  "rounds": {}
+}

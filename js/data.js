@@ -336,7 +336,7 @@
   // Qualifications d'une manche (chargées à la demande)
   async function loadQualifying(season, race) {
     if (!race || race.qualifying) return race && race.qualifying;
-    if (season.source === 'fallback') return null;
+    if (season.series === 'wec' || season.source === 'fallback') return null;
     if (race.qualiDate && race.qualiDate.getTime() + 75 * 60e3 > Date.now()) return null; // pas encore disputées
     const key = `pitwall:q:${season.year}:${race.round}`;
     const c = cacheGet(key);

@@ -182,10 +182,27 @@ Ouvrez ensuite http://localhost:8000.
 | `js/markets.js` | Définition des marchés et règles de règlement |
 | `js/store.js` | Portefeuille, paris, succès (localStorage) |
 | `js/app.js` | Interface : pages, ticket, graphiques, animations |
+| `js/wec.js` | Championnat WEC : calendrier, plateau Hypercar, lecture des résultats (`data/wec/<année>.json`) |
 | `js/race3d.js` | Course manager en 3D : circuit, voitures, météo, incidents |
 | `js/fx.js` | Effets course auto : drapeau à damier entre les onglets, étincelles au clic, lignes de vitesse, apparitions en cascade, vibreur de navigation |
 
 Pour ajuster le modèle : `TEAM_PRIOR` (niveau supposé des écuries en début de saison) se trouve dans `data.js`, et les exposants et l'effet de la grille dans `model.js`. La marge du « bookmaker » se règle par marché dans `markets.js` (`margin`).
+
+## Championnat WEC (endurance)
+
+Un sélecteur en haut de l'accueil bascule tout le site entre la **Formule 1** et le **WEC**. Le moteur de cotes, le ticket, les combinés, le tiercé et le règlement automatique sont les mêmes ; en WEC on parie sur une **voiture Hypercar** (son équipage) au lieu d'un pilote.
+
+- **Marchés** : vainqueur, podium, top 6, top 10, meilleur tour, abandon, Hyperpole, constructeur vainqueur, doublé, duels entre voitures, nombre d'Hypercars classées, écart du vainqueur (10, 30, 60 s), marque victorieuse en LMGT3, titres pilotes et constructeurs.
+- **Barème** : points doublés au Mans, ×1,5 au Qatar et à Bahreïn, +1 point pour la pole ; le titre constructeurs compte la meilleure voiture de chaque marque.
+- **Données** : le WEC n'a pas d'API publique gratuite. Le calendrier 2027 et le plateau (provisoire tant que la liste officielle des engagés n'est pas publiée) sont dans `js/wec.js`.
+- **Résultats** : après chaque course, complétez `data/wec/2027.json` (le format est décrit dans le fichier). Les paris se règlent alors automatiquement à la prochaine visite. Exemple :
+
+```json
+"rounds": { "1": { "hypercar": ["8", "51", "7"], "dnf": ["12"], "pole": "50", "fastest": "8", "margin": 12.4, "lmgt3": "bmw" } }
+```
+
+- Les jetons, les succès et le classement entre amis sont communs aux deux championnats. Le mode manager reste basé sur la F1.
+- Les pictogrammes du sélecteur sont des dessins originaux, pas les logos officiels (marques déposées).
 
 ## Avertissement
 Ce jeu est gratuit, sans argent réel ni gain matériel. C'est un site de fans non officiel, sans lien avec la Formula One Group, la FIA ou les écuries.

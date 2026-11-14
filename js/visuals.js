@@ -159,7 +159,21 @@
 
   /* Monoplace : emplacement remplacé par le rendu 3D (Three.js) dès qu'il est prêt, dessin vectoriel sinon.
      opts.view : '34' (trois-quarts) | 'side' (profil) ; opts.live : visionneuse 3D interactive */
+  // Prototype Hypercar vu de profil (dessin original), aux couleurs du constructeur
+  function proto(teamId, opts = {}) {
+    const c = F1.teamColor(teamId), n = opts.number && opts.number !== '?' ? String(opts.number) : '';
+    return `<div class="proto"><svg viewBox="0 0 640 210" role="img" aria-label="Prototype Hypercar"><defs><linearGradient id="pg${teamId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c}"/><stop offset="1" stop-color="${c}" stop-opacity=".72"/></linearGradient></defs>
+      <ellipse cx="320" cy="186" rx="290" ry="12" fill="rgba(0,0,0,.45)"/>
+      <path d="M42 150 C46 128 70 118 118 112 L214 96 C250 62 300 50 352 52 C392 54 420 70 440 92 L548 100 C580 104 600 120 604 150 L604 160 H42Z" fill="url(#pg${teamId})"/>
+      <path d="M232 98 C262 72 300 62 348 64 C378 66 398 78 412 94Z" fill="#0b0d12" opacity=".88"/><path d="M300 66 L296 97" stroke="${c}" stroke-width="5"/>
+      <path d="M388 60 L470 30 H486 L452 92Z" fill="${c}"/><path d="M520 30 H612 V44 H528Z" fill="#111317"/><rect x="560" y="44" width="10" height="62" fill="#111317"/><rect x="600" y="22" width="12" height="40" rx="2" fill="${c}"/>
+      <path d="M42 160 H604 V168 H52Z" fill="#111317"/><path d="M118 112 L214 96" stroke="rgba(255,255,255,.35)" stroke-width="2"/>
+      <path d="M150 132 H470" stroke="rgba(0,0,0,.28)" stroke-width="10"/>
+      ${[150, 500].map((x) => `<path d="M${x - 62} 160 A62 62 0 0 1 ${x + 62} 160Z" fill="#0b0d12"/><circle cx="${x}" cy="160" r="40" fill="#0c0c0e"/><circle cx="${x}" cy="160" r="22" fill="#23262d"/><circle cx="${x}" cy="160" r="22" fill="none" stroke="${c}" stroke-width="3"/><circle cx="${x}" cy="160" r="6" fill="#8b93a1"/>`).join('')}
+      <rect x="52" y="140" width="26" height="8" rx="3" fill="#fff8d6"/>${n ? `<rect x="322" y="106" width="${n.length > 2 ? 70 : 52}" height="38" rx="5" fill="#fff"/><text x="${n.length > 2 ? 357 : 348}" y="134" text-anchor="middle" font-size="28" font-weight="900" font-style="italic" fill="#111" font-family="Titillium Web, sans-serif">${n}</text>` : ''}</svg></div>`;
+  }
   function car(teamId, opts = {}) {
+    if (String(teamId).startsWith('w_')) return proto(teamId, opts);
     const view = opts.view || (opts.live ? '34' : 'side');
     return `<div class="car3d ${opts.live ? 'live' : ''} v-${view}" data-team="${teamId}" data-view="${view}"><div class="car3d-fb">${svgCar(teamId, opts)}</div></div>`;
   }
