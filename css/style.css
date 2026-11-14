@@ -812,7 +812,6 @@ footer#footer { position: relative; background: linear-gradient(180deg, transpar
 /* Drapeau à damier entre les onglets */
 .flag-wipe { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 400; pointer-events: none; display: none; }
 .flag-wipe.on { display: block; }
-.fx-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 390; pointer-events: none; }
 
 /* Lignes de vitesse au défilement rapide */
 .speed-lines { position: fixed; inset: -10%; z-index: 30; pointer-events: none; opacity: 0;
@@ -939,9 +938,6 @@ body:not(.on-home) { --panel: rgba(16, 17, 25, .72); }
 .wx-now .wx-ic { font-size: 26px; line-height: 1; } .wx-now b { display: block; font-size: 14px; } .wx-now small { color: var(--muted); font-size: 11px; }
 .race-stage { position: relative; height: clamp(230px, 40vh, 400px); margin-top: 10px; border-radius: 14px; overflow: hidden; background: #0b0d12; border: 1px solid var(--line); }
 .race-stage.off { display: none; }
-.race-3d { position: absolute; inset: 0; }
-.race-cams { position: absolute; left: 10px; bottom: 10px; display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: rgba(8,9,14,.72); backdrop-filter: blur(8px); }
-.race-cams button { padding: 5px 10px; border-radius: 9px; font-size: 12px; font-weight: 700; color: #cfd2dc; } .race-cams button.on { background: #fff; color: #111; }
 .race-flag { position: absolute; left: 50%; top: 12px; transform: translate(-50%, -30px); opacity: 0; padding: 7px 16px; border-radius: 10px; font-weight: 900; font-style: italic; text-transform: uppercase; font-size: 14px; white-space: nowrap; transition: .35s var(--ease); background: rgba(8,9,14,.85); border: 1px solid rgba(255,255,255,.15); max-width: 94%; overflow: hidden; text-overflow: ellipsis; }
 .race-flag.on { transform: translate(-50%, 0); opacity: 1; }
 .race-flag.yellow { background: #ffd400; color: #1a1500; border-color: #fff; animation: flagBlink .5s steps(2) 4; } .race-flag.sc { background: #ff8a00; color: #1a0d00; } .race-flag.mech { background: rgba(20,22,28,.92); }
@@ -954,7 +950,7 @@ body:not(.on-home) { --panel: rgba(16, 17, 25, .72); }
 .wx-strip i.unk { background: repeating-linear-gradient(45deg, rgba(255,255,255,.08) 0 3px, rgba(255,255,255,.02) 3px 6px); }
 .wx-strip i.past { opacity: .45; } .wx-strip i.now { opacity: 1; box-shadow: 0 0 0 1.5px #fff; }
 .ev.wx { color: #9fd0ff; border-left-color: #2d7fd6; }
-@media (max-width: 760px) { .wx-now small { display: none; } .wx-now { padding: 4px 8px; } .race-cams button { padding: 4px 6px; font-size: 11px; } .race-flag { font-size: 11px; } }
+@media (max-width: 760px) { .wx-now small { display: none; } .wx-now { padding: 4px 8px; } .race-flag { font-size: 11px; } }
 
 /* ---------- Sélecteur de championnat (F1 / WEC) ---------- */
 .series-sw { display: flex; gap: 14px; margin: 0 0 22px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
@@ -974,3 +970,23 @@ body.wec .hero-bg .kerb { background: repeating-linear-gradient(90deg, #1463ff 0
 /* prototype Hypercar */
 .proto { width: 100%; } .proto svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 18px 22px rgba(0,0,0,.5)); animation: carIn .6s var(--ease) both; }
 .hero-stage .proto { padding: 0 4%; }
+
+/* ---------- Course : carte 2D ---------- */
+.race-map { position: absolute; inset: 0; }
+.race-map-cv { display: block; width: 100%; height: 100%; }
+/* ---------- Circuit : caractéristiques du tracé (sans conseil de réglage) ---------- */
+.ctraits { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.ctraits > div { padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,.04); border: 1px solid var(--line); }
+.ctraits small { display: block; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; font-weight: 700; }
+.ctraits b { font-size: 15px; }
+@media (max-width: 560px) { .ctraits { grid-template-columns: 1fr; } }
+/* ---------- Mode manager : fond sombre teinté aux couleurs du châssis équipé ---------- */
+body.mgr-bg::before {
+  background:
+    radial-gradient(1100px 640px at 88% -12%, color-mix(in srgb, var(--mgr) 26%, transparent), transparent 64%),
+    radial-gradient(900px 620px at -10% 34%, color-mix(in srgb, var(--mgr) 13%, transparent), transparent 66%),
+    radial-gradient(1000px 520px at 50% 118%, color-mix(in srgb, var(--mgr) 10%, transparent), transparent 62%),
+    linear-gradient(180deg, color-mix(in srgb, var(--mgr) 8%, #06070b) 0%, #05060a 72%);
+  transition: background .6s;
+}
+body.mgr-bg .aurora { opacity: .4; background: conic-gradient(from 210deg at 60% 40%, transparent, color-mix(in srgb, var(--mgr) 32%, transparent), transparent 30%, color-mix(in srgb, var(--mgr) 14%, transparent), transparent 60%); }

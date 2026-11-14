@@ -47,12 +47,18 @@
     const w = (race && CIRCUIT[race.circuitId]) || [0.35, 0.45, 0.2];
     const kind = w[0] >= 0.5 ? 'Circuit rapide' : w[1] >= 0.55 ? 'Circuit technique / sinueux' : w[2] >= 0.25 ? 'Circuit exigeant (chaleur, freinages)' : 'Circuit équilibré';
     const tip = w[0] >= 0.5 ? 'Privilégiez la vitesse de pointe et un réglage à faible appui.' : w[1] >= 0.55 ? 'Privilégiez l\'appui aérodynamique et un réglage chargé.' : w[2] >= 0.25 ? 'La fiabilité fera la différence : les abandons sont fréquents ici.' : 'Visez une voiture homogène et un réglage médian.';
-    return { speed: w[0], df: w[1], rel: w[2], kind, tip };
+    // description qualitative du tracé : au joueur d'en déduire son réglage
+    const traits = [
+      ['Lignes droites', w[0] >= 0.55 ? 'Très longues' : w[0] >= 0.45 ? 'Longues' : w[0] >= 0.3 ? 'Moyennes' : 'Courtes'],
+      ['Virages lents', w[1] >= 0.6 ? 'Très nombreux' : w[1] >= 0.5 ? 'Nombreux' : w[1] >= 0.4 ? 'Quelques-uns' : 'Rares'],
+      ['Contraintes mécaniques', w[2] >= 0.25 ? 'Élevées' : 'Normales'],
+    ];
+    return { speed: w[0], df: w[1], rel: w[2], kind, tip, traits };
   }
 
   /* ---------- Ligues ---------- */
   const LEAGUES = [
-    { id: 'bronze', name: 'Bronze', min: 0, mult: 1, color: '#cd7f32', icon: '🥉', bot: [0, 1], drv: [74, 82] },
+    { id: 'bronze', name: 'Bronze', min: 0, mult: 1, color: '#cd7f32', icon: '🥉', bot: [0, 2], drv: [76, 86] },
     { id: 'argent', name: 'Argent', min: 100, mult: 1.3, color: '#c9ced8', icon: '🥈', bot: [1, 3], drv: [77, 85] },
     { id: 'or', name: 'Or', min: 250, mult: 1.7, color: '#ffcc4d', icon: '🥇', bot: [3, 5], drv: [80, 88] },
     { id: 'platine', name: 'Platine', min: 450, mult: 2.2, color: '#7fe3d6', icon: '💠', bot: [5, 7], drv: [83, 91] },
@@ -63,8 +69,9 @@
   const nextLeague = (lp) => LEAGUES.find((l) => l.min > lp) || null;
   // Points de ligue (LP) et PitCoins selon la position finale
   const LP_TABLE = [30, 22, 16, 12, 8, 5, 3, 1, 0, -2, -3, -4, -5, -6, -7, -8, -8, -9, -9, -10];
-  const PC_TABLE = [40, 30, 24, 18, 14, 10, 8, 6, 4, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2];
-  const DNF_LP = -8, DNF_PC = 1;
+  // les PitCoins ne viennent plus que des courses : même le fond de grille rapporte de quoi progresser
+  const PC_TABLE = [40, 32, 26, 22, 19, 16, 14, 12, 11, 10, 9, 8, 8, 7, 7, 6, 6, 5, 5, 5];
+  const DNF_LP = -8, DNF_PC = 3;
 
   /* ---------- Outils ---------- */
   function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -344,7 +351,7 @@
   const compat = (car, w, setup) => Math.round(carScore(withSetup(car, setup), w));
 
   /* ---------- Plateau IA (fixe pour la journée et la ligue) ---------- */
-  const BOT_EXTRA = [0, 6, 20, 38, 58, 80]; // développement moyen des managers IA selon la ligue
+  const BOT_EXTRA = [10, 18, 31, 46, 64, 84]; // développement moyen des managers IA selon la ligue
   const BOT_NAMES = ['Apex Racing', 'Scuderia Lumière', 'Vortex GP', 'Nordic Speed', 'Team Kerb', 'Blue Comet', 'Atlas Motorsport', 'Riviera F1', 'Phoenix Racing', 'Iron Horse GP',
     'Sakura Speed', 'Andes Racing', 'Celtic Motorsport', 'Orbit Team', 'Velocity Works', 'Gaucho Racing', 'Alpine Wolf', 'Tidewater GP', 'Crimson Arrow', 'Zenith Racing', 'Boreal F1', 'Midnight Motorsport'];
   function botField(mk, league, dayKey) {
@@ -357,7 +364,7 @@
       // plus la ligue est haute, plus les managers IA roulent sur de bons châssis
       const li = LEAGUES.indexOf(league);
       const n = mk.chassis.length; // châssis triés du plus cher au moins cher
-      const ranges = [[n - 6, n], [n - 9, n], [0, n], [0, 8], [0, 6], [0, 4]];
+      const ranges = [[0, n], [0, n], [0, n], [0, 8], [0, 6], [0, 4]];
       const [a, b] = ranges[li].map((x) => Math.max(0, Math.min(n, x)));
       const c = mk.chassis[a + Math.floor(r() * Math.max(1, b - a))];
       const lv = () => Math.round(league.bot[0] + r() * (league.bot[1] - league.bot[0]));
@@ -497,13 +504,6 @@
     const pc = Math.round((dnf ? DNF_PC : PC_TABLE[pos - 1] ?? 2) * league.mult);
     return { lp, pc };
   }
-  // Récompense en PitCoins d'un pari gagné
-  function betReward(bet) {
-    const gain = (bet.payout || 0) - bet.stake;
-    if (bet.status !== 'won' || gain <= 0) return 0;
-    return clamp(Math.round(4 + gain / 10 + ((bet.effOdds || bet.odds) >= 5 ? 10 : 0)), 5, 80);
-  }
-
   /* ---------- Objectifs du jour ---------- */
   const OBJECTIVES = [
     { id: 'races3', txt: 'Disputer 3 courses', k: 'races', goal: 3, pc: 25 },
@@ -528,6 +528,6 @@
     MAX_LV, LV_GAIN, LV_NAME, lvCum, partLevel, levelCost, MECH, tunnelChance, branchPackage, carRating, OBJECTIVES, dailyObjectives,
     START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, PC_TABLE,
     RD_CATS, RD_PARTS, RD_BY_ID, rdBranches, partState, partsBonus,
-    market, carStats, withSetup, carScore, bestSetup, compat, circuitProfile, botField, simulate, rewards, betReward, hash, TALENT,
+    market, carStats, withSetup, carScore, bestSetup, compat, circuitProfile, botField, simulate, rewards, hash, TALENT,
   };
 })(globalThis.F1 = globalThis.F1 || {});

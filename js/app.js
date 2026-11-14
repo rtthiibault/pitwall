@@ -200,7 +200,13 @@
       default: html = pageHome();
     }
     app.innerHTML = sourceNotice() + html;
-    app.classList.remove('fade-in'); void app.offsetWidth; app.classList.add('fade-in');
+    const newPage = location.hash.replace(/^#\/?/, '') !== lastPath;
+    app.classList.remove('fade-in');
+    if (newPage) { void app.offsetWidth; app.classList.add('fade-in'); }
+    // 3. fond du mode manager teinté aux couleurs du châssis équipé
+    const mch = r === 'manager' ? F1.store.mgr().chassis : null;
+    document.body.classList.toggle('mgr-bg', !!mch);
+    if (mch) document.body.style.setProperty('--mgr', F1.teamColor(mch.id));
     afterRender(r, parts);
     if (S.series === 'wec' && r !== 'manager') wecText(app);
     F1.visuals.hydrate(app);
@@ -865,18 +871,6 @@
     const bots = MG().botField(mk, league, `${F1.store.dayKey()}-${race ? race.round : 0}`);
     return { m, mk, race, w, drvM, ch, car, league, bots, tb, wxIn };
   }
-  // Position moyenne attendue : 150 courses simulées contre le plateau IA du jour (mêmes graines -> stable)
-  function expectedPos(ctx, setup) {
-    const player = { name: 'x', driver: ctx.drvM, car: ctx.car, setup };
-    let sum = 0, wins = 0, pod = 0; const N = 150;
-    for (let k = 0; k < N; k++) {
-      const me = MG().simulate({ player, bots: ctx.bots, race: ctx.race, seed: 1000 + k * 7919, ...ctx.wxIn }).final.find((x) => x.i === 0);
-      sum += me.pos; if (me.pos === 1 && !me.out) wins++; if (me.pos <= 3 && !me.out) pod++;
-    }
-    return { avg: Math.round((sum / N) * 10) / 10, win: wins / N, pod: pod / N };
-  }
-  const expTxt = (e) => `P${fmt(e.avg, 1)}`;
-  const expSub = (e) => `en moyenne · victoire ${pct(e.win)} · podium ${pct(e.pod)}`;
   const statBar = (label, val, base, color, icon = '') => `<div class="sbar"><div class="sbar-h"><span>${icon} ${label}</span><b class="num">${Math.round(val)}</b></div><div class="sbar-t"><i style="width:${Math.min(100, base)}%;background:${color}"></i><i class="up" style="width:${Math.max(0, Math.min(100, val) - Math.min(100, base))}%"></i></div></div>`;
   const leagueBadge = (L, cls = '') => `<span class="lbadge ${cls}" style="--lc:${L.color}">${L.icon} ${L.name}</span>`;
   const resaleD = (ctx) => (ctx.m.driver ? Math.round(((ctx.drvM ? ctx.drvM.price : ctx.m.driver.price) * 0.7) / 5) * 5 : 0);
@@ -915,13 +909,11 @@
       const step = (ok, n, title, txt, href, cta) => `<div class="card mstep ${ok ? 'ok' : ''}"><div class="mnum">${ok ? '✓' : n}</div><h3>${title}</h3><div class="sub">${txt}</div>${ok ? '' : `<a class="btn sm" style="margin-top:14px" href="${href}">${cta}</a>`}</div>`;
       return `<div class="card mintro"><div style="font-size:42px">🏗️</div><h3 style="font-size:22px">Montez votre écurie</h3>
         <p class="muted">Vous démarrez avec <b>${fmtPC(MG().START_PC)}</b> mais sans pilote ni voiture. Les meilleurs pilotes et châssis coûtent cher : à vous de trouver le bon compromis, puis de développer la voiture.</p>
-        <p class="muted" style="font-size:14px">💡 Gagnez des PitCoins en <b>réussissant vos paris</b> (chaque pari gagné rapporte) et en <b>courant</b> en mode manager.</p></div>
+        <p class="muted" style="font-size:14px">💡 Les PitCoins se gagnent uniquement en <b>courant</b> en mode manager : chaque course rapporte, même en fond de grille.</p></div>
         <div class="grid g3" style="margin-top:16px">${step(!!drvM, 1, 'Recruter un pilote', drvM ? drvM.name : 'De 35 PC (rookies) à 180 PC (les cracks).', '#/manager/pilotes', 'Voir le marché')}
         ${step(!!ch, 2, 'Acheter un châssis', ch ? ch.name : 'De 60 PC à 250 PC selon le niveau de l\'écurie.', '#/manager/chassis', 'Voir les châssis')}
         ${step(false, 3, 'Courir !', `${F1.store.racesPerDay()} courses simulées par jour, sur le circuit du prochain Grand Prix.`, '#', '')}</div>`;
     }
-    const exp = expectedPos(ctx, m.setup);
-    const best = MG().bestSetup(car, w);
     const left = F1.store.racesLeft();
     const prog = nl ? ((m.lp - league.min) / (nl.min - league.min)) * 100 : 100;
     const p = F1.visuals.portrait(drvM.id);
@@ -938,14 +930,12 @@
             ${statBar('Pilote', drvM.rating, drvM.rating, 'var(--gold)', '👤')}
           </div>${mechChips(car)}<div class="row" style="margin-top:12px"><span class="chip">🏎️ Note voiture <b style="margin-left:4px">${MG().carRating(car)}</b></span><a class="btn sm ghost" href="#/manager/rd">🔬 R&D</a><a class="btn sm ghost" href="#/manager/muret">🎧 Muret</a><a class="btn sm ghost" href="#/manager/garage">🧰 Garage</a></div></div></div>
       <div class="grid g2" style="margin-top:16px">
-        <div class="card"><div class="market-h"><div><h3>${flag(race.iso, 'sm')} ${esc(race.nameFr)}</h3><div class="sub">Circuit des courses manager · ${esc(w.kind)}</div></div></div>
-          <div class="cprof">${[['⚡ Vitesse', w.speed], ['🌀 Appui', w.df], ['🔧 Fiabilité', w.rel]].map(([l, v]) => `<div><small>${l}</small><div class="sbar-t"><i style="width:${v * 100 / 0.7}%;background:var(--red2)"></i></div><b>${Math.round(v * 100)} %</b></div>`).join('')}</div>
-          <div class="notice" style="margin-top:12px;font-size:13px">💡 ${esc(w.tip)}</div>
+        <div class="card"><div class="market-h"><div><h3>${flag(race.iso, 'sm')} ${esc(race.nameFr)}</h3><div class="sub">Circuit des courses manager · ${esc(race.circuit)}</div></div></div>
+          <div class="ctraits">${w.traits.map(([l, v]) => `<div><small>${l}</small><b>${v}</b></div>`).join('')}</div>
           <div style="margin-top:16px"><div class="row" style="justify-content:space-between"><b style="font-size:14px">Réglage aéro du week-end</b><span class="chip" id="setupLbl">${setupLbl(m.setup)}</span></div>
             <input type="range" id="setupIn" min="-1" max="1" step="0.05" value="${m.setup}" class="slider">
             <div class="row" style="justify-content:space-between;font-size:12px" class="muted"><span class="muted">⚡ Faible appui</span><span class="muted">🌀 Fort appui</span></div></div>
-          <div class="grid g2" style="margin-top:14px;gap:10px"><div class="stat"><small>Indice voiture</small><b id="cIdx">${MG().compat(car, w, m.setup)}</b></div><div class="stat"><small>Position estimée</small><b id="cPos">${expTxt(exp)}</b><span class="muted" style="font-size:12px" id="cPosSub">${expSub(exp)}</span></div></div>
-          ${Math.abs(best - m.setup) > 0.25 ? '<div class="muted" style="font-size:12px;margin-top:8px" id="setupHint">Votre réglage n\'est pas optimal pour ce circuit : testez l\'autre sens du curseur.</div>' : '<div class="muted" style="font-size:12px;margin-top:8px" id="setupHint">👌 Réglage adapté à ce circuit.</div>'}
+          <div class="muted" style="font-size:12px;margin-top:10px">À vous de juger : aucun réglage n'est conseillé. Le résultat se verra en course.</div>
         </div>
         <div class="card league-card" style="--lc:${league.color}"><div class="market-h"><div><h3>Ligue ${esc(league.name)}</h3><div class="sub">Gains ×${league.mult} · plateau de ${MG().FIELD - 1} managers IA</div></div>${leagueBadge(league, 'lg')}</div>
           <div style="margin-top:14px"><div class="row" style="justify-content:space-between;font-size:13px"><span>${fmt(m.lp)} LP</span><span class="muted">${nl ? `${nl.icon} ${nl.name} à ${nl.min} LP` : 'Sommet atteint !'}</span></div><div class="ptsbar" style="height:10px;margin-top:6px"><i style="width:${prog}%;background:linear-gradient(90deg,var(--lc),#fff)"></i></div></div>
@@ -1281,7 +1271,7 @@
       <tr><td>LP</td>${[1, 2, 3, 4, 5, 6, 8, 10, 15, 20].map((p) => `<td class="c"><span class="gain ${MG().LP_TABLE[p - 1] >= 0 ? 'up' : 'down'}">${MG().LP_TABLE[p - 1] > 0 ? '+' : ''}${MG().LP_TABLE[p - 1]}</span></td>`).join('')}<td class="c"><span class="gain down">−8</span></td></tr>
       <tr><td>PitCoins</td>${[1, 2, 3, 4, 5, 6, 8, 10, 15, 20].map((p) => `<td class="c num">${Math.round(MG().PC_TABLE[p - 1] * league.mult)}</td>`).join('')}<td class="c num">${Math.round(league.mult)}</td></tr></tbody></table>`;
     return `<div class="grid g2"><div class="card"><h3>Échelle des ligues</h3><div class="sub">Vos points de ligue (LP) montent ou descendent à chaque course. Passez un palier pour être promu : les gains augmentent, les adversaires aussi.</div><div class="ladder">${ladder}</div></div>
-      <div class="grid" style="align-content:start"><div class="card"><h3>Barème (ligue ${esc(league.name)})</h3><div class="table-wrap" style="margin-top:8px">${table}</div><div class="muted" style="font-size:12px;margin-top:8px">Record personnel : ${fmt(m.best)} LP. Les PitCoins gagnés aux paris s'ajoutent en plus.</div></div>
+      <div class="grid" style="align-content:start"><div class="card"><h3>Barème (ligue ${esc(league.name)})</h3><div class="table-wrap" style="margin-top:8px">${table}</div><div class="muted" style="font-size:12px;margin-top:8px">Record personnel : ${fmt(m.best)} LP.</div></div>
       <div class="card"><h3>🌍 Classement des managers</h3><div id="mgrBoard" class="plist"><div class="skeleton" style="height:60px"></div></div></div></div></div>`;
   }
   function mountManager(tab) {
@@ -1293,13 +1283,7 @@
       pu.addEventListener('click', (e) => { const t = e.target.closest('.pu-tag'); if (!t) return; const p = MG().RD_PARTS.find((x) => F1.car3d.PU_OF[x.id] === t.dataset.pu && MG().partState(x, F1.store.mgr().parts) !== 'unknown'); if (p) { S.rdCat = p.cat; S.rdSel = p.id; rdRefresh(); } else if (pu.__pu) pu.__pu.part(t.dataset.pu); });
     }
     const si = $('#setupIn');
-    if (si) si.addEventListener('input', () => {
-      const ctx = mgrCtx(); const v = +si.value;
-      $('#cIdx').textContent = MG().compat(ctx.car, ctx.w, v);
-      const e = expectedPos(ctx, v); $('#cPos').textContent = expTxt(e); $('#cPosSub').textContent = expSub(e);
-      $('#setupLbl').textContent = v <= -0.35 ? 'Faible appui (vitesse)' : v >= 0.35 ? 'Fort appui (virages)' : 'Réglage médian';
-      $('#setupHint').innerHTML = Math.abs(MG().bestSetup(ctx.car, ctx.w) - v) > 0.25 ? 'Votre réglage n\'est pas optimal pour ce circuit : testez l\'autre sens du curseur.' : '👌 Réglage adapté à ce circuit.';
-    });
+    if (si) si.addEventListener('input', () => { const v = +si.value; $('#setupLbl').textContent = v <= -0.35 ? 'Faible appui (vitesse)' : v >= 0.35 ? 'Fort appui (virages)' : 'Réglage médian'; });
     if (si) si.addEventListener('change', () => F1.store.setSetup(+si.value));
     const board = $('#mgrBoard');
     if (board) {
@@ -1344,14 +1328,12 @@
     const sg = MG().staffOf(ctx.m, 'st');
     const range = 1 + MG().garageLevel(ctx.m, 'radar') + (sg && sg.tier >= 4 ? 1 : 0);
     const wxCls = (x) => (x.rain > 0.6 ? 'heavy' : x.rain > 0.25 ? 'rain' : x.rain > 0.05 ? 'drizzle' : x.wet > 0.35 ? 'wet' : x.cloud > 0.5 ? 'cloud' : 'dry');
-    const use3d = F1.car3d && F1.car3d.supported;
     $('#modal').innerHTML = `<div class="modal race-modal"><div class="modal-box race-box">
       <div class="race-h"><div><div class="muted upper" style="font-size:11px;font-weight:700">${leagueBadge(leagueBefore)} · ${esc(ctx.race.nameFr)}</div><div class="race-lap">Tour <b id="lapN">0</b> / ${LAPS}</div></div>
         <div class="wx-now" id="wxNow"></div>
         <div class="row" style="gap:6px;flex-wrap:nowrap"><button class="btn sm ghost" data-action="race-speed">×1</button><button class="btn sm ghost" data-action="m-skip">Passer ⏭</button></div></div>
       <div id="raceEnd"></div>
-      <div class="race-stage ${use3d ? '' : 'off'}"><div class="race-3d" id="race3d"></div>
-        <div class="race-cams">${[['tv', '📺 TV'], ['onboard', '🎥 Embarquée'], ['heli', '🚁 Hélico'], ['map', '🗺️ Circuit']].map(([k, l], i) => `<button class="${i ? '' : 'on'}" data-action="race-cam" data-c="${k}">${l}</button>`).join('')}</div>
+      <div class="race-stage"><div class="race-map" id="raceMap"></div>
         <div class="race-flag" id="raceFlag"></div><div class="race-tyre" id="raceTyre"></div></div>
       <div class="wx-strip" id="wxStrip" title="Radar météo : ${range} tour${range > 1 ? 's' : ''} de prévision (améliorez la station météo du garage pour voir plus loin)">${res.weather.slice(1).map((x, i) => `<i data-l="${i + 1}"></i>`).join('')}</div>
       <div class="race-body"><div class="tower" style="height:${res.field.length * ROW}px">${tower}</div><div class="feed" id="feed"><div class="ev"><b>Départ</b> — vous partez P${meX.grid} sur la grille${res.weather[0].wet > 0.35 ? ', sur piste mouillée en pneus pluie' : ''}</div></div></div>
@@ -1404,7 +1386,6 @@
         ${promo ? `<div class="promo">🎉 PROMOTION ! Bienvenue en ligue ${Lnow.icon} ${Lnow.name} (gains ×${Lnow.mult})</div>` : demo ? `<div class="promo down">Relégation en ligue ${Lnow.icon} ${Lnow.name}. Améliorez la voiture et revenez plus fort !</div>` : ''}
         <div class="row" style="justify-content:center;margin-top:12px"><button class="btn ghost sm" data-action="m-close">Fermer</button>${F1.store.racesLeft() > 0 ? `<button class="btn sm" data-action="m-again">🚦 Nouvelle course (${F1.store.racesLeft()} restante${F1.store.racesLeft() > 1 ? 's' : ''})</button>` : ''}</div></div>`;
       $('[data-action="m-skip"]').style.display = 'none'; $('[data-action="race-speed"]').style.display = 'none';
-      if (S.race3d) { S.race3d.setCam('map'); $$('[data-action="race-cam"]').forEach((b) => b.classList.toggle('on', b.dataset.c === 'map')); }
       const box = $('.race-box'); if (box) box.scrollTop = 0;
       if (!me.out && me.pos <= 3) confetti(me.pos === 1 ? 220 : 90);
       if (promo) setTimeout(() => confetti(260), 400);
@@ -1412,17 +1393,13 @@
     };
     S.raceFinish = finish;
     wx(0);
-    // scène 3D : circuit, voitures, météo, accidents
-    const go3d = () => {
-      const el = $('#race3d'); if (!el || S.race3d || !F1.race3d) return;
-      try {
-        S.race3d = F1.race3d.mount(el, {
-          res, seedStr: ctx.race.circuitId || ctx.race.nameFr, colorOf, getT: () => T, lapSec: LAP_MS / 1000,
-          onIncident: (x, out) => showFlag(out.crash ? `🟡 DRAPEAU JAUNE · accident de <b>${esc(x.c.me ? 'votre voiture' : x.name)}</b>` : `💨 ${esc(out.why)} · <b>${esc(x.c.me ? 'votre voiture' : x.name)}</b> s'arrête`, out.crash ? 'yellow' : 'mech'),
-        });
-      } catch (e) { console.warn(e); const st = $('.race-stage'); if (st) st.classList.add('off'); }
-    };
-    if (use3d) { if (F1.race3d) go3d(); else window.addEventListener('race3d-ready', go3d, { once: true }); }
+    // carte 2D : tracé du circuit et un point par voiture
+    try {
+      S.raceMap = F1.racemap.mount($('#raceMap'), {
+        res, seedStr: ctx.race.circuitId || ctx.race.nameFr, colorOf, getT: () => T, lapSec: LAP_MS / 1000,
+        onIncident: (x, out) => showFlag(out.crash ? `🟡 DRAPEAU JAUNE · accident de <b>${esc(x.c.me ? 'votre voiture' : x.name)}</b>` : `💨 ${esc(out.why)} · <b>${esc(x.c.me ? 'votre voiture' : x.name)}</b> s'arrête`, out.crash ? 'yellow' : 'mech'),
+      });
+    } catch (e) { console.warn(e); const st = $('.race-stage'); if (st) st.classList.add('off'); }
     let lastTick = performance.now();
     raceTimer = setInterval(() => {
       // temps réel écoulé (et non nombre de ticks) : la course garde son rythme même sur un appareil lent
@@ -1562,7 +1539,7 @@
     let anyWin = false;
     settled.forEach((b) => {
       setTimeout(() => {
-        if (b.status === 'won') { anyWin = true; toast('🏆', `Pari gagné ! <b>+${fmtJ(b.payout)}</b> jetons (cote ${fmtOdds(b.effOdds || b.odds)})${b.pcReward ? ` · <b>+${b.pcReward} PitCoins</b>` : ''}`, 'win', 6000); }
+        if (b.status === 'won') { anyWin = true; toast('🏆', `Pari gagné ! <b>+${fmtJ(b.payout)}</b> jetons (cote ${fmtOdds(b.effOdds || b.odds)})`, 'win', 6000); }
         else if (b.status === 'lost') toast('😬', `Pari perdu : ${esc(b.legs.length > 1 ? 'combiné × ' + b.legs.length : b.legs[0].label)}`, '', 4000);
         else toast('↺', 'Pari remboursé (sélection annulée)', '', 4000);
       }, delay);
@@ -1596,7 +1573,7 @@
     $('#modal').innerHTML = `<div class="modal" data-action="modal-bg"><div class="modal-box">${html}</div></div>`;
     const f = $('#modal input'); if (f) setTimeout(() => f.focus(), 50);
   }
-  const closeModal = () => { if (raceTimer) { clearInterval(raceTimer); raceTimer = null; } if (S.race3d) { S.race3d.dispose(); S.race3d = null; } const wasRace = !!$('#modal .race-modal'); $('#modal').innerHTML = ''; if (wasRace && /^#\/manager/.test(location.hash)) route(); };
+  const closeModal = () => { if (raceTimer) { clearInterval(raceTimer); raceTimer = null; } if (S.raceMap) { S.raceMap.dispose(); S.raceMap = null; } const wasRace = !!$('#modal .race-modal'); $('#modal').innerHTML = ''; if (wasRace && /^#\/manager/.test(location.hash)) route(); };
   function welcome() {
     modal(`<div style="font-size:42px">🏎️</div><h2>Bienvenue au muret des stands</h2>
       <p class="muted">PITWALL est un jeu de pronostics <b>gratuit</b> sur la Formule 1. Vous démarrez avec <b style="color:var(--gold)">${fmt(F1.store.START)} jetons virtuels</b> et recevez une prime à chaque Grand Prix. Les cotes sont recalculées après chaque course à partir des résultats officiels, et vos paris sont réglés automatiquement.</p>
@@ -1699,7 +1676,6 @@
       case 'staff-hire': { try { const x = F1.store.hireStaff(a.dataset.r, a.dataset.id); toast('🎧', `<b>${esc(x.name)}</b> rejoint votre muret des stands !`, 'win'); confetti(80); showAchievements(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'garage-zone': S.garageZone = a.dataset.z; route(); break;
       case 'garage-up': { try { const g = MG().GARAGE_BY_ID.get(a.dataset.id); const l = F1.store.upgradeGarage(a.dataset.id); toast(g.icon, `<b>${esc(g.name)}</b> : niveau ${l} installé au garage`, 'win'); if (l >= MG().MAX_LV) confetti(120); showAchievements(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
-      case 'race-cam': if (S.race3d) { S.race3d.setCam(a.dataset.c); $$('[data-action="race-cam"]').forEach((b) => b.classList.toggle('on', b === a)); } break;
       case 'race-speed': S.raceSpeed = S.raceSpeed === 1 ? 2 : S.raceSpeed === 2 ? 4 : 1; a.textContent = '×' + S.raceSpeed; break;
       case 'rd-sel': S.rdSel = a.dataset.p || null; rdRefresh(); break;
       case 'rd-buy': {

@@ -27,8 +27,7 @@ Site de paris **à jetons virtuels** sur la Formule 1. Il est 100 % statique (HT
 
 ## Mode manager (page « Écurie »)
 - **PitCoins (PC)** : c'est une seconde monnaie, séparée des jetons de paris. On démarre avec 300 PC, sans pilote ni voiture.
-  - **Chaque pari gagné rapporte** de 5 à 80 PC, selon le bénéfice, avec un bonus si la cote est d'au moins 5.
-  - **Les courses du mode manager rapportent** aussi des PC, selon la position et la ligue.
+  - **Les PitCoins ne se gagnent qu'en mode manager** : chaque course rapporte selon la position et la ligue (même en fond de grille), ainsi que les objectifs du jour. Les paris ne rapportent que des jetons.
 - **Marché des pilotes** : la note de chaque pilote combine un talent de base (`TALENT` dans `js/manager.js`) et sa **forme réelle** de la saison. La note et le prix sont donc mis à jour chaque semaine (de 35 PC pour un rookie à 180 PC pour Verstappen). Chaque pilote a trois caractéristiques : Rythme, Combativité, Régularité.
 - **Châssis** : de 60 à 250 PC, selon le niveau réel de l'écurie. Chacun a son profil de Vitesse de pointe, Appui aérodynamique et Fiabilité (`TEAM_PROFILE`).
 - **Transferts** : un pilote ou un châssis se revend à 70 % de sa valeur. Changer de châssis remet la R&D à zéro, mais rembourse 50 % de l'argent investi.
@@ -49,13 +48,13 @@ Site de paris **à jetons virtuels** sur la Formule 1. Il est 100 % statique (HT
   - **Comparaison** : vos caractéristiques sont comparées à la moyenne des managers de votre ligue.
 - **Muret des stands** (onglet Muret) : 5 postes (team principal, directeur technique, ingénieur de course, stratège, chef mécanicien), 5 candidats fictifs par poste. Chaque recrue apporte des bonus (PitCoins, coût de R&D, pneus, stratégie, arrêts au stand). `STAFF_ROLES` et `STAFF` dans `js/manager.js`.
 - **Garage** (onglet Garage) : 20 équipements à 5 niveaux en 4 zones (voie des stands, box et mécaniciens, ingénierie, usine). Les équipements installés et les mécaniciens apparaissent dans la scène du garage. `GARAGE` dans `js/manager.js`.
-- **Course en 3D** (`js/race3d.js`) : circuit stylisé généré à partir du profil du circuit, 20 monoplaces, 4 caméras (TV, embarquée, hélico, vue du circuit), départ aux feux, voiture de sécurité, accidents (sortie dans le mur de pneus) et pannes (fumée, flammes).
+- **Course en vue 2D** (`js/racemap.js`) : tracé stylisé du circuit et un point par voiture aux couleurs de son écurie, qui avance selon son rythme, ses arrêts au stand et son classement. Départ aux feux, voiture de sécurité, accidents et pannes signalés sur la carte.
 - **Météo en direct** : pluie et humidité de la piste évoluent tour par tour (`weatherTimeline`), à partir de la prévision réelle du prochain Grand Prix quand elle est disponible. Pneus pluie ou slicks : le stratège et la station météo décident de la vitesse de réaction. Un radar affiche les tours à venir.
 - **Stratégie** :
   - Chaque circuit a un profil (`CIRCUIT`) : Monza demande de la vitesse, Monaco de l'appui, Singapour de la fiabilité…
   - Les courses se disputent sur le circuit du **prochain Grand Prix réel**.
   - Un **réglage aéro** (faible ou fort appui) s'ajuste avant chaque course.
-  - Le site affiche l'indice de la voiture et la **position moyenne estimée**, calculée sur 150 courses simulées.
+  - Aucun conseil n'est donné : le site décrit seulement le tracé (lignes droites, virages lents, contraintes mécaniques).
 - **Moteur de course** : 20 tours contre 19 managers IA. La performance combine le niveau du pilote, les caractéristiques de la voiture avec les améliorations et la compatibilité avec le circuit, plus une part d'aléa :
   - la forme du jour ;
   - les qualifications, puis l'écart sur la grille au départ ;
@@ -183,7 +182,7 @@ Ouvrez ensuite http://localhost:8000.
 | `js/store.js` | Portefeuille, paris, succès (localStorage) |
 | `js/app.js` | Interface : pages, ticket, graphiques, animations |
 | `js/wec.js` | Championnat WEC : calendrier, plateau Hypercar, lecture des résultats (`data/wec/<année>.json`) |
-| `js/race3d.js` | Course manager en 3D : circuit, voitures, météo, incidents |
+| `js/racemap.js` | Course manager en vue 2D : tracé du circuit et un point par voiture (canvas) |
 | `js/fx.js` | Effets course auto : drapeau à damier entre les onglets, étincelles au clic, lignes de vitesse, apparitions en cascade, vibreur de navigation |
 
 Pour ajuster le modèle : `TEAM_PRIOR` (niveau supposé des écuries en début de saison) se trouve dans `data.js`, et les exposants et l'effet de la grille dans `model.js`. La marge du « bookmaker » se règle par marché dans `markets.js` (`margin`).

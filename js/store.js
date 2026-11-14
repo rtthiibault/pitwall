@@ -103,8 +103,6 @@
       state.balance = Math.round((state.balance + bet.payout) * 100) / 100;
       settled.push(bet);
       if (bet.status === 'won') {
-        const pcGain = F1.manager ? F1.manager.betReward(bet) : 0;
-        if (pcGain) { bet.pcReward = pcGain; addPC(pcGain, 'Pari gagné'); }
         unlock('win1');
         if (bet.legs.length >= 3) unlock('combo');
         if (bet.effOdds >= 10) unlock('long');

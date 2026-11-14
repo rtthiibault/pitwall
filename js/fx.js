@@ -81,42 +81,6 @@
     requestAnimationFrame(draw);
   }
 
-  /* ---------- Étincelles (titane sous le fond plat) au clic ---------- */
-  const parts = [];
-  let sctx = null, scv = null, sRaf = 0;
-  function sparks(x, y, n = 18, hue = 38) {
-    if (reduce) return;
-    if (!scv) { scv = document.getElementById('sparks'); sctx = scv.getContext('2d'); }
-    const q = Math.min(2, window.devicePixelRatio || 1);
-    if (scv.width !== Math.round(innerWidth * q)) { scv.width = Math.round(innerWidth * q); scv.height = Math.round(innerHeight * q); }
-    for (let i = 0; i < n; i++) {
-      const a = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.5, v = 180 + Math.random() * 420;
-      parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0.35 + Math.random() * 0.4, age: 0, h: hue + Math.random() * 18 });
-    }
-    if (!sRaf) { let pt = performance.now(); const step = (now) => {
-      const dt = Math.min(0.04, (now - pt) / 1000); pt = now;
-      sctx.setTransform(q, 0, 0, q, 0, 0); sctx.clearRect(0, 0, innerWidth, innerHeight);
-      sctx.globalCompositeOperation = 'lighter'; sctx.lineCap = 'round';
-      for (let i = parts.length - 1; i >= 0; i--) {
-        const p = parts[i]; p.age += dt;
-        if (p.age > p.life) { parts.splice(i, 1); continue; }
-        const ox = p.x, oy = p.y; p.vy += 900 * dt; p.vx *= 0.985; p.x += p.vx * dt; p.y += p.vy * dt;
-        const k = 1 - p.age / p.life;
-        sctx.strokeStyle = `hsla(${p.h},100%,${60 + 30 * k}%,${k})`; sctx.lineWidth = 1 + 1.6 * k;
-        sctx.beginPath(); sctx.moveTo(ox - p.vx * dt * 1.5, oy - p.vy * dt * 1.5); sctx.lineTo(p.x, p.y); sctx.stroke();
-      }
-      sctx.globalCompositeOperation = 'source-over';
-      sRaf = parts.length ? requestAnimationFrame(step) : 0;
-      if (!sRaf) sctx.clearRect(0, 0, innerWidth, innerHeight);
-    }; sRaf = requestAnimationFrame(step); }
-  }
-  document.addEventListener('pointerdown', (e) => {
-    const t = e.target.closest('.odd, .btn, .slip-fab, .tab, .rd-part, .chips button, .seg button, .seg a');
-    if (!t) return;
-    const gold = t.classList.contains('gold') || t.classList.contains('odd');
-    sparks(e.clientX, e.clientY, t.classList.contains('odd') ? 14 : 20, gold ? 40 : 18);
-  }, { passive: true });
-
   /* ---------- Lignes de vitesse quand on fait défiler vite ---------- */
   let lastY = scrollY, lastT = performance.now(), speedV = 0, slRaf = 0;
   const sl = () => document.getElementById('speedLines');
@@ -161,5 +125,5 @@
   }
   window.addEventListener('resize', navIndicator);
 
-  F1.fx = { flagWipe, sparks, reveal, navIndicator, reduce };
+  F1.fx = { flagWipe, reveal, navIndicator, reduce };
 })(window.F1 = window.F1 || {});
