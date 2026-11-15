@@ -114,7 +114,9 @@
         const Tc = out ? Math.min(T, out.T) : T;
         const Lc = Math.min(LAPS - 1, Math.floor(Tc)), kc = Tc - Lc;
         const gap = lerp(a[Math.min(a.length - 1, Lc)], a[Math.min(a.length - 1, Lc + 1)], out && Lc >= out.lap - 1 ? 0 : kc);
-        const prog = Tc - gap / LT;
+        const loss = c.x.pitLoss || {};
+        let prog = Tc - (gap - (out ? 0 : (loss[Lc + 1] || 0) * kc)) / LT, held = false;
+        if (!out && loss[Lc]) { const stop = Lc - (a[Math.min(a.length - 1, Lc)] - loss[Lc]) / LT; if (prog < stop) { prog = stop; held = true; } }
         let off = ((c.x.i * 7) % 5 - 2) * 1.3, state = 'run', fade = 1;
         if (out && T > out.T) {
           const sec = (T - out.T) * lapSec;
@@ -123,7 +125,8 @@
         } else {
           // arrêt au stand : la voiture passe par la voie des stands à la fin du tour concerné
           const lapNo = Math.floor(prog) + 1, u = prog - Math.floor(prog);
-          if ((pits.includes(lapNo) && u > 0.945) || (pits.includes(lapNo - 1) && u < 0.055)) { off = PIT * Math.min(1, (0.055 - Math.min(Math.abs(u - 1), u)) / 0.02 + 0.2); state = 'pit'; }
+          if (held) { off = PIT; state = 'pit'; }
+          else if ((pits.includes(lapNo) && u > 0.945) || (pits.includes(lapNo - 1) && u < 0.055)) { off = PIT * Math.min(1, (0.055 - Math.min(Math.abs(u - 1), u)) / 0.02 + 0.2); state = 'pit'; }
           if (prog > lead) lead = prog;
         }
         if (fade > 0) dots.push({ c, p: at(prog, off), state, fade, prog });

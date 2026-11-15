@@ -35,7 +35,7 @@
   function blank() {
     return { v: 1, name: '', created: Date.now(), balance: START, bets: [], claimed: {}, rescues: {}, ach: {}, history: [{ t: Date.now(), b: START }], manager: blankManager() };
   }
-  const blankManager = () => ({ pc: (F1.manager && F1.manager.START_PC) || 300, driver: null, chassis: null, ups: { speed: 0, df: 0, rel: 0 }, parts: {}, rdSpent: 0, setup: 0, lp: 0, best: 0, races: [], day: { key: '', n: 0 }, log: [], staff: {}, garage: {}, fails: {}, daily: { key: '' }, drvXp: {}, next: { seed: (Math.random() * 4294967296) >>> 0, tyre: 'M' } });
+  const blankManager = () => ({ pc: (F1.manager && F1.manager.START_PC) || 300, driver: null, chassis: null, ups: { speed: 0, df: 0, rel: 0 }, parts: {}, rdSpent: 0, setup: 0, lp: 0, best: 0, races: [], day: { key: '', n: 0 }, log: [], staff: {}, garage: {}, fails: {}, daily: { key: '' }, drvXp: {}, next: { seed: (Math.random() * 4294967296) >>> 0, tyre: 'M', plan: { stops: [{ lap: 9, tyre: 'H' }] } } });
   function load() {
     try { state = JSON.parse(localStorage.getItem(KEY)); } catch (e) { state = null; }
     if (!state || state.v !== 1) state = blank();
@@ -53,6 +53,7 @@
     if (m.day && m.day.n > cap) m.day.n = cap;
     if (!m.next || typeof m.next.seed !== 'number') m.next = { seed: (Math.random() * 4294967296) >>> 0, tyre: 'M' };
     if (!['S', 'M', 'H', 'I', 'W'].includes(m.next.tyre)) m.next.tyre = 'M';
+    if (!m.next.plan || !Array.isArray(m.next.plan.stops)) m.next.plan = { stops: [{ lap: 9, tyre: 'H' }] };
     if (!m.garage) m.garage = {};
     return state;
   }
@@ -293,6 +294,7 @@
   function racesPerDay() { return (F1.manager ? F1.manager.RACES_PER_DAY + F1.manager.teamBonus(mgr()).races : 2); }
   function racesLeft() { const m = mgr(); return racesPerDay() - (m.day.key === dayKey() ? m.day.n : 0); }
   function setTyre(t) { mgr().next.tyre = t; save(); }
+  function setPlan(stops) { mgr().next.plan = { stops: stops.slice(0, 2) }; save(); }
   // Une course lancée est décomptée tout de suite : on ne peut pas l'annuler en fermant la fenêtre
   function consumeRace() {
     const m = mgr();
@@ -301,7 +303,7 @@
   }
   function recordRace(r) {
     const m = mgr();
-    m.next = { seed: (Math.random() * 4294967296) >>> 0, tyre: m.next.tyre };   // nouvelle météo pour la course suivante
+    m.next = { seed: (Math.random() * 4294967296) >>> 0, tyre: m.next.tyre, plan: m.next.plan };   // nouvelle météo pour la course suivante
     const before = m.lp;
     m.lp = Math.max(0, m.lp + r.lp);
     m.best = Math.max(m.best, m.lp);
@@ -336,5 +338,5 @@
   function reset() { const n = get().name; state = blank(); state.name = n; save(); }
   const popUnlocked = () => unlocked.splice(0);
 
-  F1.store = { load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, setTyre, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
+  F1.store = { load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
 })(globalThis.F1 = globalThis.F1 || {});

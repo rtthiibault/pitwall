@@ -884,6 +884,39 @@
       <div class="xp-bar"><i style="width:${inPt}%"></i></div>
       <div class="row" style="justify-content:space-between;font-size:12px"><span>Progression <b style="color:var(--win)">+${fmt(e.pts, 1)}</b> <span class="muted">/ +${fmt(e.cap, e.cap % 1 ? 1 : 0)} max</span></span><span class="muted">${e.maxed ? 'Plafond atteint' : `${e.next} XP avant le prochain point`}</span></div></div>`;
   }
+  // Panneau « Préparation du week-end » : météo prévue tour par tour, réglage aéro, pneus de départ et plan d'arrêts
+  function weekendBody(ctx) {
+    const { m, race, w } = ctx, T5 = MG().TYRES, fc = ctx.fc;
+    const fl = MG().forecastLaps(m.next.seed, race);
+    const setupLbl = (v) => (v <= -0.35 ? 'Faible appui (vitesse)' : v >= 0.35 ? 'Fort appui (virages)' : 'Réglage médian');
+    const picker = (act, cur, extra = '') => `<div class="tyre-pick sm">${Object.values(T5).map((t) => `<button class="${t.id === cur ? 'on' : ''}" data-action="${act}" ${extra} data-t="${t.id}" style="--ty:${t.color}" title="${esc(t.name)} — ${esc(t.desc)}"><span class="tyre2">${t.id}</span>${t.short}</button>`).join('')}</div>`;
+    const stops = m.next.plan.stops;
+    const plan = stops.map((p, i) => `<div class="plan-row"><div class="plan-h"><b>Arrêt ${i + 1}</b><span class="plan-lap"><button data-action="plan-lap" data-i="${i}" data-d="-1" aria-label="Plus tôt">−</button><span>tour <b>${p.lap}</b></span><button data-action="plan-lap" data-i="${i}" data-d="1" aria-label="Plus tard">+</button></span>${stops.length > 1 || i > 0 ? `<button class="plan-x" data-action="plan-del" data-i="${i}" aria-label="Retirer cet arrêt">✕</button>` : ''}</div>${picker('plan-tyre', p.tyre, `data-i="${i}"`)}</div>`).join('');
+    const seq = [m.next.tyre, ...stops.map((p) => p.tyre)];
+    const dryOnly = seq.every((t) => MG().isSlick(t)), ok = !dryOnly || new Set(seq).size >= 2;
+    return `<div class="row" style="justify-content:space-between;flex-wrap:nowrap"><div style="min-width:0"><div class="hq-name" style="font-size:18px">${flag(race.iso, 'sm')} ${esc(race.nameFr)}</div><div class="muted" style="font-size:12px">${esc(race.circuit)} · ${MG().LAPS} tours</div></div></div>
+      <div class="bulletin"><span>${fc.icon}</span><div><small>Radar météo · prévision</small><b>${esc(fc.sky)} · ${fc.temp} °C au départ</b></div></div>
+      <div class="fc-strip">${fl.laps.map((x) => `<i class="${x.kind}" title="Tour ${x.lap} : pluie ${x.p} %"></i>`).join('')}</div>
+      <div class="fc-segs">${fl.segs.map((g) => `<span>${g.icon} ${esc(g.txt)}</span>`).join('')}</div>
+      <div class="muted" style="font-size:11px">Prévision à ± 2 tours près : une averse annoncée peut arriver plus tôt, plus tard, ou ne pas venir.</div>
+      <div class="ctraits">${w.traits.map(([l, v]) => `<div><small>${l}</small><b>${v}</b></div>`).join('')}</div>
+      <div style="margin-top:14px"><div class="row" style="justify-content:space-between"><b style="font-size:13px">Réglage aéro</b><span class="chip" id="setupLbl">${setupLbl(m.setup)}</span></div>
+        <input type="range" id="setupIn" min="-1" max="1" step="0.05" value="${m.setup}" class="slider">
+        <div class="row" style="justify-content:space-between;font-size:12px"><span class="muted">⚡ Faible appui</span><span class="muted">🌀 Fort appui</span></div></div>
+      <div class="strat"><div class="strat-h"><b>Stratégie de course</b><span class="strat-seq">${seq.map((t) => tyreDot(t, 'sm')).join('<i>→</i>')}</span></div>
+        <div class="plan-row"><div class="plan-h"><b>Départ</b><span class="muted" style="font-size:12px">${esc(T5[m.next.tyre].name)}</span></div>${picker('tyre-pick', m.next.tyre)}</div>
+        ${plan}
+        ${stops.length < 2 ? '<button class="btn sm ghost plan-add" data-action="plan-add">＋ Ajouter un 2e arrêt</button>' : ''}
+        <div class="rule ${ok ? 'ok' : 'ko'}">${ok ? '✓' : '⚠️'} Règle des 2 composés : sur course sèche, il faut utiliser au moins deux composés secs différents, sinon +${MG().RULE_PENALTY} s à l'arrivée.${ok ? '' : ' <b>Votre plan ne la respecte pas.</b>'}</div>
+        <div class="muted" style="font-size:11px">Le plan s'exécute tout seul en course, mais vous gardez la main au muret : arrêt anticipé, autre composé, rythme.</div></div>`;
+  }
+  function bindSetup() {
+    const si = $('#setupIn');
+    if (!si) return;
+    si.addEventListener('input', () => { const v = +si.value; $('#setupLbl').textContent = v <= -0.35 ? 'Faible appui (vitesse)' : v >= 0.35 ? 'Fort appui (virages)' : 'Réglage médian'; });
+    si.addEventListener('change', () => F1.store.setSetup(+si.value));
+  }
+  function refreshWeekend() { const el = $('.p-week .pnl-b'); if (el) { el.innerHTML = weekendBody(mgrCtx()); bindSetup(); } }
   function mgrHome(ctx, nl) {
     const { m, drvM, ch, car, race, w, league, bots } = ctx;
     if (!drvM || !ch) {
@@ -919,17 +952,7 @@
     const rd = MG().RD_CATS.map((c) => { const ps = all.filter((x) => x.cat === c.id), d = ps.reduce((a, x) => a + lv(x), 0), t = ps.length * MG().MAX_LV; return `<div class="rdl"><span>${c.icon} ${esc(c.name)}</span><div class="ptsbar"><i style="width:${(d / t) * 100}%;background:${c.color}"></i></div><b class="num">${d}<small class="muted">/${t}</small></b></div>`; }).join('')
       + `<div class="row" style="margin-top:10px;gap:6px"><span class="chip">R&D investie ${fmtPC(m.rdSpent)}</span>${ctx.tb.rd ? `<span class="chip green">Coût −${Math.round(ctx.tb.rd * 100)} %</span>` : ''}</div>`;
     // 05 — week-end
-    const fc = ctx.fc, T5 = MG().TYRES;
-    const weekend = `<div class="row" style="justify-content:space-between;flex-wrap:nowrap"><div style="min-width:0"><div class="hq-name" style="font-size:18px">${flag(race.iso, 'sm')} ${esc(race.nameFr)}</div><div class="muted" style="font-size:12px">${esc(race.circuit)}</div></div></div>
-      <div class="bulletin"><span>${fc.icon}</span><div><small>Bulletin météo</small><b>${esc(fc.txt)}</b></div></div>
-      <div class="ctraits">${w.traits.map(([l, v]) => `<div><small>${l}</small><b>${v}</b></div>`).join('')}</div>
-      <div style="margin-top:14px"><div class="row" style="justify-content:space-between"><b style="font-size:13px">Réglage aéro</b><span class="chip" id="setupLbl">${setupLbl(m.setup)}</span></div>
-        <input type="range" id="setupIn" min="-1" max="1" step="0.05" value="${m.setup}" class="slider">
-        <div class="row" style="justify-content:space-between;font-size:12px"><span class="muted">⚡ Faible appui</span><span class="muted">🌀 Fort appui</span></div></div>
-      <div style="margin-top:14px"><div class="row" style="justify-content:space-between"><b style="font-size:13px">Pneus de départ</b><span class="chip" id="tyreLbl">${T5[m.next.tyre].name}</span></div>
-        <div class="tyre-pick" id="tyrePick">${Object.values(T5).map((t) => `<button class="${t.id === m.next.tyre ? 'on' : ''}" data-action="tyre-pick" data-t="${t.id}" style="--ty:${t.color}" title="${esc(t.desc)}"><span class="tyre2">${t.id}</span>${t.short}</button>`).join('')}</div>
-        <div class="muted" style="font-size:12px;margin-top:6px" id="tyreDesc">${esc(T5[m.next.tyre].desc)}</div></div>
-      <div class="muted" style="font-size:12px;margin-top:8px">Aucun réglage ni pneu n'est conseillé : à vous de lire le tracé et le bulletin.</div>`;
+    const weekend = weekendBody(ctx);
     // 06 — grille de départ
     const start = `<div class="row" style="justify-content:space-between">${leagueBadge(league, 'lg')}<span class="muted" style="font-size:12px">Gains ×${league.mult} · ${MG().FIELD - 1} managers IA</span></div>
       <div style="margin-top:12px"><div class="row" style="justify-content:space-between;font-size:12px"><span>${fmt(m.lp)} LP</span><span class="muted">${nl ? `${nl.icon} ${nl.name} à ${nl.min} LP` : 'Sommet atteint !'}</span></div><div class="ptsbar" style="height:9px;margin-top:5px"><i style="width:${prog}%;background:linear-gradient(90deg,${league.color},#fff)"></i></div></div>
@@ -1293,9 +1316,7 @@
       // clic sur une étiquette : sélectionne la première pièce de R&D liée à cet organe
       pu.addEventListener('click', (e) => { const t = e.target.closest('.pu-tag'); if (!t) return; const p = MG().RD_PARTS.find((x) => F1.car3d.PU_OF[x.id] === t.dataset.pu && MG().partState(x, F1.store.mgr().parts) !== 'unknown'); if (p) { S.rdCat = p.cat; S.rdSel = p.id; rdRefresh(); } else if (pu.__pu) pu.__pu.part(t.dataset.pu); });
     }
-    const si = $('#setupIn');
-    if (si) si.addEventListener('input', () => { const v = +si.value; $('#setupLbl').textContent = v <= -0.35 ? 'Faible appui (vitesse)' : v >= 0.35 ? 'Fort appui (virages)' : 'Réglage médian'; });
-    if (si) si.addEventListener('change', () => F1.store.setSetup(+si.value));
+    bindSetup();
     const board = $('#mgrBoard');
     if (board) {
       const me = F1.store.mgr();
@@ -1321,7 +1342,7 @@
     const player = { name: meName, driver: ctx.drvM, car: ctx.car, setup: ctx.m.setup, chassisId: ctx.ch.id };
     const seed = MG().hash(`${Date.now()}-${Math.random()}`);
     // la météo de la course est celle annoncée par le bulletin ; la course est décomptée dès le départ
-    const R = MG().createRace({ player, bots: ctx.bots, race: ctx.race, seed, wxSeed: ctx.m.next.seed, startTyre: ctx.m.next.tyre });
+    const R = MG().createRace({ player, bots: ctx.bots, race: ctx.race, seed, wxSeed: ctx.m.next.seed, startTyre: ctx.m.next.tyre, plan: ctx.m.next.plan, manual: true });
     F1.store.consumeRace();
     showRace(R, ctx);
   }
@@ -1341,9 +1362,10 @@
         <div class="row" style="gap:6px;flex-wrap:nowrap"><button class="btn sm ghost" data-action="race-speed">×1</button><button class="btn sm ghost" data-action="m-skip">Passer ⏭</button></div></div>
       <div id="raceEnd"></div>
       <div class="race-stage"><div class="race-map" id="raceMap"></div>
-        <div class="race-flag" id="raceFlag"></div><div class="race-track" id="raceTrack"></div><div class="race-tyre" id="raceTyre"></div>
+        <div class="race-flag" id="raceFlag"></div><div class="race-fc" id="raceFc"></div>
         <div class="radio" id="radio"></div></div>
       <div class="wx-strip" id="wxStrip" title="Radar météo : ${range} tour${range > 1 ? 's' : ''} de prévision (améliorez la station météo du garage pour voir plus loin)">${res.weather.slice(1).map((x, i) => `<i data-l="${i + 1}"></i>`).join('')}</div>
+      <div class="pitwall" id="pitwall"></div>
       <div class="race-body"><div class="tower" style="height:${res.field.length * ROW}px">${tower}</div><div class="feed" id="feed"><div class="ev"><b>Départ</b> — vous partez P${meX.grid} sur la grille, en ${MG().TYRES[meX.tyre].name.toLowerCase()}${res.weather[0].wet > 0.12 ? `, sur piste ${MG().trackState(res.weather[0].wet).toLowerCase()}` : ''}</div></div></div>
       </div></div>`;
     const STEP = 50, LAP_MS = 6000;
@@ -1356,12 +1378,36 @@
       const x = res.weather[Math.min(LAPS, L)];
       $('#wxNow').innerHTML = `<span class="wx-ic">${MG().wxIcon(x)}</span><div><b>${MG().wxLabel(x)}</b><small>Air ${x.air} °C · Piste ${x.track} °C</small></div>`;
       const st = MG().trackState(x.wet);
-      $('#raceTrack').innerHTML = `<i class="${st === 'Sèche' ? 'dry' : st === 'Humide' ? 'damp' : 'soak'}"></i>Piste ${st.toLowerCase()}`;
+      $('#raceFc').innerHTML = `<span class="rf-state"><i class="${st === 'Sèche' ? 'dry' : st === 'Humide' ? 'damp' : 'soak'}"></i>Piste ${st.toLowerCase()}</span><span class="rf-hum">Humidité ${Math.round(x.wet * 100)} %</span><span class="rf-next">${esc(MG().trend(res, Math.max(3, Math.min(5, 2 + range)), Math.min(LAPS, L)))}</span>`;
       $$('#wxStrip i').forEach((el) => { const l = +el.dataset.l; el.className = l <= L ? wxCls(res.weather[l]) + ' past' : l <= L + range ? wxCls(res.weather[l]) : 'unk'; el.classList.toggle('now', l === Math.max(1, L)); });
-      const o = L > 0 && res.laps[L - 1] ? res.laps[L - 1].find((y) => y.i === meX.i) : null;
-      const ty = o ? o.ty : meX.tyre, wear = o ? o.wear : 0;
-      $('#raceTyre').innerHTML = meX.out && L >= meX.out.lap ? '' : `${tyreDot(ty)}<div><b>${MG().TYRES[ty].name}</b><div class="wearbar ${wear > 0.75 ? 'bad' : wear > 0.5 ? 'mid' : ''}"><i style="width:${Math.round(wear * 100)}%"></i></div></div><span class="num">${Math.round(wear * 100)} %</span>`;
+      renderWall(L);
     };
+    // Muret des stands : pneus du joueur, rythme, prochain composé, appel au stand
+    const canRedo = () => !paused && !done && !meX.out && res.lap === lap + 1 && T - lap < 0.9;
+    function renderWall(L) {
+      const el = $('#pitwall'); if (!el) return;
+      if (done || (meX.out && L >= meX.out.lap)) { el.innerHTML = ''; return; }
+      const o = L > 0 && res.laps[L - 1] ? res.laps[L - 1].find((y) => y.i === meX.i) : null;
+      const ty = o ? o.ty : meX.tyre, wear = o ? o.wear : 0, c = res.ctl;
+      const ts = MG().tyreStatus(ty, wear, res.weather[Math.min(LAPS, L)].wet, c.mode, L > 0 && meX.pitLaps.includes(L));
+      const ps = c.plan ? res.plan.stops[meX.pits - (meX.pitLaps.includes(res.lap) && res.lap > L ? 1 : 0)] : null;
+      const boxLap = canRedo() || paused || T < 0 ? lap + 1 : lap + 2;
+      const pending = res.lap > L && meX.pitLaps.includes(res.lap); // l'arrêt est acquis pour la fin du tour en cours
+      const rule = MG().ruleOk(meX);
+      el.innerHTML = `<div class="pw-cell pw-tyre">${tyreDot(ty)}<div><b>${MG().TYRES[ty].name}</b><div class="wearbar ${wear > 0.75 ? 'bad' : wear > 0.5 ? 'mid' : ''}"><i style="width:${Math.round(wear * 100)}%"></i></div><small>Usure <b>${Math.round(wear * 100)} %</b> · <span class="${ts.hot ? 'hot' : ts.cold ? 'cold' : ''}">${ts.temp}</span> · perf. ${ts.perf} %</small></div></div>
+        <div class="pw-cell"><small>Rythme</small><div class="pw-mode">${Object.entries(MG().MODES).map(([k, v]) => `<button class="${c.mode === k ? 'on' : ''} m-${k}" data-pw="mode" data-v="${k}" title="${k === 'push' ? 'Plus rapide de 0,4 s par tour, usure +50 %' : k === 'save' ? 'Plus lent de 0,3 s par tour, usure −35 %' : 'Rythme et usure normaux'}">${v.name}</button>`).join('')}</div></div>
+        <div class="pw-cell"><small>Prochain train</small><div class="pw-next">${Object.values(MG().TYRES).map((t) => `<button class="${c.tyre === t.id ? 'on' : ''}" data-pw="tyre" data-v="${t.id}" style="--ty:${t.color}" title="${esc(t.name)}"><span class="tyre2 sm"></span></button>`).join('')}</div></div>
+        <div class="pw-cell pw-boxc"><button class="pw-box ${c.box || pending ? 'on' : ''}" data-pw="box">${pending ? 'BOX CE TOUR ✓' : c.box ? `BOX ${boxLap === lap + 1 ? 'CE TOUR' : 'AU PROCHAIN TOUR'} ✓` : 'BOX · rentrer au stand'}</button><small>${pending ? `Arrêt en fin de tour ${res.lap} → ${MG().TYRES[meX.tyre].name}${canRedo() ? ' · cliquer pour annuler' : ''}` : c.box ? `Arrêt en fin de tour ${Math.min(LAPS, boxLap)} → ${MG().TYRES[c.tyre].name} · cliquer pour annuler` : ps && ps.lap > L ? `Plan : arrêt au tour ${ps.lap} → ${MG().TYRES[ps.tyre].name} <button class="pw-link" data-pw="plan">annuler le plan</button>` : c.plan ? 'Aucun autre arrêt prévu' : 'Plan annulé : arrêts manuels <button class="pw-link" data-pw="plan">reprendre le plan</button>'}</small></div>
+        <div class="pw-rule ${rule ? 'ok' : 'ko'}">${rule ? '✓ Règle des 2 composés respectée' : `⚠️ Un seul composé utilisé : +${MG().RULE_PENALTY} s à l'arrivée sans changement de gomme`}</div>`;
+    }
+    $('#pitwall').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-pw]'); if (!b || done) return;
+      const c = res.ctl, k = b.dataset.pw;
+      if (k === 'mode') c.mode = b.dataset.v; else if (k === 'tyre') c.tyre = b.dataset.v; else if (k === 'box') { if (res.lap > lap && meX.pitLaps.includes(res.lap)) { if (!canRedo()) return; c.skip = res.lap; c.box = false; } else { c.box = !c.box; if (c.box && c.skip === res.lap) c.skip = 0; } } else if (k === 'plan') c.plan = !c.plan;
+      // l'ordre s'applique au tour en cours tant que la voiture n'a pas atteint l'entrée des stands : le tour est recalculé
+      if (canRedo()) MG().redoLap(res);
+      renderWall(lap);
+    });
     const render = (L) => {
       const order = res.laps[L - 1];
       order.forEach((o, k) => {
@@ -1395,12 +1441,12 @@
         clearInterval(radioTimer); radioTimer = null;
         const r = MG().applyChoice(res, dil, idx);
         box.innerHTML = `<div class="radio-box res ${r.out ? 'bad' : r.dt < 0 ? 'good' : r.dt > 0 ? 'bad' : ''}"><div class="radio-h"><span class="radio-wave"><i></i><i></i><i></i><i></i></span>Radio stand${auto ? ' · temps écoulé, choix prudent appliqué' : ''}</div><div class="radio-pick">${esc(r.choice)}</div><p>${esc(r.msg)}</p></div>`;
-        setTimeout(() => { box.classList.remove('on'); box.innerHTML = ''; paused = false; then(); }, 2600);
+        setTimeout(() => { box.classList.remove('on'); box.innerHTML = ''; paused = false; then(); renderWall(lap); }, 2600);
       };
       box.innerHTML = `<div class="radio-box"><div class="radio-h"><span class="radio-wave"><i></i><i></i><i></i><i></i></span>Radio stand · ${esc(dil.title)}<b class="radio-cd" id="radioCd">10</b></div>
         <p>${esc(dil.text)}</p><div class="radio-opts">${dil.options.map((o, i) => `<button class="btn sm ghost" data-radio="${i}">${esc(o)}</button>`).join('')}</div>
         <div class="radio-bar"><i id="radioBar"></i></div></div>`;
-      box.classList.add('on');
+      box.classList.add('on'); renderWall(lap);
       box.onclick = (e) => { const b = e.target.closest('[data-radio]'); if (b) answer(+b.dataset.radio, false); };
       radioTimer = setInterval(() => { leftS -= 0.1; const cd = $('#radioCd'), bar = $('#radioBar'); if (cd) cd.textContent = Math.max(0, Math.ceil(leftS)); if (bar) bar.style.width = Math.max(0, leftS * 10) + '%'; if (leftS <= 0) answer(dil.def, true); }, 100);
     };
@@ -1414,14 +1460,14 @@
       F1.store.recordRace({ pos: me.pos, dnf: me.out, grid: meX.grid, fastest: res.fastest.who === meX.i, rain: res.weather.some((x) => x.rain > 0.25), lp: rw.lp, pc: rw.pc, gp: ctx.race.nameFr.replace('Grand Prix', 'GP'), league: leagueBefore.name, driver: ctx.drvM.family, chassis: ctx.ch.name });
       F1.social.sync(true);
       if (silent || !$('#raceEnd')) { showAchievements(); return; }
-      T = LAPS; paused = false; $('#radio').classList.remove('on'); render(LAPS);
+      T = LAPS; paused = false; $('#radio').classList.remove('on'); render(LAPS); renderWall(LAPS);
       const m = F1.store.mgr();
       const Lnow = MG().leagueOf(m.lp);
       const promo = Lnow.min > leagueBefore.min, demo = Lnow.min < leagueBefore.min;
       const fl = byI.get(res.fastest.who);
       $('#raceEnd').innerHTML = `<div class="race-res ${me.out ? 'dnf' : me.pos <= 3 ? 'podium' : ''}">
         <div class="big-pos">${me.out ? 'ABANDON' : 'P' + me.pos}</div>
-        <div class="row" style="justify-content:center;gap:10px;margin:10px 0"><span class="chip ${rw.lp >= 0 ? 'green' : 'red'}">${rw.lp >= 0 ? '+' : ''}${rw.lp} LP</span><span class="chip gold">+${rw.pc} PitCoins</span>${fl ? `<span class="chip">⏱ Meilleur tour : ${esc(fl.c.me ? 'vous' : fl.name)}</span>` : ''}${meX.pits ? `<span class="chip">🔧 ${meX.pits} arrêt${meX.pits > 1 ? 's' : ''}</span>` : ''}${m.races[0] && m.races[0].xp ? `<span class="chip green">📈 +${m.races[0].xp} XP pilote</span>` : ''}${m.races[0] && m.races[0].grew ? '<span class="chip gold">Votre pilote progresse !</span>' : ''}${me.out ? `<span class="chip red">${esc(meX.out.why)}</span>` : ''}</div>
+        <div class="row" style="justify-content:center;gap:10px;margin:10px 0"><span class="chip ${rw.lp >= 0 ? 'green' : 'red'}">${rw.lp >= 0 ? '+' : ''}${rw.lp} LP</span><span class="chip gold">+${rw.pc} PitCoins</span>${fl ? `<span class="chip">⏱ Meilleur tour : ${esc(fl.c.me ? 'vous' : fl.name)}</span>` : ''}${meX.pits ? `<span class="chip">🔧 ${meX.pits} arrêt${meX.pits > 1 ? 's' : ''}</span>` : ''}${m.races[0] && m.races[0].xp ? `<span class="chip green">📈 +${m.races[0].xp} XP pilote</span>` : ''}${m.races[0] && m.races[0].grew ? '<span class="chip gold">Votre pilote progresse !</span>' : ''}${me.out ? `<span class="chip red">${esc(meX.out.why)}</span>` : ''}${meX.pen ? `<span class="chip red">⚠️ +${meX.pen} s : un seul composé utilisé</span>` : ''}</div>
         ${promo ? `<div class="promo">🎉 PROMOTION ! Bienvenue en ligue ${Lnow.icon} ${Lnow.name} (gains ×${Lnow.mult})</div>` : demo ? `<div class="promo down">Relégation en ligue ${Lnow.icon} ${Lnow.name}. Améliorez la voiture et revenez plus fort !</div>` : ''}
         <div class="row" style="justify-content:center;margin-top:12px"><button class="btn ghost sm" data-action="m-close">Fermer</button>${F1.store.racesLeft() > 0 ? `<button class="btn sm" data-action="m-again">🚦 Nouvelle course (${F1.store.racesLeft()} restante${F1.store.racesLeft() > 1 ? 's' : ''})</button>` : ''}</div></div>`;
       $('[data-action="m-skip"]').style.display = 'none'; $('[data-action="race-speed"]').style.display = 'none';
@@ -1722,7 +1768,11 @@
       case 'staff-hire': { try { const x = F1.store.hireStaff(a.dataset.r, a.dataset.id); toast('🎧', `<b>${esc(x.name)}</b> rejoint votre muret des stands !`, 'win'); confetti(80); showAchievements(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'garage-zone': S.garageZone = a.dataset.z; route(); break;
       case 'garage-up': { try { const g = MG().GARAGE_BY_ID.get(a.dataset.id); const l = F1.store.upgradeGarage(a.dataset.id); toast(g.icon, `<b>${esc(g.name)}</b> : niveau ${l} installé au garage`, 'win'); if (l >= MG().MAX_LV) confetti(120); showAchievements(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
-      case 'tyre-pick': { const t = MG().TYRES[a.dataset.t]; F1.store.setTyre(t.id); $$('#tyrePick button').forEach((b) => b.classList.toggle('on', b === a)); $('#tyreLbl').textContent = t.name; $('#tyreDesc').textContent = t.desc; break; }
+      case 'tyre-pick': F1.store.setTyre(a.dataset.t); refreshWeekend(); break;
+      case 'plan-tyre': { const st = F1.store.mgr().next.plan.stops.map((p) => ({ ...p })); st[+a.dataset.i].tyre = a.dataset.t; F1.store.setPlan(st); refreshWeekend(); break; }
+      case 'plan-lap': { const st = F1.store.mgr().next.plan.stops.map((p) => ({ ...p })); const i = +a.dataset.i; const lo = i ? st[i - 1].lap + 1 : 1, hi = st[i + 1] ? st[i + 1].lap - 1 : MG().LAPS - 1; st[i].lap = Math.max(lo, Math.min(hi, st[i].lap + +a.dataset.d)); F1.store.setPlan(st); refreshWeekend(); break; }
+      case 'plan-add': { const st = F1.store.mgr().next.plan.stops.map((p) => ({ ...p })); const last = st[st.length - 1]; st.push({ lap: Math.min(MG().LAPS - 1, (last ? last.lap : 6) + 6), tyre: 'S' }); F1.store.setPlan(st); refreshWeekend(); break; }
+      case 'plan-del': { const st = F1.store.mgr().next.plan.stops.map((p) => ({ ...p })); st.splice(+a.dataset.i, 1); F1.store.setPlan(st); refreshWeekend(); break; }
       case 'race-speed': S.raceSpeed = S.raceSpeed === 1 ? 2 : S.raceSpeed === 2 ? 4 : 1; a.textContent = '×' + S.raceSpeed; break;
       case 'rd-sel': S.rdSel = a.dataset.p || null; rdRefresh(); break;
       case 'rd-buy': {

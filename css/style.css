@@ -1079,3 +1079,34 @@ body.mgr-bg .aurora { opacity: .4; background: conic-gradient(from 210deg at 60%
 .radio-bar { height: 4px; border-radius: 2px; background: rgba(255,255,255,.1); margin-top: 12px; overflow: hidden; } .radio-bar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #e10600, #ffcc4d); transition: width .1s linear; }
 .ev.radio { color: #ffe08a; border-left-color: #ffcc4d; }
 @media (max-width: 560px) { .tyre-pick button { font-size: 10px; } .wearbar { width: 56px; } .race-track { font-size: 11px; padding: 5px 9px; } }
+
+/* ---------- Radar météo tour par tour, plan de course, muret des stands ---------- */
+.fc-strip { display: grid; grid-template-columns: repeat(20, 1fr); gap: 2px; margin-top: 10px; } .fc-strip i { height: 10px; border-radius: 2px; background: #ffd66b; }
+.fc-strip i.risk { background: #8fb3d9; } .fc-strip i.rain { background: #2d7fd6; } .fc-strip i.heavy { background: #7a4ff0; }
+.fc-segs { display: flex; flex-wrap: wrap; gap: 4px 10px; margin: 8px 0 4px; font-size: 12px; } .fc-segs span { white-space: nowrap; }
+.strat { margin-top: 14px; padding: 12px; border-radius: 12px; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08); display: grid; gap: 10px; }
+.strat-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; } .strat-h b { font-size: 13px; } .strat-seq { display: flex; align-items: center; gap: 5px; } .strat-seq i { font-style: normal; color: var(--muted); font-size: 12px; }
+.plan-h { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; } .plan-h > b { font-size: 12px; text-transform: uppercase; letter-spacing: .1em; }
+.plan-lap { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; margin-left: auto; } .plan-lap button, .plan-x { width: 26px; height: 26px; border-radius: 8px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); font-weight: 900; color: #fff; }
+.plan-lap button:hover, .plan-x:hover { background: rgba(255,255,255,.15); } .plan-x { color: var(--muted); }
+.tyre-pick.sm { margin-top: 0; } .tyre-pick.sm button { padding: 5px 2px; font-size: 10px; gap: 2px; } .tyre-pick.sm .tyre2 { width: 20px; height: 20px; border-width: 3px; font-size: 8px; }
+.plan-add { justify-self: start; }
+.rule { font-size: 12px; padding: 7px 10px; border-radius: 8px; border: 1px solid rgba(46,229,157,.3); background: rgba(46,229,157,.06); } .rule.ko { border-color: rgba(225,6,0,.5); background: rgba(225,6,0,.1); }
+.race-fc { position: absolute; left: 10px; top: 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 6px 12px; border-radius: 12px; background: rgba(8,9,14,.78); backdrop-filter: blur(8px); font-size: 12px; font-weight: 700; max-width: calc(100% - 20px); }
+.rf-state { display: inline-flex; align-items: center; gap: 7px; } .rf-state i { width: 10px; height: 10px; border-radius: 50%; background: #9aa3ad; } .rf-state i.damp { background: #5aa9e6; } .rf-state i.soak { background: #3d7bff; box-shadow: 0 0 8px #3d7bff; }
+.rf-hum { color: #9fd0ff; } .rf-next { color: var(--gold); }
+.race-flag { top: 48px; }
+.pitwall { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.1fr) minmax(0, .9fr) minmax(0, 1.35fr); gap: 8px; margin-top: 8px; padding: 10px; border-radius: 12px; background: #0b0d12; border: 1px solid rgba(255,255,255,.1); border-top: 2px solid var(--gold); }
+.pitwall:empty { display: none; }
+.pw-cell { min-width: 0; } .pw-cell > small { display: block; font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 5px; }
+.pw-tyre { display: flex; align-items: center; gap: 10px; } .pw-tyre b { font-size: 13px; } .pw-tyre small { display: block; font-size: 11px; color: #cfd2dc; margin-top: 3px; } .pw-tyre .wearbar { width: 100%; max-width: 150px; }
+.pw-tyre .hot { color: #ff6b6b; } .pw-tyre .cold { color: #8ecbff; }
+.pw-mode { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; } .pw-mode button { padding: 7px 2px; border-radius: 8px; font-size: 11px; font-weight: 900; text-transform: uppercase; color: var(--muted); background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08); }
+.pw-mode button.on.m-push { background: #e10600; color: #fff; border-color: #ff6b6b; } .pw-mode button.on.m-std { background: #fff; color: #111; } .pw-mode button.on.m-save { background: #2ee59d; color: #032; border-color: #2ee59d; }
+.pw-next { display: flex; gap: 4px; } .pw-next button { flex: 1; display: grid; place-items: center; padding: 6px 0; border-radius: 8px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08); } .pw-next button.on { border-color: var(--ty); background: color-mix(in srgb, var(--ty) 20%, transparent); box-shadow: 0 0 12px -4px var(--ty); }
+.pw-box { width: 100%; padding: 9px 8px; border-radius: 9px; font-size: 13px; font-weight: 900; font-style: italic; letter-spacing: .04em; text-transform: uppercase; color: #fff; background: linear-gradient(135deg, #2a2e37, #171a20); border: 1px solid rgba(255,255,255,.18); }
+.pw-box:hover { border-color: var(--gold); } .pw-box.on { background: linear-gradient(135deg, #ffcc4d, #ff8a00); color: #201300; border-color: #fff; animation: flagBlink .9s steps(2) infinite; }
+.pw-boxc small { margin: 5px 0 0; text-transform: none; letter-spacing: 0; font-size: 11px; font-weight: 400; } .pw-link { text-decoration: underline; color: #cfd2dc; font-size: 11px; }
+.pw-rule { grid-column: 1 / -1; font-size: 11px; color: #9fe8c8; } .pw-rule.ko { color: #ff9a9a; }
+@media (max-width: 860px) { .pitwall { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+@media (max-width: 520px) { .pitwall { grid-template-columns: minmax(0, 1fr); } .race-fc { font-size: 11px; } }
