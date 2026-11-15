@@ -17,6 +17,41 @@
     stroll: [77, -1, 0, -3], colapinto: [77, 0, 1, -3], arvid_lindblad: [76, 1, 1, -5], rafael_camara: [75, 1, 0, -5],
   };
   const ROOKIES = ['arvid_lindblad', 'rafael_camara'];
+  /* ---------- Âge et expérience des pilotes ----------
+     Année de naissance réelle. Un pilote gagne de l'XP à chaque course terminée avec l'écurie du joueur ;
+     les jeunes apprennent vite et ont une grande marge de progression, les vétérans presque plus. */
+  const BIRTH = {
+    max_verstappen: 1997, norris: 1999, leclerc: 1997, russell: 1998, hamilton: 1985, piastri: 2001, alonso: 1981, antonelli: 2006,
+    sainz: 1994, albon: 1996, perez: 1990, gasly: 1996, hulkenberg: 1987, bottas: 1989, hadjar: 2004, ocon: 1996, tsunoda: 2000,
+    bearman: 2005, bortoleto: 2004, lawson: 2002, stroll: 1998, colapinto: 2003, arvid_lindblad: 2007, rafael_camara: 2005,
+  };
+  const ageOf = (id, year) => (BIRTH[id] ? (year || new Date().getFullYear()) - BIRTH[id] : 27);
+  // [multiplicateur d'XP, progression maximale en points de caractéristique, libellé]
+  function growth(age) {
+    if (age <= 21) return { mult: 2, cap: 12, label: 'Très fort potentiel' };
+    if (age <= 23) return { mult: 1.6, cap: 10, label: 'Fort potentiel' };
+    if (age <= 27) return { mult: 1.1, cap: 6, label: 'En progression' };
+    if (age <= 32) return { mult: 0.6, cap: 3, label: 'À maturité' };
+    if (age <= 37) return { mult: 0.25, cap: 1.5, label: 'Vétéran' };
+    return { mult: 0.1, cap: 0.5, label: 'Fin de carrière' };
+  }
+  const XP_PER_POINT = 55;                  // XP nécessaires pour +1 point de progression
+  const xpForRace = (pos, dnf, age) => (dnf ? 0 : Math.round((10 + Math.max(0, 11 - pos)) * growth(age).mult));
+  // Progression acquise : points gagnés (plafonnés selon l'âge), répartis sur les trois caractéristiques
+  function driverGrowth(id, xpState, year) {
+    const st = (xpState && xpState[id]) || { xp: 0, races: 0 };
+    const age = ageOf(id, year), g = growth(age);
+    const pts = Math.min(g.cap, st.xp / XP_PER_POINT);
+    return { age, ...g, xp: st.xp, races: st.races, pts, maxed: pts >= g.cap - 1e-9, next: g.cap > pts ? XP_PER_POINT - (st.xp % XP_PER_POINT) : 0,
+      bonus: { pace: pts, craft: pts * 0.8, cons: pts * 1.2 } };
+  }
+  // Pilote du marché + progression acquise avec l'écurie du joueur
+  function withExperience(d, xpState, year) {
+    if (!d) return d;
+    const g = driverGrowth(d.id, xpState, year);
+    const cl = (v) => Math.min(99, Math.round((v) * 10) / 10);
+    return { ...d, base: { rating: d.rating, pace: d.pace, craft: d.craft, cons: d.cons }, pace: cl(d.pace + g.bonus.pace), craft: cl(d.craft + g.bonus.craft), cons: cl(d.cons + g.bonus.cons), rating: Math.min(99, Math.round(d.rating + g.pts)), exp: g };
+  }
 
   /* ---------- Châssis : profil de chaque écurie (vitesse de pointe, appui, fiabilité) ---------- */
   const TEAM_PROFILE = {
@@ -524,6 +559,7 @@
   }
 
   F1.manager = {
+    BIRTH, ageOf, growth, xpForRace, driverGrowth, withExperience, XP_PER_POINT,
     STAFF_ROLES, STAFF, staffOf, GARAGE, GARAGE_ZONES, GARAGE_BY_ID, garageCost, garageLevel, teamBonus, weatherTimeline, wxLabel, wxIcon,
     MAX_LV, LV_GAIN, LV_NAME, lvCum, partLevel, levelCost, MECH, tunnelChance, branchPackage, carRating, OBJECTIVES, dailyObjectives,
     START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, PC_TABLE,

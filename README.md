@@ -48,7 +48,8 @@ Site de paris **à jetons virtuels** sur la Formule 1. Il est 100 % statique (HT
   - **Comparaison** : vos caractéristiques sont comparées à la moyenne des managers de votre ligue.
 - **Muret des stands** (onglet Muret) : 5 postes (team principal, directeur technique, ingénieur de course, stratège, chef mécanicien), 5 candidats fictifs par poste. Chaque recrue apporte des bonus (PitCoins, coût de R&D, pneus, stratégie, arrêts au stand). `STAFF_ROLES` et `STAFF` dans `js/manager.js`.
 - **Garage** (onglet Garage) : 20 équipements à 5 niveaux en 4 zones (voie des stands, box et mécaniciens, ingénierie, usine). Les équipements installés et les mécaniciens apparaissent dans la scène du garage. `GARAGE` dans `js/manager.js`.
-- **Course en vue 2D** (`js/racemap.js`) : tracé stylisé du circuit et un point par voiture aux couleurs de son écurie, qui avance selon son rythme, ses arrêts au stand et son classement. Départ aux feux, voiture de sécurité, accidents et pannes signalés sur la carte.
+- **Expérience des pilotes** : chaque pilote a son âge réel (`BIRTH` dans `js/manager.js`) et gagne de l'XP à chaque course terminée avec votre écurie. Jusqu'à 21 ans : XP ×2 et jusqu'à +12 points ; 22-23 ans : ×1,6 et +10 ; 24-27 ans : ×1,1 et +6 ; 28-32 ans : ×0,6 et +3 ; au-delà : progression quasi nulle. La progression est conservée par pilote (`drvXp` dans la sauvegarde).
+- **Course en vue 2D** (`js/racemap.js`) : tracé réel du circuit (`js/circuits.js`, géométrie du projet libre f1-circuits de Tomislav Bacinger, licence MIT) et un point par voiture aux couleurs de son écurie, qui avance selon son rythme, ses arrêts au stand et son classement. Départ aux feux, voiture de sécurité, accidents et pannes signalés sur la carte.
 - **Météo en direct** : pluie et humidité de la piste évoluent tour par tour (`weatherTimeline`), à partir de la prévision réelle du prochain Grand Prix quand elle est disponible. Pneus pluie ou slicks : le stratège et la station météo décident de la vitesse de réaction. Un radar affiche les tours à venir.
 - **Stratégie** :
   - Chaque circuit a un profil (`CIRCUIT`) : Monza demande de la vitesse, Monaco de l'appui, Singapour de la fiabilité…
@@ -108,7 +109,6 @@ Ne mettez **jamais** la clé *service_role* dans le site.
 - Elles apparaissent à plusieurs endroits :
   - sur les cartes des favoris ;
   - dans les duels, le podium, le tiercé et les classements ;
-  - sur la nouvelle page **Grille** (chaque écurie, sa voiture et ses deux pilotes) ;
   - dans le bandeau d'accueil, avec la voiture du favori.
 
 ## Saisons multiples (2026 → 2027)
@@ -182,6 +182,7 @@ Ouvrez ensuite http://localhost:8000.
 | `js/store.js` | Portefeuille, paris, succès (localStorage) |
 | `js/app.js` | Interface : pages, ticket, graphiques, animations |
 | `js/wec.js` | Championnat WEC : calendrier, plateau Hypercar, lecture des résultats (`data/wec/<année>.json`) |
+| `js/circuits.js` | Tracés réels des circuits (données f1-circuits, licence MIT) |
 | `js/racemap.js` | Course manager en vue 2D : tracé du circuit et un point par voiture (canvas) |
 | `js/fx.js` | Effets course auto : drapeau à damier entre les onglets, étincelles au clic, lignes de vitesse, apparitions en cascade, vibreur de navigation |
 

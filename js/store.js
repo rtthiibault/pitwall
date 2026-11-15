@@ -35,7 +35,7 @@
   function blank() {
     return { v: 1, name: '', created: Date.now(), balance: START, bets: [], claimed: {}, rescues: {}, ach: {}, history: [{ t: Date.now(), b: START }], manager: blankManager() };
   }
-  const blankManager = () => ({ pc: (F1.manager && F1.manager.START_PC) || 300, driver: null, chassis: null, ups: { speed: 0, df: 0, rel: 0 }, parts: {}, rdSpent: 0, setup: 0, lp: 0, best: 0, races: [], day: { key: '', n: 0 }, log: [], staff: {}, garage: {}, fails: {}, daily: { key: '' } });
+  const blankManager = () => ({ pc: (F1.manager && F1.manager.START_PC) || 300, driver: null, chassis: null, ups: { speed: 0, df: 0, rel: 0 }, parts: {}, rdSpent: 0, setup: 0, lp: 0, best: 0, races: [], day: { key: '', n: 0 }, log: [], staff: {}, garage: {}, fails: {}, daily: { key: '' }, drvXp: {} });
   function load() {
     try { state = JSON.parse(localStorage.getItem(KEY)); } catch (e) { state = null; }
     if (!state || state.v !== 1) state = blank();
@@ -47,6 +47,7 @@
     if (!m.fails) m.fails = {};
     if (!m.daily) m.daily = { key: '' };
     if (!m.staff) m.staff = {};
+    if (!m.drvXp) m.drvXp = {};
     if (!m.garage) m.garage = {};
     return state;
   }
@@ -299,6 +300,15 @@
     d.races++;
     if (!r.dnf) { d.finish++; if (r.pos <= 5) d.top5++; if (r.pos <= 3) d.podium++; if (r.pos === 1) d.win++; d.gainMax = Math.max(d.gainMax, (r.grid || r.pos) - r.pos); }
     if (r.fastest) d.fastest++;
+    // expérience du pilote : courses disputées avec l'écurie et XP (selon l'âge) si la course est terminée
+    if (m.driver && F1.manager) {
+      const x = m.drvXp[m.driver.id] || (m.drvXp[m.driver.id] = { xp: 0, races: 0 });
+      const gain = F1.manager.xpForRace(r.pos, r.dnf, F1.manager.ageOf(m.driver.id));
+      const before = F1.manager.driverGrowth(m.driver.id, m.drvXp).pts;
+      x.races++; x.xp += gain;
+      const after = F1.manager.driverGrowth(m.driver.id, m.drvXp).pts;
+      m.races[0].xp = gain; m.races[0].grew = Math.floor(after) > Math.floor(before);
+    }
     if (r.pos === 1 && !r.dnf) unlock('mgr_win');
     if (r.pos === 1 && !r.dnf && r.rain) unlock('mgr_rain');
     if (F1.manager && m.lp >= F1.manager.LEAGUES[2].min) unlock('mgr_or');

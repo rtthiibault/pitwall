@@ -1,5 +1,4 @@
-/* PITWALL — course manager en vue 2D : tracé du circuit et un point par voiture (canvas 2D, très léger).
-   Le tracé est stylisé (généré à partir du profil du circuit), pas le dessin exact du vrai circuit. */
+/* PITWALL — course manager en vue 2D : tracé réel du circuit et un point par voiture (canvas 2D, très léger). */
 (function (F1) {
   const LT = 90; // durée d'un tour « simulé » en secondes : convertit les écarts en distance sur le tracé
   function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -9,27 +8,35 @@
 
   // Tracé fermé : points de contrôle autour d'une ellipse, lissés (Catmull-Rom), puis rééchantillonnés à pas constant
   function makeTrack(seedStr, profile) {
-    const r = rng(hash('track-' + seedStr));
-    const n = Math.round(8 + (profile.df || 0.4) * 9);
-    const stretch = 1.25 + (profile.speed || 0.35) * 1.1;
-    const ctrl = [];
-    for (let i = 0; i < n; i++) {
-      const straight = i <= 1 || i === n - 1; // ligne droite des stands autour du départ
-      const a = Math.PI / 2 + (i / n) * Math.PI * 2 + (straight ? 0 : (r() - 0.5) * (Math.PI * 2 / n) * 0.55);
-      const rad = straight ? 1 : 0.55 + r() * 0.62;
-      ctrl.push([Math.cos(a) * 62 * rad * stretch, straight ? 58 : Math.sin(a) * 62 * rad]);
+    let ctrl = [];
+    const real = F1.CIRCUITS && F1.CIRCUITS[seedStr];
+    if (real) {
+      // tracé réel du circuit (voir js/circuits.js)
+      ctrl = real.split(' ').map((q) => q.split(',').map(Number));
+    } else {
+      // circuit inconnu : tracé de secours généré à partir du profil
+      const r = rng(hash('track-' + seedStr));
+      const n0 = Math.round(8 + (profile.df || 0.4) * 9);
+      const stretch = 1.25 + (profile.speed || 0.35) * 1.1;
+      for (let i = 0; i < n0; i++) {
+        const straight = i <= 1 || i === n0 - 1;
+        const a = Math.PI / 2 + (i / n0) * Math.PI * 2 + (straight ? 0 : (r() - 0.5) * (Math.PI * 2 / n0) * 0.55);
+        const rad = straight ? 1 : 0.55 + r() * 0.62;
+        ctrl.push([Math.cos(a) * 62 * rad * stretch, straight ? 58 : Math.sin(a) * 62 * rad]);
+      }
     }
+    const n = ctrl.length, SUB = real ? 6 : 24;
     const raw = [];
     for (let i = 0; i < n; i++) {
       const p0 = ctrl[(i - 1 + n) % n], p1 = ctrl[i], p2 = ctrl[(i + 1) % n], p3 = ctrl[(i + 2) % n];
-      for (let k = 0; k < 24; k++) {
-        const t = k / 24, t2 = t * t, t3 = t2 * t;
+      for (let k = 0; k < SUB; k++) {
+        const t = k / SUB, t2 = t * t, t3 = t2 * t;
         raw.push([0, 1].map((d) => 0.5 * (2 * p1[d] + (-p0[d] + p2[d]) * t + (2 * p0[d] - 5 * p1[d] + 4 * p2[d] - p3[d]) * t2 + (-p0[d] + 3 * p1[d] - 3 * p2[d] + p3[d]) * t3)));
       }
     }
     const len = [0];
     for (let i = 1; i <= raw.length; i++) { const a = raw[i - 1], b = raw[i % raw.length]; len.push(len[i - 1] + Math.hypot(b[0] - a[0], b[1] - a[1])); }
-    const total = len[raw.length], N = 480, P = [];
+    const total = len[raw.length], N = 720, P = [];
     let j = 0;
     for (let i = 0; i < N; i++) {
       const d = (i / N) * total;
