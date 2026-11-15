@@ -35,7 +35,7 @@
   function blank() {
     return { v: 1, name: '', created: Date.now(), balance: START, bets: [], claimed: {}, rescues: {}, ach: {}, history: [{ t: Date.now(), b: START }], manager: blankManager() };
   }
-  const blankManager = () => ({ pc: (F1.manager && F1.manager.START_PC) || 300, driver: null, chassis: null, ups: { speed: 0, df: 0, rel: 0 }, parts: {}, rdSpent: 0, setup: 0, lp: 0, best: 0, races: [], day: { key: '', n: 0 }, log: [], staff: {}, garage: {}, fails: {}, daily: { key: '' }, drvXp: {} });
+  const blankManager = () => ({ pc: (F1.manager && F1.manager.START_PC) || 300, driver: null, chassis: null, ups: { speed: 0, df: 0, rel: 0 }, parts: {}, rdSpent: 0, setup: 0, lp: 0, best: 0, races: [], day: { key: '', n: 0 }, log: [], staff: {}, garage: {}, fails: {}, daily: { key: '' }, drvXp: {}, next: { seed: (Math.random() * 4294967296) >>> 0, tyre: 'M' } });
   function load() {
     try { state = JSON.parse(localStorage.getItem(KEY)); } catch (e) { state = null; }
     if (!state || state.v !== 1) state = blank();
@@ -48,6 +48,11 @@
     if (!m.daily) m.daily = { key: '' };
     if (!m.staff) m.staff = {};
     if (!m.drvXp) m.drvXp = {};
+    // passage de 5 à 2 courses par jour : l'ancien compteur est plafonné ; prochaine course (météo, pneus) initialisée
+    const cap = (F1.manager && F1.manager.RACES_PER_DAY) || 2;
+    if (m.day && m.day.n > cap) m.day.n = cap;
+    if (!m.next || typeof m.next.seed !== 'number') m.next = { seed: (Math.random() * 4294967296) >>> 0, tyre: 'M' };
+    if (!['S', 'M', 'H', 'I', 'W'].includes(m.next.tyre)) m.next.tyre = 'M';
     if (!m.garage) m.garage = {};
     return state;
   }
@@ -285,12 +290,18 @@
   }
   function setSetup(v) { mgr().setup = v; save(); }
   const dayKey = () => new Date().toLocaleDateString('fr-CA');
-  function racesPerDay() { return (F1.manager ? F1.manager.RACES_PER_DAY + F1.manager.teamBonus(mgr()).races : 5); }
+  function racesPerDay() { return (F1.manager ? F1.manager.RACES_PER_DAY + F1.manager.teamBonus(mgr()).races : 2); }
   function racesLeft() { const m = mgr(); return racesPerDay() - (m.day.key === dayKey() ? m.day.n : 0); }
-  function recordRace(r) {
+  function setTyre(t) { mgr().next.tyre = t; save(); }
+  // Une course lancée est décomptée tout de suite : on ne peut pas l'annuler en fermant la fenêtre
+  function consumeRace() {
     const m = mgr();
     if (m.day.key !== dayKey()) m.day = { key: dayKey(), n: 0 };
-    m.day.n++;
+    m.day.n++; save();
+  }
+  function recordRace(r) {
+    const m = mgr();
+    m.next = { seed: (Math.random() * 4294967296) >>> 0, tyre: m.next.tyre };   // nouvelle météo pour la course suivante
     const before = m.lp;
     m.lp = Math.max(0, m.lp + r.lp);
     m.best = Math.max(m.best, m.lp);
@@ -325,5 +336,5 @@
   function reset() { const n = get().name; state = blank(); state.name = n; save(); }
   const popUnlocked = () => unlocked.splice(0);
 
-  F1.store = { load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
+  F1.store = { load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, setTyre, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
 })(globalThis.F1 = globalThis.F1 || {});

@@ -51,7 +51,7 @@
     const cv = document.createElement('canvas'); cv.className = 'race-map-cv';
     el.innerHTML = ''; el.appendChild(cv);
     const ctx = cv.getContext('2d');
-    const LAPS = res.laps.length;
+    const LAPS = res.LAPS || res.laps.length;
     const { P, N } = makeTrack(seedStr, res.w);
     let W = 0, H = 0, S = [], NRM = [];
     const fit = () => {
@@ -71,14 +71,10 @@
     const cx = () => S.reduce((a, p) => a + p[0], 0) / N, cy = () => S.reduce((a, p) => a + p[1], 0) / N;
 
     // écarts par voiture à la fin de chaque tour
-    const gapAt = new Map();
-    res.field.forEach((x) => gapAt.set(x.i, [(x.grid - 1) * (res.gridGap || 0.6)]));
-    res.laps.forEach((order) => order.forEach((o) => { const a = gapAt.get(o.i); a.push(o.gap == null ? a[a.length - 1] : o.gap); }));
+    // la course est calculée tour par tour pendant qu'on la regarde : on lit toujours l'état courant
+    const gapsOf = (i) => res.gapArr[i];
     const rr = rng(hash('inc-' + seedStr + res.field.length));
-    const cars = res.field.map((x) => ({
-      x, col: colorOf(x), me: !!x.c.me, pits: x.pitLaps || [],
-      out: x.out ? { lap: x.out.lap, why: x.out.why, crash: x.out.why === 'Accident', T: x.out.lap - 1 + 0.2 + rr() * 0.65, told: false } : null,
-    }));
+    const cars = res.field.map((x) => ({ x, col: colorOf(x), me: !!x.c.me, k: 0.2 + rr() * 0.65, told: false }));
     const at = (u, off = 0) => { const f = (((u % 1) + 1) % 1) * N, j = Math.floor(f) % N, j2 = (j + 1) % N, k = f - Math.floor(f); return [lerp(S[j][0], S[j2][0], k) + NRM[j][0] * off, lerp(S[j][1], S[j2][1], k) + NRM[j][1] * off]; };
     const drops = Array.from({ length: 70 }, () => [Math.random(), Math.random(), 0.6 + Math.random() * 0.8]);
 
@@ -112,20 +108,22 @@
       // voitures
       let lead = -1e9; const dots = [];
       for (const c of cars) {
-        const a = gapAt.get(c.x.i);
-        const Tc = c.out ? Math.min(T, c.out.T) : T;
+        const a = gapsOf(c.x.i);
+        const xo = c.x.out, out = xo ? { lap: xo.lap, why: xo.why, crash: xo.why === 'Accident', T: xo.lap - 1 + c.k } : null;
+        const pits = c.x.pitLaps || [];
+        const Tc = out ? Math.min(T, out.T) : T;
         const Lc = Math.min(LAPS - 1, Math.floor(Tc)), kc = Tc - Lc;
-        const gap = lerp(a[Lc], a[Math.min(a.length - 1, Lc + 1)], c.out && Lc >= c.out.lap - 1 ? 0 : kc);
+        const gap = lerp(a[Math.min(a.length - 1, Lc)], a[Math.min(a.length - 1, Lc + 1)], out && Lc >= out.lap - 1 ? 0 : kc);
         const prog = Tc - gap / LT;
         let off = ((c.x.i * 7) % 5 - 2) * 1.3, state = 'run', fade = 1;
-        if (c.out && T > c.out.T) {
-          const sec = (T - c.out.T) * lapSec;
-          if (!c.out.told) { c.out.told = true; if (onIncident) onIncident(c.x, c.out); }
-          off = (c.out.crash ? -inSide : inSide) * Math.min(13, sec * 9); state = c.out.crash ? 'crash' : 'mech'; fade = clamp(1.6 - sec / 9, 0, 1);
+        if (out && T > out.T) {
+          const sec = (T - out.T) * lapSec;
+          if (!c.told) { c.told = true; if (onIncident) onIncident(c.x, out); }
+          off = (out.crash ? -inSide : inSide) * Math.min(13, sec * 9); state = out.crash ? 'crash' : 'mech'; fade = clamp(1.6 - sec / 9, 0, 1);
         } else {
           // arrêt au stand : la voiture passe par la voie des stands à la fin du tour concerné
           const lapNo = Math.floor(prog) + 1, u = prog - Math.floor(prog);
-          if ((c.pits.includes(lapNo) && u > 0.945) || (c.pits.includes(lapNo - 1) && u < 0.055)) { off = PIT * Math.min(1, (0.055 - Math.min(Math.abs(u - 1), u)) / 0.02 + 0.2); state = 'pit'; }
+          if ((pits.includes(lapNo) && u > 0.945) || (pits.includes(lapNo - 1) && u < 0.055)) { off = PIT * Math.min(1, (0.055 - Math.min(Math.abs(u - 1), u)) / 0.02 + 0.2); state = 'pit'; }
           if (prog > lead) lead = prog;
         }
         if (fade > 0) dots.push({ c, p: at(prog, off), state, fade, prog });
