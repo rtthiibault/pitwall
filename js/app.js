@@ -898,7 +898,7 @@
       <div class="bulletin"><span>${fc.icon}</span><div><small>Radar météo · prévision</small><b>${esc(fc.sky)} · ${fc.temp} °C au départ</b></div></div>
       <div class="fc-strip">${fl.laps.map((x) => `<i class="${x.kind}" title="Tour ${x.lap} : pluie ${x.p} %"></i>`).join('')}</div>
       <div class="fc-segs">${fl.segs.map((g) => `<span>${g.icon} ${esc(g.txt)}</span>`).join('')}</div>
-      <div class="muted" style="font-size:11px">Prévision à ± 2 tours près : une averse annoncée peut arriver plus tôt, plus tard, ou ne pas venir.</div>
+      <div class="muted" style="font-size:11px">Prévision à ± 3 tours près : une averse annoncée peut arriver plus tôt, plus tard, ou ne pas venir.</div>
       <div class="ctraits">${w.traits.map(([l, v]) => `<div><small>${l}</small><b>${v}</b></div>`).join('')}</div>
       <div style="margin-top:14px"><div class="row" style="justify-content:space-between"><b style="font-size:13px">Réglage aéro</b><span class="chip" id="setupLbl">${setupLbl(m.setup)}</span></div>
         <input type="range" id="setupIn" min="-1" max="1" step="0.05" value="${m.setup}" class="slider">
@@ -1427,7 +1427,7 @@
         const who = e.who != null ? byI.get(e.who) : null;
         if (e.type === 'sc') showFlag('🚨 VOITURE DE SÉCURITÉ', 'sc', 4500);
         if (e.type !== 'sc' && e.type !== 'wx' && who && !who.c.me && e.type !== 'dnf') continue; // n'affiche que les faits marquants
-        const nm = who ? (who.c.me ? '<b class="me-t">Vous</b>' : `<b>${esc(who.name)}</b>`) : '';
+        const nm = who ? (who.c.me ? '<b class="me-t">Votre voiture</b>' : `<b>${esc(who.name)}</b>`) : '';
         feed.insertAdjacentHTML('afterbegin', `<div class="ev ${e.type} ${who && who.c.me ? 'mine' : ''}"><span class="muted">T${e.lap}</span> ${e.type === 'sc' ? '🚨 ' + esc(e.txt) : e.type === 'wx' || e.type === 'radio' ? esc(e.txt) : nm + ' ' + esc(e.txt)}</div>`);
       }
     };

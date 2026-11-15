@@ -466,9 +466,9 @@
     const [p, temp] = climateOf(race);
     const wx = weatherTimeline(rng(seed ^ 0x5bd1e995), p, temp);
     const r = rng(seed ^ 0x51ed270b);
-    const shift = Math.round((r() - 0.5) * 4);            // décalage de −2 à +2 tours
+    const shift = Math.round((r() - 0.5) * 6);            // décalage de −3 à +3 tours
     const base = p * 100 * (0.3 + r() * 0.4);          // bruit de fond : le même pour toute la course
-    const ghost = r() < p * 0.6 ? 3 + Math.floor(r() * (LAPS - 8)) : -1;   // fausse alerte éventuelle
+    const ghost = r() < 0.08 + p * 0.7 ? 3 + Math.floor(r() * (LAPS - 8)) : -1;   // fausse alerte éventuelle
     const out = [];
     for (let l = 1; l <= LAPS; l++) {
       const t = wx[clamp(l - shift, 1, LAPS)];
@@ -555,7 +555,7 @@
       const db = 2 * Math.min(2.5, mech.drv || 0);
       const d = db ? { ...c.driver, pace: Math.min(99, c.driver.pace + db), craft: Math.min(99, c.driver.craft + db), cons: Math.min(99, c.driver.cons + db) } : c.driver;
       const M = (k) => 2.8 * Math.tanh((mech[k] || 0) / 2.8); // rendements décroissants
-      const form = gauss(r) * 3.5; // forme du jour (pilote + voiture)
+      const form = gauss(r) * 5.5; // forme du jour (pilote + voiture) : un bon ou un mauvais dimanche pèse lourd
       const u = r();
       const tyre = c.me && startTyre && TYRES[startTyre] ? startTyre : idealTyre(wet0) !== 'dry' ? idealTyre(wet0) : u < 0.35 ? 'S' : u < 0.8 ? 'M' : 'H';
       return { i, c, name: c.name, driver: d, cs, M, tyre, used: [tyre], fresh: false, pitLoss: {}, wear: 0, wrong: 0, thr: 0.68 + r() * 0.13, noPit: 0, tyreLog: [], pitLaps: [], pits: 0,
@@ -566,7 +566,7 @@
     field.forEach((x) => { x.time = (x.grid - 1) * gridGap; });
     const gapArr = {}; field.forEach((x) => { gapArr[x.i] = [x.time]; });
     // la voiture de sécurité sort à un moment où le stand peut réagir
-    const scLap = r() < 0.35 ? DILEMMA_LAPS[Math.floor(r() * DILEMMA_LAPS.length)] : -1;
+    const scLap = r() < 0.5 ? DILEMMA_LAPS[Math.floor(r() * DILEMMA_LAPS.length)] : -1;
     const stops = ((plan && plan.stops) || []).filter((p) => p && TYRES[p.tyre] && p.lap >= 1 && p.lap < LAPS).sort((a, b) => a.lap - b.lap);
     // ctl : commandes du muret pendant la course (appel au stand, prochain composé, rythme, suivi du plan)
     return { LAPS, lap: 0, field, me: field.find((x) => x.c.me), laps: [], gapArr, events: [], fastest: { t: 1e9, who: null, lap: 0 }, scLap, w, weather, gridGap, abr, r, st, prevOrder: field.map((x) => x.i), asked: [],
@@ -590,8 +590,8 @@
   }
   function pitStop(R, x, lap, tyre, sc, why) {
     const r = R.r, crew = x.M('pit');
-    let still = Math.max(1.8, 2.05 + Math.abs(gauss(r)) * 0.7 * (1 - 0.25 * crew) - 0.12 * crew);
-    const botched = r() < 0.07 * (1 - 0.3 * crew);
+    let still = Math.max(1.8, 2.05 + Math.abs(gauss(r)) * 1.1 * (1 - 0.25 * crew) - 0.12 * crew);
+    const botched = r() < 0.12 * (1 - 0.3 * crew);
     if (botched) still += 3 + r() * 5;
     x.tyre = tyre; x.wear = 0; x.wrong = 0; x.pits++; x.pitLaps.push(lap); x.fresh = true;
     if (!x.used.includes(tyre)) x.used.push(tyre);
@@ -620,7 +620,16 @@
       if (u < pMech) { x.out = { lap, why: ['Moteur', 'Boîte de vitesses', 'Hydraulique', 'Surchauffe', 'Freins'][Math.floor(r() * 5)] }; events.push({ lap, type: 'dnf', who: x.i, txt: `abandonne (${x.out.why.toLowerCase()})` }); continue; }
       if (u < pMech + pCrash) { x.out = { lap, why: 'Accident' }; events.push({ lap, type: 'dnf', who: x.i, txt: wet > 0.35 ? 'part en aquaplaning et tape le mur : abandon' : 'part dans le mur : abandon' }); continue; }
       const ty = x.M('tyre');
-      let t = 90 - x.perf * 0.045 + gauss(r) * 0.6 * (1.5 - d.cons / 100) * (1 - 0.12 * ty);
+      let t = 90 - x.perf * 0.036 + gauss(r) * 0.95 * (1.5 - d.cons / 100) * (1 - 0.12 * ty);
+      x.hold = false;
+      // imprévus du tour : tour canon, petite faute, souci technique passager, débris
+      if (!sc && lap > 1) {
+        const v = r();
+        if (v < 0.05 * (d.pace / 88)) { t -= 0.7 + r() * 0.7; if (x.c.me) events.push({ lap, type: 'gain', who: x.i, txt: 'signe un tour canon' }); }
+        else if (v < 0.05 * (d.pace / 88) + 0.07 * (1.6 - d.cons / 100)) { t += 1 + r() * 1.8; if (x.c.me) events.push({ lap, type: 'loss', who: x.i, txt: 'bloque une roue et élargit la trajectoire' }); }
+        else if (v > 0.986) { t += 3 + r() * 4; if (x.c.me) events.push({ lap, type: 'loss', who: x.i, txt: 'perd de la puissance pendant quelques virages (souci électrique)' }); }
+        else if (v > 0.981 && left >= 2) { t += 6; x.wear = 1; events.push({ lap, type: x.c.me ? 'loss' : 'spin', who: x.i, txt: 'roule sur un débris : crevaison lente, il faut rentrer au stand' }); }
+      }
       // piste mouillée : tout le monde ralentit, les pilotes combatifs s'en sortent mieux
       t += 7 * wet - (d.craft - 82) * 0.06 * wet;
       // pneus : composé, adéquation à la piste, usure
@@ -628,7 +637,12 @@
       if (x.fresh) { t += 0.5; x.fresh = false; }               // tour de sortie des stands : pneus froids
       const mode = MODES[x.c.me ? R.ctl.mode : 'std'] || MODES.std; // rythme choisi au muret
       t += mode.dt;
-      if (lap === 1) { const g = gauss(r) * 0.9 - 0.9 * x.M('launch'); t += g; if (x.c.me && x.M('launch') > 0.5 && g < -1.2) events.push({ lap, type: 'gain', who: x.i, txt: 'envol parfait au départ !' }); }
+      if (lap === 1) {
+        const c1 = r();
+        if (c1 < 0.012) { x.out = { lap, why: 'Accident' }; events.push({ lap, type: 'dnf', who: x.i, txt: 'est pris dans un accrochage au premier virage : abandon' }); continue; }
+        if (c1 < 0.06) { t += 5 + r() * 5; events.push({ lap, type: x.c.me ? 'loss' : 'spin', who: x.i, txt: 'est touché au premier virage et repart loin' }); }
+      }
+      if (lap === 1) { const g = gauss(r) * 1.7 - 0.9 * x.M('launch'); t += g; if (x.c.me && x.M('launch') > 0.5 && g < -1.2) events.push({ lap, type: 'gain', who: x.i, txt: 'envol parfait au départ !' }); }
       if (lap > LAPS - 5) t -= 0.2 * x.M('push');
       if (!sc && r() < 0.035 * (1 - d.cons / 100) * 3 * (1 - 0.2 * ty) * (1 + x.wear)) { t += 4 + r() * 4; x.spins++; events.push({ lap, type: 'spin', who: x.i, txt: 'part en tête-à-queue et perd du temps' }); }
       // usure du train de pneus sur ce tour
@@ -658,8 +672,20 @@
       else if (need === 'dry' && !ruleOk(x) && left >= 1 && left <= 2 + (x.i % 3)) { pit = dry; why = 'règle des 2 composés'; }
       if (pit) t += pitStop(R, x, lap, pit, sc || x.vsc, why);
       x.vsc = false;
-      x.time += t; x.lapsDone = lap; x.tyreLog[lap] = x.tyre;
+      x.time += t; x.lapsDone = lap; x.tyreLog[lap] = x.tyre; x.pitted = !!pit;
       if (t < R.fastest.t && !sc) R.fastest = { t, who: x.i, lap };
+    }
+    if (!sc && lap > 1) {
+      // Duels : une voiture qui en rattrape une autre tente le dépassement. Réussite selon la combativité des deux pilotes,
+      // l'écart d'usure des pneus, le rythme choisi et le tracé (les longues lignes droites aident). Sinon elle reste bloquée derrière.
+      const prev = R.prevOrder.map((i) => field[field.findIndex((y) => y.i === i)]).filter((y) => y && !y.out);
+      for (let k = 1; k < prev.length; k++) {
+        const a = prev[k - 1], b = prev[k];
+        if (a.pitted || b.pitted || b.time >= a.time) continue;
+        const pPass = clamp(0.42 + (b.driver.craft - a.driver.craft) / 70 + (a.wear - b.wear) * 0.6 + (b.c.me && R.ctl.mode === 'push' ? 0.12 : 0) - (a.c.me && R.ctl.mode === 'push' ? 0.08 : 0) + (w.speed - 0.35) * 0.7 + (a.time - b.time) * 0.06, 0.08, 0.92);
+        if (r() < pPass) { if (b.c.me) events.push({ lap, type: 'gain', who: b.i, txt: `dépasse ${a.name} en piste` }); else if (a.c.me) events.push({ lap, type: 'loss', who: a.i, txt: `se fait dépasser par ${b.name}` }); }
+        else { b.time = a.time + 0.25 + r() * 0.45; b.hold = true; if (b.c.me) events.push({ lap, type: 'spin', who: b.i, txt: `reste bloqué derrière ${a.name}` }); else if (a.c.me) events.push({ lap, type: 'gain', who: a.i, txt: `résiste à l'attaque de ${b.name}` }); }
+      }
     }
     if (sc) {
       // voiture de sécurité : le peloton se regroupe (ceux qui se sont arrêtés repartent derrière)
@@ -674,8 +700,8 @@
     const order = field.filter((x) => !x.out).sort((a, b) => a.time - b.time).concat(field.filter((x) => x.out).sort((a, b) => b.out.lap - a.out.lap));
     const me = R.me;
     const pBefore = R.prevOrder.indexOf(me.i), pNow = order.indexOf(me);
-    if (!me.out && lap > 1 && pNow < pBefore) events.push({ lap, type: 'gain', who: me.i, txt: `gagne ${pBefore - pNow} place${pBefore - pNow > 1 ? 's' : ''} → P${pNow + 1}` });
-    if (!me.out && lap > 1 && pNow > pBefore) events.push({ lap, type: 'loss', who: me.i, txt: `recule en P${pNow + 1}` });
+    if (!me.out && lap > 1 && pNow < pBefore - 1) events.push({ lap, type: 'gain', who: me.i, txt: `gagne ${pBefore - pNow} place${pBefore - pNow > 1 ? 's' : ''} → P${pNow + 1}` });
+    if (!me.out && lap > 1 && pNow > pBefore + 1) events.push({ lap, type: 'loss', who: me.i, txt: `recule en P${pNow + 1}` });
     R.prevOrder = order.map((x) => x.i);
     const leadT = order[0].time;
     R.laps.push(order.map((x) => ({ i: x.i, gap: x.out ? null : x.time - leadT, out: !!x.out, ty: x.tyre, wear: x.wear })));
