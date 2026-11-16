@@ -191,7 +191,7 @@ Ouvrez ensuite http://localhost:8000.
 | `js/wec.js` | Championnat WEC : calendrier, plateau Hypercar, lecture des résultats (`data/wec/<année>.json`) |
 | `js/circuits.js` | Tracés réels des circuits (données f1-circuits, licence MIT) |
 | `js/racemap.js` | Course manager en vue 2D : tracé du circuit et un point par voiture (canvas) |
-| `js/fx.js` | Effets course auto : drapeau à damier entre les onglets, étincelles au clic, lignes de vitesse, apparitions en cascade, vibreur de navigation |
+| `js/fx.js` | Effets course auto : drapeau à damier entre les onglets, traces de pneus dans les marges au défilement, lignes de vitesse, apparitions en cascade, vibreur de navigation |
 
 Pour ajuster le modèle : `TEAM_PRIOR` (niveau supposé des écuries en début de saison) se trouve dans `data.js`, et les exposants et l'effet de la grille dans `model.js`. La marge du « bookmaker » se règle par marché dans `markets.js` (`margin`).
 

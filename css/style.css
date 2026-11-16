@@ -1110,3 +1110,13 @@ body.mgr-bg .aurora { opacity: .4; background: conic-gradient(from 210deg at 60%
 .pw-rule { grid-column: 1 / -1; font-size: 11px; color: #9fe8c8; } .pw-rule.ko { color: #ff9a9a; }
 @media (max-width: 860px) { .pitwall { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
 @media (max-width: 520px) { .pitwall { grid-template-columns: minmax(0, 1fr); } .race-fc { font-size: 11px; } }
+
+/* ---------- Traces de pneus discrètes dans les marges (fond dynamique au défilement) ---------- */
+.skids { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+.skid { position: absolute; top: 0; height: 100%; width: max(0px, calc((100vw - 1320px) / 2 - 10px)); max-width: 220px; }
+.skid.l { left: 0; } .skid.r { right: 0; transform: scaleX(-1); }
+.skid path { fill: none; stroke: rgba(255,255,255,.12); stroke-width: 5; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-dasharray: 60 1000; transition: stroke-dasharray .35s ease-out; }
+.skid path + path { stroke: rgba(255,255,255,.09); }
+@media (max-width: 1360px) { .skid { width: 70px; opacity: .6; } }
+@media (max-width: 760px) { .skid { width: 28px; opacity: .45; } }
+@media (prefers-reduced-motion: reduce) { .skid path { transition: none; } }

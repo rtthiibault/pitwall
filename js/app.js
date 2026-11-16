@@ -51,7 +51,7 @@
     F1.social.init().then((so) => { if (so.incoming.length) toast('👋', `${so.incoming.length} demande${so.incoming.length > 1 ? 's' : ''} d'ami en attente`, 'win', 5000); });
     updateWallet();
     route();
-    mountTrackBg();
+    if (F1.fx && F1.fx.skidMarks) F1.fx.skidMarks();
     renderSlip();
     renderFooter();
     F1.data.loadMeta().then((m) => { S.meta = m; renderFooter(); });
@@ -181,7 +181,6 @@
     const r = parts[0] || '';
     if (lastTop === null) lastTop = r;
     document.body.classList.toggle('on-home', r === '' && S.series !== 'wec');
-    if (trackBg) trackBg.pause(r !== '' || S.series === 'wec');
     S.sel.clear();
     $$('[data-r]').forEach((a) => a.classList.toggle('active', a.dataset.r === (r === 'gp' ? 'calendrier' : r)));
     $('#friendsBtn').classList.toggle('active', r === 'amis');
@@ -221,7 +220,7 @@
   // changement d'onglet : un drapeau à damier balaie l'écran, la page change pendant qu'il la couvre
   window.addEventListener('hashchange', () => {
     const top = (location.hash.replace(/^#\/?/, '') || '').split('/')[0];
-    const go = () => { route(); window.scrollTo({ top: 0, behavior: 'instant' }); if (trackBg) trackBg.jump(); };
+    const go = () => { route(); window.scrollTo({ top: 0, behavior: 'instant' }); };
     if (F1.fx && lastTop !== null && top !== lastTop) F1.fx.flagWipe(go); else go();
     lastTop = top;
   });
@@ -430,39 +429,7 @@
       <table class="tbl" style="margin-top:10px"><tbody>${ds.map((d, i) => `<tr><td class="pos">${i + 1}</td><td>${drvCell(d.id)}</td><td style="width:35%"><div class="ptsbar"><i style="width:${(d.points / max) * 100}%;background:${tcol(d.teamId)}"></i></div></td><td class="r num"><b>${fmt(d.points)}</b></td></tr>`).join('')}</tbody></table></a>`;
   }
   /* ---------- Circuit en fond de page : la F1 du favori enchaîne les virages en glisse au fil du défilement ---------- */
-  let trackBg = null;
-  function mountTrackBg() {
-    if (trackBg || (F1.fx && F1.fx.reduce)) return;
-    const el = $('#trackBg'); if (!el) return;
-    const w = S.markets.find((m) => m.kind === 'win');
-    const fav = w && w.selections[0] && drv(w.selections[0].driverId);
-    // la monoplace du fond est toujours une F1 : en mode WEC, on prend le leader du championnat de F1
-    const lead = S.f1 && [...S.f1.drivers.values()].filter((d) => S.f1.entrants.includes(d.id)).sort((a, b) => b.points - a.points)[0];
-    const teamId = S.series === 'wec' ? (lead ? lead.teamId : 'mclaren') : fav ? fav.teamId : (S.season.entrants[0] && drv(S.season.entrants[0]).teamId) || 'mclaren';
-    const t = team(teamId);
-    const go = () => {
-      if (trackBg || !F1.car3d || !F1.car3d.supported || !F1.car3d.ready) return;
-      const getP = () => { const max = document.documentElement.scrollHeight - innerHeight; return max > 0 ? scrollY / max : 0; };
-      const tele = $('#tele'), spd = $('#teleSpd'), gear = $('#teleGear'), dr = $('#teleDrift'), thr = $('#teleThr'), sec = $('#teleSec');
-      tele.style.setProperty('--tc', t.color);
-      $('#teleWho').textContent = fav ? fav.family.toUpperCase() : t.short.toUpperCase();
-      let shown = -1;
-      const onTel = ({ speed, drift, p }) => {
-        const kmh = Math.min(346, Math.round(speed * 3.2));
-        if (kmh === shown && Math.abs(drift) < 0.5) return;
-        shown = kmh;
-        spd.textContent = kmh;
-        gear.textContent = kmh < 4 ? 'N' : Math.min(8, 1 + Math.floor(kmh / 44));
-        dr.textContent = Math.abs(Math.round(drift)) + '°';
-        thr.style.width = Math.min(100, kmh / 3.4) + '%';
-        const s = p < 1 / 3 ? 1 : p < 2 / 3 ? 2 : 3;
-        if (sec.dataset.s !== String(s)) { sec.dataset.s = s; sec.textContent = 'S' + s; }
-        tele.classList.toggle('hot', Math.abs(drift) > 12);
-      };
-      try { trackBg = F1.car3d.mountTrack(el, teamId, getP, { onTel }); trackBg.pause(!document.body.classList.contains('on-home')); el.classList.add('ready'); tele.classList.add('ready'); } catch (e) { console.warn(e); }
-    };
-    if (F1.car3d && F1.car3d.ready) go(); else window.addEventListener('car3d-ready', go, { once: true });
-  }
+
   function upcomingTeaser() {
     const up = S.season.upcoming;
     if (!up || !up.races.length) return '';

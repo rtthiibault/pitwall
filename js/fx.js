@@ -125,5 +125,34 @@
   }
   window.addEventListener('resize', navIndicator);
 
-  F1.fx = { flagWipe, reveal, navIndicator, reduce };
+  /* ---------- Traces de pneus sur les bords : elles se dessinent au fil du défilement ----------
+     Deux paires de traces (une à gauche, une à droite), en SVG, très peu contrastées et cantonnées aux marges :
+     elles ne passent jamais derrière le contenu. Aucun rendu en boucle : seul le défilement les met à jour. */
+  function skidMarks() {
+    const el = document.getElementById('skids'); if (!el || el.firstChild) return;
+    const NS = 'http://www.w3.org/2000/svg';
+    const mk = (side) => {
+      const svg = document.createElementNS(NS, 'svg'); svg.setAttribute('class', 'skid ' + side); svg.setAttribute('viewBox', '0 0 100 1000'); svg.setAttribute('preserveAspectRatio', 'none');
+      // tracé ondulé, comme une voiture qui glisse d'un virage à l'autre ; deux roues espacées
+      const pts = []; for (let y = 0; y <= 1000; y += 20) { const k = y / 1000; pts.push([50 + Math.sin(k * Math.PI * 3.2 + (side === 'r' ? 1.4 : 0)) * 22 + Math.sin(k * Math.PI * 9) * 4, y]); }
+      const d = (dx) => 'M' + pts.map(([x, y]) => `${(x + dx).toFixed(1)} ${y}`).join(' L');
+      const paths = [-7, 7].map((dx) => { const p = document.createElementNS(NS, 'path'); p.setAttribute('d', d(dx)); p.setAttribute('pathLength', '1000'); svg.appendChild(p); return p; });
+      el.appendChild(svg); return paths;
+    };
+    const all = [...mk('l'), ...mk('r')];
+    let raf = 0;
+    const upd = () => {
+      raf = 0;
+      const max = document.documentElement.scrollHeight - innerHeight;
+      const p = max > 40 ? Math.min(1, Math.max(0, scrollY / max)) : 0;
+      // la trace avance avec la lecture de la page (un peu d'avance pour qu'elle soit visible dès le début)
+      const len = 1000 * Math.min(1, 0.06 + p * 0.94);
+      all.forEach((path) => { path.style.strokeDasharray = `${len} 1000`; });
+    };
+    const on = () => { if (!raf) raf = requestAnimationFrame(upd); };
+    window.addEventListener('scroll', on, { passive: true }); window.addEventListener('resize', on); window.addEventListener('hashchange', () => setTimeout(on, 60));
+    upd();
+  }
+
+  F1.fx = { skidMarks, flagWipe, reveal, navIndicator, reduce };
 })(window.F1 = window.F1 || {});
