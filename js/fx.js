@@ -125,33 +125,90 @@
   }
   window.addEventListener('resize', navIndicator);
 
-  /* ---------- Traces de pneus sur les bords : elles se dessinent au fil du défilement ----------
-     Deux paires de traces (une à gauche, une à droite), en SVG, très peu contrastées et cantonnées aux marges :
-     elles ne passent jamais derrière le contenu. Aucun rendu en boucle : seul le défilement les met à jour. */
+  /* ---------- Traces de pneus sur les bords, laissées par une petite F1 ----------
+     Une monoplace vue de dessus descend dans chaque marge au rythme du défilement et dépose deux traces de gomme
+     (ses roues arrière). Elle glisse d'un virage à l'autre avec un léger contre-braquage. Tout reste dans les marges,
+     peu contrasté, et rien ne tourne en boucle : l'animation ne s'exécute que lorsque la page défile. */
+  const CAR_SVG = '<svg viewBox="0 0 24 64" aria-hidden="true">'
+    + '<rect class="wh" x="0" y="8" width="5" height="9" rx="1.6"/><rect class="wh" x="19" y="8" width="5" height="9" rx="1.6"/>'
+    + '<rect class="wh" x="0" y="44" width="6" height="11" rx="1.8"/><rect class="wh" x="18" y="44" width="6" height="11" rx="1.8"/>'
+    + '<rect class="wg" x="2" y="1" width="20" height="3.2" rx="1"/>'
+    + '<path class="bd" d="M10.6 3 L13.4 3 L14.6 20 L18 25 L18.4 41 L16 49 L15 57 L9 57 L8 49 L5.6 41 L6 25 L9.4 20 Z"/>'
+    + '<ellipse class="ck" cx="12" cy="30" rx="2.4" ry="4.2"/>'
+    + '<rect class="wg" x="3" y="58" width="18" height="4.4" rx="1"/></svg>';
   function skidMarks() {
     const el = document.getElementById('skids'); if (!el || el.firstChild) return;
     const NS = 'http://www.w3.org/2000/svg';
-    const mk = (side) => {
+    const sides = ['l', 'r'].map((side) => {
       const svg = document.createElementNS(NS, 'svg'); svg.setAttribute('class', 'skid ' + side); svg.setAttribute('viewBox', '0 0 100 1000'); svg.setAttribute('preserveAspectRatio', 'none');
-      // tracé ondulé, comme une voiture qui glisse d'un virage à l'autre ; deux roues espacées
-      const pts = []; for (let y = 0; y <= 1000; y += 20) { const k = y / 1000; pts.push([50 + Math.sin(k * Math.PI * 3.2 + (side === 'r' ? 1.4 : 0)) * 22 + Math.sin(k * Math.PI * 9) * 4, y]); }
-      const d = (dx) => 'M' + pts.map(([x, y]) => `${(x + dx).toFixed(1)} ${y}`).join(' L');
-      const paths = [-7, 7].map((dx) => { const p = document.createElementNS(NS, 'path'); p.setAttribute('d', d(dx)); p.setAttribute('pathLength', '1000'); svg.appendChild(p); return p; });
-      el.appendChild(svg); return paths;
+      // ligne médiane ondulée : la voiture enchaîne les virages d'un bord à l'autre de la marge
+      const pts = []; for (let y = 0; y <= 1000; y += 10) { const k = y / 1000; pts.push([50 + Math.sin(k * Math.PI * 3.2 + (side === 'r' ? 1.4 : 0)) * 22 + Math.sin(k * Math.PI * 9) * 4, y]); }
+      const tracks = [0, 1].map(() => { const p = document.createElementNS(NS, 'path'); p.setAttribute('pathLength', '1000'); svg.appendChild(p); return p; });
+      el.appendChild(svg);
+      const car = document.createElement('div'); car.className = 'skid-car ' + side; car.innerHTML = CAR_SVG; el.appendChild(car);
+      return { side, svg, pts, tracks, car, cum: [], w: 0, h: 0, left: 0, carW: 0 };
+    });
+
+    // géométrie en pixels (l'échelle du SVG n'est pas uniforme) : abscisse curviligne de la ligne médiane
+    const layout = () => sides.forEach((S) => {
+      const r = S.svg.getBoundingClientRect(); S.w = r.width; S.h = r.height; S.left = r.left;
+      S.carW = Math.max(12, Math.min(24, S.w * 0.28));
+      const P = S.pts.map(([x, y]) => S.px(x, y)); S.P = P;
+      S.cum = [0]; for (let i = 1; i < P.length; i++) S.cum.push(S.cum[i - 1] + Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]));
+      // les deux traces suivent les roues arrière, de part et d'autre de la ligne médiane (décalage normal, en pixels)
+      const off = S.carW * 0.4;
+      [-1, 1].forEach((sg, j) => {
+        const d = P.map((p, i) => {
+          const a = P[Math.max(0, i - 1)], b = P[Math.min(P.length - 1, i + 1)];
+          const tx = b[0] - a[0], ty = b[1] - a[1], n = Math.hypot(tx, ty) || 1;
+          const X = p[0] + (-ty / n) * off * sg, Y = p[1] + (tx / n) * off * sg;
+          return `${(((S.side === 'r' ? S.left + S.w - X : X - S.left) / (S.w || 1)) * 100).toFixed(2)} ${((Y / (S.h || 1)) * 1000).toFixed(1)}`;
+        });
+        S.tracks[j].setAttribute('d', 'M' + d.join(' L'));
+      });
+      S.car.style.width = S.carW + 'px'; S.car.style.height = S.carW * 2.67 + 'px';
+      S.car.hidden = S.w < 40;
+    });
+    sides.forEach((S) => { S.px = (x, y) => [S.side === 'r' ? S.left + S.w * (1 - x / 100) : S.left + (S.w * x) / 100, (S.h * y) / 1000]; });
+
+    // point et cap à une fraction donnée de la longueur
+    const at = (S, f) => {
+      const L = S.cum[S.cum.length - 1] * f; let i = 1; while (i < S.cum.length - 1 && S.cum[i] < L) i++;
+      const a = S.P[i - 1], b = S.P[i], u = (L - S.cum[i - 1]) / ((S.cum[i] - S.cum[i - 1]) || 1);
+      return { x: a[0] + (b[0] - a[0]) * u, y: a[1] + (b[1] - a[1]) * u, hd: Math.atan2(b[1] - a[1], b[0] - a[0]) };
     };
-    const all = [...mk('l'), ...mk('r')];
-    let raf = 0;
-    const upd = () => {
+
+    let cur = -1, target = 0, raf = 0;
+    const draw = () => {
       raf = 0;
+      cur = cur < 0 || reduce ? target : cur + (target - cur) * 0.16;
+      if (Math.abs(target - cur) < 0.0004) cur = target;
+      sides.forEach((S) => {
+        S.tracks.forEach((p) => { p.style.strokeDasharray = `${(cur * 1000).toFixed(1)} 1000`; });
+        if (S.car.hidden) return;
+        const p = at(S, cur), q = at(S, Math.max(0, cur - 0.035));
+        // dérive : la caisse pointe vers l'intérieur du virage, d'autant plus que la courbe se resserre
+        let turn = p.hd - q.hd; turn = Math.atan2(Math.sin(turn), Math.cos(turn));
+        const yaw = Math.max(-0.45, Math.min(0.45, turn * 2.2));
+        const ang = (p.hd + yaw) * 180 / Math.PI + 90; // le dessin de la voiture pointe vers le haut
+        // l'arrière de la voiture est posé au bout des traces : on décale le centre vers l'avant
+        const fwd = S.carW * 0.9;
+        const cx = p.x + Math.cos(p.hd) * fwd, cy = p.y + Math.sin(p.hd) * fwd;
+        S.car.style.transform = `translate(${(cx - S.carW / 2).toFixed(1)}px, ${(cy - S.carW * 1.335).toFixed(1)}px) rotate(${ang.toFixed(1)}deg)`;
+      });
+      if (cur !== target) raf = requestAnimationFrame(draw);
+    };
+    const upd = () => {
       const max = document.documentElement.scrollHeight - innerHeight;
       const p = max > 40 ? Math.min(1, Math.max(0, scrollY / max)) : 0;
-      // la trace avance avec la lecture de la page (un peu d'avance pour qu'elle soit visible dès le début)
-      const len = 1000 * Math.min(1, 0.06 + p * 0.94);
-      all.forEach((path) => { path.style.strokeDasharray = `${len} 1000`; });
+      // la voiture avance avec la lecture de la page ; elle part un peu en dessous du haut pour être visible dès le début
+      target = 0.08 + p * 0.86;
+      if (!raf) raf = requestAnimationFrame(draw);
     };
-    const on = () => { if (!raf) raf = requestAnimationFrame(upd); };
-    window.addEventListener('scroll', on, { passive: true }); window.addEventListener('resize', on); window.addEventListener('hashchange', () => setTimeout(on, 60));
-    upd();
+    window.addEventListener('scroll', upd, { passive: true });
+    window.addEventListener('resize', () => { layout(); cur = -1; upd(); });
+    window.addEventListener('hashchange', () => setTimeout(upd, 60));
+    layout(); upd();
   }
 
   F1.fx = { skidMarks, flagWipe, reveal, navIndicator, reduce };
