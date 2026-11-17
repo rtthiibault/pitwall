@@ -107,7 +107,7 @@ Ne mettez **jamais** la clé *service_role* dans le site.
 ## Pilotes et monoplaces
 - **Portraits des pilotes** : il s'agit uniquement d'images **libres de droits** issues de Wikimedia Commons (licences CC BY, CC BY-SA, CC0…), c'est-à-dire les photos principales des pages Wikipédia des pilotes. L'automatisation hebdomadaire les liste dans `data/portraits.json`, avec l'auteur et la licence de chacune. Les crédits sont affichés par le lien « crédits photos » en pied de page, comme l'exigent ces licences. Si une photo manque, le site affiche les initiales du pilote aux couleurs de son écurie.
 - **Monoplaces 3D** : il s'agit du modèle « F1 2026 concept polygon model » (`assets/f1-2026.glb`), affiché avec Three.js.
-  Ferrari (SF-26), McLaren (MCL40), Aston Martin (AM26) et Racing Bulls ont leur propre modèle (`assets/f1/*.glb`, correspondance `F1_MODEL` dans `js/car3d.js`), chargé à la demande, avec sa livrée d'origine. Les décalcomanies (sponsors, numéros) et l'habitacle ont été retirés à la conversion ; même repère et mêmes essieux que le modèle générique, donc l'atelier R&D fonctionne à l'identique. Vérifiez la licence de chaque modèle avant diffusion.
+  Ferrari (SF-26), McLaren (MCL40), Aston Martin (AM26), Racing Bulls, Red Bull (RB22), Williams, Alpine, Audi (R26) et Cadillac (MAC-26) ont leur propre modèle (`assets/f1/*.glb`, correspondance `F1_MODEL` dans `js/car3d.js`), chargé à la demande, avec sa livrée d'origine. Les décalcomanies (sponsors, numéros) et l'habitacle ont été retirés à la conversion ; même repère et mêmes essieux que le modèle générique, donc l'atelier R&D fonctionne à l'identique. Vérifiez la licence de chaque modèle avant diffusion.
   - **Conversion** : le fichier USDZ d'origine (1,16 million de triangles) a été converti en GLB, puis segmenté en zones de livrée (carrosserie, couleur secondaire, dessous de caisse, carbone, pneus, jantes).
   - **Allègement** : le modèle a été simplifié à environ 530 000 triangles et compressé avec meshopt (1,4 Mo).
   - **Peinture** : chaque écurie reçoit sa **livrée 2026** (couleurs, dégradés, découpes et filets d'après l'affiche officielle des monoplaces, sans les logos de sponsors). Ce sont les fonctions `LIVERY3D` de `js/visuals.js`, qui colorent chaque sommet selon sa position sur la voiture (avant/arrière, hauteur, côté).
@@ -178,7 +178,7 @@ Ouvrez ensuite http://localhost:8000.
 | `js/season2027.js` | Calendrier et grille 2027 intégrés |
 | `js/car3d.js` | Rendu 3D des monoplaces (Three.js, modèle GLB) |
 | `assets/f1-2026.glb` | Modèle 3D de la monoplace |
-| `assets/f1/*.glb` | Monoplaces dédiées (Ferrari, McLaren, Aston Martin, Racing Bulls) avec leur livrée d'origine |
+| `assets/f1/*.glb` | Monoplaces dédiées (toutes les écuries sauf Mercedes et Haas) avec leur livrée d'origine |
 | `js/visuals.js` | Monoplaces SVG (livrées) et portraits des pilotes |
 | `js/social.js` | Système d'amis (Supabase) |
 | `js/config.js` | Configuration Supabase (URL + clé anon) |

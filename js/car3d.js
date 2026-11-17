@@ -46,10 +46,11 @@ async function loadModel() {
 }
 
 /* ---------- Monoplaces dédiées : certaines écuries ont leur propre modèle 3D ----------
-   Modèles fournis (Ferrari SF-26, McLaren MCL40, Aston Martin AM26, Racing Bulls) avec leur livrée d'origine.
+   Modèles fournis (Ferrari SF-26, McLaren MCL40, Aston Martin AM26, Racing Bulls, Red Bull RB22, Williams, Alpine,
+   Audi R26, Cadillac MAC-26) avec leur livrée d'origine.
    Les couches de décalcomanies (sponsors, numéros) et l'habitacle ont été retirés à la conversion.
    Repère et essieux identiques au modèle générique (avant x = 1,50, arrière x = -1,96, sol y = 0). */
-const F1_MODEL = { ferrari: 'ferrari', mclaren: 'mclaren', aston_martin: 'aston', rb: 'rb', racing_bulls: 'rb' };
+const F1_MODEL = { ferrari: 'ferrari', mclaren: 'mclaren', aston_martin: 'aston', rb: 'rb', racing_bulls: 'rb', red_bull: 'redbull', williams: 'williams', alpine: 'alpine', audi: 'audi', sauber: 'audi', cadillac: 'cadillac' };
 const F1_SETS = new Map(), F1_LOADING = new Map();
 const f1Key = (teamId) => F1_MODEL[teamId] || null;
 function loadF1(key) {
