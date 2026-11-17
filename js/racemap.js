@@ -147,7 +147,7 @@
         }
         if (d.c.me || d === first || d.state === 'pit') {
           const t = d.state === 'pit' ? 'STAND' : d.c.me ? 'VOUS' : 'P1';
-          ctx.font = '900 10px Titillium Web, sans-serif'; const tw = ctx.measureText(t).width + 8;
+          ctx.font = '700 10px Archivo, sans-serif'; const tw = ctx.measureText(t).width + 8;
           ctx.fillStyle = 'rgba(8,9,14,.82)'; ctx.fillRect(x - tw / 2, y - R - 19, tw, 13);
           ctx.fillStyle = d.state === 'pit' ? '#8ecbff' : '#fff'; ctx.textAlign = 'center'; ctx.fillText(t, x, y - R - 9);
         }
@@ -157,7 +157,7 @@
       if (res.scLap > 0 && T > res.scLap - 0.75 && T < res.scLap + 0.85 && lead > -1e8) {
         const p = at(lead + 0.014);
         ctx.beginPath(); ctx.arc(p[0], p[1], 6, 0, 6.3); ctx.fillStyle = Math.sin(now / 110) > 0 ? '#ff8a00' : '#fff'; ctx.fill(); ctx.strokeStyle = '#111'; ctx.lineWidth = 1.5; ctx.stroke();
-        ctx.font = '900 10px Titillium Web, sans-serif'; ctx.fillStyle = '#ff8a00'; ctx.textAlign = 'center'; ctx.fillText('SC', p[0], p[1] - 10);
+        ctx.font = '700 10px Archivo, sans-serif'; ctx.fillStyle = '#ff8a00'; ctx.textAlign = 'center'; ctx.fillText('SC', p[0], p[1] - 10);
       }
       // pluie : quelques traits légers
       if (rain > 0.04) {

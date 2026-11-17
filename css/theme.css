@@ -1,0 +1,250 @@
+/* =====================================================================
+   THÈME v3 : « écran de chronométrage »
+   L'esthétique des moniteurs du muret des stands : surfaces plates, filets fins,
+   chiffres tabulaires, couleurs porteuses de sens (rouge = action / direct,
+   violet = meilleur, vert = gain, jaune = alerte). Ni verre, ni halo, ni dégradé décoratif.
+   Chargé après style.css : il remplace l'habillage sans toucher à la mise en page.
+   ===================================================================== */
+:root {
+  --bg: #13171c;
+  --bg2: #171b21;
+  --bg3: #1d232a;
+  --panel: #1a1f26;
+  --panel-solid: #1a1f26;
+  --raised: #222831;
+  --card: #1a1f26;
+  --card2: #222831;
+  --line: #2a313b;
+  --line2: #3a434f;
+  --text: #e6e8eb;
+  --muted: #8c96a2;
+  --dim: #5f6873;
+  --red: #d7261e;
+  --red2: #ef3a31;
+  --gold: #e9be3e;
+  --win: #3cbf6e;
+  --lose: #e5484d;
+  --purple: #9d6bf0;
+  --cyan: #2ec4b6;
+  --radius: 6px;
+  --radius-s: 4px;
+  --shadow: none;
+  --edge: var(--line);
+  --edge-soft: var(--line);
+  --f: 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+html { -webkit-font-smoothing: antialiased; }
+body { background: var(--bg); font-family: var(--f); font-variation-settings: 'wdth' 100; letter-spacing: 0; }
+body, button, input, select, textarea { font-family: var(--f); }
+body::before { background: var(--bg) !important; }
+body::after, .aurora { display: none !important; }
+body.mgr-bg::before { background: linear-gradient(180deg, color-mix(in srgb, var(--mgr, var(--red)) 10%, var(--bg)) 0, var(--bg) 420px) !important; }
+
+/* Aucune typographie penchée : tout est droit. Libellés en casse normale. */
+.logo, .logo span em, .logo-word, .section-h h2, .hero h1, .fav .bignum, .fav .lname, .pod-step .blk, .tbl .pos, .h2h .side .n, .h2h .vs,
+.market-head h1, .tslot .nn, .race-card .rn, .slip-h h3, .modal-box h2, .gteam-h h3, .gdrv .gnum, .ginfo .lname, .rating-big, .race-lap,
+.trow .tp, .big-pos, .mk b, .tunnel-h, .race-flag, .hq-id h1, .hq-name, .radio-cd, .radio-pick, .pw-box, .nav a.nav-mgr, .btn, .slip-fab, .tab, .seg button { font-style: normal !important; }
+.lights-caption, .cd-box small, .sess small, .fav .rank, .boost .bt, .tbl th, .stat small, .gteam .rank, .pc-big small, .stage-cap small,
+.rd-kpis small, .rd-branch b, .rd-cat, .rd-badge.reco, .ctraits small, .hq-id small, .hq-hud small, .hq-kpi small, .hq-rail a, .pnl-h b,
+.stf small, .bulletin small, .radio-h, .plan-h > b, .pw-cell > small, .pw-mode button, .btn, .slip-fab, .pu-tag, .upper {
+  text-transform: none !important; letter-spacing: 0 !important;
+}
+
+/* Titres : Archivo élargi, droit. Le nom du Grand Prix est le seul élément expressif de la page. */
+.section-h h2, .market-head h1, .slip-h h3, .modal-box h2, .gteam-h h3, .hq-id h1, .rd-title, .hq-name, .fav .lname, .ginfo .lname {
+  text-transform: none !important; font-variation-settings: 'wdth' 112; font-weight: 750; letter-spacing: -0.01em;
+  background: none !important; -webkit-background-clip: border-box !important; background-clip: border-box !important; color: var(--text) !important; text-shadow: none !important; animation: none !important;
+}
+.section-h h2 { font-size: 21px; }
+.section-h h2::before { display: none; }
+.market-head h1 { font-size: clamp(26px, 3.6vw, 38px); }
+.hero h1 { text-transform: none; font-variation-settings: 'wdth' 125; font-weight: 800; letter-spacing: -0.025em; line-height: 1; font-size: clamp(34px, 4.4vw, 60px); }
+.hero h1 .accent { color: var(--muted); -webkit-text-stroke: 0; font-variation-settings: 'wdth' 100; font-weight: 500; font-size: .32em; letter-spacing: 0; margin-bottom: 12px; text-transform: none; }
+
+/* Barre du haut : bandeau plein, filet en bas */
+.topbar { top: 0 !important; margin: 0 !important; border-radius: 0 !important; border: 0 !important; border-bottom: 1px solid var(--line) !important;
+  background: var(--bg) !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; padding: 10px 24px !important; }
+.topbar::after { display: none; }
+.logo svg, .logo-mark { filter: none !important; }
+.logo-word { font-variation-settings: 'wdth' 118; font-weight: 800; letter-spacing: 0.01em; }
+.nav a { border-radius: var(--radius-s); font-weight: 500; letter-spacing: 0; padding: 8px 12px; }
+.nav a:hover { transform: none !important; background: transparent; color: var(--text); }
+.nav a.active { background: transparent !important; box-shadow: none !important; color: var(--text); }
+.nav-ind { height: 2px !important; bottom: -11px !important; border-radius: 0 !important; background: var(--red) !important; box-shadow: none !important; }
+.nav-ind * { display: none !important; }
+.nav a.nav-mgr { font-weight: 650; text-transform: none; letter-spacing: 0; margin: 0 4px; padding: 6px 11px; color: var(--text);
+  background: transparent !important; border: 1px solid var(--line2) !important; box-shadow: none !important; }
+.nav a.nav-mgr:hover, .nav a.nav-mgr.active { background: var(--raised) !important; border-color: var(--red) !important; }
+.nav a.nav-mgr i { background: transparent; color: var(--gold); border: 1px solid currentColor; border-radius: 3px; font-size: 10px; letter-spacing: 0; padding: 0 4px; font-weight: 650; }
+.nav a.nav-mgr::before, .nav a.nav-mgr::after { display: none !important; }
+.wallet, .wallet.pcw { background: var(--panel) !important; border: 1px solid var(--line) !important; border-radius: var(--radius-s) !important; box-shadow: none !important; }
+.wallet .num { font-variant-numeric: tabular-nums; font-weight: 650; }
+.coin { box-shadow: none !important; }
+.bottomnav { background: var(--bg) !important; border-top: 1px solid var(--line) !important; box-shadow: none !important; backdrop-filter: none !important; }
+.bottomnav a.nav-mgr { color: var(--text); }
+.bottomnav a.nav-mgr svg { background: var(--red); border-radius: 4px; box-shadow: none; }
+
+/* Surfaces : plates, un filet, rayon selon la hiérarchie */
+.card, .stat, .race-card, .race-card:not(.next), .mcard, .gteam, .ach, .bet, .prow, .sess, .cd-box, .notice, .boost, .pnl, .hq-top, .hq-body, .modal-box, .toast, .slip {
+  backdrop-filter: none !important; -webkit-backdrop-filter: none !important; box-shadow: none !important;
+}
+.card, .race-card, .race-card:not(.next), .mcard, .gteam, .ach, .bet, .prow, .stat {
+  background: var(--panel) !important; border: 1px solid var(--line) !important; border-radius: var(--radius) !important;
+}
+.card:hover, .mcard:hover, .race-card:hover { transform: none !important; box-shadow: none !important; border-color: var(--line2) !important; }
+/* fiches d'écurie : la couleur de l'équipe devient un filet en tête, plus de halo */
+.mcard, .gteam { border-top: 3px solid var(--tc, var(--line)) !important; }
+.mcard.own { border-color: var(--line) !important; border-top-color: var(--win) !important; }
+.race-card .rn { -webkit-text-stroke: 0; color: var(--dim); font-size: 13px; font-weight: 600; top: 14px; right: 14px; line-height: 1; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.race-card .rname { padding-right: 40px; }
+.race-card.next { border-color: var(--red) !important; background: var(--panel) !important; }
+.notice { background: var(--panel) !important; border: 1px solid var(--line) !important; border-left: 3px solid var(--gold) !important; border-radius: var(--radius-s) !important; color: var(--text) !important; }
+.notice.red { border-left-color: var(--red) !important; }
+.stat small { font-size: 12px; font-weight: 500; color: var(--muted); }
+.stat b { font-weight: 700; }
+.tbl th { font-size: 12px; font-weight: 500; }
+.tbl .pos { font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
+.tbl tr:hover td { background: var(--raised); }
+.tbl tr.me-row td { background: color-mix(in srgb, var(--red) 10%, transparent); }
+
+/* Boutons : pleins et droits, sans reflet ni lueur */
+.btn, .slip-fab { border-radius: var(--radius-s) !important; background: var(--red) !important; color: #fff; border: 1px solid var(--red) !important; box-shadow: none !important;
+  font-weight: 650; font-size: 14px; padding: 11px 18px; filter: none !important; transition: background .15s, border-color .15s, transform .08s; }
+.btn::after, .btn::before { display: none !important; }
+.btn:hover { transform: none !important; background: #b91e17 !important; border-color: #b91e17 !important; box-shadow: none !important; }
+.btn:active { transform: translateY(1px) !important; }
+.btn:focus-visible, .odd:focus-visible, .tab:focus-visible, .nav a:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.btn.ghost { background: transparent !important; border: 1px solid var(--line2) !important; color: var(--text); }
+.btn.ghost:hover { background: var(--raised) !important; border-color: var(--muted) !important; }
+.btn.gold { background: var(--gold) !important; border-color: var(--gold) !important; color: #1d1600 !important; }
+.btn.gold:hover { background: #d4aa2c !important; border-color: #d4aa2c !important; }
+.btn:disabled { background: var(--raised) !important; border-color: var(--line) !important; color: var(--dim) !important; }
+.btn.sm { padding: 7px 12px; font-size: 13px; }
+.hq-go { animation: none !important; letter-spacing: 0 !important; font-size: 16px; }
+
+/* Onglets : soulignés, comme un sélecteur de session */
+.tabs { background: var(--bg) !important; border: 0 !important; border-bottom: 1px solid var(--line) !important; border-radius: 0 !important; padding: 0 !important; gap: 2px; box-shadow: none !important; }
+.tab { border-radius: 0; padding: 11px 14px; font-weight: 550; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tab.on { background: transparent !important; box-shadow: none !important; color: var(--text); border-bottom-color: var(--red); }
+.tab .cnt { font-variant-numeric: tabular-nums; }
+.seg { border-radius: var(--radius-s); background: var(--bg); border: 1px solid var(--line); }
+.seg button, .seg a { border-radius: 3px; font-weight: 550; }
+.seg button.on, .seg a.on { background: var(--raised); box-shadow: none; }
+.chips button { border-radius: var(--radius-s); background: var(--raised); font-weight: 600; }
+.chip { border-radius: 3px; font-weight: 600; background: var(--raised); border-color: var(--line); padding: 3px 8px; }
+.chip.red { background: transparent; border-color: var(--red); color: var(--text); }
+.chip.gold { background: transparent; border-color: var(--gold); color: var(--gold); }
+.chip.green { background: transparent; border-color: var(--win); color: var(--win); }
+.chip.live::before { background: var(--red); }
+
+/* Cotes : lignes de tour de chronométrage */
+.odd { background: var(--raised) !important; border: 1px solid transparent !important; border-radius: var(--radius-s) !important; box-shadow: none !important; transform: none !important; }
+.odd:hover { background: #29303a !important; border-color: var(--line2) !important; box-shadow: none !important; }
+.odd .lbl { font-weight: 550; }
+.odd .o { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
+.odd.on { background: var(--red) !important; border-color: var(--red) !important; }
+.odd .bar { opacity: .5; }
+.boost { background: var(--panel) !important; border: 1px solid var(--line) !important; border-left: 3px solid var(--purple) !important; border-radius: var(--radius) !important; }
+.boost::before, .boost::after { display: none !important; }
+.boost .bt { color: var(--purple); font-size: 13px; font-weight: 600; }
+
+/* En-tête d'accueil */
+.hero { border-radius: var(--radius) !important; border: 1px solid var(--line) !important; background: var(--panel) !important; box-shadow: none !important; }
+body.wec .hero { background: var(--panel) !important; }
+.hero-bg .big-round, .hero-bg .streak, .hero-bg .grid-floor { display: none !important; }
+.hero-bg .kerb { height: 4px; opacity: 1; }
+.hero-meta { color: var(--muted); font-weight: 450; gap: 6px 22px; }
+.stage-glow { animation: none !important; filter: blur(28px); opacity: .45; }
+.stage-glow::after { display: none; }
+.stage-cap { border-radius: var(--radius-s); background: var(--bg); border-color: var(--line); backdrop-filter: none; }
+.stage-cap small { font-size: 11px; font-weight: 500; }
+/* compte à rebours : une seule bande de chronométrage */
+.countdown { gap: 0; display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius-s); background: var(--bg); }
+.cd-box { background: transparent !important; border: 0 !important; border-right: 1px solid var(--line) !important; border-radius: 0 !important; min-width: 78px; padding: 10px 12px 8px; }
+.cd-box:last-child { border-right: 0 !important; }
+.cd-box::after { display: none; }
+.cd-box b { font-weight: 650; font-size: 34px; font-variation-settings: 'wdth' 100; }
+.cd-box small { font-size: 11px; font-weight: 500; margin-top: 4px; }
+/* programme du week-end : un horaire, pas des cartes */
+.weekend { gap: 0; border-top: 1px solid var(--line); padding-top: 0; }
+.sess { background: transparent !important; border: 0 !important; border-radius: 0 !important; padding: 10px 18px 0 0; min-width: 0; }
+.sess small { font-size: 12px; font-weight: 500; }
+.sess b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.sess.next small { color: var(--red2); }
+.sess.next { background: transparent !important; }
+
+/* Sélecteur F1 / WEC */
+.series-sw { font-family: var(--f); }
+.series-tile { font-family: var(--f); }
+.series-tile:hover { transform: none; }
+.series-ic { border-radius: var(--radius); filter: grayscale(1) brightness(.75); }
+.series-ic.f1 { background: var(--red); } .series-ic.wec { background: #1f5fd6; }
+.series-tile.on .series-ic.f1, .series-tile.on .series-ic.wec { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--text); }
+.series-ck { display: none; }
+
+/* QG du manager : moniteur du muret */
+.hq { --pn: var(--panel); }
+.hq-top { background: var(--panel) !important; border: 1px solid var(--line) !important; border-bottom: 2px solid var(--tc) !important; border-radius: var(--radius) var(--radius) 0 0 !important; }
+.hq-top::before, .hq-top::after { display: none !important; }
+.hq-live { box-shadow: none; animation: none; background: var(--win); }
+.hq-id small { font-size: 12px; font-weight: 500; }
+.hq-hud { background: var(--bg); border-color: var(--line); border-radius: var(--radius-s); }
+.hq-hud > div { border-right-color: var(--line); }
+.hq-hud small, .hq-kpi small { font-size: 11px; font-weight: 500; }
+.hq-hud b { font-weight: 700; font-variant-numeric: tabular-nums; }
+.hq-body { background: var(--bg) !important; border-color: var(--line) !important; border-radius: 0 0 var(--radius) var(--radius) !important; }
+.hq-rail { background: var(--bg); border-right-color: var(--line); }
+.hq-rail a { border-radius: var(--radius-s); font-size: 11px; font-weight: 550; }
+.hq-rail a.on { background: var(--raised); }
+.pnl { border-radius: var(--radius) !important; border: 1px solid var(--line) !important; background: var(--panel) !important; background-image: none !important; }
+.pnl::before, .pnl::after { display: none !important; }
+.pnl-h { border-bottom-color: var(--line); padding: 11px 14px; }
+.pnl-h i { display: none; }
+.pnl-h b { font-size: 14px; font-weight: 650; }
+.pnl-l { font-size: 13px; font-weight: 550; color: var(--muted); text-decoration: underline; text-decoration-color: var(--line2); text-underline-offset: 3px; }
+.p-start { box-shadow: none !important; border-color: var(--line) !important; border-top: 2px solid var(--tc) !important; }
+.hq-kpi > div { background: var(--raised); border-color: var(--line); border-radius: var(--radius-s); }
+
+/* Fenêtres, panier, notifications */
+.modal-box { background: var(--panel) !important; border: 1px solid var(--line2) !important; border-radius: var(--radius) !important; }
+.slip { background: var(--panel) !important; border-left: 1px solid var(--line) !important; }
+.slip-f { background: var(--bg) !important; }
+.toast { background: var(--raised) !important; border: 1px solid var(--line2) !important; border-left: 3px solid var(--line2) !important; border-radius: var(--radius-s) !important; }
+.toast.win { border-left-color: var(--win) !important; }
+.toast.err { border-left-color: var(--lose) !important; }
+.badge { border-radius: 3px; font-style: normal; }
+.link { text-decoration: underline; text-decoration-color: var(--line2); text-underline-offset: 3px; }
+.link:hover { text-decoration-color: currentColor; }
+
+/* Mouvement : seules les actions de l'utilisateur animent l'interface */
+.section-h.rv.in h2::before { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { * { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+.btn, .slip-fab, .tab, .rd-tab, .seg button, .seg a, .chips button, .pu-tag, .wall-scene svg, .garage-scene svg { font-family: var(--f) !important; }
+
+/* Derniers effets lumineux retirés : la couleur suffit à porter l'information */
+.tl-bars i, .sbar-t, .xp-bar { border-radius: 1px; }
+.tl-bars .me { background: var(--tc) !important; box-shadow: none !important; }
+.tl-bars .ia { background: var(--line2); }
+.tl small { color: var(--muted); }
+.tl b { font-weight: 700; }
+.rating-big { text-shadow: none !important; font-weight: 750; }
+.pcoin { box-shadow: none !important; }
+.pips i.on { box-shadow: none !important; }
+.mk.next { animation: none !important; }
+.rd.reco, .obj.done:not(.claimed) { box-shadow: none !important; }
+.rd.reco { border-color: var(--red) !important; }
+.obj.done:not(.claimed) { border-color: var(--gold) !important; }
+.rd-card.sel { transform: none !important; filter: none !important; box-shadow: inset 0 0 0 2px var(--text) !important; }
+.tunnel-part .rd-ico { filter: none !important; }
+.needle { box-shadow: none !important; }
+.tunnel-ov.ok .tunnel-box, .tunnel-ov.ko .tunnel-box { box-shadow: none !important; }
+.tunnel-ov.ok .tunnel-box { border-color: var(--win) !important; } .tunnel-ov.ko .tunnel-box { border-color: var(--red) !important; }
+.radio-box, .radio-box.good, .radio-box.bad { box-shadow: none !important; border-radius: var(--radius) !important; background: var(--panel) !important; }
+.ctraits > div, .hq-kpi > div { border-radius: var(--radius-s); background: var(--raised); }
+.ctraits small { font-size: 11px; font-weight: 500; }
+.avatar { background: var(--raised) !important; border: 1px solid var(--line2); color: var(--text); box-shadow: none !important; }
+.ava.lg { box-shadow: 0 0 0 2px var(--mc, var(--tc)) !important; }
+.gphoto { border-radius: var(--radius) !important; }
+.race-card .winner { font-weight: 600; }
+@keyframes bump { 30% { transform: scale(1.06); } }
+.seg a, .seg button, .seg a *, .seg button * { font-style: normal !important; }

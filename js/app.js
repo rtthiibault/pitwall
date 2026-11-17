@@ -361,7 +361,7 @@
 
     if (S.markets.length) {
       const win = S.markets.find((m) => m.kind === 'win');
-      h += `<section class="section"><div class="section-h"><h2>Favoris pour la victoire</h2><a class="link" href="#/paris">Tous les marchés →</a></div><div class="grid g4">${win.selections.slice(0, 4).map((x, i) => favCard(x, win, i)).join('')}</div></section>`;
+      h += `<section class="section"><div class="section-h"><h2>Favoris pour la victoire</h2><a class="link" href="#/paris">Tous les marchés</a></div><div class="grid g4">${win.selections.slice(0, 4).map((x, i) => favCard(x, win, i)).join('')}</div></section>`;
       const boost = S.markets.find((m) => m.layout === 'boost');
       const rival = S.markets.find((m) => m.kind === 'h2h' && m.h2hType === 'rival');
       const quali = S.markets.find((m) => m.kind === 'pole') || S.markets.find((m) => m.kind === 'sprintWin') || S.markets.find((m) => m.kind === 'podium');
@@ -378,7 +378,7 @@
     if (!nx) {
       const champ = [...s.drivers.values()].sort((a, b) => b.points - a.points)[0];
       return `<section class="hero"><div class="hero-bg">${streaks()}<div class="grid-floor"></div><div class="big-round">${s.year}</div><div class="kerb"></div></div>
-        <div class="hero-top"><span class="chip gold">🏆 Saison ${s.year} terminée</span></div>
+        <div class="hero-top"><span class="chip gold">Saison ${s.year} terminée</span></div>
         <h1><span class="accent">Champion du monde</span>${champ ? esc(champ.given + ' ' + champ.family) : '—'}</h1>
         <div class="hero-meta"><span>${champ ? fmt(champ.points) + ' points · ' + esc(team(champ.teamId).short) : ''}</span></div>
         <div class="hero-actions"><a class="btn" href="#/classements">Voir les classements</a><a class="btn ghost" href="#/mes-paris">Mon bilan</a></div></section>`;
@@ -388,13 +388,13 @@
     const w = S.weather;
     const wIcon = w ? (w.rain >= 50 ? '🌧️' : w.rain >= 25 ? '🌦️' : w.code <= 1 ? '☀️' : '⛅') : '';
     return `<section class="hero"><div class="hero-bg">${streaks()}<div class="grid-floor"></div><div class="big-round">R${nx.round}</div><div class="kerb"></div></div>
-      <div class="hero-main"><div class="hero-top">${flag(nx.iso, 'lg')}<span class="chip red live">Prochain Grand Prix</span><span class="chip">Manche ${nx.round} / ${s.races.length}</span>${nx.sprint ? '<span class="chip gold">⚡ Week-end Sprint</span>' : ''}${nx.street ? '<span class="chip">🏙️ Circuit urbain</span>' : ''}${nx.round === 1 ? `<span class="chip green">🚦 Ouverture de la saison ${s.year}</span>` : ''}${nx.tbc ? '<span class="chip">À confirmer</span>' : ''}</div>
+      <div class="hero-main"><div class="hero-top">${flag(nx.iso, 'lg')}<span class="chip red live">Prochain Grand Prix</span><span class="chip">Manche ${nx.round} / ${s.races.length}</span>${nx.sprint ? '<span class="chip gold">Week-end sprint</span>' : ''}${nx.street ? '<span class="chip">Circuit urbain</span>' : ''}${nx.round === 1 ? `<span class="chip green">🚦 Ouverture de la saison ${s.year}</span>` : ''}${nx.tbc ? '<span class="chip">À confirmer</span>' : ''}</div>
       <h1><span class="accent">${esc(nx.countryFr)}</span>${esc(nx.nameFr)}</h1>
-      <div class="hero-meta"><span>📍 ${esc(nx.circuit)} · ${esc(nx.locality)}</span><span>🗓️ ${DAYL.format(nx.date)} · ${HM.format(nx.date)}</span>
+      <div class="hero-meta"><span>${esc(nx.circuit)}, ${esc(nx.locality)}</span><span>${DAYL.format(nx.date)} à ${HM.format(nx.date)}</span>
       ${w ? `<span class="weather" title="Prévision Open-Meteo à l'heure du départ">${wIcon} ${w.temp}°C · 💧 ${w.rain} % · 💨 ${w.wind} km/h</span>` : ''}</div>
       ${countdown(nx.date.getTime())}
       <div class="weekend">${nx.sessions.map((x) => `<div class="sess ${x.date.getTime() < now ? 'done' : x === nextSess ? 'next' : ''}"><small>${esc(x.label)}</small><b>${WD.format(x.date)} ${HM.format(x.date)}</b></div>`).join('')}</div>
-      <div class="hero-actions"><a class="btn" href="#/paris">🏁 Parier sur ce GP</a><a class="btn ghost" href="#/paris/tierce">Jouer le tiercé</a></div></div>${heroCar()}</section>`;
+      <div class="hero-actions"><a class="btn" href="#/paris">Parier sur ce Grand Prix</a><a class="btn ghost" href="#/paris/tierce">Jouer le tiercé</a></div></div>${heroCar()}</section>`;
   }
   function heroCar() {
     const w = S.markets.find((m) => m.kind === 'win');
@@ -474,14 +474,14 @@
       case 'ecuries': h += `<div class="grid g2">${M.filter((m) => m.group === 'teams').map((m) => marketCard(m, { limit: 11 })).join('')}</div>`; break;
       case 'speciaux': h += `<div class="grid g2">${M.filter((m) => m.group === 'specials').map((m) => marketCard(m)).join('')}</div>`; break;
       case 'tierce': h += tiercePanel(); break;
-      case 'saison': h += (S.upMarkets.length ? `<div class="section-h"><h2>Saison ${S.season.upcoming.year} — paris long terme</h2><a class="link" href="#/calendrier/${S.season.upcoming.year}">Calendrier →</a></div><div class="notice" style="margin-bottom:16px">🔮 Cotes d'avant-saison basées sur la hiérarchie ${S.season.year} et la grille ${S.season.upcoming.year} (provisoire). Paris réglés après la dernière manche ${S.season.upcoming.year}.</div><div class="grid g2" style="margin-bottom:28px">${S.upMarkets.map((m) => marketCard(m)).join('')}</div><div class="section-h"><h2>Saison ${S.season.year}</h2></div>` : '') + (S.seasonMarkets.length ? `<div class="notice" style="margin-bottom:16px">🔮 Cotes issues de ${fmt(6000)} simulations de la fin de saison. Paris réglés après la dernière manche.</div><div class="grid g2">${S.seasonMarkets.map((m) => marketCard(m)).join('')}</div>` : '<div class="empty">Titres déjà attribués.</div>'); break;
+      case 'saison': h += (S.upMarkets.length ? `<div class="section-h"><h2>Saison ${S.season.upcoming.year} — paris long terme</h2><a class="link" href="#/calendrier/${S.season.upcoming.year}">Calendrier</a></div><div class="notice" style="margin-bottom:16px">🔮 Cotes d'avant-saison basées sur la hiérarchie ${S.season.year} et la grille ${S.season.upcoming.year} (provisoire). Paris réglés après la dernière manche ${S.season.upcoming.year}.</div><div class="grid g2" style="margin-bottom:28px">${S.upMarkets.map((m) => marketCard(m)).join('')}</div><div class="section-h"><h2>Saison ${S.season.year}</h2></div>` : '') + (S.seasonMarkets.length ? `<div class="notice" style="margin-bottom:16px">🔮 Cotes issues de ${fmt(6000)} simulations de la fin de saison. Paris réglés après la dernière manche.</div><div class="grid g2">${S.seasonMarkets.map((m) => marketCard(m)).join('')}</div>` : '<div class="empty">Titres déjà attribués.</div>'); break;
       default: {
         const win = by('win')[0];
         const boost = M.find((m) => m.layout === 'boost');
         const pole = by('pole')[0], sprint = by('sprintWin')[0];
         h += `<div class="grid g2">${marketCard(win)}<div class="grid" style="align-content:start">${boost ? boostCard(boost) : ''}${pole ? marketCard(pole, { limit: 6 }) : ''}${sprint ? marketCard(sprint, { limit: 6 }) : ''}${marketCard(by('teamWin')[0], { limit: 6 })}</div></div>
-          <div class="section-h" style="margin-top:28px"><h2>Duels phares</h2><a class="link" href="#/paris/duels">Tous les duels →</a></div><div class="grid g3">${by('h2h').filter((m) => m.h2hType === 'rival').slice(0, 3).map(h2hCard).join('')}</div>
-          <div class="section-h" style="margin-top:28px"><h2>Spéciaux</h2><a class="link" href="#/paris/speciaux">Tous →</a></div><div class="grid g3">${M.filter((m) => m.group === 'specials').slice(1, 4).map((m) => marketCard(m)).join('')}</div>`;
+          <div class="section-h" style="margin-top:28px"><h2>Duels phares</h2><a class="link" href="#/paris/duels">Tous les duels</a></div><div class="grid g3">${by('h2h').filter((m) => m.h2hType === 'rival').slice(0, 3).map(h2hCard).join('')}</div>
+          <div class="section-h" style="margin-top:28px"><h2>Spéciaux</h2><a class="link" href="#/paris/speciaux">Tous les marchés spéciaux</a></div><div class="grid g3">${M.filter((m) => m.group === 'specials').slice(1, 4).map((m) => marketCard(m)).join('')}</div>`;
       }
     }
     return h + '</div>';
@@ -843,7 +843,7 @@
     return h + '</div></div></div>';
   }
   const pnl = (n, title, body, cls = '', link = '') => `<section class="pnl ${cls}"><header class="pnl-h"><i>${n}</i><b>${title}</b>${link}</header><div class="pnl-b">${body}</div></section>`;
-  const pnlLink = (href, txt) => `<a class="pnl-l" href="${href}">${txt} →</a>`;
+  const pnlLink = (href, txt) => `<a class="pnl-l" href="${href}">${txt}</a>`;
   // Fiche d'expérience d'un pilote (âge, potentiel, progression acquise avec l'écurie)
   function xpBlock(e) {
     const inPt = e.maxed ? 100 : ((e.xp % MG().XP_PER_POINT) / MG().XP_PER_POINT) * 100;
