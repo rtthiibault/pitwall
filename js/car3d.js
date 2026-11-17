@@ -45,6 +45,44 @@ async function loadModel() {
   PARTS = parts;
 }
 
+/* ---------- Monoplaces dédiées : certaines écuries ont leur propre modèle 3D ----------
+   Modèles fournis (Ferrari SF-26, McLaren MCL40, Aston Martin AM26, Racing Bulls) avec leur livrée d'origine.
+   Les couches de décalcomanies (sponsors, numéros) et l'habitacle ont été retirés à la conversion.
+   Repère et essieux identiques au modèle générique (avant x = 1,50, arrière x = -1,96, sol y = 0). */
+const F1_MODEL = { ferrari: 'ferrari', mclaren: 'mclaren', aston_martin: 'aston', rb: 'rb', racing_bulls: 'rb' };
+const F1_SETS = new Map(), F1_LOADING = new Map();
+const f1Key = (teamId) => F1_MODEL[teamId] || null;
+function loadF1(key) {
+  if (F1_SETS.has(key)) return Promise.resolve();
+  if (!F1_LOADING.has(key)) {
+    const url = new URL(`../assets/f1/${key}.glb`, import.meta.url).href;
+    F1_LOADING.set(key, new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(url).then((gltf) => {
+      const parts = [], box = new THREE.Box3();
+      gltf.scene.updateMatrixWorld(true);
+      gltf.scene.traverse((o) => {
+        if (!o.isMesh) return;
+        // attributs quantifiés -> flottants, puis transformation du nœud appliquée (repère du site)
+        const g = new THREE.BufferGeometry();
+        for (const [k, a] of Object.entries(o.geometry.attributes)) {
+          const n = a.itemSize, arr = new Float32Array(a.count * n);
+          const get = [a.getX, a.getY, a.getZ, a.getW];
+          for (let i = 0; i < a.count; i++) for (let c = 0; c < n; c++) arr[i * n + c] = get[c].call(a, i);
+          g.setAttribute(k, new THREE.BufferAttribute(arr, n));
+        }
+        if (o.geometry.index) g.setIndex(o.geometry.index.clone());
+        g.applyMatrix4(o.matrixWorld);
+        if (!g.attributes.normal) g.computeVertexNormals();
+        g.computeBoundingBox(); box.union(g.boundingBox);
+        parts.push({ name: o.name, geometry: g, material: o.material });
+      });
+      F1_SETS.set(key, { parts, bounds: { x0: box.min.x, x1: box.max.x, y1: box.max.y, z1: Math.max(-box.min.z, box.max.z) } });
+    }).catch((e) => { F1_LOADING.delete(key); throw e; }));
+  }
+  return F1_LOADING.get(key);
+}
+// pièces et dimensions de la voiture d'une écurie (modèle dédié s'il est chargé, sinon modèle générique)
+function setOf(teamId) { const k = f1Key(teamId); return (k && F1_SETS.get(k)) || { parts: PARTS, bounds: BOUNDS }; }
+
 /* ---------- Prototypes d'endurance (WEC) : un modèle par constructeur, chargé à la demande ----------
    Modèles fournis (Ferrari 499P, Cadillac V-Series.R, Peugeot 9X8, BMW M Hybrid V8, Toyota GR010, Aston Martin Valkyrie,
    Genesis GMR-001, Porsche 963), convertis sans
@@ -151,12 +189,12 @@ function ruleUniforms(rules) {
   });
   return { uN: { value: Math.min(rules.length, MAXR) }, uR0: { value: R0 }, uR1: { value: R1 }, uR2: { value: R2 }, uR3: { value: R3 }, uR4: { value: R4 }, uR5: { value: R5 } };
 }
-function liveryMaterial(def, part, fin) {
+function liveryMaterial(def, part, fin, B = BOUNDS) {
   const m = new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0.25, roughness: fin.rough, clearcoat: fin.clear, clearcoatRoughness: 0.06 });
   m.extensions = { derivatives: true };
   const ru = ruleUniforms(def.rules);
   const extra = {
-    ...ru, uPart: { value: PART_BIT[part] }, uB: { value: new THREE.Vector4(BOUNDS.x0, BOUNDS.x1, BOUNDS.y1, BOUNDS.z1) },
+    ...ru, uPart: { value: PART_BIT[part] }, uB: { value: new THREE.Vector4(B.x0, B.x1, B.y1, B.z1) },
     uBase: { value: new THREE.Color(part === 'carbon' ? 0x101114 : 0x111114) }, uLineCol: { value: new THREE.Color(def.line || '#0b0b0d') },
   };
   m.onBeforeCompile = (sh) => {
@@ -171,7 +209,7 @@ function liveryMaterial(def, part, fin) {
   m.customProgramCacheKey = () => 'pitwall-livery';
   return m;
 }
-function materials(teamId) {
+function materials(teamId, B = BOUNDS) {
   const L = livery(teamId);
   const def = F1.visuals && F1.visuals.liveryRules ? F1.visuals.liveryRules(teamId) : null;
   const fin = (def && def.finish) || { rough: 0.3, clear: 1 };
@@ -184,7 +222,7 @@ function materials(teamId) {
     tyre: new THREE.MeshStandardMaterial({ color: 0x151517, metalness: 0, roughness: 0.82 }),
     rim: new THREE.MeshStandardMaterial({ color: 0xa9adb5, metalness: 0.75, roughness: 0.3 }),
   };
-  if (def) for (const p of ['body', 'accent', 'lower', 'carbon']) M[p] = liveryMaterial(def, p, p === 'carbon' ? { rough: 0.5, clear: 0.4 } : fin);
+  if (def) for (const p of ['body', 'accent', 'lower', 'carbon']) M[p] = liveryMaterial(def, p, p === 'carbon' ? { rough: 0.5, clear: 0.4 } : fin, B);
   return M;
 }
 /* ---------- Atelier R&D : vues écorchées, pièces internes, rayons X ----------
@@ -678,11 +716,23 @@ function buildCar(teamId, { xray = false } = {}) {
     for (const p of parts) { const m = new THREE.Mesh(p.geometry, W[p.name] || W.carbon); m.castShadow = true; m.receiveShadow = true; g.add(m); }
     return g;
   }
-  const M = materials(teamId);
-  const car = new THREE.Group();
+  const set = setOf(teamId);
   const U = xray ? xrayUniforms() : null;
+  if (set.parts !== PARTS) {
+    // monoplace dédiée : matériaux et textures d'origine (copiés pour que l'atelier puisse les modifier)
+    const car = new THREE.Group();
+    for (const p of set.parts) {
+      const mat = p.material.clone();
+      if (U) applyXray(mat, U);
+      const m = new THREE.Mesh(p.geometry, mat); m.castShadow = true; m.receiveShadow = true; car.add(m);
+    }
+    car.userData.xray = U;
+    return car;
+  }
+  const M = materials(teamId, set.bounds);
+  const car = new THREE.Group();
   if (U) Object.values(M).forEach((m) => applyXray(m, U));
-  for (const p of PARTS) {
+  for (const p of set.parts) {
     const m = new THREE.Mesh(p.geometry, M[p.name] || M.body);
     m.castShadow = true; m.receiveShadow = true;
     car.add(m);
@@ -773,7 +823,7 @@ function mount(el, teamId, { autoRotate = true, view = '34', speed = 1.2, focus 
   const ghosts = [];
   if (workshop) {
     const gm = ghostMaterial(ghostCut.min, ghostCut.max, ghostCut.lift);
-    for (const p of PARTS) { const m = new THREE.Mesh(p.geometry, gm); m.visible = false; m.renderOrder = 5; car.add(m); ghosts.push(m); }
+    for (const p of setOf(teamId).parts) { const m = new THREE.Mesh(p.geometry, gm); m.visible = false; m.renderOrder = 5; car.add(m); ghosts.push(m); }
   }
   let anim = null; // animation de la pièce affichée
   // écran étroit (mobile) : on recule la caméra pour que la voiture tienne en entier
@@ -1095,7 +1145,9 @@ function supported() {
 
 F1.car3d = { snapshot, mount, mountPU, PU_OF, mountTrack, disposeAll, supported: supported(), ready: false,
   // prototypes WEC : has() = modèle déjà chargé, ensure() = le charge si besoin
-  has: (teamId) => !isWec(teamId) || WEC_PARTS.has(wecKey(teamId)), ensure: (teamId) => (isWec(teamId) ? loadWec(wecKey(teamId)) : Promise.resolve()) };
+  // monoplaces dédiées : même principe
+  has: (teamId) => (isWec(teamId) ? WEC_PARTS.has(wecKey(teamId)) : !f1Key(teamId) || F1_SETS.has(f1Key(teamId))),
+  ensure: (teamId) => (isWec(teamId) ? loadWec(wecKey(teamId)) : f1Key(teamId) ? loadF1(f1Key(teamId)) : Promise.resolve()) };
 if (F1.car3d.supported) {
   loadModel()
     .then(() => { F1.car3d.ready = true; window.dispatchEvent(new Event('car3d-ready')); })
