@@ -49,13 +49,13 @@ Site de paris **à jetons virtuels** sur la Formule 1. Il est 100 % statique (HT
 - **Muret des stands** (onglet Muret) : 5 postes (team principal, directeur technique, ingénieur de course, stratège, chef mécanicien), 5 candidats fictifs par poste. Chaque recrue apporte des bonus (PitCoins, coût de R&D, pneus, stratégie, arrêts au stand). `STAFF_ROLES` et `STAFF` dans `js/manager.js`.
 - **Garage** (onglet Garage) : 20 équipements à 5 niveaux en 4 zones (voie des stands, box et mécaniciens, ingénierie, usine). Les équipements installés et les mécaniciens apparaissent dans la scène du garage. `GARAGE` dans `js/manager.js`.
 - **Expérience des pilotes** : chaque pilote a son âge réel (`BIRTH` dans `js/manager.js`) et gagne de l'XP à chaque course terminée avec votre écurie. Jusqu'à 21 ans : XP ×2 et jusqu'à +12 points ; 22-23 ans : ×1,6 et +10 ; 24-27 ans : ×1,1 et +6 ; 28-32 ans : ×0,6 et +3 ; au-delà : progression quasi nulle. La progression est conservée par pilote (`drvXp` dans la sauvegarde).
-- **2 courses par jour** (`RACES_PER_DAY`), avec des gains de PitCoins et d'XP doublés par rapport à l'ancienne limite de 5.
+- **3 courses gratuites toutes les 5 heures** (`RACES_PER_DAY`, `REFILL_H`). Ensuite, des courses supplémentaires se paient en jetons (la monnaie des paris) : 100, puis 150, 200… ; le tarif repart à 100 à chaque nouvelle fenêtre. Gains de PitCoins et d'XP au barème d'origine.
 - **Pneus** (`TYRES` dans `js/manager.js`) : Tendres, Mediums, Durs, Intermédiaires, Pluie. Chaque voiture a une usure de 0 à 100 % ; au-delà de 75 % le rythme s'effondre. Un composé inadapté à l'état de la piste (sèche, humide, trempée) coûte plusieurs secondes par tour. Le joueur choisit ses pneus de départ, sans conseil.
 - **Météo par circuit** (`CLIMATE`) : probabilité de pluie et température propres à chaque tracé (Spa 50 %, Bahreïn 2 %…). Un bulletin est affiché avant la course ; c'est une prévision, pas une certitude.
 - **Stratégie et muret des stands** : avant la course, frise météo tour par tour (`forecastLaps`, à ± 2 tours près), pneus de départ et plan d'un ou deux arrêts (tour et composé). En course, le panneau « muret » affiche composé, usure, température et performance, et permet de changer de rythme (Attaque / Équilibré / Économie, `MODES`), de choisir le prochain train et d'appeler la voiture au stand. Un ordre donné avant l'entrée des stands s'applique au tour en cours : le tour est recalculé (`redoLap`).
 - **Duels et imprévus** : rattraper une voiture ne suffit pas, il faut réussir le dépassement (combativité des deux pilotes, écart d'usure des pneus, rythme, longueur des lignes droites), sinon on reste bloqué derrière. S'y ajoutent les tours canon, blocages de roue, soucis électriques passagers, crevaisons sur débris, accrochages du premier virage, arrêts au stand plus irréguliers et une voiture de sécurité une course sur deux. La forme du jour pèse davantage et la hiérarchie est resserrée.
 - **Règle des 2 composés** (`ruleOk`) : sur course sèche, joueur et IA doivent utiliser deux composés secs différents, sinon +30 s à l'arrivée. La règle saute si des Intermédiaires ou des pneus Pluie ont servi.
-- **Radio stand** (`RADIO`) : aux tours 5, 11 et 16, la course se fige et propose une opportunité tactique parmi 16 scénarios (voiture de sécurité, VSC, undercut, undercut adverse à couvrir, surchauffe, attaque, défense…). 10 secondes pour répondre, sinon le choix prudent s'applique. Le moteur de course avance tour par tour (`createRace`, `stepLap`, `applyChoice`) : chaque décision modifie la suite.
+- **Radio stand** (`RADIO`) : à 25 %, 55 % et 80 % de la course, la course se fige et propose une opportunité tactique parmi 16 scénarios (voiture de sécurité, VSC, undercut, undercut adverse à couvrir, surchauffe, attaque, défense…). 15 secondes pour répondre, sinon le choix prudent s'applique. Le moteur de course avance tour par tour (`createRace`, `stepLap`, `applyChoice`) : chaque décision modifie la suite.
 - **Course en vue 2D** (`js/racemap.js`) : tracé réel du circuit (`js/circuits.js`, géométrie du projet libre f1-circuits de Tomislav Bacinger, licence MIT) et un point par voiture aux couleurs de son écurie, qui avance selon son rythme, ses arrêts au stand et son classement. Départ aux feux, voiture de sécurité, accidents et pannes signalés sur la carte.
 - **Météo en direct** : pluie et humidité de la piste évoluent tour par tour (`weatherTimeline`), à partir de la prévision réelle du prochain Grand Prix quand elle est disponible. Pneus pluie ou slicks : le stratège et la station météo décident de la vitesse de réaction. Un radar affiche les tours à venir.
 - **Stratégie** :
@@ -63,14 +63,25 @@ Site de paris **à jetons virtuels** sur la Formule 1. Il est 100 % statique (HT
   - Les courses se disputent sur le circuit du **prochain Grand Prix réel**.
   - Un **réglage aéro** (faible ou fort appui) s'ajuste avant chaque course.
   - Aucun conseil n'est donné : le site décrit seulement le tracé (lignes droites, virages lents, contraintes mécaniques).
-- **Moteur de course** : 20 tours contre 19 managers IA. La performance combine le niveau du pilote, les caractéristiques de la voiture avec les améliorations et la compatibilité avec le circuit, plus une part d'aléa :
+- **Durée et équilibrage des courses** : une course dure environ 52 s en vitesse ×1 (×2 et ×4 disponibles), quel que soit le nombre de tours.
+  L'usure par tour donne des relais réalistes (environ 19 tours en tendres, 27 en mediums, 35 en durs). Les écarts de rythme sont ramenés
+  à l'échelle d'une course de 20 tours, pour que la hiérarchie ne pèse pas 3 fois plus que les imprévus ; les pertes ponctuelles
+  (départ, accrochages, arrêts) restent en secondes réelles.
+- **Carte de course** (`js/racemap.js`) : vue du dessus stricte, chaque voiture placée d'après ses propres temps au tour. Les arrêts se font
+  dans une voie des stands parallèle à la ligne droite des stands, entre 95 % du tour et 5 % du tour suivant. Deux styles : « Animée » et
+  « 2D épurée ». L'écran de course tient sur un seul écran sur PC (carte, classement compact, muret des stands).
+- **Mode config basse** (bouton dans l'écran de course et en pied de page) : plus de flou, d'ombres ni d'animations décoratives, carte à 24 images/s.
+- **Grille tarifaire R&D et garage** (`VALUE`, `TARIF` dans `js/manager.js`) : chaque bonus vaut un nombre de points de performance, et le prix
+  de chaque niveau est proportionnel au gain apporté par ce niveau (80 PitCoins par point). Un gain plus grand coûte donc toujours plus cher.
+  Chaque niveau Mk rapporte un peu plus que le précédent (`LV_GAIN`), et coûte donc un peu plus cher.
+- **Moteur de course** : le vrai nombre de tours de chaque Grand Prix (`RACE_LAPS` : 78 à Monaco, 44 à Spa, 53 à Monza…) contre 19 managers IA. La performance combine le niveau du pilote, les caractéristiques de la voiture avec les améliorations et la compatibilité avec le circuit, plus une part d'aléa :
   - la forme du jour ;
   - les qualifications, puis l'écart sur la grille au départ ;
   - les casses mécaniques, plus fréquentes avec une faible fiabilité ;
   - les accidents et les tête-à-queue, plus fréquents avec une faible régularité ;
   - une éventuelle voiture de sécurité.
 
-  La course est animée tour par tour, avec une tour de classement et le fil des faits de course. Le joueur dispose de 5 courses par jour.
+  La course est animée tour par tour, avec une tour de classement et le fil des faits de course. 
 - **Ligues** : Bronze (0 LP), Argent (100), Or (250), Platine (450), Diamant (700), Légende (1000).
   - Les points de ligue (LP) vont de +30 pour une victoire à −10 pour la dernière place, et −8 pour un abandon.
   - Plus la ligue est haute, plus les adversaires IA sont forts, et plus les gains sont multipliés (×1 à ×4).

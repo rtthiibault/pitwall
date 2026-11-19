@@ -2,9 +2,17 @@
    Logique pure (sans DOM) : utilisable et testable hors navigateur. */
 (function (F1) {
   const START_PC = 300;
-  const RACES_PER_DAY = 2;
+  const RACES_PER_DAY = 3;          // courses gratuites par fenêtre de recharge
+  const REFILL_H = 5;               // durée d'une fenêtre : 3 courses toutes les 5 heures
   const FIELD = 20; // 1 joueur + 19 managers IA
-  const LAPS = 20;
+  const LAPS = 20;                  // course de référence : l'équilibrage d'origine a été réglé sur 20 tours
+  /* Nombre de tours officiel de chaque Grand Prix */
+  const RACE_LAPS = {
+    albert_park: 58, shanghai: 56, suzuka: 53, bahrain: 57, jeddah: 50, miami: 57, villeneuve: 70, monaco: 78, catalunya: 66,
+    red_bull_ring: 71, silverstone: 52, spa: 44, hungaroring: 70, zandvoort: 72, monza: 53, madring: 57, baku: 51, marina_bay: 62,
+    americas: 56, rodriguez: 71, interlagos: 71, vegas: 50, losail: 57, yas_marina: 58, sepang: 56, portimao: 66, istanbul: 58, imola: 63,
+  };
+  const lapsOf = (race) => (race && RACE_LAPS[race.circuitId]) || 57;
 
   /* ---------- Pilotes : talent de base (ajusté chaque semaine par la forme réelle) ---------- */
   // id: [talent, offset rythme, offset combativité, offset régularité]
@@ -36,7 +44,7 @@
     return { mult: 0.1, cap: 0.5, label: 'Fin de carrière' };
   }
   const XP_PER_POINT = 55;                  // XP nécessaires pour +1 point de progression
-  const xpForRace = (pos, dnf, age) => (dnf ? 0 : Math.round(2 * (10 + Math.max(0, 11 - pos)) * growth(age).mult));
+  const xpForRace = (pos, dnf, age) => (dnf ? 0 : Math.round((10 + Math.max(0, 11 - pos)) * growth(age).mult));
   // Progression acquise : points gagnés (plafonnés selon l'âge), répartis sur les trois caractéristiques
   function driverGrowth(id, xpState, year) {
     const st = (xpState && xpState[id]) || { xp: 0, races: 0 };
@@ -105,8 +113,9 @@
   // Points de ligue (LP) et PitCoins selon la position finale
   const LP_TABLE = [30, 22, 16, 12, 8, 5, 3, 1, 0, -2, -3, -4, -5, -6, -7, -8, -8, -9, -9, -10];
   // les PitCoins ne viennent plus que des courses : même le fond de grille rapporte de quoi progresser
-  const PC_TABLE = [80, 64, 52, 44, 38, 32, 28, 24, 22, 20, 18, 16, 16, 14, 14, 12, 12, 10, 10, 10];
-  const DNF_LP = -8, DNF_PC = 6;
+  // 3 courses toutes les 5 h (jusqu'à ~9 par jour) : gains par course revenus au barème d'origine (ils avaient été doublés pour 2 courses/jour)
+  const PC_TABLE = [40, 32, 26, 22, 19, 16, 14, 12, 11, 10, 9, 8, 8, 7, 7, 6, 6, 5, 5, 5];
+  const DNF_LP = -8, DNF_PC = 3;
 
   /* ---------- Outils ---------- */
   function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -256,11 +265,12 @@
   ];
   /* Niveaux de développement : chaque pièce passe de Mk I à Mk V (gains décroissants, coûts croissants) */
   const MAX_LV = 5;
-  const LV_GAIN = [1, 0.5, 0.35, 0.25, 0.2];
+  // gain apporté par chaque niveau (en part du bonus nominal de la pièce) : chaque niveau rapporte un peu plus que le précédent
+  const LV_GAIN = [0.5, 0.55, 0.6, 0.65, 0.7];
   const LV_NAME = ['—', 'Mk I', 'Mk II', 'Mk III', 'Mk IV', 'Mk V'];
   const lvCum = (l) => LV_GAIN.slice(0, l).reduce((a, b) => a + b, 0);
   const partLevel = (owned, id) => { const v = owned && owned[id]; return !v ? 0 : v > MAX_LV ? 1 : v; };
-  const levelCost = (p, l) => Math.round((p.cost * Math.pow(1.55, l - 1)) / 5) * 5; // coût pour atteindre le niveau l
+  let levelCost = null; // défini plus bas, avec la grille tarifaire commune à la R&D et au garage
   const STAT_KEYS = ['speed', 'df', 'rel'];
   // avec 65 pièces, chaque pièce pèse un peu moins qu'à l'origine
   const PART_K = 0.55;
@@ -350,14 +360,28 @@
     G('trucks', 'fac', 'Camions-ateliers', 'Logistique renforcée : moins de frais de déplacement, donc plus de PitCoins à chaque course.', '🚛', { pc: 0.03 }, 70),
   ];
   const GARAGE_BY_ID = new Map(GARAGE.map((g) => [g.id, g]));
-  const garageCost = (g, l) => Math.round((g.cost * Math.pow(1.6, l - 1)) / 5) * 5;
+  // gain apporté par chaque niveau d'équipement (en part de l'effet nominal) : cumul au niveau 5 = 5 fois l'effet nominal, comme avant
+  const G_GAIN = [0.8, 0.9, 1, 1.1, 1.2];
+  const gCum = (l) => G_GAIN.slice(0, l).reduce((a, b) => a + b, 0);
+
+  /* ---------- Grille tarifaire : le prix est proportionnel au gain de performance réel ----------
+     Chaque bonus a une valeur en « points de performance » : vitesse et appui = 1 par point, fiabilité = 0,63
+     (son poids dans la note voiture), et des valeurs étalonnées pour les bonus mécaniques et d'écurie.
+     Prix d'un niveau = TARIF × valeur du gain apporté par CE niveau, pour toutes les pièces et tous les équipements.
+     Conséquence : un gain plus grand coûte toujours plus cher, un gain égal coûte le même prix, partout. */
+  const VALUE = { speed: 1, df: 1, rel: 0.63, launch: 1.9, tyre: 1.9, push: 1.9, pit: 1.9, sc: 1.9, drv: 1.9, wx: 1.9, pc: 21, rd: 30, tunnel: 25 };
+  const valueOf = (fx) => Object.entries(fx).reduce((a, [k, v]) => a + (VALUE[k] || 0) * v, 0);
+  const TARIF = 80;   // PitCoins par point de performance
+  const price = (v) => Math.max(5, Math.round((TARIF * v) / 5) * 5);
+  levelCost = (p, l) => price(valueOf(p.fx) * LV_GAIN[l - 1]);           // coût pour passer au niveau l
+  const garageCost = (g, l) => price(valueOf(g.fx) * G_GAIN[l - 1]);
   const garageLevel = (m, id) => Math.min(MAX_LV, (m && m.garage && m.garage[id]) || 0);
   // Bonus cumulés du personnel et du garage
   function teamBonus(m) {
     const b = { speed: 0, df: 0, rel: 0, launch: 0, tyre: 0, push: 0, pit: 0, sc: 0, drv: 0, wx: 0, pc: 0, rd: 0, tunnel: 0, races: 0 };
     if (!m) return b;
     STAFF_ROLES.forEach((r) => { const x = staffOf(m, r.id); if (x) for (const k in r.fx) b[k] += r.fx[k] * x.tier; });
-    GARAGE.forEach((g) => { const l = garageLevel(m, g.id); if (!l) return; for (const k in g.fx) b[k] += g.fx[k] * l; });
+    GARAGE.forEach((g) => { const l = garageLevel(m, g.id); if (!l) return; const f = gCum(l); for (const k in g.fx) b[k] += g.fx[k] * f; });
     b.rd = Math.min(0.4, b.rd);
     return b;
   }
@@ -415,20 +439,23 @@
   /* ---------- Moteur de course ----------
      performance = (niveau pilote) + (stats voiture + améliorations) × (compatibilité circuit) + aléa/incidents */
   // Météo d'une course : pluie (0..1) et humidité de la piste (0..1) tour par tour
-  function weatherTimeline(r, rainProb = 0.25, temp = 24) {
-    const rain = new Array(LAPS + 1).fill(0);
+  function weatherTimeline(r, rainProb = 0.25, temp = 24, laps = LAPS) {
+    // les tirages sont faits sur une course de 20 « segments » puis étalés sur le vrai nombre de tours
+    const K = laps / LAPS, sc = (v) => Math.round(v * K);
+    const rain = new Array(laps + 1).fill(0);
     const u = r();
     if (u < rainProb) {
       const wetStart = r() < 0.3;
-      const a = wetStart ? 0 : 3 + Math.floor(r() * (LAPS - 7));
-      const len = 4 + Math.floor(r() * 9), peak = 0.45 + r() * 0.55;
-      for (let l = a; l <= Math.min(LAPS, a + len); l++) { const k = (l - a) / len; rain[l] = peak * Math.sin(Math.PI * Math.min(1, wetStart ? 0.5 + k / 2 : k)) ** 0.7; }
+      const a = wetStart ? 0 : sc(3 + Math.floor(r() * (LAPS - 7)));
+      const len = Math.max(2, sc(4 + Math.floor(r() * 9))), peak = 0.45 + r() * 0.55;
+      for (let l = a; l <= Math.min(laps, a + len); l++) { const k = (l - a) / len; rain[l] = peak * Math.sin(Math.PI * Math.min(1, wetStart ? 0.5 + k / 2 : k)) ** 0.7; }
       if (wetStart) rain[0] = peak;
-    } else if (u < rainProb + 0.12 * Math.min(1, rainProb * 4)) { const a = 4 + Math.floor(r() * (LAPS - 8)); rain[a] = 0.22; rain[a + 1] = 0.3; rain[a + 2] = 0.15; } // averse passagère
+    } else if (u < rainProb + 0.12 * Math.min(1, rainProb * 4)) { const a = sc(4 + Math.floor(r() * (LAPS - 8))), n = Math.max(3, sc(3)); for (let l = 0; l < n; l++) rain[a + l] = [0.22, 0.3, 0.15][Math.floor((l / n) * 3)]; } // averse passagère
     const out = []; let wet = rain[0] > 0.3 ? 0.75 : 0;
-    for (let l = 0; l <= LAPS; l++) {
-      if (l) wet = clamp(wet + rain[l] * 0.5 - 0.11 * (1 - rain[l]), 0, 1);
-      const cloud = clamp(Math.max(rain[l] * 1.4, ...[1, 2, 3].map((d) => (rain[l + d] || 0) * (1.1 - d * 0.25)), rainProb * 0.6), 0, 1);
+    const look = [1, 2, 3].map((d) => Math.max(1, Math.round(d * K)));
+    for (let l = 0; l <= laps; l++) {
+      if (l) wet = clamp(wet + (rain[l] * 0.5 - 0.11 * (1 - rain[l])) / K, 0, 1);
+      const cloud = clamp(Math.max(rain[l] * 1.4, ...look.map((d, j) => (rain[l + d] || 0) * (1.1 - (j + 1) * 0.25)), rainProb * 0.6), 0, 1);
       out.push({ rain: Math.round(rain[l] * 100) / 100, wet: Math.round(wet * 100) / 100, cloud: Math.round(cloud * 100) / 100, air: Math.round(temp - 5 * cloud), track: Math.round(temp + 12 - 14 * cloud - 6 * wet) });
     }
     return out;
@@ -447,14 +474,14 @@
   const trackState = (wet) => (wet < 0.12 ? 'Sèche' : wet < 0.45 ? 'Humide' : 'Trempée');
   // Bulletin d'avant-course : état au départ, température et risque de pluie annoncé (une prévision, pas une certitude)
   function forecast(seed, race) {
-    const [p, temp] = climateOf(race);
-    const wx = weatherTimeline(rng(seed ^ 0x5bd1e995), p, temp);
+    const [p, temp] = climateOf(race), laps = lapsOf(race);
+    const wx = weatherTimeline(rng(seed ^ 0x5bd1e995), p, temp, laps);
     const r = rng(seed ^ 0x2545f491);
     const rainLaps = wx.map((x, l) => (x.rain > 0.2 ? l : -1)).filter((l) => l > 0);
     const will = rainLaps.length > 0;
     const risk = Math.round(clamp(will ? 45 + r() * 45 : p * 100 * (0.4 + r() * 1.1) + r() * 12, 2, 95) / 5) * 5;
-    const mid = will ? rainLaps[0] : Math.floor(r() * LAPS);
-    const when = mid <= 6 ? 'en début de course' : mid <= 13 ? 'en milieu de course' : 'en fin de course';
+    const mid = (will ? rainLaps[0] : Math.floor(r() * laps)) / laps;
+    const when = mid <= 0.33 ? 'en début de course' : mid <= 0.66 ? 'en milieu de course' : 'en fin de course';
     const s = wx[0];
     const sky = s.rain > 0.25 ? 'Pluie au départ' : s.wet > 0.12 ? 'Piste humide au départ' : risk >= 60 ? 'Ciel menaçant' : risk >= 30 ? 'Nuageux' : 'Sec';
     return { icon: wxIcon({ rain: s.rain, cloud: risk >= 60 ? 0.7 : risk >= 30 ? 0.3 : 0 }), sky, temp: s.air, track: trackState(s.wet), risk, when, txt: `${sky} · ${s.air} °C · ${s.wet > 0.12 ? `piste ${trackState(s.wet).toLowerCase()}` : `risque de pluie ${when} : ${risk} %`}` };
@@ -463,18 +490,18 @@
   // Prévision tour par tour affichée avant la course : probabilité de pluie par tour, avec une marge d'erreur
   // (l'averse peut arriver un ou deux tours plus tôt ou plus tard, et une alerte peut ne rien donner).
   function forecastLaps(seed, race) {
-    const [p, temp] = climateOf(race);
-    const wx = weatherTimeline(rng(seed ^ 0x5bd1e995), p, temp);
+    const [p, temp] = climateOf(race), laps = lapsOf(race), K = laps / LAPS;
+    const wx = weatherTimeline(rng(seed ^ 0x5bd1e995), p, temp, laps);
     const r = rng(seed ^ 0x51ed270b);
-    const shift = Math.round((r() - 0.5) * 6);            // décalage de −3 à +3 tours
+    const shift = Math.round((r() - 0.5) * 6 * K);        // décalage de ±15 % de la course
     const base = p * 100 * (0.3 + r() * 0.4);          // bruit de fond : le même pour toute la course
-    const ghost = r() < 0.08 + p * 0.7 ? 3 + Math.floor(r() * (LAPS - 8)) : -1;   // fausse alerte éventuelle
-    const out = [];
-    for (let l = 1; l <= LAPS; l++) {
-      const t = wx[clamp(l - shift, 1, LAPS)];
-      const near = Math.max(...[-1, 0, 1].map((d) => (wx[clamp(l - shift + d, 1, LAPS)] || t).rain));
+    const ghost = r() < 0.08 + p * 0.7 ? Math.round((3 + Math.floor(r() * (LAPS - 8))) * K) : -1;   // fausse alerte éventuelle
+    const near1 = Math.max(1, Math.round(K)), out = [];
+    for (let l = 1; l <= laps; l++) {
+      const t = wx[clamp(l - shift, 1, laps)];
+      const near = Math.max(...[-near1, 0, near1].map((d) => (wx[clamp(l - shift + d, 1, laps)] || t).rain));
       let pr = t.rain > 0.15 ? 55 + t.rain * 40 : near > 0.15 ? 35 + r() * 15 : t.wet > 0.2 ? 25 : base;
-      if (ghost > 0 && l >= ghost && l < ghost + 3 && pr < 30) pr = 30 + r() * 20;
+      if (ghost > 0 && l >= ghost && l < ghost + 3 * K && pr < 30) pr = 30 + r() * 20;
       out.push({ lap: l, p: Math.round(clamp(pr + (r() - 0.5) * 4, 2, 95) / 5) * 5, heavy: t.rain > 0.6, wet: t.wet });
     }
     const kind = (x) => (x.p >= 55 ? (x.heavy ? 'heavy' : 'rain') : x.p >= 25 ? 'risk' : 'dry');
@@ -482,11 +509,11 @@
     out.forEach((x) => { const k = kind(x), last = segs[segs.length - 1]; x.kind = k; if (last && last.kind === k) { last.to = x.lap; last.p = Math.max(last.p, x.p); } else segs.push({ kind: k, from: x.lap, to: x.lap, p: x.p }); });
     const LBL = { dry: ['☀️', 'Sec'], risk: ['🌦️', 'Risque de pluie'], rain: ['🌧️', 'Pluie'], heavy: ['⛈️', 'Pluie forte'] };
     segs.forEach((g) => { g.icon = LBL[g.kind][0]; g.txt = `${g.from === g.to ? 'Tour ' + g.from : `Tours ${g.from}-${g.to}`} : ${LBL[g.kind][1]}${g.kind === 'dry' ? '' : ' ' + g.p + ' %'}`; });
-    return { laps: out, segs, startWet: wx[0].wet };
+    return { laps: out, segs, startWet: wx[0].wet, total: laps };
   }
   // Tendance annoncée en course pour les n prochains tours
   function trend(R, n = 3, from = null) {
-    const lap = from == null ? R.lap : from, wet = R.weather[Math.min(LAPS, lap)].wet;
+    const LAPS = R.LAPS, lap = from == null ? R.lap : from, wet = R.weather[Math.min(LAPS, lap)].wet;
     const nx = []; for (let d = 1; d <= n && lap + d <= LAPS; d++) nx.push(R.weather[lap + d]);
     if (!nx.length) return 'Dernier tour';
     const rainNow = R.weather[Math.min(LAPS, lap)].rain > 0.15;
@@ -502,11 +529,11 @@
 
   /* ---------- Pneus : rythme (s/tour, négatif = plus rapide) et usure par tour ---------- */
   const TYRES = {
-    S: { id: 'S', name: 'Tendres', short: 'Tendre', color: '#e10600', pace: -1.0, wear: 0.08, desc: 'Très rapides au départ, mais ils s\'usent vite et s\'effondrent en milieu de course.' },
-    M: { id: 'M', name: 'Mediums', short: 'Medium', color: '#ffd400', pace: -0.5, wear: 0.055, desc: 'Bon équilibre entre vitesse et endurance.' },
-    H: { id: 'H', name: 'Durs', short: 'Dur', color: '#f2f2f2', pace: 0, wear: 0.042, desc: 'Plus lents au début, mais usure très faible : pour les longs relais et les circuits abrasifs.' },
-    I: { id: 'I', name: 'Intermédiaires', short: 'Inter', color: '#2ee59d', pace: 0, wear: 0.045, desc: 'Pour une piste humide ou une pluie légère.' },
-    W: { id: 'W', name: 'Pluie', short: 'Pluie', color: '#3d7bff', pace: 0, wear: 0.04, desc: 'Pour la forte pluie et la piste trempée.' },
+    S: { id: 'S', name: 'Tendres', short: 'Tendre', color: '#e10600', pace: -1.0, wear: 0.034, desc: 'Très rapides au départ, mais ils s\'usent vite et s\'effondrent en milieu de course.' },
+    M: { id: 'M', name: 'Mediums', short: 'Medium', color: '#ffd400', pace: -0.5, wear: 0.024, desc: 'Bon équilibre entre vitesse et endurance.' },
+    H: { id: 'H', name: 'Durs', short: 'Dur', color: '#f2f2f2', pace: 0, wear: 0.018, desc: 'Plus lents au début, mais usure très faible : pour les longs relais et les circuits abrasifs.' },
+    I: { id: 'I', name: 'Intermédiaires', short: 'Inter', color: '#2ee59d', pace: 0, wear: 0.02, desc: 'Pour une piste humide ou une pluie légère.' },
+    W: { id: 'W', name: 'Pluie', short: 'Pluie', color: '#3d7bff', pace: 0, wear: 0.018, desc: 'Pour la forte pluie et la piste trempée.' },
   };
   const isSlick = (t) => t === 'S' || t === 'M' || t === 'H';
   const idealTyre = (wet) => (wet < 0.12 ? 'dry' : wet < 0.6 ? 'I' : 'W');
@@ -516,7 +543,7 @@
   function dryFor(lapsLeft, abr, x) {
     const base = TYRES.S.wear * abr * lapsLeft <= 0.8 ? 'S' : TYRES.M.wear * abr * lapsLeft <= 0.82 ? 'M' : 'H';
     if (!x || ruleOk(x) || x.used[0] !== base) return base;
-    return base === 'S' ? 'M' : base === 'H' ? 'M' : lapsLeft <= 9 ? 'S' : 'H';   // un autre composé pour respecter la règle
+    return base === 'S' ? 'M' : base === 'H' ? 'M' : TYRES.S.wear * abr * lapsLeft <= 0.8 ? 'S' : 'H';   // un autre composé pour respecter la règle
   }
   // État d'un train de pneus pour l'affichage : température et performance restante
   function tyreStatus(tyre, wear, wet, mode, fresh) {
@@ -538,14 +565,17 @@
 
   /* ---------- Moteur de course, tour par tour ----------
      createRace() prépare la grille ; stepLap() calcule un tour ; les décisions radio du joueur s'appliquent entre deux tours. */
-  const DILEMMA_LAPS = [5, 11, 16];   // vers 25 %, 55 % et 80 % de la course
+  const DILEMMA_AT = [0.25, 0.55, 0.8];   // dilemmes radio vers 25 %, 55 % et 80 % de la course
+  const dilemmaLaps = (laps) => DILEMMA_AT.map((f) => Math.round(f * laps));
+  const DILEMMA_LAPS = dilemmaLaps(LAPS);
   function createRace({ player, bots, race, seed, wxSeed, rainProb, temp, startTyre, plan, manual }) {
     const w = circuitProfile(race);
+    const LAPS = lapsOf(race), K = LAPS / 20, DL = dilemmaLaps(LAPS);
     // générateur aléatoire dont l'état peut être sauvegardé : un tour peut être recalculé à l'identique
     const st = { rs: seed >>> 0 };
     const r = () => { st.rs = (st.rs + 0x6d2b79f5) | 0; let t = Math.imul(st.rs ^ (st.rs >>> 15), 1 | st.rs); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
     const cl = climateOf(race);
-    const weather = weatherTimeline(rng((wxSeed == null ? seed : wxSeed) ^ 0x5bd1e995), rainProb == null ? cl[0] : rainProb, temp == null ? cl[1] : temp);
+    const weather = weatherTimeline(rng((wxSeed == null ? seed : wxSeed) ^ 0x5bd1e995), rainProb == null ? cl[0] : rainProb, temp == null ? cl[1] : temp, LAPS);
     const abr = 0.88 + w.df * 0.35 + w.rel * 0.3;   // abrasivité du circuit
     const wet0 = weather[0].wet;
     const field = [{ ...player, me: true }, ...bots].map((c, i) => {
@@ -564,13 +594,19 @@
     field.sort((a, b) => b.q - a.q).forEach((x, k) => { x.grid = k + 1; });
     const gridGap = 0.35 + 0.6 * w.df;
     field.forEach((x) => { x.time = (x.grid - 1) * gridGap; });
-    const gapArr = {}; field.forEach((x) => { gapArr[x.i] = [x.time]; });
+    const gapArr = {}, tArr = {}; field.forEach((x) => { gapArr[x.i] = [x.time]; tArr[x.i] = [x.time]; });
     // la voiture de sécurité sort à un moment où le stand peut réagir
-    const scLap = r() < 0.5 ? DILEMMA_LAPS[Math.floor(r() * DILEMMA_LAPS.length)] : -1;
-    const stops = ((plan && plan.stops) || []).filter((p) => p && TYRES[p.tyre] && p.lap >= 1 && p.lap < LAPS).sort((a, b) => a.lap - b.lap);
+    const scLap = r() < 0.5 ? DL[Math.floor(r() * DL.length)] : -1;
+    const stops = planFor(plan, LAPS).stops;
     // ctl : commandes du muret pendant la course (appel au stand, prochain composé, rythme, suivi du plan)
-    return { LAPS, lap: 0, field, me: field.find((x) => x.c.me), laps: [], gapArr, events: [], fastest: { t: 1e9, who: null, lap: 0 }, scLap, w, weather, gridGap, abr, r, st, prevOrder: field.map((x) => x.i), asked: [],
+    return { tArr, LAPS, K, sqK: Math.sqrt(K), DL, scLen: Math.max(2, Math.round(1.5 * K)), lap: 0, field, me: field.find((x) => x.c.me), laps: [], gapArr, events: [], fastest: { t: 1e9, who: null, lap: 0 }, scLap, w, weather, gridGap, abr, r, st, prevOrder: field.map((x) => x.i), asked: [],
       manual: !!manual, plan: { stops }, ctl: { box: false, tyre: stops[0] ? stops[0].tyre : 'M', mode: 'std', plan: true } };
+  }
+  function planFor(plan, laps) {
+    const of = (plan && plan.of) || LAPS;
+    const stops = ((plan && plan.stops) || []).filter((p) => p && TYRES[p.tyre]).map((p) => ({ tyre: p.tyre, lap: of === laps ? p.lap : Math.round((p.lap * laps) / of) }))
+      .filter((p) => p.lap >= 1 && p.lap < laps).sort((a, b) => a.lap - b.lap);
+    return { of: laps, stops };
   }
   // Sauvegarde / restauration de l'état avant un tour (pour le recalculer après un ordre du muret)
   function snapshot(R) {
@@ -579,11 +615,11 @@
   }
   // Recalcule le dernier tour avec les commandes actuelles du muret (même aléa : seul l'effet des ordres change)
   function redoLap(R) {
-    const s0 = R.snap; if (!s0 || s0.lap !== R.lap - 1 || R.lap >= LAPS + 1) return false;
+    const s0 = R.snap; if (!s0 || s0.lap !== R.lap - 1 || R.lap >= R.LAPS + 1) return false;
     const keep = { box: R.ctl.box, tyre: R.ctl.tyre };
     R.st.rs = s0.rs; R.lap = s0.lap; R.events.length = s0.nEv; R.fastest = { ...s0.fastest }; R.prevOrder = s0.prevOrder.slice(); R.asked = s0.asked.slice();
     R.field.forEach((x, k) => Object.assign(x, s0.cars[k], { used: s0.cars[k].used.slice(), pitLaps: s0.cars[k].pitLaps.slice(), tyreLog: s0.cars[k].tyreLog.slice(), pitLoss: { ...s0.cars[k].pitLoss }, out: s0.cars[k].out ? { ...s0.cars[k].out } : null }));
-    R.laps.length = s0.lap; R.field.forEach((x) => { R.gapArr[x.i].length = s0.lap + 1; });
+    R.laps.length = s0.lap; R.field.forEach((x) => { R.gapArr[x.i].length = s0.lap + 1; R.tArr[x.i].length = s0.lap + 1; });
     R.final = null; R.ctl.box = keep.box; R.ctl.tyre = keep.tyre;
     stepLap(R);
     return true;
@@ -600,11 +636,12 @@
     return x.pitLoss[lap];
   }
   function stepLap(R) {
+    const LAPS = R.LAPS, K = R.K || 1;
     if (R.lap >= LAPS) return R;
     R.snap = snapshot(R);
     const lap = ++R.lap, r = R.r, w = R.w, field = R.field, events = R.events;
     const wx = R.weather[lap], wet = wx.wet, left = LAPS - lap;
-    const sc = lap === R.scLap || lap === R.scLap + 1;
+    const sc = R.scLap > 0 && lap >= R.scLap && lap < R.scLap + R.scLen, scIn = lap === R.scLap + 1;
     if (wx.rain > 0.05 && R.weather[lap - 1].rain <= 0.05) events.push({ lap, type: 'wx', txt: `${wxIcon(wx)} La pluie arrive sur le circuit !` });
     if (wx.rain <= 0.05 && R.weather[lap - 1].rain > 0.05) events.push({ lap, type: 'wx', txt: '🌤️ La pluie s\'arrête, la piste va sécher.' });
     if (trackState(wet) !== trackState(R.weather[lap - 1].wet)) events.push({ lap, type: 'wx', txt: `Piste ${trackState(wet).toLowerCase()}` });
@@ -620,15 +657,15 @@
       if (u < pMech) { x.out = { lap, why: ['Moteur', 'Boîte de vitesses', 'Hydraulique', 'Surchauffe', 'Freins'][Math.floor(r() * 5)] }; events.push({ lap, type: 'dnf', who: x.i, txt: `abandonne (${x.out.why.toLowerCase()})` }); continue; }
       if (u < pMech + pCrash) { x.out = { lap, why: 'Accident' }; events.push({ lap, type: 'dnf', who: x.i, txt: wet > 0.35 ? 'part en aquaplaning et tape le mur : abandon' : 'part dans le mur : abandon' }); continue; }
       const ty = x.M('tyre');
-      let t = 90 - x.perf * 0.036 + gauss(r) * 0.95 * (1.5 - d.cons / 100) * (1 - 0.12 * ty);
+      let t = 90 - x.perf * 0.036 + gauss(r) * 0.95 * R.sqK * (1.5 - d.cons / 100) * (1 - 0.12 * ty);
       x.hold = false;
       // imprévus du tour : tour canon, petite faute, souci technique passager, débris
       if (!sc && lap > 1) {
-        const v = r();
+        const v = r(), rare = r() < 1 / K;   // débris et pannes passagères : même nombre par course, quelle que soit sa longueur
         if (v < 0.05 * (d.pace / 88)) { t -= 0.7 + r() * 0.7; if (x.c.me) events.push({ lap, type: 'gain', who: x.i, txt: 'signe un tour canon' }); }
         else if (v < 0.05 * (d.pace / 88) + 0.07 * (1.6 - d.cons / 100)) { t += 1 + r() * 1.8; if (x.c.me) events.push({ lap, type: 'loss', who: x.i, txt: 'bloque une roue et élargit la trajectoire' }); }
-        else if (v > 0.986) { t += 3 + r() * 4; if (x.c.me) events.push({ lap, type: 'loss', who: x.i, txt: 'perd de la puissance pendant quelques virages (souci électrique)' }); }
-        else if (v > 0.981 && left >= 2) { t += 6; x.wear = 1; events.push({ lap, type: x.c.me ? 'loss' : 'spin', who: x.i, txt: 'roule sur un débris : crevaison lente, il faut rentrer au stand' }); }
+        else if (v > 0.986 && rare) { t += (3 + r() * 4) * K; if (x.c.me) events.push({ lap, type: 'loss', who: x.i, txt: 'perd de la puissance pendant quelques virages (souci électrique)' }); }
+        else if (v > 0.981 && left >= 2 && rare) { t += 6; x.wear = 1; events.push({ lap, type: x.c.me ? 'loss' : 'spin', who: x.i, txt: 'roule sur un débris : crevaison lente, il faut rentrer au stand' }); }
       }
       // piste mouillée : tout le monde ralentit, les pilotes combatifs s'en sortent mieux
       t += 7 * wet - (d.craft - 82) * 0.06 * wet;
@@ -637,14 +674,17 @@
       if (x.fresh) { t += 0.5; x.fresh = false; }               // tour de sortie des stands : pneus froids
       const mode = MODES[x.c.me ? R.ctl.mode : 'std'] || MODES.std; // rythme choisi au muret
       t += mode.dt;
+      // Écarts de rythme ramenés à l'échelle d'une course de 20 tours : sur 50 à 78 tours, la hiérarchie pèserait sinon
+      // 3 fois plus que les imprévus. Les pertes ponctuelles (départ, accrochages, arrêts) restent comptées en secondes réelles.
+      t = 90 + (t - 90) / K;
       if (lap === 1) {
         const c1 = r();
         if (c1 < 0.012) { x.out = { lap, why: 'Accident' }; events.push({ lap, type: 'dnf', who: x.i, txt: 'est pris dans un accrochage au premier virage : abandon' }); continue; }
         if (c1 < 0.06) { t += 5 + r() * 5; events.push({ lap, type: x.c.me ? 'loss' : 'spin', who: x.i, txt: 'est touché au premier virage et repart loin' }); }
       }
       if (lap === 1) { const g = gauss(r) * 1.7 - 0.9 * x.M('launch'); t += g; if (x.c.me && x.M('launch') > 0.5 && g < -1.2) events.push({ lap, type: 'gain', who: x.i, txt: 'envol parfait au départ !' }); }
-      if (lap > LAPS - 5) t -= 0.2 * x.M('push');
-      if (!sc && r() < 0.035 * (1 - d.cons / 100) * 3 * (1 - 0.2 * ty) * (1 + x.wear)) { t += 4 + r() * 4; x.spins++; events.push({ lap, type: 'spin', who: x.i, txt: 'part en tête-à-queue et perd du temps' }); }
+      if (lap > LAPS - 5 * K) t -= (0.2 * x.M('push')) / K;
+      if (!sc && r() < (0.035 * (1 - d.cons / 100) * 3 * (1 - 0.2 * ty) * (1 + x.wear)) / K) { t += 4 + r() * 4; x.spins++; events.push({ lap, type: 'spin', who: x.i, txt: 'part en tête-à-queue et perd du temps' }); }
       // usure du train de pneus sur ce tour
       x.wear = Math.min(1, x.wear + TYRES[x.tyre].wear * R.abr * (1 - 0.1 * ty) * (!isSlick(x.tyre) && wet < 0.12 ? 2.6 : 1) * (sc ? 0.4 : 1) * mode.wear * (1 + gauss(r) * 0.06));
       // décision d'arrêt en fin de tour : consigne radio, météo, usure, voiture de sécurité, crevaison
@@ -668,7 +708,7 @@
       else if (x.noPit > 0) x.noPit--;
       else if (mismatch && x.wrong >= delay && left >= 2) { pit = need === 'dry' ? dry : need; why = 'changement de météo'; }
       else if (x.wear > x.thr && left >= 3) { pit = need === 'dry' ? dry : need; why = 'pneus usés'; }
-      else if (sc && lap === R.scLap + 1 && !x.c.me && x.wear > 0.4 && left >= 4 && r() < 0.65) { pit = need === 'dry' ? dry : need; why = 'sous voiture de sécurité'; }
+      else if (scIn && !x.c.me && x.wear > 0.4 && left >= 4 && r() < 0.65) { pit = need === 'dry' ? dry : need; why = 'sous voiture de sécurité'; }
       else if (need === 'dry' && !ruleOk(x) && left >= 1 && left <= 2 + (x.i % 3)) { pit = dry; why = 'règle des 2 composés'; }
       if (pit) t += pitStop(R, x, lap, pit, sc || x.vsc, why);
       x.vsc = false;
@@ -684,7 +724,7 @@
         if (a.pitted || b.pitted || b.time >= a.time) continue;
         const pPass = clamp(0.42 + (b.driver.craft - a.driver.craft) / 70 + (a.wear - b.wear) * 0.6 + (b.c.me && R.ctl.mode === 'push' ? 0.12 : 0) - (a.c.me && R.ctl.mode === 'push' ? 0.08 : 0) + (w.speed - 0.35) * 0.7 + (a.time - b.time) * 0.06, 0.08, 0.92);
         if (r() < pPass) { if (b.c.me) events.push({ lap, type: 'gain', who: b.i, txt: `dépasse ${a.name} en piste` }); else if (a.c.me) events.push({ lap, type: 'loss', who: a.i, txt: `se fait dépasser par ${b.name}` }); }
-        else { b.time = a.time + 0.25 + r() * 0.45; b.hold = true; if (b.c.me) events.push({ lap, type: 'spin', who: b.i, txt: `reste bloqué derrière ${a.name}` }); else if (a.c.me) events.push({ lap, type: 'gain', who: a.i, txt: `résiste à l'attaque de ${b.name}` }); }
+        else { b.time = a.time + 0.25 + r() * 0.45; b.hold = true; const quiet = (b.c.me || a.c.me) && R.lastStuck != null && lap - R.lastStuck < 4; if ((b.c.me || a.c.me) && !quiet) R.lastStuck = lap; if (quiet) { /* déjà signalé */ } else if (b.c.me) events.push({ lap, type: 'spin', who: b.i, txt: `reste bloqué derrière ${a.name}` }); else if (a.c.me) events.push({ lap, type: 'gain', who: a.i, txt: `résiste à l'attaque de ${b.name}` }); }
       }
     }
     if (sc) {
@@ -692,6 +732,7 @@
       const running = field.filter((x) => !x.out).sort((a, b) => a.time - b.time);
       if (running.length) { const lead = running[0].time; running.forEach((x, k) => { x.time = lead + k * 0.6; }); }
       if (lap === R.scLap) events.push({ lap, type: 'sc', txt: 'Voiture de sécurité : le peloton est regroupé !' });
+      if (lap === R.scLap + R.scLen - 1) events.push({ lap, type: 'wx', txt: '🟢 Fin de la voiture de sécurité : la course reprend.' });
     }
     if (lap >= LAPS) {
       // arrivée : +30 s pour qui a fini une course sèche sur un seul composé
@@ -705,7 +746,7 @@
     R.prevOrder = order.map((x) => x.i);
     const leadT = order[0].time;
     R.laps.push(order.map((x) => ({ i: x.i, gap: x.out ? null : x.time - leadT, out: !!x.out, ty: x.tyre, wear: x.wear })));
-    field.forEach((x) => { const a = R.gapArr[x.i]; a.push(x.out ? a[a.length - 1] : x.time - leadT); });
+    field.forEach((x) => { const a = R.gapArr[x.i]; a.push(x.out ? a[a.length - 1] : x.time - leadT); const b = R.tArr[x.i]; b.push(x.out ? b[b.length - 1] : x.time); });
     if (lap >= LAPS) R.final = R.laps[LAPS - 1].map((x, k) => ({ ...x, pos: k + 1 }));
     return R;
   }
@@ -714,7 +755,7 @@
     const R = opts.R || createRace(opts);
     R.manual = false; // plus personne au muret : l'ingénieur gère les arrêts
     if (R.me.radioPit == null && R.ctl.box) { R.me.radioPit = R.ctl.tyre; R.ctl.box = false; }
-    while (R.lap < LAPS) stepLap(R);
+    while (R.lap < R.LAPS) stepLap(R);
     R.events.sort((a, b) => a.lap - b.lap);
     return R;
   }
@@ -724,26 +765,26 @@
      { dt : secondes perdues (+) ou gagnées (−), pit : composé à monter, wear : usure ajoutée, perf : niveau perdu, out : abandon, noPit : tours sans arrêt, msg } */
   const pct = (p) => clamp(p, 0.03, 0.97);
   const RADIO = [
-    { id: 'sc', prio: 3, cond: (c) => c.sc && c.left >= 4,
+    { id: 'sc', prio: 3, cond: (c) => c.sc && c.leftK >= 4,
       title: 'Voiture de sécurité', text: (c) => `Safety Car en piste. Un arrêt coûte moitié moins de temps maintenant. Vos ${TYRES[c.tyre].name.toLowerCase()} sont usés à ${c.wearPct} %, vous êtes P${c.pos}.`,
       opts: [{ l: 'Box maintenant (arrêt « gratuit »)', fx: (c) => ({ pit: c.R.ctl.tyre, msg: c.wear > 0.4 ? 'Arrêt à moindre coût : des pneus frais pour la relance.' : 'Vos pneus étaient encore bons : vous cédez des places pour rien.' }) },
         { l: 'Rester en piste, garder la position', fx: (c) => ({ noPit: 1, msg: c.wear > 0.55 ? 'Position conservée, mais vos pneus usés vont souffrir à la relance.' : 'Position conservée avec des pneus encore corrects.' }) }], def: 1 },
-    { id: 'undercut', prio: 2, cond: (c) => c.gapAhead < 2.5 && c.wear > 0.25 && c.left >= 6 && !c.sc && c.need === 'dry' && isSlick(c.tyre),
+    { id: 'undercut', prio: 2, cond: (c) => c.gapAhead < 2.5 && c.wear > 0.25 && c.leftK >= 6 && !c.sc && c.need === 'dry' && isSlick(c.tyre),
       title: 'Fenêtre d\'undercut', text: (c) => `La voiture devant est à ${c.gapAhead.toFixed(1).replace('.', ',')} s. En vous arrêtant avant elle, des pneus neufs peuvent vous faire passer devant.`,
       opts: [{ l: 'Tenter l\'undercut maintenant', fx: (c) => { const ok = c.rnd() < pct(0.5 + 0.12 * c.x.M('pit')); return { pit: c.R.ctl.tyre, dt: ok ? -2.5 : 0.8, msg: ok ? 'Undercut réussi, tour de sortie canon !' : 'Trafic à la sortie des stands : l\'undercut échoue.' }; } },
         { l: 'Rester en piste', fx: () => ({ msg: 'On reste sur le plan prévu.' }) }], def: 1 },
-    { id: 'flat', prio: 1, cond: (c) => c.wear > 0.3 && c.wear < 0.7 && c.left >= 4 && !c.sc,
+    { id: 'flat', prio: 1, cond: (c) => c.wear > 0.3 && c.wear < 0.7 && c.leftK >= 4 && !c.sc,
       title: 'Plat sur un pneu', text: (c) => `Blocage de roue : un plat provoque des vibrations. Usure ${c.wearPct} %.`,
       opts: [{ l: 'Passer en mode Économie pour ménager le pneu', fx: () => ({ mode: 'save', dt: 0.3, msg: 'Rythme réduit, le pneu tiendra.' }) },
         { l: 'Garder le rythme', fx: () => ({ dt: 0.8, wear: 0.12, msg: 'Le pneu s\'abîme plus vite.' }) }], def: 0 },
-    { id: 'cover', prio: 2, cond: (c) => c.gapBehind < 3 && c.wear > 0.2 && c.left >= 5 && !c.sc && isSlick(c.tyre) && c.need === 'dry',
+    { id: 'cover', prio: 2, cond: (c) => c.gapBehind < 3 && c.wear > 0.2 && c.leftK >= 5 && !c.sc && isSlick(c.tyre) && c.need === 'dry',
       title: 'Undercut adverse', text: (c) => `La voiture derrière vous (${c.gapBehind.toFixed(1).replace('.', ',')} s) vient de rentrer au stand : elle tente l'undercut. Vos pneus sont usés à ${c.wearPct} %.`,
       opts: [{ l: 'Mode Attaque pour couvrir', fx: (c) => ({ mode: 'push', dt: -0.6, wear: 0.03, msg: c.wear < 0.6 ? 'Vos tours rapides annulent l\'undercut.' : 'Vous attaquez, mais vos pneus usés limitent le gain.' }) },
         { l: 'Rentrer au prochain passage', fx: (c) => ({ pit: c.R.ctl.tyre, msg: 'On répond tout de suite : arrêt au prochain passage.' }) },
         { l: 'Garder le rythme prévu', fx: (c) => (c.rnd() < 0.5 ? { dt: 1.5, msg: 'L\'undercut fonctionne : il ressortira devant.' } : { msg: 'Son tour de sortie est lent : la position est sauve.' }) }], def: 2 },
-    { id: 'heat', prio: 1, cond: (c) => c.left >= 3,
+    { id: 'heat', prio: 1, cond: (c) => c.leftK >= 3,
       title: 'Surchauffe moteur', text: (c) => `Les températures grimpent dans le trafic. Fiabilité de votre voiture : ${Math.round(c.rel)}.`,
-      opts: [{ l: 'Lever le pied 2 tours', fx: () => ({ dt: 2.0, msg: 'Températures sous contrôle.' }) },
+      opts: [{ l: 'Lever le pied quelques tours', fx: () => ({ dt: 2.0, msg: 'Températures sous contrôle.' }) },
         { l: 'Ouvrir le refroidissement', fx: (c) => (c.rnd() < 0.04 ? { out: 'Surchauffe', msg: 'Trop tard : le moteur lâche.' } : { dt: 0.9, msg: 'Un peu de traînée en plus, mais le moteur respire.' }) },
         { l: 'Continuer à fond', fx: (c) => (c.rnd() < pct(0.42 - c.rel / 250) ? { out: 'Surchauffe', msg: 'Le moteur n\'a pas tenu.' } : { dt: 0, msg: 'Ça passe : aucune seconde perdue.' }) }], def: 0 },
     { id: 'attack', prio: 1, cond: (c) => c.gapAhead < 1.2 && c.pos > 1 && !c.sc,
@@ -756,11 +797,11 @@
       opts: [{ l: 'Défense agressive', fx: (c) => { const u = c.rnd(); if (u < 0.07) return { dt: 5, msg: 'Changement de ligne tardif : 5 s de pénalité.' }; return u < 0.07 + pct(0.4 + (c.d.craft - 80) / 50) ? { dt: 0, wear: 0.05, msg: 'Porte fermée, la position est gardée.' } : { dt: 1.5, wear: 0.05, msg: 'Il passe quand même, et vous avez abîmé vos pneus.' }; } },
         { l: 'Défendre proprement', fx: () => ({ dt: 0.6, msg: 'Défense propre, peu de temps perdu.' }) },
         { l: 'Laisser passer et suivre', fx: () => ({ dt: 1.0, wear: -0.04, msg: 'Vous prenez son aspiration sans user vos pneus.' }) }], def: 1 },
-    { id: 'kerb', prio: 1, cond: (c) => c.left >= 3 && !c.sc,
+    { id: 'kerb', prio: 1, cond: (c) => c.leftK >= 3 && !c.sc,
       title: 'Fond plat menacé', text: () => 'Le fond plat tape sur les vibreurs. Ils font gagner du temps, mais peuvent l\'endommager.',
       opts: [{ l: 'Éviter les vibreurs', fx: () => ({ dt: 1.2, msg: 'Fond plat préservé.' }) },
         { l: 'Continuer à les attaquer', fx: (c) => (c.rnd() < 0.3 ? { perf: 6, msg: 'Fond plat endommagé : de l\'appui perdu jusqu\'à l\'arrivée.' } : { dt: -0.8, msg: 'Ça tient, et le chrono en profite.' }) }], def: 0 },
-    { id: 'fuel', prio: 1, cond: (c) => c.left >= 4 && !c.sc,
+    { id: 'fuel', prio: 1, cond: (c) => c.leftK >= 4 && !c.sc,
       title: 'Consommation trop élevée', text: (c) => `Au rythme actuel, il manquera du carburant pour les ${c.left} derniers tours.`,
       opts: [{ l: 'Lever le pied en fin de ligne droite', fx: () => ({ dt: 1.6, msg: 'Consommation revenue dans la cible.' }) },
         { l: 'Ignorer et attaquer', fx: (c) => (c.rnd() < 0.3 ? { dt: 5, msg: 'Il faut économiser énormément en fin de course.' } : { dt: 0, msg: 'Le calcul était pessimiste : aucune perte.' }) }], def: 0 },
@@ -768,15 +809,15 @@
       title: 'Retardataires', text: () => 'Un groupe de voitures attardées vous bouche la vue avant un enchaînement lent.',
       opts: [{ l: 'Forcer le passage', fx: (c) => (c.rnd() < pct(0.55 + (c.d.craft - 80) / 80) ? { dt: -0.8, msg: 'Passé sans perdre le rythme.' } : { dt: 2, msg: 'Bloqué dans les virages lents.' }) },
         { l: 'Patienter jusqu\'à la ligne droite', fx: () => ({ dt: 0.7, msg: 'Un peu de temps perdu, aucun risque pris.' }) }], def: 1 },
-    { id: 'mode', prio: 1, cond: (c) => c.left <= 6 && c.left >= 2 && !c.sc,
+    { id: 'mode', prio: 1, cond: (c) => c.leftK <= 6 && c.leftK >= 2 && !c.sc,
       title: 'Mode moteur', text: (c) => `Il reste ${c.left} tours. Le mode attaque donne de la puissance, mais sollicite la mécanique.`,
       opts: [{ l: 'Mode attaque', fx: (c) => (c.rnd() < pct((1 - c.rel / 100) * 0.3) ? { out: 'Moteur', msg: 'Le moteur casse.' } : { dt: -(1.5 + 0.4 * c.x.M('push')), msg: 'Puissance maximale jusqu\'à l\'arrivée.' }) },
         { l: 'Rester en mode course', fx: () => ({ msg: 'On assure l\'arrivée.' }) }], def: 1 },
-    { id: 'brakes', prio: 1, cond: (c) => c.left >= 3 && !c.sc,
+    { id: 'brakes', prio: 1, cond: (c) => c.leftK >= 3 && !c.sc,
       title: 'Freins en surchauffe', text: () => 'Les disques avant dépassent la température limite.',
-      opts: [{ l: 'Freiner plus tôt 2 tours', fx: () => ({ dt: 1.0, msg: 'Températures de freins stabilisées.' }) },
+      opts: [{ l: 'Freiner plus tôt quelques tours', fx: () => ({ dt: 1.0, msg: 'Températures de freins stabilisées.' }) },
         { l: 'Ne rien changer', fx: (c) => (c.rnd() < pct(0.24 - (c.d.cons - 80) / 150) ? { dt: 5, msg: 'Blocage et tête-à-queue au freinage.' } : { dt: 0, msg: 'Les freins tiennent.' }) }], def: 0 },
-    { id: 'vsc', prio: 1, cond: (c) => c.left >= 4 && !c.sc && c.wear > 0.2 && c.need === 'dry' && isSlick(c.tyre),
+    { id: 'vsc', prio: 1, cond: (c) => c.leftK >= 4 && !c.sc && c.wear > 0.2 && c.need === 'dry' && isSlick(c.tyre),
       title: 'Voiture de sécurité virtuelle', text: (c) => `Débris en piste : VSC pendant un tour. Un arrêt coûte bien moins cher maintenant. Usure ${c.wearPct} %, prochain composé choisi : ${TYRES[c.R.ctl.tyre].name}.`,
       opts: [{ l: 'Anticiper l\'arrêt sous VSC', fx: (c) => ({ pit: c.R.ctl.tyre, vsc: true, msg: 'Arrêt à moindre coût sous VSC.' }) },
         { l: 'Rester en piste', fx: () => ({ msg: 'Vous gardez votre position en piste.' }) }], def: 1 },
@@ -784,29 +825,29 @@
       title: 'Limites de piste', text: () => 'Deux avertissements déjà : au troisième, c\'est la pénalité.',
       opts: [{ l: 'Garder de la marge', fx: () => ({ dt: 0.5, msg: 'Aucun nouvel avertissement.' }) },
         { l: 'Continuer à utiliser toute la piste', fx: (c) => (c.rnd() < 0.35 ? { dt: 5, msg: '5 s de pénalité pour limites de piste.' } : { dt: -0.4, msg: 'Les commissaires laissent passer.' }) }], def: 0 },
-    { id: 'balance', prio: 1, cond: (c) => c.left >= 3 && !c.sc,
+    { id: 'balance', prio: 1, cond: (c) => c.leftK >= 3 && !c.sc,
       title: 'Équilibre de la voiture', text: (c) => `Votre pilote se plaint de sous-virage. Régularité : ${Math.round(c.d.cons)}.`,
       opts: [{ l: 'Modifier les réglages au volant', fx: (c) => (c.rnd() < pct(0.5 + (c.d.cons - 80) / 60) ? { dt: -1.0, msg: 'Le nouveau réglage fonctionne.' } : { dt: 0.6, msg: 'Le réglage perturbe le pilote.' }) },
         { l: 'Ne rien toucher', fx: () => ({ msg: 'Le pilote s\'adapte.' }) }], def: 1 },
-    { id: 'lead', prio: 2, cond: (c) => c.pos === 1 && c.gapBehind > 5 && c.left >= 3 && !c.sc,
+    { id: 'lead', prio: 2, cond: (c) => c.pos === 1 && c.gapBehind > 5 && c.leftK >= 3 && !c.sc,
       title: 'En tête avec de l\'avance', text: (c) => `Vous menez avec ${c.gapBehind.toFixed(1).replace('.', ',')} s d'avance. Usure ${c.wearPct} %.`,
       opts: [{ l: 'Gérer l\'écart et les pneus', fx: () => ({ dt: 1.0, wear: -0.08, msg: 'Vous gérez votre avance.' }) },
         { l: 'Creuser l\'écart', fx: () => ({ dt: -1.0, wear: 0.06, msg: 'L\'écart grandit, les pneus trinquent.' }) }], def: 0 },
   ];
   // Contexte de course vu depuis la voiture du joueur, après le tour qui vient de se terminer
   function radioCtx(R) {
-    const x = R.me, lap = R.lap, wet = R.weather[lap].wet;
+    const LAPS = R.LAPS, x = R.me, lap = R.lap, wet = R.weather[lap].wet;
     const order = R.field.filter((y) => !y.out).sort((a, b) => a.time - b.time);
     const k = order.indexOf(x);
-    const next = [1, 2, 3].map((d) => R.weather[Math.min(LAPS, lap + d)]);
+    const next = [1, 2, 3].map((d) => R.weather[Math.min(LAPS, lap + Math.round(d * (R.K || 1)))]);
     const wetMax = Math.max(...next.map((n) => n.wet)), wetMin = Math.min(...next.map((n) => n.wet));
-    return { R, x, lap, left: LAPS - lap, wet, state: trackState(wet), need: idealTyre(wet), wetMax, wetMin,
+    return { R, x, lap, left: LAPS - lap, leftK: (LAPS - lap) / (R.K || 1), wet, state: trackState(wet), need: idealTyre(wet), wetMax, wetMin,
       rainSoon: wetMax > wet + 0.12 || next.slice(0, 2).some((n) => n.rain > 0.2), drying: wet > 0.1 && wetMin < wet - 0.1 && next[1].rain < 0.1,
       sc: lap === R.scLap, tyre: x.tyre, wear: x.wear, wearPct: Math.round(x.wear * 100), pos: k + 1,
       gapAhead: k > 0 ? x.time - order[k - 1].time : 99, gapBehind: k < order.length - 1 ? order[k + 1].time - x.time : 99, d: x.driver, rel: x.c.car.rel, rnd: R.r };
   }
   function dilemmaFor(R) {
-    if (!R.me || R.me.out || R.lap >= LAPS) return null;
+    if (!R.me || R.me.out || R.lap >= R.LAPS) return null;
     const c = radioCtx(R);
     const ok = RADIO.filter((s) => !R.asked.includes(s.id) && s.cond(c));
     if (!ok.length) return null;
@@ -842,7 +883,7 @@
   }
   /* ---------- Objectifs du jour ---------- */
   const OBJECTIVES = [
-    { id: 'races3', txt: 'Disputer vos 2 courses du jour', k: 'races', goal: 2, pc: 40 },
+    { id: 'races3', txt: 'Disputer 3 courses aujourd\'hui', k: 'races', goal: 3, pc: 40 },
     { id: 'top5', txt: 'Terminer dans le top 5', k: 'top5', goal: 1, pc: 60 },
     { id: 'podium', txt: 'Monter sur le podium', k: 'podium', goal: 1, pc: 50 },
     { id: 'win', txt: 'Remporter une course', k: 'win', goal: 1, pc: 80 },
@@ -861,10 +902,10 @@
 
   F1.manager = {
     BIRTH, ageOf, growth, xpForRace, driverGrowth, withExperience, XP_PER_POINT,
-    STAFF_ROLES, STAFF, staffOf, GARAGE, GARAGE_ZONES, GARAGE_BY_ID, garageCost, garageLevel, teamBonus, weatherTimeline, wxLabel, wxIcon,
+    STAFF_ROLES, STAFF, staffOf, GARAGE, GARAGE_ZONES, GARAGE_BY_ID, garageCost, garageLevel, gCum, G_GAIN, VALUE, valueOf, TARIF, teamBonus, weatherTimeline, wxLabel, wxIcon,
     MAX_LV, LV_GAIN, LV_NAME, lvCum, partLevel, levelCost, MECH, tunnelChance, branchPackage, carRating, OBJECTIVES, dailyObjectives,
     forecastLaps, trend, ruleOk, RULE_PENALTY, tyreStatus, MODES, redoLap, dryFor,
-    CLIMATE, climateOf, trackState, forecast, TYRES, isSlick, tyreDelta, DILEMMA_LAPS, createRace, stepLap, dilemmaFor, applyChoice, RADIO,
+    CLIMATE, climateOf, trackState, forecast, TYRES, isSlick, tyreDelta, DILEMMA_LAPS, dilemmaLaps, lapsOf, RACE_LAPS, planFor, REFILL_H, createRace, stepLap, dilemmaFor, applyChoice, RADIO,
     START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, PC_TABLE,
     RD_CATS, RD_PARTS, RD_BY_ID, rdBranches, partState, partsBonus,
     market, carStats, withSetup, carScore, bestSetup, compat, circuitProfile, botField, simulate, rewards, hash, TALENT,

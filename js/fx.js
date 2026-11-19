@@ -6,8 +6,9 @@
 
   /* ---------- Drapeau à damier qui flotte sur tout l'écran ---------- */
   let wipe = null;
+  let low = false; // mode config basse : effets allégés
   function flagWipe(onCover) {
-    if (reduce) { onCover(); return; }
+    if (reduce || low) { onCover(); return; }
     if (wipe) { wipe.pending = onCover; return; }   // déjà en cours : on remplace la page à la couverture
     const cv = document.getElementById('flagWipe');
     const ctx = cv.getContext('2d');
@@ -215,7 +216,7 @@
      Les barres glissent le long de leur propre inclinaison (vers le haut à droite), comme des lignes de vitesse.
      Seul un transform est modifié à chaque image (pas de mise en page) ; à l'arrêt de l'onglet, rien ne tourne. */
   function stripes() {
-    if (reduce || stripes.on) return; stripes.on = true;
+    if (reduce || low || stripes.on) return; stripes.on = true;
     const root = document.documentElement, SLOPE = 0.62;
     let t = 0, last = performance.now(), lastY = scrollY, v = 0;
     const tile = () => (innerWidth <= 760 ? [1100, 690] : [1600, 1000]);
@@ -230,11 +231,13 @@
       root.style.setProperty('--stx', (mod(t * SLOPE, tw)).toFixed(1) + 'px');
       root.style.setProperty('--sty', (-mod(t, th)).toFixed(1) + 'px');
       root.style.setProperty('--tbx', (-(t * 1.6) % 1400).toFixed(1) + 'px');
+      if (low) { stripes.on = false; return; } // config basse : les bandes s'arrêtent là où elles sont
       requestAnimationFrame(frame);
     };
     requestAnimationFrame(frame);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', stripes); else stripes();
 
-  F1.fx = { skidMarks, stripes, flagWipe, reveal, navIndicator, reduce };
+  function setLow(v) { low = !!v; if (!low) stripes(); }
+  F1.fx = { setLow, skidMarks, stripes, flagWipe, reveal, navIndicator, reduce };
 })(window.F1 = window.F1 || {});

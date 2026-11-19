@@ -268,3 +268,50 @@ body::after { inset: -1000px -1600px !important; background-position: 0 0 !impor
   transform: translate3d(var(--stx, 0px), var(--sty, 0px), 0); will-change: transform; }
 @media (max-width: 760px) { body::after { inset: -690px -1100px !important; } }
 .topbar { background-position: var(--tbx, 0px) center !important; }
+
+/* =====================================================================
+   Écran de course : tout tient sur un seul écran (PC), sans défilement
+   carte au centre · classement compact et fil de course à droite · muret des stands sous la carte
+   ===================================================================== */
+.race-ctl { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.race-ctl .seg button { padding: 6px 10px; font-size: 12px; }
+.race-ctl.done .seg:first-child, .race-ctl.done [data-action="m-skip"] { display: none; }
+.low-btn.on { border-color: var(--win) !important; color: var(--win); }
+.race-main { display: grid; gap: 10px; margin-top: 10px; }
+.race-left, .race-side { display: flex; flex-direction: column; gap: 8px; min-width: 0; min-height: 0; }
+.race-stage { margin-top: 0; }
+.wx-strip { gap: 2px; margin-top: 0; }
+.pitwall { margin-top: 0; }
+.trow { height: var(--row, 30px); }
+.race-side .feed { max-height: 220px; overflow-y: auto; }
+.race-end { position: absolute; inset: 0; z-index: 6; display: none; place-items: center; padding: 12px; background: rgba(12, 14, 18, .74); overflow: auto; }
+.race-end.on { display: grid; }
+.race-end .race-res { margin: 0; width: min(580px, 100%); background: var(--panel); border: 1px solid var(--line2); }
+@media (min-width: 900px) and (min-height: 560px) {
+  .modal:has(.race-modal) { padding: 1vh 1vw; }
+  .race-box { width: min(1500px, 98vw) !important; height: 96vh; max-height: 96vh !important; overflow: hidden !important; display: flex; flex-direction: column; padding: 12px 16px !important; }
+  .race-h { flex: none; }
+  .race-main { flex: 1; min-height: 0; grid-template-columns: minmax(0, 1fr) 310px; }
+  .race-stage { flex: 1; height: auto !important; min-height: 180px; }
+  .race-side .tower { flex: none; }
+  .race-side .feed { flex: 1; max-height: none; min-height: 0; }
+  .trow { font-size: 12px; padding: 0 8px; gap: 6px; }
+  .trow .tc { display: none; }
+  .pitwall { padding: 8px 10px; }
+}
+@media (min-width: 900px) and (max-height: 760px) { .race-side .tower { overflow-y: auto; max-height: 62%; flex: 0 1 auto; } }
+
+/* =====================================================================
+   Mode config basse : aucun flou, ombre, filtre ni animation décorative
+   ===================================================================== */
+html.low *, html.low *::before, html.low *::after { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; box-shadow: none !important; text-shadow: none !important; }
+html.low *:not(.trow):not(.trow *), html.low *::before, html.low *::after { animation: none !important; }
+html.low .stage-glow, html.low .hero-bg, html.low .skid-car { display: none !important; }
+html.low .car3d img, html.low .modal, html.low .series-ic { filter: none !important; }
+html.low body::after { transform: none !important; will-change: auto; }
+@media (max-width: 899px) {
+  .race-h { flex-wrap: wrap; }
+  .race-ctl { order: 3; width: 100%; justify-content: flex-start; gap: 6px; }
+  .race-ctl .seg button { padding: 5px 8px; }
+  .race-ctl .btn.sm { padding: 6px 10px; font-size: 12px; }
+}
