@@ -767,11 +767,11 @@
   const RADIO = [
     { id: 'sc', prio: 3, cond: (c) => c.sc && c.leftK >= 4,
       title: 'Voiture de sécurité', text: (c) => `Safety Car en piste. Un arrêt coûte moitié moins de temps maintenant. Vos ${TYRES[c.tyre].name.toLowerCase()} sont usés à ${c.wearPct} %, vous êtes P${c.pos}.`,
-      opts: [{ l: 'Box maintenant (arrêt « gratuit »)', fx: (c) => ({ pit: c.R.ctl.tyre, msg: c.wear > 0.4 ? 'Arrêt à moindre coût : des pneus frais pour la relance.' : 'Vos pneus étaient encore bons : vous cédez des places pour rien.' }) },
+      opts: [{ l: 'Box maintenant (arrêt « gratuit »)', box: true, fx: (c) => ({ pit: c.R.ctl.tyre, msg: c.wear > 0.4 ? 'Arrêt à moindre coût : des pneus frais pour la relance.' : 'Vos pneus étaient encore bons : vous cédez des places pour rien.' }) },
         { l: 'Rester en piste, garder la position', fx: (c) => ({ noPit: 1, msg: c.wear > 0.55 ? 'Position conservée, mais vos pneus usés vont souffrir à la relance.' : 'Position conservée avec des pneus encore corrects.' }) }], def: 1 },
     { id: 'undercut', prio: 2, cond: (c) => c.gapAhead < 2.5 && c.wear > 0.25 && c.leftK >= 6 && !c.sc && c.need === 'dry' && isSlick(c.tyre),
       title: 'Fenêtre d\'undercut', text: (c) => `La voiture devant est à ${c.gapAhead.toFixed(1).replace('.', ',')} s. En vous arrêtant avant elle, des pneus neufs peuvent vous faire passer devant.`,
-      opts: [{ l: 'Tenter l\'undercut maintenant', fx: (c) => { const ok = c.rnd() < pct(0.5 + 0.12 * c.x.M('pit')); return { pit: c.R.ctl.tyre, dt: ok ? -2.5 : 0.8, msg: ok ? 'Undercut réussi, tour de sortie canon !' : 'Trafic à la sortie des stands : l\'undercut échoue.' }; } },
+      opts: [{ l: 'Tenter l\'undercut maintenant', box: true, fx: (c) => { const ok = c.rnd() < pct(0.5 + 0.12 * c.x.M('pit')); return { pit: c.R.ctl.tyre, dt: ok ? -2.5 : 0.8, msg: ok ? 'Undercut réussi, tour de sortie canon !' : 'Trafic à la sortie des stands : l\'undercut échoue.' }; } },
         { l: 'Rester en piste', fx: () => ({ msg: 'On reste sur le plan prévu.' }) }], def: 1 },
     { id: 'flat', prio: 1, cond: (c) => c.wear > 0.3 && c.wear < 0.7 && c.leftK >= 4 && !c.sc,
       title: 'Plat sur un pneu', text: (c) => `Blocage de roue : un plat provoque des vibrations. Usure ${c.wearPct} %.`,
@@ -780,7 +780,7 @@
     { id: 'cover', prio: 2, cond: (c) => c.gapBehind < 3 && c.wear > 0.2 && c.leftK >= 5 && !c.sc && isSlick(c.tyre) && c.need === 'dry',
       title: 'Undercut adverse', text: (c) => `La voiture derrière vous (${c.gapBehind.toFixed(1).replace('.', ',')} s) vient de rentrer au stand : elle tente l'undercut. Vos pneus sont usés à ${c.wearPct} %.`,
       opts: [{ l: 'Mode Attaque pour couvrir', fx: (c) => ({ mode: 'push', dt: -0.6, wear: 0.03, msg: c.wear < 0.6 ? 'Vos tours rapides annulent l\'undercut.' : 'Vous attaquez, mais vos pneus usés limitent le gain.' }) },
-        { l: 'Rentrer au prochain passage', fx: (c) => ({ pit: c.R.ctl.tyre, msg: 'On répond tout de suite : arrêt au prochain passage.' }) },
+        { l: 'Rentrer au prochain passage', box: true, fx: (c) => ({ pit: c.R.ctl.tyre, msg: 'On répond tout de suite : arrêt au prochain passage.' }) },
         { l: 'Garder le rythme prévu', fx: (c) => (c.rnd() < 0.5 ? { dt: 1.5, msg: 'L\'undercut fonctionne : il ressortira devant.' } : { msg: 'Son tour de sortie est lent : la position est sauve.' }) }], def: 2 },
     { id: 'heat', prio: 1, cond: (c) => c.leftK >= 3,
       title: 'Surchauffe moteur', text: (c) => `Les températures grimpent dans le trafic. Fiabilité de votre voiture : ${Math.round(c.rel)}.`,
@@ -819,7 +819,7 @@
         { l: 'Ne rien changer', fx: (c) => (c.rnd() < pct(0.24 - (c.d.cons - 80) / 150) ? { dt: 5, msg: 'Blocage et tête-à-queue au freinage.' } : { dt: 0, msg: 'Les freins tiennent.' }) }], def: 0 },
     { id: 'vsc', prio: 1, cond: (c) => c.leftK >= 4 && !c.sc && c.wear > 0.2 && c.need === 'dry' && isSlick(c.tyre),
       title: 'Voiture de sécurité virtuelle', text: (c) => `Débris en piste : VSC pendant un tour. Un arrêt coûte bien moins cher maintenant. Usure ${c.wearPct} %, prochain composé choisi : ${TYRES[c.R.ctl.tyre].name}.`,
-      opts: [{ l: 'Anticiper l\'arrêt sous VSC', fx: (c) => ({ pit: c.R.ctl.tyre, vsc: true, msg: 'Arrêt à moindre coût sous VSC.' }) },
+      opts: [{ l: 'Anticiper l\'arrêt sous VSC', box: true, fx: (c) => ({ pit: c.R.ctl.tyre, vsc: true, msg: 'Arrêt à moindre coût sous VSC.' }) },
         { l: 'Rester en piste', fx: () => ({ msg: 'Vous gardez votre position en piste.' }) }], def: 1 },
     { id: 'limits', prio: 1, cond: (c) => !c.sc,
       title: 'Limites de piste', text: () => 'Deux avertissements déjà : au troisième, c\'est la pénalité.',
@@ -855,12 +855,13 @@
     const pool = ok.filter((s) => s.prio === top);
     const s = pool[Math.floor(R.r() * pool.length)];
     R.asked.push(s.id);
-    return { id: s.id, title: s.title, text: s.text(c), options: s.opts.map((o) => o.l), def: s.def, ctx: c, s };
+    return { id: s.id, title: s.title, text: s.text(c), options: s.opts.map((o) => o.l), box: s.opts.map((o) => !!o.box), def: s.def, ctx: c, s };
   }
   // Applique le choix du joueur : écart de temps immédiat, arrêt au prochain passage, usure, casse…
-  function applyChoice(R, dil, idx) {
+  function applyChoice(R, dil, idx, tyre) {
     const x = R.me, o = dil.s.opts[idx] || dil.s.opts[dil.def];
     const e = o.fx(dil.ctx) || {};
+    if (e.pit && tyre && TYRES[tyre]) e.pit = tyre; // composé choisi par le joueur
     const dt = e.dt || 0;
     x.time += dt;
     if (e.wear) x.wear = clamp(x.wear + e.wear, 0, 1);

@@ -63,7 +63,7 @@ Site de paris **à jetons virtuels** sur la Formule 1. Il est 100 % statique (HT
   - Les courses se disputent sur le circuit du **prochain Grand Prix réel**.
   - Un **réglage aéro** (faible ou fort appui) s'ajuste avant chaque course.
   - Aucun conseil n'est donné : le site décrit seulement le tracé (lignes droites, virages lents, contraintes mécaniques).
-- **Durée et équilibrage des courses** : une course dure environ 52 s en vitesse ×1 (×2 et ×4 disponibles), quel que soit le nombre de tours.
+- **Durée et équilibrage des courses** : une course dure environ 2 minutes en vitesse ×1 (×2 et ×4 disponibles), quel que soit le nombre de tours.
   L'usure par tour donne des relais réalistes (environ 19 tours en tendres, 27 en mediums, 35 en durs). Les écarts de rythme sont ramenés
   à l'échelle d'une course de 20 tours, pour que la hiérarchie ne pèse pas 3 fois plus que les imprévus ; les pertes ponctuelles
   (départ, accrochages, arrêts) restent en secondes réelles.

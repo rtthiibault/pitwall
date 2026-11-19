@@ -315,3 +315,19 @@ html.low body::after { transform: none !important; will-change: auto; }
   .race-ctl .seg button { padding: 5px 8px; }
   .race-ctl .btn.sm { padding: 6px 10px; font-size: 12px; }
 }
+
+/* Course en cours : la page derrière la fenêtre ne défile plus */
+html.race-lock, html.race-lock body { overflow: hidden !important; overscroll-behavior: none; }
+.race-modal { overscroll-behavior: contain; }
+
+/* Choix des pneus à l'arrêt au stand */
+.tc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; margin-top: 8px; }
+.tc-opt { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 9px; align-items: center; text-align: left;
+  padding: 8px 10px; border-radius: var(--radius-s); background: var(--raised); border: 1px solid var(--line); color: var(--text); }
+.tc-opt .tyre2 { grid-row: 1 / 3; }
+.tc-opt b { font-size: 13px; font-weight: 650; } .tc-opt b i { font-style: normal; font-size: 11px; color: var(--win); font-weight: 600; margin-left: 4px; }
+.tc-opt small { font-size: 11px; color: var(--muted); }
+.tc-opt:hover { border-color: var(--ty); }
+.tc-opt.reco { border-color: var(--win); }
+.tc-opt.bad { opacity: .55; }
+.radio-q { font-size: 13px; margin-bottom: 2px; }

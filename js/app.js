@@ -1341,6 +1341,7 @@
     const sg = MG().staffOf(ctx.m, 'st');
     const range = Math.round((1 + MG().garageLevel(ctx.m, 'radar') + (sg && sg.tier >= 4 ? 1 : 0)) * res.K);
     const wxCls = (x) => (x.rain > 0.6 ? 'heavy' : x.rain > 0.25 ? 'rain' : x.rain > 0.05 ? 'drizzle' : x.wet > 0.35 ? 'wet' : x.cloud > 0.5 ? 'cloud' : 'dry');
+    document.documentElement.classList.add('race-lock');
     $('#modal').innerHTML = `<div class="modal race-modal"><div class="modal-box race-box">
       <div class="race-h"><div><div class="muted upper" style="font-size:11px;font-weight:700">${leagueBadge(leagueBefore)} · ${esc(ctx.race.nameFr)}</div><div class="race-lap">Tour <b id="lapN">0</b> / ${LAPS}</div></div>
         <div class="wx-now" id="wxNow"></div>
@@ -1359,7 +1360,7 @@
         </div>
         <div class="race-side"><div class="tower" style="height:${res.field.length * ROW}px;--row:${ROW}px">${tower}</div><div class="feed" id="feed"><div class="ev"><b>Départ</b> — vous partez P${meX.grid} sur la grille, en ${MG().TYRES[meX.tyre].name.toLowerCase()}${res.weather[0].wet > 0.12 ? `, sur piste ${MG().trackState(res.weather[0].wet).toLowerCase()}` : ''}</div></div></div>
       </div></div></div>`;
-    const STEP = 50, LAP_MS = 52000 / LAPS; // une course dure environ 52 s en vitesse ×1, quel que soit le nombre de tours
+    const STEP = 50, LAP_MS = 120000 / LAPS; // une course dure environ 2 minutes en vitesse ×1, quel que soit le nombre de tours
     let lap = 0, T = -0.5, flagT = 0, started = false, paused = false, done = false, evI = 0, radioTimer = null; // T < 0 : procédure de départ (5 feux rouges)
     S.raceSpeed = 1;
     MG().stepLap(res); // le tour 1 est calculé d'avance : la carte interpole toujours vers le tour suivant
@@ -1372,6 +1373,19 @@
       $('#raceFc').innerHTML = `<span class="rf-state"><i class="${st === 'Sèche' ? 'dry' : st === 'Humide' ? 'damp' : 'soak'}"></i>Piste ${st.toLowerCase()}</span><span class="rf-hum">Humidité ${Math.round(x.wet * 100)} %</span><span class="rf-next">${esc(MG().trend(res, Math.max(3, Math.min(Math.round(5 * res.K), 2 + range)), Math.min(LAPS, L)))}</span>`;
       $$('#wxStrip i').forEach((el) => { const l = +el.dataset.l; el.className = l <= L ? wxCls(res.weather[l]) + ' past' : l <= L + range ? wxCls(res.weather[l]) : 'unk'; el.classList.toggle('now', l === Math.max(1, L)); });
       renderWall(L);
+    };
+    // Choix des pneus au moment de rentrer au stand : chaque composé avec son relais estimé, et une recommandation
+    const tyreChoice = (L) => {
+      const wet = res.weather[Math.min(LAPS, Math.max(0, L))].wet, left = Math.max(1, LAPS - L), need = wet < 0.12 ? 'dry' : wet < 0.6 ? 'I' : 'W';
+      const stint = (t) => Math.round(0.75 / (MG().TYRES[t].wear * res.abr));
+      const dryBest = MG().dryFor(left, res.abr, meX);
+      const reco = need === 'dry' ? dryBest : need;
+      return `<div class="tc-grid">${Object.values(MG().TYRES).map((t) => {
+        const ok = need === 'dry' ? MG().isSlick(t.id) : t.id === need, n = stint(t.id);
+        const note = !ok ? (need === 'dry' ? 'piste sèche : inadapté' : 'piste mouillée : inadapté') : n >= left ? `tient jusqu'à l'arrivée (${left} t.)` : `≈ ${n} tours · encore 1 arrêt`;
+        const rule = MG().isSlick(t.id) && need === 'dry' && !MG().ruleOk({ used: [...meX.used, t.id] }) ? ' · ⚠️ même composé' : '';
+        return `<button class="tc-opt ${t.id === reco ? 'reco' : ''} ${ok ? '' : 'bad'}" data-tc="${t.id}" style="--ty:${t.color}"><span class="tyre2">${t.id}</span><b>${esc(t.name)}${t.id === reco ? ' <i>conseillé</i>' : ''}</b><small>${note}${rule}</small></button>`;
+      }).join('')}</div>`;
     };
     // Muret des stands : pneus du joueur, rythme, prochain composé, appel au stand
     const canRedo = () => !paused && !done && !meX.out && res.lap === lap + 1 && T - lap < 0.9;
@@ -1394,11 +1408,30 @@
     $('#pitwall').addEventListener('click', (e) => {
       const b = e.target.closest('[data-pw]'); if (!b || done) return;
       const c = res.ctl, k = b.dataset.pw;
+      if (k === 'box' && !c.box && !(res.lap > lap && meX.pitLaps.includes(res.lap))) { openBoxChoice(); return; }
       if (k === 'mode') c.mode = b.dataset.v; else if (k === 'tyre') c.tyre = b.dataset.v; else if (k === 'box') { if (res.lap > lap && meX.pitLaps.includes(res.lap)) { if (!canRedo()) return; c.skip = res.lap; c.box = false; } else { c.box = !c.box; if (c.box && c.skip === res.lap) c.skip = 0; } } else if (k === 'plan') c.plan = !c.plan;
       // l'ordre s'applique au tour en cours tant que la voiture n'a pas atteint l'entrée des stands : le tour est recalculé
       if (canRedo()) MG().redoLap(res);
       renderWall(lap);
     });
+    // Appel au stand depuis le muret : la course se fige, le joueur choisit ses pneus (ou annule)
+    function openBoxChoice() {
+      if (done || paused) return;
+      const wasRedo = canRedo();
+      paused = true;
+      const box = $('#radio');
+      box.innerHTML = `<div class="radio-box"><div class="radio-h"><span class="radio-wave"><i></i><i></i><i></i><i></i></span>Box, box · quels pneus monter ?</div>
+        <p>Arrêt en fin de tour ${Math.min(LAPS, wasRedo ? lap + 1 : lap + 2)}. Le composé choisi décide de la suite de votre stratégie.</p>${tyreChoice(lap)}
+        <div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn sm ghost" data-tc-cancel="1">Annuler, rester en piste</button></div></div>`;
+      box.classList.add('on');
+      box.onclick = (e) => {
+        const t = e.target.closest('[data-tc]'), x = e.target.closest('[data-tc-cancel]');
+        if (!t && !x) return;
+        box.classList.remove('on'); box.innerHTML = ''; box.onclick = null; paused = false;
+        if (t) { res.ctl.tyre = t.dataset.tc; res.ctl.box = true; if (res.ctl.skip === res.lap) res.ctl.skip = 0; if (wasRedo && res.lap === lap + 1) MG().redoLap(res); }
+        renderWall(lap);
+      };
+    }
     const render = (L) => {
       const order = res.laps[L - 1];
       order.forEach((o, k) => {
@@ -1427,10 +1460,12 @@
       paused = true;
       const box = $('#radio');
       const RADIO_S = 15; let leftS = RADIO_S;
-      const answer = (idx, auto) => {
+      const answer = (idx, auto, tyre) => {
         if (!paused) return;
         clearInterval(radioTimer); radioTimer = null;
-        const r = MG().applyChoice(res, dil, idx);
+        if (auto && box.dataset.pick != null && box.dataset.pick !== '') { idx = +box.dataset.pick; } // temps écoulé pendant le choix des pneus : l'option choisie s'applique avec le composé prévu
+        delete box.dataset.pick;
+        const r = MG().applyChoice(res, dil, +idx, tyre);
         box.innerHTML = `<div class="radio-box res ${r.out ? 'bad' : r.dt < 0 ? 'good' : r.dt > 0 ? 'bad' : ''}"><div class="radio-h"><span class="radio-wave"><i></i><i></i><i></i><i></i></span>Radio stand${auto ? ' · temps écoulé, choix prudent appliqué' : ''}</div><div class="radio-pick">${esc(r.choice)}</div><p>${esc(r.msg)}</p></div>`;
         setTimeout(() => { box.classList.remove('on'); box.innerHTML = ''; paused = false; then(); renderWall(lap); }, 2600);
       };
@@ -1438,7 +1473,18 @@
         <p>${esc(dil.text)}</p><div class="radio-opts">${dil.options.map((o, i) => `<button class="btn sm ghost" data-radio="${i}">${esc(o)}</button>`).join('')}</div>
         <div class="radio-bar"><i id="radioBar"></i></div></div>`;
       box.classList.add('on'); renderWall(lap);
-      box.onclick = (e) => { const b = e.target.closest('[data-radio]'); if (b) answer(+b.dataset.radio, false); };
+      box.onclick = (e) => {
+        const t = e.target.closest('[data-tc]'); if (t) { answer(box.dataset.pick, false, t.dataset.tc); return; }
+        const b = e.target.closest('[data-radio]'); if (!b) return;
+        const idx = +b.dataset.radio;
+        if (dil.box && dil.box[idx]) {
+          // arrêt au stand : choisir le composé avant de valider (le compte à rebours continue)
+          box.dataset.pick = idx;
+          box.querySelector('.radio-opts').outerHTML = `<div class="radio-q"><b>${esc(dil.options[idx])}</b> · quels pneus monter ?</div>${tyreChoice(lap)}`;
+          return;
+        }
+        answer(idx, false);
+      };
       radioTimer = setInterval(() => { leftS -= 0.1; const cd = $('#radioCd'), bar = $('#radioBar'); if (cd) cd.textContent = Math.max(0, Math.ceil(leftS)); if (bar) bar.style.width = Math.max(0, (leftS / RADIO_S) * 100) + '%'; if (leftS <= 0) answer(dil.def, true); }, 100);
     };
     const finish = (silent) => {
@@ -1655,7 +1701,7 @@
     $('#modal').innerHTML = `<div class="modal" data-action="modal-bg"><div class="modal-box">${html}</div></div>`;
     const f = $('#modal input'); if (f) setTimeout(() => f.focus(), 50);
   }
-  const closeModal = () => { if (S.raceFinish) S.raceFinish(true); if (raceTimer) { clearInterval(raceTimer); raceTimer = null; } if (S.raceMap) { S.raceMap.dispose(); S.raceMap = null; } const wasRace = !!$('#modal .race-modal'); $('#modal').innerHTML = ''; if (wasRace && /^#\/manager/.test(location.hash)) route(); };
+  const closeModal = () => { if (S.raceFinish) S.raceFinish(true); if (raceTimer) { clearInterval(raceTimer); raceTimer = null; } if (S.raceMap) { S.raceMap.dispose(); S.raceMap = null; } const wasRace = !!$('#modal .race-modal'); document.documentElement.classList.remove('race-lock'); $('#modal').innerHTML = ''; if (wasRace && /^#\/manager/.test(location.hash)) route(); };
   function welcome() {
     modal(`<div style="font-size:42px">🏎️</div><h2>Bienvenue au muret des stands</h2>
       <p class="muted">PITWALL est un jeu de pronostics <b>gratuit</b> sur la Formule 1. Vous démarrez avec <b style="color:var(--gold)">${fmt(F1.store.START)} jetons virtuels</b> et recevez une prime à chaque Grand Prix. Les cotes sont recalculées après chaque course à partir des résultats officiels, et vos paris sont réglés automatiquement.</p>
