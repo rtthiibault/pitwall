@@ -137,6 +137,18 @@
   // Prix d'un pilote selon son âge, à niveau égal : les jeunes valent leur marge de progression, les vétérans (qui ne progressent
   // presque plus) deviennent des choix rentables à court terme
   const AGE_PRICE = (age) => (age <= 21 ? 1.35 : age <= 23 ? 1.2 : age <= 27 ? 1 : age <= 29 ? 0.85 : age <= 32 ? 0.65 : age <= 36 ? 0.5 : 0.4);
+  /* Valeur marchande d'un pilote : 80 % sur sa note ACTUELLE (progression acquise comprise), en exponentielle
+     (chaque point au-dessus de 80 vaut de plus en plus cher), 20 % sur sa marge de progression restante, pondérée par l'âge.
+     Un pilote formé jusqu'à 86 vaut donc nettement plus qu'un pilote à 82, même s'il a atteint son plafond. */
+  const valueCurve = (r) => 45 * Math.exp((r - 80) / 7);
+  const AGE_W = (age) => (age <= 21 ? 1.3 : age <= 23 ? 1.15 : age <= 27 ? 1 : age <= 32 ? 0.7 : 0.4);
+  function driverValue(rating, remaining, age) {
+    const upside = Math.min(1.5, (Math.max(0, remaining) / 6) * AGE_W(age));   // 0 (plafond atteint) à 1,5 (jeune, tout à apprendre)
+    return Math.max(15, Math.round((valueCurve(rating) * (0.8 + 0.2 * upside)) / 5) * 5);
+  }
+  const RESALE_K = 0.78;   // revente : 78 % de la valeur marchande actuelle
+  // valeur d'un pilote tel qu'il est aujourd'hui (objet renvoyé par withExperience)
+  const valueOfDriver = (x) => (x.exp ? driverValue((x.base ? x.base.rating : x.rating) + x.exp.pts, x.exp.cap - x.exp.pts, x.exp.age) : x.price);
   function market(season) {
     const ents = season.entrants.length ? season.entrants : [...season.drivers.keys()];
     const drivers = season.drivers;
@@ -156,9 +168,8 @@
       const off = (i) => (TALENT[id] ? t[i] : ((h >> (i * 4)) % 5) - 2);
       const rookie = ROOKIES.includes(id);
       const pace = clamp(rating + off(1), 50, 99), craft = clamp(rating + off(2), 50, 99), cons = clamp(rating + off(3) - (rookie ? 2 : 0), 50, 99);
-      const base = 30 + 170 * Math.pow(clamp((rating - 70) / 27, 0, 1.2), 1.5);
-      const age = ageOf(id, season.year), agef = AGE_PRICE(age);
-      const price = Math.max(20, Math.round((base * agef) / 5) * 5);
+      const age = ageOf(id, season.year), agef = AGE_W(age);
+      const price = driverValue(rating, growth(age).cap, age);   // valeur marchande sans progression acquise
       return { id, name: `${d.given} ${d.family}`, family: d.family, code: d.code, number: d.number, iso: d.iso, teamId: d.teamId, rating, pace, craft, cons, price, rookie, age, agef };
     }).sort((a, b) => b.rating - a.rating || b.price - a.price);
 
@@ -951,7 +962,7 @@
     forecastLaps, trend, ruleOk, RULE_PENALTY, tyreStatus, MODES, redoLap, dryFor,
     CLIMATE, climateOf, trackState, forecast, TYRES, isSlick, tyreDelta, DILEMMA_LAPS, dilemmaLaps, lapsOf, RACE_LAPS, planFor, REFILL_H, createRace, stepLap, dilemmaFor, applyChoice, RADIO,
     SPONSORS, SPONSOR_BY_ID, goalText, sponsorTerms, sponsorAfterRace, SUB_K,
-    START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, lpScale, AGE_PRICE, XP_DIV, PC_TABLE,
+    START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, lpScale, AGE_PRICE, driverValue, valueOfDriver, RESALE_K, XP_DIV, PC_TABLE,
     RD_CATS, RD_PARTS, RD_BY_ID, rdBranches, partState, partsBonus,
     market, carStats, withSetup, carScore, bestSetup, compat, circuitProfile, botField, simulate, rewards, hash, TALENT,
   };

@@ -954,7 +954,8 @@
   }
   const statBar = (label, val, base, color, icon = '') => `<div class="sbar"><div class="sbar-h"><span>${icon} ${label}</span><b class="num">${Math.round(val)}</b></div><div class="sbar-t"><i style="width:${Math.min(100, base)}%;background:${color}"></i><i class="up" style="width:${Math.max(0, Math.min(100, val) - Math.min(100, base))}%"></i></div></div>`;
   const leagueBadge = (L, cls = '') => `<span class="lbadge ${cls}" style="--lc:${L.color}">${L.icon} ${L.name}</span>`;
-  const resaleD = (ctx) => (ctx.m.driver ? Math.round((Math.min(ctx.m.driver.price || Infinity, ctx.drvM ? ctx.drvM.price : Infinity) * 0.7) / 5) * 5 : 0);
+  // revente d'un pilote : 78 % de sa valeur marchande actuelle (note du moment, progression acquise comprise)
+  const resaleD = (ctx) => (ctx.m.driver && ctx.drvM ? Math.round((MG().valueOfDriver(ctx.drvM) * MG().RESALE_K) / 5) * 5 : 0);
   // revente : 70 % du prix (le plus bas entre le prix payé et le prix actuel, pour éviter tout bénéfice quand les prix montent) + 50 % de la R&D investie
   const resaleC = (ctx) => (ctx.m.chassis ? Math.round((Math.min(ctx.m.chassis.price || Infinity, ctx.ch ? ctx.ch.price : Infinity) * 0.7 + (ctx.m.rdSpent || 0) * 0.5) / 5) * 5 : 0);
 
@@ -1133,12 +1134,12 @@
   function mgrDrivers(ctx) {
     const { m, mk } = ctx;
     const res = resaleD(ctx);
-    return `<div class="notice" style="margin-bottom:16px">💰 Notes et prix recalculés chaque semaine selon la forme réelle des pilotes. 📈 Un pilote gagne de l'expérience à chaque course terminée avec vous : les jeunes progressent vite et loin, les vétérans presque plus. La progression acquise est conservée si vous le reprenez plus tard. ${m.driver ? `Revendre <b>${esc(m.driver.name)}</b> vous rapporte ${fmtPC(res)} (70 % de sa valeur).` : ''}</div>
+    return `<div class="notice" style="margin-bottom:16px">💰 Prix = valeur marchande : surtout la note actuelle (chaque point au-dessus de 80 coûte cher), un peu la marge de progression selon l'âge. 📈 Un pilote gagne de l'expérience à chaque course terminée avec vous : les jeunes progressent vite et loin, les vétérans presque plus. La progression acquise est conservée si vous le reprenez plus tard. ${m.driver ? `Revendre <b>${esc(m.driver.name)}</b> vous rapporte ${fmtPC(res)} (78 % de sa valeur marchande actuelle : formez un jeune et revendez-le au sommet).` : ''}</div>
       <div class="mgrid">${mk.drivers.map((d) => {
         const own = m.driver && m.driver.id === d.id;
-        const net = d.price - (own ? 0 : res);
         const p = F1.visuals.portrait(d.id);
         const x = MG().withExperience(d, m.drvXp), e = x.exp;
+        const val = MG().valueOfDriver(x), net = val - (own ? 0 : res);
         return `<div class="mcard ${own ? 'own' : ''}" style="--tc:${tcol(d.teamId)}"><div class="row" style="flex-wrap:nowrap;align-items:start">
           <div class="gphoto" style="width:64px;height:64px">${p ? `<img src="${esc(p.img)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<i>${esc(d.code)}</i></div>
           <div style="min-width:0;flex:1"><div class="muted" style="font-size:12px">${flag(d.iso, 'sm')} ${esc(team(d.teamId).short)} · ${e.age} ans</div><div style="font-weight:900;font-style:italic;text-transform:uppercase;font-size:17px;line-height:1.1">${esc(d.family)}</div>
@@ -1146,7 +1147,7 @@
           <div class="rating-big sm">${x.rating}</div></div>
           <div style="display:grid;gap:6px;margin:12px 0">${statBar('Rythme', x.pace, d.pace, tcol(d.teamId))}${statBar('Combativité', x.craft, d.craft, tcol(d.teamId))}${statBar('Régularité', x.cons, d.cons, tcol(d.teamId))}</div>
           <div class="muted" style="font-size:12px;margin:-4px 0 10px">${e.races ? `${e.races} course${e.races > 1 ? 's' : ''} avec vous · progression +${fmt(e.pts, 1)} / +${fmt(e.cap, e.cap % 1 ? 1 : 0)}` : `Marge de progression : +${fmt(e.cap, e.cap % 1 ? 1 : 0)} points · XP ×${e.mult}`}</div>
-          <div class="row" style="justify-content:space-between"><b style="font-size:18px">${fmtPC(d.price)}</b>${own ? '' : `<button class="btn sm" data-action="m-buy-d" data-id="${esc(d.id)}" ${net > m.pc + 1e-9 ? 'disabled' : ''}>${m.driver ? `Transfert (${net >= 0 ? '−' : '+'}${Math.abs(net)})` : 'Recruter'}</button>`}</div></div>`;
+          <div class="row" style="justify-content:space-between"><div><small class="muted" style="display:block;font-size:11px">${own ? 'Valeur marchande' : 'Prix'}</small><b style="font-size:18px">${fmtPC(val)}</b>${own ? `<small class="muted" style="display:block;font-size:11px">Revente : ${fmtPC(res)}</small>` : ''}</div>${own ? '' : `<button class="btn sm" data-action="m-buy-d" data-id="${esc(d.id)}" ${net > m.pc + 1e-9 ? 'disabled' : ''}>${m.driver ? `Transfert (${net >= 0 ? '−' : '+'}${Math.abs(net)})` : 'Recruter'}</button>`}</div></div>`;
       }).join('')}</div>`;
   }
 
@@ -2012,7 +2013,7 @@
       case 'rescue': { const g = F1.store.rescue(S.season, S.season.next); if (g) { toast('⛽', `Ravitaillement : +${g} jetons`, 'win'); route(); } break; }
       case 'profile': profile(); break;
       case 'credits': credits(); break;
-      case 'm-buy-d': { const ctx = mgrCtx(); const d = ctx.mk.byDriver.get(a.dataset.id); try { F1.store.buyDriver(d, resaleD(ctx)); toast('🤝', `<b>${esc(d.name)}</b> rejoint votre écurie !`, 'win'); confetti(80); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
+      case 'm-buy-d': { const ctx = mgrCtx(); const d0 = ctx.mk.byDriver.get(a.dataset.id); const d = { ...d0, price: MG().valueOfDriver(MG().withExperience(d0, ctx.m.drvXp)) }; try { F1.store.buyDriver(d, resaleD(ctx)); toast('🤝', `<b>${esc(d.name)}</b> rejoint votre écurie !`, 'win'); confetti(80); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'sp-sign': { try { const t = F1.store.signSponsor(a.dataset.id, a.dataset.slot); const sp = MG().SPONSOR_BY_ID.get(a.dataset.id); toast('💼', `Contrat signé avec <b>${esc(sp.name)}</b> : +${t.sign} PitCoins de prime de signature`, 'win'); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'm-buy-c': { const ctx = mgrCtx(); const c = ctx.mk.byChassis.get(a.dataset.id); if (ctx.m.chassis && ctx.m.rdSpent > 0 && !confirm('Changer de châssis remet votre R&D à zéro. Continuer ?')) break; try { F1.store.buyChassis(c, resaleC(ctx)); toast('🔩', `Châssis <b>${esc(c.name)}</b> livré au garage !`, 'win'); confetti(80); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'rd-cat': { const was = $('#pu3d') ? 'pu' : 'car'; S.rdCat = a.dataset.c; S.rdSel = null; S.rdView = null; if ((a.dataset.c === 'pu' ? 'pu' : 'car') !== was) route(); else rdRefresh(); break; }

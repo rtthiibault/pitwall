@@ -76,7 +76,7 @@ Site de paris **à jetons virtuels** sur la Formule 1. Il est 100 % statique (HT
   Chaque niveau Mk rapporte un peu plus que le précédent (`LV_GAIN`), et coûte donc un peu plus cher.
 - **Équilibrage du marché et de la progression** :
   - XP des pilotes divisée par 3,75 (`XP_DIV`) : un point de progression demande environ 7 courses à un pilote de 20 ans, une vingtaine à un pilote à maturité.
-  - Prix des pilotes = niveau actuel × potentiel lié à l'âge (`AGE_PRICE`) : ×1,35 jusqu'à 21 ans, ×1 de 24 à 27 ans, ×0,65 de 30 à 32 ans, ×0,4 après 36 ans.
+  - Valeur marchande d'un pilote (`driverValue`) : 80 % sur sa note actuelle, progression acquise comprise, en exponentielle au-dessus de 80 ; 20 % sur sa marge de progression restante, pondérée par l'âge. C'est son prix sur le marché ; sa revente vaut 78 % de cette valeur (`RESALE_K`) : former un jeune et le revendre au sommet rapporte une plus-value.
   - Prix des châssis de 25 PC (fond de grille) à 500 PC (meilleure écurie), sans changer leurs performances. Revente au plus bas entre le prix payé et le prix actuel.
   - Points de ligue par ligue (`lpScale`) : aucune perte en Bronze, pertes réintroduites en Argent puis en Or, barème complet à partir de Platine.
   - Onglet R&D aux couleurs de l'écurie du joueur.
