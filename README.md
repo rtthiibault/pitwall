@@ -80,6 +80,12 @@ Site de paris **à jetons virtuels** sur la Formule 1. Il est 100 % statique (HT
   - Prix des châssis de 25 PC (fond de grille) à 500 PC (meilleure écurie), sans changer leurs performances. Revente au plus bas entre le prix payé et le prix actuel.
   - Points de ligue par ligue (`lpScale`) : aucune perte en Bronze, pertes réintroduites en Argent puis en Or, barème complet à partir de Platine.
   - Onglet R&D aux couleurs de l'écurie du joueur.
+- **Sponsors** (onglet Sponsors du QG, `SPONSORS` dans `js/manager.js`) : 10 entreprises fictives en 3 paliers (locales dès Bronze, internationales dès Argent,
+  prestige dès Or). Un contrat = un objectif sur un nombre de courses (ex. « Finir 2 fois dans le top 10 lors des 6 prochaines courses ») :
+  prime de signature, prime si l'objectif est atteint, pénalité s'il ne l'est pas à l'échéance. Deux emplacements : principal (pontons et nez)
+  et secondaire (aileron arrière, prime et pénalité ×0,6). Les sponsors sous contrat sont projetés sur la carrosserie 3D (`applySponsor` dans `js/car3d.js`).
+- **Débriefing d'après-course** : classement final avec écarts et stratégies de pneus, progression du pilote (barre d'XP animée, hausses de caractéristiques),
+  bilan PitCoins / points de ligue, avancement des objectifs sponsors, puis « Retourner au QG ».
 - **Moteur de course** : le vrai nombre de tours de chaque Grand Prix (`RACE_LAPS` : 78 à Monaco, 44 à Spa, 53 à Monza…) contre 19 managers IA. La performance combine le niveau du pilote, les caractéristiques de la voiture avec les améliorations et la compatibilité avec le circuit, plus une part d'aléa :
   - la forme du jour ;
   - les qualifications, puis l'écart sur la grille au départ ;
@@ -234,3 +240,11 @@ Un sélecteur en haut de l'accueil bascule tout le site entre la **Formule 1** e
 
 ## Avertissement
 Ce jeu est gratuit, sans argent réel ni gain matériel. C'est un site de fans non officiel, sans lien avec la Formula One Group, la FIA ou les écuries.
+
+### Ligues de pronostics entre amis
+
+L'onglet **Paris → Ligues** propose la ligue officielle (tous les joueurs, classés aux gains nets) et des ligues privées :
+« Créer une ligue » génère un code d'invitation unique (`PIT-XXXX`), « Rejoindre avec un code » ajoute le joueur à la ligue d'un ami.
+Elles utilisent la même base Supabase que le système d'amis. Pour les activer, exécutez une fois `supabase/migration-bet-leagues.sql`
+dans Supabase (SQL Editor → New query → Run). Les règles RLS limitent la lecture d'une ligue à ses membres ; création et adhésion
+passent par les fonctions `create_bet_league` et `join_bet_league`.

@@ -12,8 +12,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=202611201131">
-  <link rel="stylesheet" href="css/theme.css?v=202611201131">
+  <link rel="stylesheet" href="css/style.css?v=202611201352">
+  <link rel="stylesheet" href="css/theme.css?v=202611201352">
 </head>
 <body>
   <div class="aurora" aria-hidden="true"></div>
@@ -39,7 +39,7 @@
       <a href="#/" data-r="">Accueil</a>
       <a href="#/paris" data-r="paris">Paris</a>
       <a href="#/mes-paris" data-r="mes-paris">Mes paris</a>
-      <a href="#/manager" data-r="manager" class="nav-mgr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M3 15l2-5h11l3 5"/><path d="M2 15h20v2H2z"/><circle cx="6.5" cy="18" r="2"/><circle cx="17.5" cy="18" r="2"/></svg>F1 Manager<i>Jeu</i></a>
+      <a href="#/manager" data-r="manager" class="nav-mgr"><svg class="f1-ico" viewBox="0 0 64 24" aria-hidden="true"><path fill="currentColor" d="M8 15.2 10 10.6 22 9 24.6 6.4H29l2.2 3.2 12.6 2 12.4 2 6 2.2V17H8Z"/><path fill="currentColor" d="M1.5 2.5h10V5.6H5.6V15.4H1.5Z"/><path fill="currentColor" d="M49 18.2h14.5v2.2H49Z"/><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" d="M31.2 9.7Q36.4 4.6 42.4 10.9"/><circle fill="currentColor" cx="15.2" cy="17.4" r="4.7"/><circle fill="currentColor" cx="48" cy="17.4" r="4.7"/><circle fill="var(--f1-hub, #13171c)" cx="15.2" cy="17.4" r="1.6"/><circle fill="var(--f1-hub, #13171c)" cx="48" cy="17.4" r="1.6"/></svg>F1 Manager<i>Jeu</i></a>
       <a href="#/calendrier" data-r="calendrier">Calendrier</a>
       <a href="#/classements" data-r="classements">Classements</a>
       <a href="#/amis" data-r="amis">Amis</a>
@@ -65,7 +65,7 @@
     <a href="#/" data-r=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Accueil</a>
     <a href="#/paris" data-r="paris"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21V4m0 0h12l-2 4 2 4H4"/></svg>Paris</a>
     <a href="#/mes-paris" data-r="mes-paris"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h14v17l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 9h6M9 13h6"/></svg>Mes paris</a>
-    <a href="#/manager" data-r="manager" class="nav-mgr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 15l2-5h11l3 5"/><path d="M2 15h20v2H2z"/><circle cx="6.5" cy="18" r="2"/><circle cx="17.5" cy="18" r="2"/><path d="M12 10V6h4"/></svg>Manager</a>
+    <a href="#/manager" data-r="manager" class="nav-mgr"><svg class="f1-ico" viewBox="0 0 64 24" aria-hidden="true"><path fill="currentColor" d="M8 15.2 10 10.6 22 9 24.6 6.4H29l2.2 3.2 12.6 2 12.4 2 6 2.2V17H8Z"/><path fill="currentColor" d="M1.5 2.5h10V5.6H5.6V15.4H1.5Z"/><path fill="currentColor" d="M49 18.2h14.5v2.2H49Z"/><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" d="M31.2 9.7Q36.4 4.6 42.4 10.9"/><circle fill="currentColor" cx="15.2" cy="17.4" r="4.7"/><circle fill="currentColor" cx="48" cy="17.4" r="4.7"/><circle fill="var(--f1-hub, #13171c)" cx="15.2" cy="17.4" r="1.6"/><circle fill="var(--f1-hub, #13171c)" cx="48" cy="17.4" r="1.6"/></svg>Manager</a>
     <a href="#/calendrier" data-r="calendrier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Calendrier</a>
     <a href="#/classements" data-r="classements"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21V11M12 21V5M16 21v-7M4 21h16"/></svg>Classem.</a>
   </nav>
@@ -77,21 +77,21 @@
   <canvas id="flagWipe" class="flag-wipe" aria-hidden="true"></canvas>
 
   <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
-  <script src="js/config.js?v=202611201131"></script>
-  <script src="js/fallback.js?v=202611201131"></script>
-  <script src="js/season2027.js?v=202611201131"></script>
-  <script src="js/data.js?v=202611201131"></script>
-  <script src="js/wec.js?v=202611201131"></script>
-  <script src="js/model.js?v=202611201131"></script>
-  <script src="js/markets.js?v=202611201131"></script>
-  <script src="js/manager.js?v=202611201131"></script>
-  <script src="js/store.js?v=202611201131"></script>
-  <script src="js/visuals.js?v=202611201131"></script>
-  <script src="js/social.js?v=202611201131"></script>
-  <script src="js/fx.js?v=202611201131"></script>
-  <script src="js/circuits.js?v=202611201131"></script>
-  <script src="js/racemap.js?v=202611201131"></script>
-  <script src="js/app.js?v=202611201131"></script>
-  <script type="module" src="js/car3d.js?v=202611201131"></script>
+  <script src="js/config.js?v=202611201352"></script>
+  <script src="js/fallback.js?v=202611201352"></script>
+  <script src="js/season2027.js?v=202611201352"></script>
+  <script src="js/data.js?v=202611201352"></script>
+  <script src="js/wec.js?v=202611201352"></script>
+  <script src="js/model.js?v=202611201352"></script>
+  <script src="js/markets.js?v=202611201352"></script>
+  <script src="js/manager.js?v=202611201352"></script>
+  <script src="js/store.js?v=202611201352"></script>
+  <script src="js/visuals.js?v=202611201352"></script>
+  <script src="js/social.js?v=202611201352"></script>
+  <script src="js/fx.js?v=202611201352"></script>
+  <script src="js/circuits.js?v=202611201352"></script>
+  <script src="js/racemap.js?v=202611201352"></script>
+  <script src="js/app.js?v=202611201352"></script>
+  <script type="module" src="js/car3d.js?v=202611201352"></script>
 </body>
 </html>

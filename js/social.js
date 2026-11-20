@@ -111,6 +111,59 @@
     }, now ? 0 : 2500);
   }
 
+  /* ---------- Ligues de pronostics (supabase/migration-bet-leagues.sql) ----------
+     Officielle : tous les profils, classés par gains nets. Privées : créées avec un nom, rejointes avec un code. */
+  const MISSING = /bet_league|create_bet_league|join_bet_league|does not exist|schema cache|PGRST20[02]|42P01|42883/i;
+  const leagueErr = (e) => { if (e && MISSING.test((e.message || '') + (e.code || ''))) { const x = new Error('LEAGUES_MISSING'); x.missing = true; throw x; } fail(e); };
+  const rankRows = (rows) => (rows || []).slice().sort((a, b) => (b.profit || 0) - (a.profit || 0) || (b.bets_won || 0) - (a.bets_won || 0));
+  async function officialBoard() {
+    const r = await S.client.from('profiles').select(COLS).order('profit', { ascending: false }).limit(50);
+    fail(r.error);
+    let myRank = null, total = null;
+    if (S.me) {
+      const a = await S.client.from('profiles').select('id', { count: 'exact', head: true }).gt('profit', S.me.profit || 0);
+      const b = await S.client.from('profiles').select('id', { count: 'exact', head: true });
+      if (!a.error) myRank = (a.count || 0) + 1; if (!b.error) total = b.count;
+    }
+    return { rows: r.data || [], myRank, total };
+  }
+  async function myLeagues() {
+    const r = await S.client.from('bet_league_members').select('league_id, bet_leagues ( id, name, code, owner, created_at )').eq('user_id', S.user.id);
+    leagueErr(r.error);
+    const ls = (r.data || []).map((x) => x.bet_leagues).filter(Boolean);
+    if (!ls.length) return [];
+    const c = await S.client.from('bet_league_members').select('league_id').in('league_id', ls.map((l) => l.id));
+    const n = {}; (c.data || []).forEach((x) => { n[x.league_id] = (n[x.league_id] || 0) + 1; });
+    return ls.map((l) => ({ ...l, members: n[l.id] || 1 })).sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)));
+  }
+  async function leagueBoard(id) {
+    const r = await S.client.from('bet_league_members').select('user_id').eq('league_id', id);
+    leagueErr(r.error);
+    const ids = (r.data || []).map((x) => x.user_id);
+    if (!ids.length) return [];
+    const p = await S.client.from('profiles').select(COLS).in('id', ids);
+    fail(p.error);
+    return rankRows(p.data);
+  }
+  async function createLeague(name) {
+    name = String(name || '').trim();
+    if (name.length < 3 || name.length > 40) throw new Error('Nom de ligue : 3 à 40 caractères');
+    const r = await S.client.rpc('create_bet_league', { p_name: name });
+    leagueErr(r.error);
+    return r.data;
+  }
+  async function joinLeague(code) {
+    code = String(code || '').trim().toUpperCase().replace(/\s+/g, '');
+    if (!/^PIT-[A-Z0-9]{4}$/.test(code)) throw new Error('Code attendu au format PIT-XXXX');
+    const r = await S.client.rpc('join_bet_league', { p_code: code });
+    leagueErr(r.error);
+    return r.data;
+  }
+  async function leaveLeague(id) {
+    const r = await S.client.from('bet_league_members').delete().eq('league_id', id).eq('user_id', S.user.id);
+    leagueErr(r.error);
+  }
+
   // Classement mondial des managers (null si la migration n'a pas été appliquée)
   async function leaderboard() {
     const r = await S.client.from('profiles').select('id,username,team,lp,league').order('lp', { ascending: false }).limit(30);
@@ -181,5 +234,5 @@
   // Rafraîchissement périodique des demandes (toutes les 60 s quand l'onglet est visible)
   setInterval(() => { if (S.ready && S.me && !document.hidden) refresh().catch(() => {}); }, 60000);
 
-  F1.social = { state: S, leaderboard, init, claim, sync, search, byUsername, refresh, relation, linkWith, request, accept, remove, onChange: (f) => listeners.push(f), cleanName, USER_RE };
+  F1.social = { state: S, officialBoard, myLeagues, leagueBoard, createLeague, joinLeague, leaveLeague, leaderboard, init, claim, sync, search, byUsername, refresh, relation, linkWith, request, accept, remove, onChange: (f) => listeners.push(f), cleanName, USER_RE };
 })(globalThis.F1 = globalThis.F1 || {});

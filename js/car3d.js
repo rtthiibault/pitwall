@@ -9,6 +9,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { toCreasedNormals, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
+import { DecalGeometry } from 'three/addons/geometries/DecalGeometry.js';
 
 const F1 = (globalThis.F1 = globalThis.F1 || {});
 const MODEL_URL = new URL('../assets/f1-2026.glb', import.meta.url).href;
@@ -743,7 +744,53 @@ function buildCar(teamId, { xray = false } = {}) {
 }
 
 /* ---------- Scène ---------- */
-function makeScene(renderer, teamId, { ground = true, xray = false } = {}) {
+/* ---------- Livrée sponsor : logos projetés sur la carrosserie (décalcomanies) ----------
+   sponsor = { main: { name, color, ink }, sub: { … } } : principal sur les pontons + bande sur le nez, secondaire sur l'aileron arrière.
+   Un rayon cherche la surface de la voiture à l'endroit voulu, puis la décalcomanie épouse cette surface. */
+function sponsorCanvas(sp, kind) {
+  const cv = document.createElement('canvas'); cv.width = 1024; cv.height = kind === 'stripe' ? 128 : 320;
+  const c = cv.getContext('2d'), W = cv.width, H = cv.height;
+  if (kind === 'stripe') {
+    c.fillStyle = sp.color; c.fillRect(0, 22, W, H - 44);
+    c.fillStyle = sp.ink; c.fillRect(0, 22, W, 8); c.fillRect(0, H - 30, W, 8);
+  } else {
+    const r = 46; c.fillStyle = sp.color; c.beginPath(); c.moveTo(r, 0); c.arcTo(W, 0, W, H, r); c.arcTo(W, H, 0, H, r); c.arcTo(0, H, 0, 0, r); c.arcTo(0, 0, W, 0, r); c.fill();
+    c.fillStyle = sp.ink; let fs = 170; c.font = `800 ${fs}px Archivo, Arial, sans-serif`;
+    while (c.measureText(sp.name).width > W - 110 && fs > 60) { fs -= 8; c.font = `800 ${fs}px Archivo, Arial, sans-serif`; }
+    c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(sp.name, W / 2, H / 2 + 6);
+  }
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  return t;
+}
+function applySponsor(car, sponsor) {
+  if (!sponsor || (!sponsor.main && !sponsor.sub)) return;
+  car.updateMatrixWorld(true);
+  const meshes = car.children.filter((o) => o.isMesh);
+  const ray = new THREE.Raycaster(), helper = new THREE.Object3D();
+  const stick = (from, dir, size, tex, up) => {
+    ray.set(new THREE.Vector3(...from), new THREE.Vector3(...dir).normalize());
+    const hit = ray.intersectObjects(meshes, false)[0];
+    if (!hit || !hit.face) return;
+    const n = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
+    helper.position.copy(hit.point); helper.up.set(...up); helper.lookAt(hit.point.clone().add(n));
+    try {
+      const g = new DecalGeometry(hit.object, hit.point, helper.rotation.clone(), new THREE.Vector3(size[0], size[1], 0.5));
+      const mat = new THREE.MeshStandardMaterial({ map: tex, transparent: true, roughness: 0.35, metalness: 0.1, polygonOffset: true, polygonOffsetFactor: -4, depthWrite: false });
+      const d = new THREE.Mesh(g, mat); d.renderOrder = 2; d.userData.decal = true; car.add(d);
+    } catch (e) { /* surface trop complexe : on laisse la carrosserie vierge */ }
+  };
+  if (sponsor.main) {
+    const logo = sponsorCanvas(sponsor.main, 'logo'), stripe = sponsorCanvas(sponsor.main, 'stripe');
+    for (const z of [1, -1]) stick([-0.15, 0.5, 3 * z], [0, 0, -z], [0.95, 0.3], logo, [0, 1, 0]);   // pontons
+    stick([1.45, 3, 0], [0, -1, 0], [1.25, 0.16], stripe, [0, 0, -1]);                             // bande sur le nez
+  }
+  if (sponsor.sub) {
+    const logo = sponsorCanvas(sponsor.sub, 'logo');
+    stick([-2.55, 3, 0], [0, -1, 0], [0.9, 0.28], logo, [1, 0, 0]);                                // dessus de l'aileron arrière
+    for (const z of [1, -1]) stick([-2.5, 0.78, 3 * z], [0, 0, -z], [0.34, 0.12], logo, [0, 1, 0]); // dérives de l'aileron arrière
+  }
+}
+function makeScene(renderer, teamId, { ground = true, xray = false, sponsor = null } = {}) {
   const scene = new THREE.Scene();
   if (!renderer.__env) renderer.__env = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
   scene.environment = renderer.__env;
@@ -766,6 +813,7 @@ function makeScene(renderer, teamId, { ground = true, xray = false } = {}) {
     blob.rotation.x = -Math.PI / 2; blob.position.y = 0.002; scene.add(blob);
   }
   const car = buildCar(teamId, { xray });
+  if (sponsor && !String(teamId).startsWith('w_')) applySponsor(car, sponsor);
   scene.add(car);
   return { scene, car };
 }
@@ -786,12 +834,12 @@ function newRenderer(canvas, w, h) {
 /* ---------- API : images ---------- */
 let snapR = null;
 const cache = new Map();
-function snapshot(teamId, { view = '34', w = 960, h = 520 } = {}) {
-  const key = `${teamId}|${view}|${w}x${h}`;
+function snapshot(teamId, { view = '34', w = 960, h = 520, sponsor = null } = {}) {
+  const key = `${teamId}|${view}|${w}x${h}|${sponsor ? [sponsor.main && sponsor.main.name, sponsor.sub && sponsor.sub.name].join('+') : ''}`;
   if (cache.has(key)) return cache.get(key);
   if (!snapR) { const c = document.createElement('canvas'); c.__snap = true; snapR = newRenderer(c, w, h); }
   snapR.setSize(w, h, false);
-  const { scene, car } = makeScene(snapR, teamId);
+  const { scene, car } = makeScene(snapR, teamId, { sponsor });
   const v = VIEWS[view] || VIEWS['34'];
   const cam = new THREE.PerspectiveCamera(v.fov, w / h, 0.1, 60);
   cam.position.set(...v.pos); cam.lookAt(...v.target);
@@ -805,7 +853,7 @@ function snapshot(teamId, { view = '34', w = 960, h = 520 } = {}) {
 
 /* ---------- API : visionneuse interactive ---------- */
 const viewers = new Set();
-function mount(el, teamId, { autoRotate = true, view = '34', speed = 1.2, focus = null, part = null, workshop = false } = {}) {
+function mount(el, teamId, { autoRotate = true, view = '34', speed = 1.2, focus = null, part = null, workshop = false, sponsor = null } = {}) {
   const canvas = document.createElement('canvas');
   canvas.className = 'car3d-canvas';
   el.innerHTML = ''; el.appendChild(canvas);
@@ -813,7 +861,7 @@ function mount(el, teamId, { autoRotate = true, view = '34', speed = 1.2, focus 
   let [w, h] = size();
   const r = newRenderer(canvas, w, h);
   r.setPixelRatio(Math.min(2, window.devicePixelRatio || 1)); r.setSize(w, h, false);
-  const { scene, car } = makeScene(r, teamId, { xray: workshop });
+  const { scene, car } = makeScene(r, teamId, { xray: workshop, sponsor });
   const v = VIEWS[view] || VIEWS['34'];
   const cam = new THREE.PerspectiveCamera(v.fov, w / h, 0.1, 60);
   // atelier : pièces internes + carrosserie fantôme

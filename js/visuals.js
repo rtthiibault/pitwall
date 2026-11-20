@@ -176,8 +176,10 @@
     const view = opts.view || (opts.live ? '34' : 'side');
     // WEC : prototype 3D du constructeur ; le dessin 2D reste affiché le temps du chargement (ou sans WebGL)
     const fb = String(teamId).startsWith('w_') ? proto(teamId, opts) : svgCar(teamId, opts);
-    return `<div class="car3d ${opts.live ? 'live' : ''} v-${view}" data-team="${teamId}" data-view="${view}"><div class="car3d-fb">${fb}</div></div>`;
+    const sp = opts.sponsor && (opts.sponsor.main || opts.sponsor.sub) ? ` data-sp="${encodeURIComponent(JSON.stringify(opts.sponsor))}"` : '';
+    return `<div class="car3d ${opts.live ? 'live' : ''} v-${view}" data-team="${teamId}" data-view="${view}"${sp}><div class="car3d-fb">${fb}</div></div>`;
   }
+  const spOf = (el) => { try { return el.dataset.sp ? JSON.parse(decodeURIComponent(el.dataset.sp)) : null; } catch (e) { return null; } };
   let hydrating = false;
   function hydrate(root = document) {
     if (!F1.car3d || !F1.car3d.supported || !F1.car3d.ready) return;
@@ -190,7 +192,7 @@
     }
     slots.filter((el) => el.classList.contains('live')).forEach((el) => {
       el.classList.add('ok');
-      try { el.__car3d = F1.car3d.mount(el, el.dataset.team, { view: el.dataset.view, autoRotate: !el.dataset.focus && !el.dataset.part, speed: 1.1, focus: el.dataset.focus ? JSON.parse(el.dataset.focus) : null, part: el.dataset.part || null, workshop: el.dataset.workshop === '1' }); } catch (e) { el.classList.remove('ok'); }
+      try { el.__car3d = F1.car3d.mount(el, el.dataset.team, { view: el.dataset.view, autoRotate: !el.dataset.focus && !el.dataset.part, speed: 1.1, focus: el.dataset.focus ? JSON.parse(el.dataset.focus) : null, part: el.dataset.part || null, workshop: el.dataset.workshop === '1', sponsor: spOf(el) }); } catch (e) { el.classList.remove('ok'); }
     });
     const imgs = slots.filter((el) => !el.classList.contains('live'));
     if (!imgs.length || hydrating) return;
@@ -203,7 +205,7 @@
         if (!el.isConnected || el.classList.contains('ok')) continue;
         try {
           const side = el.dataset.view === 'side';
-          const url = F1.car3d.snapshot(el.dataset.team, { view: el.dataset.view, w: side ? 900 : 960, h: side ? 300 : 440 });
+          const url = F1.car3d.snapshot(el.dataset.team, { view: el.dataset.view, w: side ? 900 : 960, h: side ? 300 : 440, sponsor: spOf(el) });
           el.innerHTML = `<img src="${url}" alt="Monoplace ${F1.teamShort(el.dataset.team)}" draggable="false">`;
           el.classList.add('ok');
         } catch (e) { /* on garde le dessin vectoriel */ }

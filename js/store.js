@@ -54,6 +54,7 @@
     if (!['S', 'M', 'H', 'I', 'W'].includes(m.next.tyre)) m.next.tyre = 'M';
     if (!m.next.plan || !Array.isArray(m.next.plan.stops)) m.next.plan = { stops: [{ lap: 9, tyre: 'H' }] };
     if (!m.garage) m.garage = {};
+    if (!m.sponsors) m.sponsors = { main: null, sub: null, log: [] };
     return state;
   }
   function save() {
@@ -335,12 +336,46 @@
       const after = F1.manager.driverGrowth(m.driver.id, m.drvXp).pts;
       m.races[0].xp = gain; m.races[0].grew = Math.floor(after) > Math.floor(before);
     }
+    m.races[0].sponsors = sponsorsAfterRace(r.pos, r.dnf);
     if (r.pos === 1 && !r.dnf) unlock('mgr_win');
     if (r.pos === 1 && !r.dnf && r.rain) unlock('mgr_rain');
     if (F1.manager && m.lp >= F1.manager.LEAGUES[2].min) unlock('mgr_or');
     save();
   }
 
+  /* ---------- Sponsors ---------- */
+  function signSponsor(id, slot) {
+    const MG = F1.manager, m = mgr(), s = MG.SPONSOR_BY_ID.get(id);
+    if (!s) throw new Error('Sponsor inconnu');
+    if (!['main', 'sub'].includes(slot)) throw new Error('Emplacement inconnu');
+    if (m.sponsors[slot]) throw new Error('Cet emplacement a déjà un sponsor');
+    const other = m.sponsors[slot === 'main' ? 'sub' : 'main'];
+    if (other && other.id === id) throw new Error('Ce sponsor est déjà sur votre voiture');
+    const L = MG.LEAGUES.findIndex((l) => l.id === MG.leagueOf(m.lp).id);
+    if (L < s.league) throw new Error(`Ce sponsor ne signe qu'à partir de la ligue ${MG.LEAGUES[s.league].name}`);
+    const t = MG.sponsorTerms(s, slot);
+    m.sponsors[slot] = { id, done: 0, hits: 0, t: Date.now() };
+    addPC(t.sign, `Sponsor : prime de signature ${s.name}`);
+    save();
+    return t;
+  }
+  // Après chaque course : avancement des contrats, prime ou pénalité à l'échéance
+  function sponsorsAfterRace(pos, dnf) {
+    const MG = F1.manager, m = mgr(), out = [];
+    if (!MG || !m.sponsors) return out;
+    for (const slot of ['main', 'sub']) {
+      const c = m.sponsors[slot]; if (!c) continue;
+      const s = MG.SPONSOR_BY_ID.get(c.id), t = MG.sponsorTerms(s, slot);
+      const hitNow = !dnf && pos <= s.goal.top;
+      const r = MG.sponsorAfterRace(c, pos, dnf);
+      const row = { slot, id: c.id, name: s.name, color: s.color, ink: s.ink, goal: MG.goalText(s.goal), hits: c.hits, count: s.goal.count, done: c.done, races: s.goal.races, hitNow, status: r.status, amount: 0 };
+      if (r.status === 'win') { addPC(t.reward, `Sponsor ${s.name} : objectif atteint`); row.amount = t.reward; }
+      if (r.status === 'fail') { const pen = Math.min(m.pc, t.penalty); addPC(-pen, `Sponsor ${s.name} : objectif manqué (pénalité)`); row.amount = -pen; }
+      if (r.status !== 'run') { m.sponsors[slot] = null; m.sponsors.log.unshift({ id: c.id, slot, status: r.status, amount: row.amount, t: Date.now() }); if (m.sponsors.log.length > 20) m.sponsors.log.pop(); }
+      out.push(row);
+    }
+    return out;
+  }
   function setName(n) { get().name = String(n).slice(0, 24); save(); }
   function exportCode() { return btoa(unescape(encodeURIComponent(JSON.stringify(get())))); }
   function importCode(code) {
@@ -351,5 +386,5 @@
   function reset() { const n = get().name; state = blank(); state.name = n; save(); }
   const popUnlocked = () => unlocked.splice(0);
 
-  F1.store = { load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
+  F1.store = { signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
 })(globalThis.F1 = globalThis.F1 || {});

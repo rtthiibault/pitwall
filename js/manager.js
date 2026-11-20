@@ -897,6 +897,34 @@
     const pc = Math.round((dnf ? DNF_PC : PC_TABLE[pos - 1] ?? 2) * league.mult);
     return { lp, pc };
   }
+  /* ---------- Sponsors : 10 entreprises fictives, du partenaire local au géant mondial ----------
+     Contrat : un objectif sur un nombre de courses. Réussi avant la fin : prime. Raté à l'expiration : pénalité.
+     Deux emplacements : principal (pontons et nez de la voiture) et secondaire (aileron arrière, prime et pénalité ×0,6).
+     goal : { top: position à atteindre ou mieux, count: nombre de fois, races: durée du contrat } */
+  const SPONSORS = [
+    { id: 'voltrush', name: 'VoltRush', kind: 'Boisson énergisante', tier: 1, league: 0, color: '#c6ff00', ink: '#10140a', goal: { top: 12, count: 2, races: 5 }, sign: 15, reward: 90, penalty: 30 },
+    { id: 'pixelforge', name: 'PixelForge', kind: 'Accessoires gaming', tier: 1, league: 0, color: '#8b5cf6', ink: '#ffffff', goal: { top: 10, count: 2, races: 6 }, sign: 20, reward: 120, penalty: 40 },
+    { id: 'dumas', name: 'Garage Dumas', kind: 'Pièces auto, marque locale', tier: 1, league: 0, color: '#1f6feb', ink: '#ffffff', goal: { top: 15, count: 4, races: 6 }, sign: 10, reward: 80, penalty: 25 },
+    { id: 'nexa', name: 'Nexa Telecom', kind: 'Télécoms et tech', tier: 2, league: 1, color: '#00b3a4', ink: '#ffffff', goal: { top: 8, count: 3, races: 8 }, sign: 40, reward: 240, penalty: 90 },
+    { id: 'blockvault', name: 'Blockvault', kind: 'Crypto-actifs', tier: 2, league: 1, color: '#f7931a', ink: '#1a1000', goal: { top: 5, count: 1, races: 5 }, sign: 60, reward: 300, penalty: 150 },
+    { id: 'torq', name: 'TORQ Parts', kind: 'Pièces auto internationales', tier: 2, league: 1, color: '#e11d48', ink: '#ffffff', goal: { top: 10, count: 5, races: 8 }, sign: 35, reward: 220, penalty: 80 },
+    { id: 'aeris', name: 'Aeris Airways', kind: 'Compagnie aérienne', tier: 2, league: 1, color: '#0ea5e9', ink: '#ffffff', goal: { top: 6, count: 2, races: 8 }, sign: 50, reward: 280, penalty: 110 },
+    { id: 'valcourt', name: 'Valcourt Genève', kind: 'Haute horlogerie', tier: 3, league: 2, color: '#0f3d2e', ink: '#e8d9a8', goal: { top: 3, count: 1, races: 10 }, sign: 100, reward: 600, penalty: 250 },
+    { id: 'orbital', name: 'Orbital Dynamics', kind: 'Aérospatiale', tier: 3, league: 2, color: '#e5e7eb', ink: '#0b0d10', goal: { top: 3, count: 3, races: 10 }, sign: 140, reward: 850, penalty: 320 },
+    { id: 'synapse', name: 'Synapse AI', kind: 'Intelligence artificielle mondiale', tier: 3, league: 2, color: '#111827', ink: '#7dd3fc', goal: { top: 1, count: 1, races: 10 }, sign: 160, reward: 1000, penalty: 400 },
+  ];
+  const SPONSOR_BY_ID = new Map(SPONSORS.map((s) => [s.id, s]));
+  const SUB_K = 0.6; // emplacement secondaire : prime et pénalité réduites
+  const goalText = (g) => (g.top === 1 ? `Gagner ${g.count > 1 ? g.count + ' courses' : 'une course'}` : `Finir ${g.count > 1 ? g.count + ' fois' : 'une fois'} dans le top ${g.top}`) + ` lors des ${g.races} prochaines courses`;
+  const sponsorTerms = (s, slot) => { const k = slot === 'sub' ? SUB_K : 1; return { sign: Math.round(s.sign * k), reward: Math.round(s.reward * k), penalty: Math.round(s.penalty * k) }; };
+  // Mise à jour d'un contrat après une course : renvoie { status: 'run' | 'win' | 'fail' }
+  function sponsorAfterRace(c, pos, dnf) {
+    const s = SPONSOR_BY_ID.get(c.id); if (!s) return { status: 'fail' };
+    c.done++; if (!dnf && pos <= s.goal.top) c.hits++;
+    if (c.hits >= s.goal.count) return { status: 'win' };
+    if (c.done >= s.goal.races) return { status: 'fail' };
+    return { status: 'run' };
+  }
   /* ---------- Objectifs du jour ---------- */
   const OBJECTIVES = [
     { id: 'races3', txt: 'Disputer 3 courses aujourd\'hui', k: 'races', goal: 3, pc: 40 },
@@ -922,6 +950,7 @@
     MAX_LV, LV_GAIN, LV_NAME, lvCum, partLevel, levelCost, MECH, tunnelChance, branchPackage, carRating, OBJECTIVES, dailyObjectives,
     forecastLaps, trend, ruleOk, RULE_PENALTY, tyreStatus, MODES, redoLap, dryFor,
     CLIMATE, climateOf, trackState, forecast, TYRES, isSlick, tyreDelta, DILEMMA_LAPS, dilemmaLaps, lapsOf, RACE_LAPS, planFor, REFILL_H, createRace, stepLap, dilemmaFor, applyChoice, RADIO,
+    SPONSORS, SPONSOR_BY_ID, goalText, sponsorTerms, sponsorAfterRace, SUB_K,
     START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, lpScale, AGE_PRICE, XP_DIV, PC_TABLE,
     RD_CATS, RD_PARTS, RD_BY_ID, rdBranches, partState, partsBonus,
     market, carStats, withSetup, carScore, bestSetup, compat, circuitProfile, botField, simulate, rewards, hash, TALENT,
