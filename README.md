@@ -63,7 +63,7 @@ Site de paris **à jetons virtuels** sur la Formule 1. Il est 100 % statique (HT
   - Les courses se disputent sur le circuit du **prochain Grand Prix réel**.
   - Un **réglage aéro** (faible ou fort appui) s'ajuste avant chaque course.
   - Aucun conseil n'est donné : le site décrit seulement le tracé (lignes droites, virages lents, contraintes mécaniques).
-- **Durée et équilibrage des courses** : une course dure environ 2 minutes en vitesse ×1 (×2 et ×4 disponibles), quel que soit le nombre de tours.
+- **Durée et équilibrage des courses** : une course dure environ 4 minutes en vitesse ×1 (×2 et ×4 disponibles), quel que soit le nombre de tours.
   L'usure par tour donne des relais réalistes (environ 19 tours en tendres, 27 en mediums, 35 en durs). Les écarts de rythme sont ramenés
   à l'échelle d'une course de 20 tours, pour que la hiérarchie ne pèse pas 3 fois plus que les imprévus ; les pertes ponctuelles
   (départ, accrochages, arrêts) restent en secondes réelles.
@@ -74,6 +74,12 @@ Site de paris **à jetons virtuels** sur la Formule 1. Il est 100 % statique (HT
 - **Grille tarifaire R&D et garage** (`VALUE`, `TARIF` dans `js/manager.js`) : chaque bonus vaut un nombre de points de performance, et le prix
   de chaque niveau est proportionnel au gain apporté par ce niveau (80 PitCoins par point). Un gain plus grand coûte donc toujours plus cher.
   Chaque niveau Mk rapporte un peu plus que le précédent (`LV_GAIN`), et coûte donc un peu plus cher.
+- **Équilibrage du marché et de la progression** :
+  - XP des pilotes divisée par 3,75 (`XP_DIV`) : un point de progression demande environ 7 courses à un pilote de 20 ans, une vingtaine à un pilote à maturité.
+  - Prix des pilotes = niveau actuel × potentiel lié à l'âge (`AGE_PRICE`) : ×1,35 jusqu'à 21 ans, ×1 de 24 à 27 ans, ×0,65 de 30 à 32 ans, ×0,4 après 36 ans.
+  - Prix des châssis de 25 PC (fond de grille) à 500 PC (meilleure écurie), sans changer leurs performances. Revente au plus bas entre le prix payé et le prix actuel.
+  - Points de ligue par ligue (`lpScale`) : aucune perte en Bronze, pertes réintroduites en Argent puis en Or, barème complet à partir de Platine.
+  - Onglet R&D aux couleurs de l'écurie du joueur.
 - **Moteur de course** : le vrai nombre de tours de chaque Grand Prix (`RACE_LAPS` : 78 à Monaco, 44 à Spa, 53 à Monza…) contre 19 managers IA. La performance combine le niveau du pilote, les caractéristiques de la voiture avec les améliorations et la compatibilité avec le circuit, plus une part d'aléa :
   - la forme du jour ;
   - les qualifications, puis l'écart sur la grille au départ ;

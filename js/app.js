@@ -816,8 +816,9 @@
   }
   const statBar = (label, val, base, color, icon = '') => `<div class="sbar"><div class="sbar-h"><span>${icon} ${label}</span><b class="num">${Math.round(val)}</b></div><div class="sbar-t"><i style="width:${Math.min(100, base)}%;background:${color}"></i><i class="up" style="width:${Math.max(0, Math.min(100, val) - Math.min(100, base))}%"></i></div></div>`;
   const leagueBadge = (L, cls = '') => `<span class="lbadge ${cls}" style="--lc:${L.color}">${L.icon} ${L.name}</span>`;
-  const resaleD = (ctx) => (ctx.m.driver ? Math.round(((ctx.drvM ? ctx.drvM.price : ctx.m.driver.price) * 0.7) / 5) * 5 : 0);
-  const resaleC = (ctx) => (ctx.m.chassis ? Math.round(((ctx.ch ? ctx.ch.price : ctx.m.chassis.price) * 0.7 + ctx.m.rdSpent * 0.5) / 5) * 5 : 0);
+  const resaleD = (ctx) => (ctx.m.driver ? Math.round((Math.min(ctx.m.driver.price || Infinity, ctx.drvM ? ctx.drvM.price : Infinity) * 0.7) / 5) * 5 : 0);
+  // revente : 70 % du prix (le plus bas entre le prix payé et le prix actuel, pour éviter tout bénéfice quand les prix montent) + 50 % de la R&D investie
+  const resaleC = (ctx) => (ctx.m.chassis ? Math.round((Math.min(ctx.m.chassis.price || Infinity, ctx.ch ? ctx.ch.price : Infinity) * 0.7 + (ctx.m.rdSpent || 0) * 0.5) / 5) * 5 : 0);
 
   /* ---------- QG de l'écurie : coque (bandeau, rail de navigation) et tableau de bord ---------- */
   const MRAIL = [['ecurie', '🏁', 'QG'], ['pilotes', '👤', 'Pilotes'], ['chassis', '🔩', 'Châssis'], ['rd', '🔬', 'R&D'], ['muret', '🎧', 'Muret'], ['garage', '🧰', 'Garage'], ['ligues', '🏆', 'Ligues']];
@@ -834,7 +835,7 @@
       <div class="hq-body"><nav class="hq-rail">${MRAIL.map(([k, ic, l]) => `<a class="${k === tab ? 'on' : ''}" href="#/manager/${k}"><span>${ic}</span>${l}</a>`).join('')}</nav><div class="hq-main">`;
     if (tab === 'pilotes') h += mgrDrivers(ctx);
     else if (tab === 'chassis') h += mgrChassis(ctx);
-    else if (tab === 'rd') h += mgrRD(ctx);
+    else if (tab === 'rd') { const tc = ctx.ch ? F1.teamColor(ctx.ch.id) : '#e10600'; h += `<div class="rd-team" style="--tc:${tc};--tc-ink:${inkOn(tc)}">${mgrRD(ctx)}</div>`; }
     else if (tab === 'muret') h += mgrStaff(ctx);
     else if (tab === 'garage') h += mgrGarage(ctx);
     else if (tab === 'ligues') h += mgrLeagues(ctx, nl);
@@ -891,8 +892,8 @@
       return `<div class="card mintro"><div style="font-size:42px">🏗️</div><h3 style="font-size:22px">Montez votre écurie</h3>
         <p class="muted">Vous démarrez avec <b>${fmtPC(MG().START_PC)}</b> mais sans pilote ni voiture. Les meilleurs pilotes et châssis coûtent cher : à vous de trouver le bon compromis, puis de développer la voiture.</p>
         <p class="muted" style="font-size:14px">💡 Les PitCoins se gagnent uniquement en <b>courant</b> en mode manager : chaque course rapporte, même en fond de grille. Un jeune pilote progresse vite si vous le faites rouler.</p></div>
-        <div class="grid g3" style="margin-top:16px">${step(!!drvM, 1, 'Recruter un pilote', drvM ? drvM.name : 'De 35 PC (rookies) à 180 PC (les cracks).', '#/manager/pilotes', 'Voir le marché')}
-        ${step(!!ch, 2, 'Acheter un châssis', ch ? ch.name : 'De 60 PC à 250 PC selon le niveau de l\'écurie.', '#/manager/chassis', 'Voir les châssis')}
+        <div class="grid g3" style="margin-top:16px">${step(!!drvM, 1, 'Recruter un pilote', drvM ? drvM.name : 'Les vétérans sont bon marché, les jeunes coûtent plus cher : ils progressent.', '#/manager/pilotes', 'Voir le marché')}
+        ${step(!!ch, 2, 'Acheter un châssis', ch ? ch.name : 'De 25 PC (fond de grille) à 500 PC (top team).', '#/manager/chassis', 'Voir les châssis')}
         ${step(false, 3, 'Courir !', `${F1.store.racesPerDay()} courses gratuites toutes les 5 heures, sur le circuit du prochain Grand Prix. Ensuite, des courses supplémentaires en jetons.`, '#', '')}</div>`;
     }
     const left = F1.store.racesLeft();
@@ -1269,9 +1270,9 @@
     const { m, league } = ctx;
     const ladder = MG().LEAGUES.map((L) => `<div class="lrow ${L === league ? 'cur' : ''} ${m.lp >= L.min ? 'reached' : ''}" style="--lc:${L.color}"><span class="lic">${L.icon}</span><div style="flex:1"><b>${L.name}</b><small>dès ${L.min} LP · gains ×${L.mult} · adversaires ${['débutants', 'confirmés', 'solides', 'experts', 'élite', 'légendaires'][MG().LEAGUES.indexOf(L)]}</small></div>${L === league ? '<span class="chip">Vous êtes ici</span>' : ''}</div>`).reverse().join('');
     const table = `<table class="tbl" style="font-size:13px"><thead><tr><th>Position</th>${[1, 2, 3, 4, 5, 6, 8, 10, 15, 20].map((p) => `<th class="c">P${p}</th>`).join('')}<th class="c">AB</th></tr></thead><tbody>
-      <tr><td>LP</td>${[1, 2, 3, 4, 5, 6, 8, 10, 15, 20].map((p) => `<td class="c"><span class="gain ${MG().LP_TABLE[p - 1] >= 0 ? 'up' : 'down'}">${MG().LP_TABLE[p - 1] > 0 ? '+' : ''}${MG().LP_TABLE[p - 1]}</span></td>`).join('')}<td class="c"><span class="gain down">−8</span></td></tr>
+      <tr><td>LP</td>${[1, 2, 3, 4, 5, 6, 8, 10, 15, 20].map((p) => { const v = MG().lpScale(league).t[p - 1]; return `<td class="c"><span class="gain ${v > 0 ? 'up' : v < 0 ? 'down' : ''}">${v > 0 ? '+' : ''}${v}</span></td>`; }).join('')}<td class="c">${(() => { const v = MG().lpScale(league).dnf; return `<span class="gain ${v < 0 ? 'down' : ''}">${v}</span>`; })()}</td></tr>
       <tr><td>PitCoins</td>${[1, 2, 3, 4, 5, 6, 8, 10, 15, 20].map((p) => `<td class="c num">${Math.round(MG().PC_TABLE[p - 1] * league.mult)}</td>`).join('')}<td class="c num">${Math.round(league.mult)}</td></tr></tbody></table>`;
-    return `<div class="grid g2"><div class="card"><h3>Échelle des ligues</h3><div class="sub">Vos points de ligue (LP) montent ou descendent à chaque course. Passez un palier pour être promu : les gains augmentent, les adversaires aussi.</div><div class="ladder">${ladder}</div></div>
+    return `<div class="grid g2"><div class="card"><h3>Échelle des ligues</h3><div class="sub">Vos points de ligue (LP) montent à chaque course. En Bronze, on ne perd jamais de points ; à partir de l'Argent, une mauvaise course en fait perdre. Passez un palier pour être promu : les gains augmentent, les adversaires aussi.</div><div class="ladder">${ladder}</div></div>
       <div class="grid" style="align-content:start"><div class="card"><h3>Barème (ligue ${esc(league.name)})</h3><div class="table-wrap" style="margin-top:8px">${table}</div><div class="muted" style="font-size:12px;margin-top:8px">Record personnel : ${fmt(m.best)} LP.</div></div>
       <div class="card"><h3>🌍 Classement des managers</h3><div id="mgrBoard" class="plist"><div class="skeleton" style="height:60px"></div></div></div></div></div>`;
   }
@@ -1305,6 +1306,8 @@
     const cost = F1.store.extraCost(), ok = F1.store.canPayExtra();
     return `<button class="${cls}" data-action="${act}" ${ok ? '' : 'disabled'} title="Les 3 courses gratuites reviennent dans ${refill}">Course supplémentaire · ${fmt(cost)} jetons</button><div class="muted" style="font-size:12px;margin-top:6px;text-align:center">0/${F1.store.racesPerDay()} gratuite · recharge dans ${refill}${ok ? '' : ' · solde de jetons insuffisant'}</div>`;
   }
+  // Texte lisible sur une couleur d'écurie : noir sur les couleurs claires, blanc sur les foncées
+  const inkOn = (hex) => { const n = parseInt(String(hex).replace('#', '').slice(0, 6), 16); if (isNaN(n)) return '#fff'; const l = (0.2126 * ((n >> 16) & 255) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255; return l > 0.6 ? '#0b0d10' : '#fff'; };
   // Préférences d'affichage (gardées sur cet appareil)
   const getPref = (k) => { try { return localStorage.getItem('pitwall:' + k) || ''; } catch (e) { return ''; } };
   const setPref = (k, v) => { try { if (v) localStorage.setItem('pitwall:' + k, v); else localStorage.removeItem('pitwall:' + k); } catch (e) { /* stockage indisponible */ } };
@@ -1360,7 +1363,7 @@
         </div>
         <div class="race-side"><div class="tower" style="height:${res.field.length * ROW}px;--row:${ROW}px">${tower}</div><div class="feed" id="feed"><div class="ev"><b>Départ</b> — vous partez P${meX.grid} sur la grille, en ${MG().TYRES[meX.tyre].name.toLowerCase()}${res.weather[0].wet > 0.12 ? `, sur piste ${MG().trackState(res.weather[0].wet).toLowerCase()}` : ''}</div></div></div>
       </div></div></div>`;
-    const STEP = 50, LAP_MS = 120000 / LAPS; // une course dure environ 2 minutes en vitesse ×1, quel que soit le nombre de tours
+    const STEP = 50, LAP_MS = 240000 / LAPS; // une course dure environ 4 minutes en vitesse ×1, quel que soit le nombre de tours
     let lap = 0, T = -0.5, flagT = 0, started = false, paused = false, done = false, evI = 0, radioTimer = null; // T < 0 : procédure de départ (5 feux rouges)
     S.raceSpeed = 1;
     MG().stepLap(res); // le tour 1 est calculé d'avance : la carte interpole toujours vers le tour suivant

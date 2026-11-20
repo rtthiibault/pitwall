@@ -331,3 +331,28 @@ html.race-lock, html.race-lock body { overflow: hidden !important; overscroll-be
 .tc-opt.reco { border-color: var(--win); }
 .tc-opt.bad { opacity: .55; }
 .radio-q { font-size: 13px; margin-bottom: 2px; }
+
+/* =====================================================================
+   Onglet R&D aux couleurs de l'écurie du joueur (--tc), texte lisible (--tc-ink)
+   ===================================================================== */
+.rd-team { position: relative; --cc: var(--tc); padding: 14px; margin: -2px; border-radius: var(--radius);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tc) 16%, transparent), transparent 340px), var(--bg);
+  border: 1px solid color-mix(in srgb, var(--tc) 45%, var(--line)); }
+.rd-team [style*="--cc"] { --cc: var(--tc) !important; }
+.rd-team .rd-title { color: var(--tc) !important; }
+.rd-team .rd-tab { border: 1px solid color-mix(in srgb, var(--tc) 35%, var(--line)); }
+.rd-team .rd-tab.on { background: var(--tc) !important; color: var(--tc-ink) !important; border-color: var(--tc); box-shadow: none; }
+.rd-team .rd-kpis > div { border-color: color-mix(in srgb, var(--tc) 40%, var(--line)); border-top: 3px solid var(--tc); background: var(--panel); }
+.rd-team .rd-card { border-color: color-mix(in srgb, var(--tc) 40%, var(--line)) !important; }
+.rd-team .rd-card.sel { box-shadow: inset 0 0 0 2px var(--tc) !important; }
+.rd-team .rd-branch { border-color: color-mix(in srgb, var(--tc) 40%, var(--line)); background: color-mix(in srgb, var(--tc) 10%, var(--panel)); }
+.rd-team .rd-branch b { color: var(--tc); }
+.rd-team .rd-pkg.on { border-color: var(--tc); color: var(--text); }
+.rd-team .rd-detail { background: var(--panel) !important; border: 1px solid color-mix(in srgb, var(--tc) 55%, var(--line)) !important; border-left: 4px solid var(--tc) !important; }
+.rd-team .pips i.on, .rd-team .mk.on { background: var(--tc) !important; border-color: var(--tc) !important; color: var(--tc-ink) !important; }
+.rd-team .mk.next { border-color: var(--tc) !important; }
+.rd-team .cmp-bars .me, .rd-team .sbar-t i:not(.up) { background: var(--tc) !important; }
+.rd-team .btn:not(.ghost):not(.tunnel-btn) { background: var(--tc) !important; border-color: var(--tc) !important; color: var(--tc-ink) !important; }
+.rd-team .btn:not(.ghost):not(.tunnel-btn):hover { background: color-mix(in srgb, var(--tc) 82%, #000) !important; }
+.rd-team .btn:not(.ghost):disabled { background: var(--raised) !important; border-color: var(--line) !important; color: var(--dim) !important; }
+.rd-team .rd-stage { border-color: color-mix(in srgb, var(--tc) 40%, var(--line)); }

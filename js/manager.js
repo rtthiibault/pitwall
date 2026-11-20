@@ -44,7 +44,9 @@
     return { mult: 0.1, cap: 0.5, label: 'Fin de carrière' };
   }
   const XP_PER_POINT = 55;                  // XP nécessaires pour +1 point de progression
-  const xpForRace = (pos, dnf, age) => (dnf ? 0 : Math.round((10 + Math.max(0, 11 - pos)) * growth(age).mult));
+  // XP divisée par 3,75 : un point de progression demande ~7 courses pour un jeune pilote, ~25 pour un pilote à maturité
+  const XP_DIV = 3.75;
+  const xpForRace = (pos, dnf, age) => (dnf ? 0 : Math.round(((10 + Math.max(0, 11 - pos)) * growth(age).mult) / XP_DIV));
   // Progression acquise : points gagnés (plafonnés selon l'âge), répartis sur les trois caractéristiques
   function driverGrowth(id, xpState, year) {
     const st = (xpState && xpState[id]) || { xp: 0, races: 0 };
@@ -116,6 +118,14 @@
   // 3 courses toutes les 5 h (jusqu'à ~9 par jour) : gains par course revenus au barème d'origine (ils avaient été doublés pour 2 courses/jour)
   const PC_TABLE = [40, 32, 26, 22, 19, 16, 14, 12, 11, 10, 9, 8, 8, 7, 7, 6, 6, 5, 5, 5];
   const DNF_LP = -8, DNF_PC = 3;
+  // Barème par ligue : Bronze ne fait jamais perdre de points ; Argent et Or réintroduisent les pertes peu à peu ;
+  // à partir de Platine, le barème complet s'applique
+  const LP_BY_LEAGUE = [
+    { t: [30, 22, 16, 12, 9, 7, 5, 4, 3, 2, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0], dnf: 0 },
+    { t: [30, 22, 16, 12, 8, 5, 3, 2, 1, 0, 0, 0, -1, -1, -2, -2, -3, -3, -4, -4], dnf: -3 },
+    { t: [30, 22, 16, 12, 8, 5, 3, 1, 0, -1, -2, -3, -4, -4, -5, -5, -6, -6, -7, -7], dnf: -5 },
+  ];
+  const lpScale = (league) => LP_BY_LEAGUE[Math.max(0, LEAGUES.findIndex((l) => l.id === (league && league.id)))] || { t: LP_TABLE, dnf: DNF_LP };
 
   /* ---------- Outils ---------- */
   function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -124,6 +134,9 @@
   const gauss = (r) => Math.sqrt(-2 * Math.log(r() + 1e-12)) * Math.cos(2 * Math.PI * r());
 
   /* ---------- Marché : notes et prix calculés à partir des données réelles ---------- */
+  // Prix d'un pilote selon son âge, à niveau égal : les jeunes valent leur marge de progression, les vétérans (qui ne progressent
+  // presque plus) deviennent des choix rentables à court terme
+  const AGE_PRICE = (age) => (age <= 21 ? 1.35 : age <= 23 ? 1.2 : age <= 27 ? 1 : age <= 29 ? 0.85 : age <= 32 ? 0.65 : age <= 36 ? 0.5 : 0.4);
   function market(season) {
     const ents = season.entrants.length ? season.entrants : [...season.drivers.keys()];
     const drivers = season.drivers;
@@ -143,8 +156,10 @@
       const off = (i) => (TALENT[id] ? t[i] : ((h >> (i * 4)) % 5) - 2);
       const rookie = ROOKIES.includes(id);
       const pace = clamp(rating + off(1), 50, 99), craft = clamp(rating + off(2), 50, 99), cons = clamp(rating + off(3) - (rookie ? 2 : 0), 50, 99);
-      const price = Math.max(30, Math.round((30 + 170 * Math.pow(clamp((rating - 70) / 27, 0, 1.2), 1.5)) / 5) * 5);
-      return { id, name: `${d.given} ${d.family}`, family: d.family, code: d.code, number: d.number, iso: d.iso, teamId: d.teamId, rating, pace, craft, cons, price, rookie };
+      const base = 30 + 170 * Math.pow(clamp((rating - 70) / 27, 0, 1.2), 1.5);
+      const age = ageOf(id, season.year), agef = AGE_PRICE(age);
+      const price = Math.max(20, Math.round((base * agef) / 5) * 5);
+      return { id, name: `${d.given} ${d.family}`, family: d.family, code: d.code, number: d.number, iso: d.iso, teamId: d.teamId, rating, pace, craft, cons, price, rookie, age, agef };
     }).sort((a, b) => b.rating - a.rating || b.price - a.price);
 
     const teams = [...new Set(ents.map((id) => drivers.get(id).teamId))].map((tid) => {
@@ -162,7 +177,7 @@
       return {
         id: t.id, name: tt ? tt.short : t.id, strength: st,
         speed: Math.round(clamp(base + p[0], 30, 90)), df: Math.round(clamp(base + p[1], 30, 90)), rel: Math.round(clamp(base + 4 + p[2], 30, 95)),
-        price: Math.round((60 + 190 * Math.pow(st, 1.3)) / 5) * 5,
+        price: Math.round((25 + 475 * Math.pow(st, 2.2)) / 5) * 5,   // de 25 PC (fond de grille) à 500 PC (meilleure écurie)
       };
     }).sort((a, b) => b.price - a.price);
     return { drivers: out, chassis, byDriver: new Map(out.map((x) => [x.id, x])), byChassis: new Map(chassis.map((x) => [x.id, x])) };
@@ -878,7 +893,7 @@
 
   // Récompenses selon la position et la ligue
   function rewards(pos, dnf, league) {
-    const lp = dnf ? DNF_LP : LP_TABLE[pos - 1] ?? -10;
+    const sc = lpScale(league), lp = dnf ? sc.dnf : sc.t[pos - 1] ?? sc.t[sc.t.length - 1];
     const pc = Math.round((dnf ? DNF_PC : PC_TABLE[pos - 1] ?? 2) * league.mult);
     return { lp, pc };
   }
@@ -907,7 +922,7 @@
     MAX_LV, LV_GAIN, LV_NAME, lvCum, partLevel, levelCost, MECH, tunnelChance, branchPackage, carRating, OBJECTIVES, dailyObjectives,
     forecastLaps, trend, ruleOk, RULE_PENALTY, tyreStatus, MODES, redoLap, dryFor,
     CLIMATE, climateOf, trackState, forecast, TYRES, isSlick, tyreDelta, DILEMMA_LAPS, dilemmaLaps, lapsOf, RACE_LAPS, planFor, REFILL_H, createRace, stepLap, dilemmaFor, applyChoice, RADIO,
-    START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, PC_TABLE,
+    START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, lpScale, AGE_PRICE, XP_DIV, PC_TABLE,
     RD_CATS, RD_PARTS, RD_BY_ID, rdBranches, partState, partsBonus,
     market, carStats, withSetup, carScore, bestSetup, compat, circuitProfile, botField, simulate, rewards, hash, TALENT,
   };
