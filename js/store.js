@@ -376,20 +376,47 @@
     }
     return out;
   }
-  // Course en ligne terminée : gains comptés une seule fois par salon (PitCoins, statistiques, XP si c'est toujours le même pilote)
-  function recordOnline(r) {
+  /* ---------- Grand Prix Hebdomadaire ----------
+     m.weeklyGP = { weekId, attemptsUsed, bestTime (ms, null = aucun chrono valide), bestPosition, bestConfig, rewardClaimed, firstPrime }
+     m.weeklyPast = semaine précédente en attente de sa prime de classement ; m.trophies = trophées gagnés. */
+  function weeklyGP(weekId) {
     const m = mgr();
-    if (!m.online) m.online = { done: {}, races: 0, wins: 0, podiums: 0, best: null };
-    if (m.online.done[r.lobby]) return null;
-    m.online.done[r.lobby] = Date.now();
-    const keys = Object.keys(m.online.done); if (keys.length > 60) delete m.online.done[keys.sort((a, b) => m.online.done[a] - m.online.done[b])[0]];
-    m.online.races++; if (!r.dnf && r.pos === 1) m.online.wins++; if (!r.dnf && r.pos <= 3) m.online.podiums++;
-    if (!r.dnf && (m.online.best == null || r.pos < m.online.best)) m.online.best = r.pos;
-    addPC(r.pc, `Course en ligne : ${r.dnf ? 'abandon' : 'P' + r.pos}`);
-    let xp = 0;
-    if (m.driver && r.driverId === m.driver.id && F1.manager) { const x = m.drvXp[m.driver.id] || (m.drvXp[m.driver.id] = { xp: 0, races: 0 }); xp = F1.manager.xpForRace(r.pos, r.dnf, F1.manager.ageOf(m.driver.id)); x.xp += xp; x.races++; }
+    if (!m.weeklyGP || m.weeklyGP.weekId !== weekId) {
+      if (m.weeklyGP && m.weeklyGP.bestTime != null && !m.weeklyGP.rewardClaimed) m.weeklyPast = { ...m.weeklyGP };
+      m.weeklyGP = { weekId, attemptsUsed: 0, bestTime: null, bestPosition: null, bestConfig: null, rewardClaimed: false, firstPrime: false };
+      save();
+    }
+    return m.weeklyGP;
+  }
+  function useWeeklyAttempt(weekId) {
+    const w = weeklyGP(weekId), max = (F1.manager && F1.manager.WEEKLY_ATTEMPTS) || 2;
+    if (w.attemptsUsed >= max) throw new Error('Plus de tentative cette semaine : rendez-vous lundi pour le prochain Grand Prix');
+    w.attemptsUsed++; save();
+    return max - w.attemptsUsed;
+  }
+  // Fin d'une tentative : meilleur temps conservé, prime au premier chrono valide, petit bonus d'XP (aucun effet sur les sponsors ni la ligue)
+  function recordWeekly(r) {
+    const m = mgr(), w = weeklyGP(r.weekId);
+    if (r.circuit) w.circuit = r.circuit;
+    let prime = 0, xp = 0;
+    const improved = r.timeMs != null && (w.bestTime == null || r.timeMs < w.bestTime);
+    if (improved) { w.bestTime = r.timeMs; w.bestPosition = r.pos; w.bestConfig = { chassis: r.chassis, chassisId: r.chassisId, driver: r.driver }; }
+    if (r.timeMs != null && !w.firstPrime) { w.firstPrime = true; prime = (F1.manager && F1.manager.WEEKLY_FIRST_PRIME) || 50; addPC(prime, 'Grand Prix Hebdomadaire : premier chrono de la semaine'); }
+    if (m.driver && r.xp) { const x = m.drvXp[m.driver.id] || (m.drvXp[m.driver.id] = { xp: 0, races: 0 }); x.xp += r.xp; xp = r.xp; }
     save();
-    return { pc: r.pc, xp };
+    return { improved, prime, xp, best: w.bestTime, left: ((F1.manager && F1.manager.WEEKLY_ATTEMPTS) || 2) - w.attemptsUsed };
+  }
+  // Prime de classement de la semaine passée (une seule fois) et trophée pour un top 10
+  function claimWeeklyGP(rank, total) {
+    const m = mgr(), w = m.weeklyPast;
+    if (!w || w.rewardClaimed) return null;
+    const prize = F1.manager.weeklyPrize(rank, total) || 60;
+    w.rewardClaimed = true;
+    addPC(prize, `Grand Prix Hebdomadaire ${w.weekId} : ${rank ? rank + (rank === 1 ? 'er' : 'e') : 'classé'}`);
+    if (rank && rank <= 10) { if (!m.trophies) m.trophies = []; m.trophies.unshift({ week: w.weekId, rank, total, circuit: w.circuit || '', t: Date.now() }); if (m.trophies.length > 40) m.trophies.pop(); }
+    m.weeklyPast = null;
+    save();
+    return { prize, rank, total };
   }
   function setName(n) { get().name = String(n).slice(0, 24); save(); }
   function exportCode() { return btoa(unescape(encodeURIComponent(JSON.stringify(get())))); }
@@ -401,5 +428,5 @@
   function reset() { const n = get().name; state = blank(); state.name = n; save(); }
   const popUnlocked = () => unlocked.splice(0);
 
-  F1.store = { recordOnline, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
+  F1.store = { weeklyGP, useWeeklyAttempt, recordWeekly, claimWeeklyGP, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
 })(globalThis.F1 = globalThis.F1 || {});

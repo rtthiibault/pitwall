@@ -258,17 +258,21 @@ Activation (une seule fois, dans Supabase → SQL Editor → New query → Run),
    de la session, et ne montre les pronostics des autres qu'aux membres d'une même ligue, une fois la session commencée.
    Le site ne compte pas un pronostic modifié après l'heure officielle de la session.
 
-### F1 Manager en ligne
+### Grand Prix Hebdomadaire (F1 Manager en ligne)
 
-Onglet **En ligne** du QG : en plus de la campagne contre l'IA, des courses programmées entre joueurs.
-Un salon se remplit ; dès 5 managers inscrits, un compte à rebours de 60 s démarre (jusqu'à 20 joueurs) ; au départ, les places libres
-sont prises par des IA. Chacun court avec la voiture de sa campagne (pilote, châssis, R&D, réglage, pneus de départ, plan d'arrêts,
-consigne voiture de sécurité, figés à l'inscription). Deux divisions : Open (ligues Bronze et Argent) et Élite (Or et plus).
-Il n'y a pas de muret pendant la course : plan et consignes s'appliquent tout seuls.
+Onglet **GP Hebdo** du QG, en parallèle de la campagne et avec le même garage (pilote, châssis, R&D, livrée sponsor).
+- Chaque semaine (lundi 00 h 00 → dimanche 23 h 59, heure de Paris), un seul Grand Prix pour tout le monde : la semaine ISO sert de graine
+  (`weeklyEvent` dans `js/manager.js`) pour le circuit, la météo tour par tour, les managers IA (tirés de tables fixes) et les dilemmes radio.
+  Bandeau avec le Grand Prix, la météo prévue et le compte à rebours de clôture.
+- 2 tentatives par semaine ; la course se joue comme en campagne (muret, arrêts, radio). Le temps total de course est enregistré au
+  millième (ex. `1 h 25 m 14,382 s`) avec la position et la configuration ; abandon ou règle des 2 composés non respectée = DNF / non classé.
+  Seul le meilleur temps compte.
+- Ne consomme pas les courses gratuites de la campagne ; les contrats sponsors sont en pause ; petit bonus d'XP de participation.
+- Classement général et filtre par ligue privée (ligues de « Mes ligues ») avec les écarts au leader.
+- Récompenses : +50 PC au premier chrono de la semaine ; à la clôture, prime selon le rang (1er 600, 2e 450, 3e 350, top 10 200,
+  top 25 % 120, classé 60) et trophée pour un top 10, versés à la visite suivante du F1 Manager.
+- Sauvegarde : `manager.weeklyGP` = { weekId, attemptsUsed, bestTime, bestPosition, bestConfig, rewardClaimed, firstPrime },
+  `manager.weeklyPast` (semaine en attente de prime) et `manager.trophies`. Les anciennes sauvegardes ne sont pas modifiées.
 
-Le salon stocke tout ce qui décide de la course (voitures des joueurs, grille d'IA, graine, circuit, version du moteur `ONLINE_V`) :
-chaque navigateur recalcule exactement la même course (`onlineRace` dans `js/manager.js`) et l'affiche calée sur l'heure de départ.
-Gains : PitCoins selon la position (barème de la campagne × multiplicateur de ligue), XP pour le pilote, statistiques en ligne.
-
-Activation : exécuter une fois `supabase/migration-online.sql` dans Supabase (SQL Editor → New query → Run).
-
+Activation du classement : exécuter une fois `supabase/migration-weekly.sql` dans Supabase (SQL Editor → New query → Run).
+Le serveur compte les tentatives, n'accepte que la semaine en cours et garde le meilleur temps.

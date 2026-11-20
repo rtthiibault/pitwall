@@ -917,21 +917,71 @@
     const pc = Math.round((dnf ? DNF_PC : PC_TABLE[pos - 1] ?? 2) * league.mult);
     return { lp, pc };
   }
-  /* ---------- Courses en ligne ----------
-     Tout ce qui décide de la course est stocké dans le salon : voitures des joueurs (au moment de l'inscription), IA, graine
-     et circuit. Chaque navigateur recalcule donc exactement la même course. ONLINE_V change si le moteur change. */
-  const ONLINE_V = 1, ONLINE_MIN = 5, ONLINE_WAIT_S = 60;
-  const onlineDivision = (league) => (LEAGUES.findIndex((l) => l.id === (league && league.id)) >= 2 ? 'elite' : 'open');
-  function onlineGrid(entries, bots) {
-    const humans = entries.slice().sort((a, b) => String(a.joined_at).localeCompare(String(b.joined_at)) || String(a.user_id).localeCompare(String(b.user_id)))
-      .slice(0, FIELD).map((e) => ({ ...e.payload, name: e.username, human: true, uid: e.user_id }));
-    return humans.concat((bots || []).slice(0, Math.max(0, FIELD - humans.length)));
+  /* ---------- Grand Prix Hebdomadaire (mode en ligne) ----------
+     Du lundi 00 h 00 au dimanche 23 h 59 (heure de Paris), un seul Grand Prix pour tout le monde. Le numéro de semaine ISO
+     sert de graine : même circuit, même météo tour par tour, mêmes managers IA (tirés de tables fixes, pas du marché),
+     mêmes dilemmes radio. Chaque joueur court avec la voiture et le pilote de sa campagne ; 2 tentatives par semaine,
+     classement au temps total de course. */
+  const WEEKLY_ATTEMPTS = 2;
+  const CIRCUIT_NAME = {
+    albert_park: "Grand Prix d'Australie", shanghai: 'Grand Prix de Chine', suzuka: 'Grand Prix du Japon', bahrain: 'Grand Prix de Bahreïn',
+    jeddah: "Grand Prix d'Arabie saoudite", miami: 'Grand Prix de Miami', villeneuve: 'Grand Prix du Canada', monaco: 'Grand Prix de Monaco',
+    catalunya: 'Grand Prix de Barcelone', red_bull_ring: "Grand Prix d'Autriche", silverstone: 'Grand Prix de Grande-Bretagne',
+    spa: 'Grand Prix de Belgique', hungaroring: 'Grand Prix de Hongrie', zandvoort: 'Grand Prix des Pays-Bas', monza: "Grand Prix d'Italie",
+    madring: "Grand Prix d'Espagne", baku: "Grand Prix d'Azerbaïdjan", marina_bay: 'Grand Prix de Singapour', americas: 'Grand Prix des États-Unis',
+    rodriguez: 'Grand Prix de Mexico', interlagos: 'Grand Prix de São Paulo', vegas: 'Grand Prix de Las Vegas', losail: 'Grand Prix du Qatar',
+    yas_marina: "Grand Prix d'Abou Dabi", sepang: 'Grand Prix de Malaisie', portimao: 'Grand Prix du Portugal', istanbul: 'Grand Prix de Turquie',
+    imola: "Grand Prix d'Émilie-Romagne",
+  };
+  const CIRCUIT_ISO = { albert_park: 'au', shanghai: 'cn', suzuka: 'jp', bahrain: 'bh', jeddah: 'sa', miami: 'us', villeneuve: 'ca', monaco: 'mc', catalunya: 'es', red_bull_ring: 'at', silverstone: 'gb', spa: 'be', hungaroring: 'hu', zandvoort: 'nl', monza: 'it', madring: 'es', baku: 'az', marina_bay: 'sg', americas: 'us', rodriguez: 'mx', interlagos: 'br', vegas: 'us', losail: 'qa', yas_marina: 'ae', sepang: 'my', portimao: 'pt', istanbul: 'tr', imola: 'it' };
+  // date du jour à Paris, et décalage horaire de Paris (en minutes) à un instant donné
+  const parisYMD = (d) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d).split('-').map(Number);
+  const parisOffset = (ms) => { const n = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Paris', timeZoneName: 'shortOffset' }).formatToParts(new Date(ms)).find((x) => x.type === 'timeZoneName'); const m = /GMT([+-]\d+)(?::(\d+))?/.exec(n ? n.value : ''); return m ? +m[1] * 60 + Math.sign(+m[1] || 1) * (+m[2] || 0) : 60; };
+  const parisMidnight = (y, m, d) => { const g = Date.UTC(y, m - 1, d); return g - parisOffset(g - 3 * 3600e3) * 60e3; };
+  function isoWeek(now = Date.now()) {
+    const [y, m, d] = parisYMD(new Date(now));
+    const t = new Date(Date.UTC(y, m - 1, d)), dow = (t.getUTCDay() + 6) % 7;          // 0 = lundi
+    const th = new Date(t); th.setUTCDate(t.getUTCDate() - dow + 3);                    // jeudi de la semaine
+    const fy = th.getUTCFullYear(), jan4 = new Date(Date.UTC(fy, 0, 4));
+    const wk = 1 + Math.round(((th - jan4) / 864e5 - 3 + ((jan4.getUTCDay() + 6) % 7)) / 7);
+    const mon = new Date(t); mon.setUTCDate(t.getUTCDate() - dow);
+    const next = new Date(mon); next.setUTCDate(mon.getUTCDate() + 7);
+    return { id: `${fy}-W${String(wk).padStart(2, '0')}`, year: fy, week: wk,
+      startsAt: parisMidnight(mon.getUTCFullYear(), mon.getUTCMonth() + 1, mon.getUTCDate()),
+      endsAt: parisMidnight(next.getUTCFullYear(), next.getUTCMonth() + 1, next.getUTCDate()) };
   }
-  function onlineRace(lobby, entries) {
-    const seed = Number(lobby.seed) >>> 0;
-    const R = createRace({ grid: onlineGrid(entries, lobby.bots), race: { circuitId: lobby.circuit }, seed, wxSeed: seed });
-    return simulate({ R });
+  function weeklyEvent(now = Date.now()) {
+    const w = isoWeek(now), seed = hash('pitwall-weekly-' + w.id);
+    const list = Object.keys(RACE_LAPS).filter((k) => CIRCUIT[k] && CIRCUIT_NAME[k]).sort();   // circuits avec profil complet
+    const circuitId = list[seed % list.length];
+    const race = { circuitId, nameFr: CIRCUIT_NAME[circuitId] || circuitId, circuit: CIRCUIT_NAME[circuitId] || circuitId, iso: CIRCUIT_ISO[circuitId] || '', round: 0, weekly: true };
+    return { ...w, seed, race, laps: lapsOf(race) };
   }
+  // Managers IA de la semaine : pilotes et châssis tirés de tables fixes (identiques pour tous les joueurs), niveau « Argent »
+  const WEEKLY_TEAM = { mercedes: 1, mclaren: 0.95, ferrari: 0.85, red_bull: 0.8, williams: 0.45, racing_bulls: 0.4, aston_martin: 0.35, haas: 0.3, alpine: 0.25, audi: 0.2, cadillac: 0.05 };
+  function weeklyBots(seed) {
+    const r = rng(seed ^ 0x9e3779b9), L = LEAGUES[1];
+    const names = [...BOT_NAMES].sort().map((n) => [r(), n]).sort((a, b) => a[0] - b[0]).map((x) => x[1]).slice(0, FIELD - 1);
+    const ids = Object.keys(TALENT).sort(), teams = Object.keys(WEEKLY_TEAM).sort();
+    return names.map((name) => {
+      const id = ids[Math.floor(r() * ids.length)], t = TALENT[id];
+      const rating = t[0] - 2 + Math.round(r() * 3);
+      const driver = { id, code: id.slice(0, 3).toUpperCase(), rating, pace: clamp(rating + t[1], 50, 99), craft: clamp(rating + t[2], 50, 99), cons: clamp(rating + t[3], 50, 99) };
+      const tid = teams[Math.floor(r() * teams.length)], st = WEEKLY_TEAM[tid], pr = TEAM_PROFILE[tid] || [0, 0, 0], base = 45 + 30 * st;
+      const chassis = { id: tid, speed: Math.round(base + pr[0]), df: Math.round(base + pr[1]), rel: Math.round(base + 4 + pr[2]) };
+      const lv = () => Math.round(L.bot[0] + r() * (L.bot[1] - L.bot[0]));
+      const car = carStats(chassis, { speed: lv(), df: lv(), rel: lv() }), ex = BOT_EXTRA[1];
+      car.speed += ex; car.df += ex; car.rel = Math.min(97, car.rel + ex * 0.5);
+      car.mech = { launch: 0.3 * r() * 1.4, tyre: 0.3, push: 0.3 * r() * 1.4, pit: 0.3, sc: 0.3 * r(), drv: 0, wx: 0.75 + r() * 0.8 };
+      return { bot: true, name, driver, chassisId: tid, car, setup: Math.round((r() * 1.6 - 0.8) * 10) / 10 };
+    });
+  }
+  // Temps total de course : 1 h 25 m 14,382 s
+  const fmtRaceTime = (ms) => { if (ms == null) return 'DNF'; const h = Math.floor(ms / 36e5), m = Math.floor((ms % 36e5) / 6e4), sec = (ms % 6e4) / 1000; return `${h ? h + ' h ' : ''}${String(m).padStart(h ? 2 : 1, '0')} m ${sec.toFixed(3).padStart(6, '0').replace('.', ',')} s`; };
+  const fmtGap = (ms) => `+${(ms / 1000).toFixed(3).replace('.', ',')} s`;
+  // Prime de fin de semaine selon le rang
+  const weeklyPrize = (rank, total) => (!rank ? 0 : rank === 1 ? 600 : rank === 2 ? 450 : rank === 3 ? 350 : rank <= 10 ? 200 : total && rank <= Math.ceil(total * 0.25) ? 120 : 60);
+  const WEEKLY_FIRST_PRIME = 50;
   /* ---------- Sponsors : 10 entreprises fictives, du partenaire local au géant mondial ----------
      Contrat : un objectif sur un nombre de courses. Réussi avant la fin : prime. Raté à l'expiration : pénalité.
      Deux emplacements : principal (pontons et nez de la voiture) et secondaire (aileron arrière, prime et pénalité ×0,6).
@@ -985,7 +1035,7 @@
     MAX_LV, LV_GAIN, LV_NAME, lvCum, partLevel, levelCost, MECH, tunnelChance, branchPackage, carRating, OBJECTIVES, dailyObjectives,
     forecastLaps, trend, ruleOk, RULE_PENALTY, tyreStatus, MODES, redoLap, dryFor,
     CLIMATE, climateOf, trackState, forecast, TYRES, isSlick, tyreDelta, DILEMMA_LAPS, dilemmaLaps, lapsOf, RACE_LAPS, planFor, REFILL_H, createRace, stepLap, dilemmaFor, applyChoice, RADIO,
-    ONLINE_V, ONLINE_MIN, ONLINE_WAIT_S, onlineDivision, onlineGrid, onlineRace,
+    WEEKLY_ATTEMPTS, WEEKLY_FIRST_PRIME, isoWeek, weeklyEvent, weeklyBots, fmtRaceTime, fmtGap, weeklyPrize, CIRCUIT_NAME,
     SPONSORS, SPONSOR_BY_ID, goalText, sponsorTerms, sponsorAfterRace, SUB_K,
     START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, lpScale, AGE_PRICE, driverValue, valueOfDriver, RESALE_K, XP_DIV, PC_TABLE,
     RD_CATS, RD_PARTS, RD_BY_ID, rdBranches, partState, partsBonus,

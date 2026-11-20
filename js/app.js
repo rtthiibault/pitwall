@@ -249,7 +249,7 @@
     if (r === 'amis') mountFriends(parts);
     if (r === 'ligues') mountLeagues();
     if (r === 'manager') mountManager(parts[1]);
-    if (r === 'manager' && parts[1] === 'enligne') mountOnline(); else stopOnline();
+    if (r === 'manager' && parts[1] === 'hebdo') mountWeekly(); else { stopWeekly(); if (r === 'manager') weeklyClaim(); }
   }
 
   function sourceNotice() {
@@ -1003,7 +1003,7 @@
       ${log ? `<div class="sp-tier"><div class="sp-tier-h"><b>Contrats terminés</b></div><div class="sp-logs">${log}</div></div>` : ''}`;
   }
   /* ---------- QG de l'écurie : coque (bandeau, rail de navigation) et tableau de bord ---------- */
-  const MRAIL = [['ecurie', '🏁', 'QG'], ['enligne', '🌐', 'En ligne'], ['pilotes', '👤', 'Pilotes'], ['chassis', '🔩', 'Châssis'], ['rd', '🔬', 'R&D'], ['muret', '🎧', 'Muret'], ['garage', '🧰', 'Garage'], ['sponsors', '💼', 'Sponsors'], ['ligues', '🏆', 'Ligues']];
+  const MRAIL = [['ecurie', '🏁', 'QG'], ['hebdo', '🌐', 'GP Hebdo'], ['pilotes', '👤', 'Pilotes'], ['chassis', '🔩', 'Châssis'], ['rd', '🔬', 'R&D'], ['muret', '🎧', 'Muret'], ['garage', '🧰', 'Garage'], ['sponsors', '💼', 'Sponsors'], ['ligues', '🏆', 'Ligues']];
   function pageManager(tab) {
     tab = tab || 'ecurie';
     const ctx = mgrCtx();
@@ -1022,7 +1022,7 @@
     else if (tab === 'garage') h += mgrGarage(ctx);
     else if (tab === 'ligues') h += mgrLeagues(ctx, nl);
     else if (tab === 'sponsors') h += mgrSponsors(ctx);
-    else if (tab === 'enligne') h += mgrOnline(ctx);
+    else if (tab === 'hebdo') h += mgrWeekly(ctx);
     else h += mgrHome(ctx, nl);
     void race;
     return h + '</div></div></div>';
@@ -1675,11 +1675,41 @@
       };
       radioTimer = setInterval(() => { leftS -= 0.1; const cd = $('#radioCd'), bar = $('#radioBar'); if (cd) cd.textContent = Math.max(0, Math.ceil(leftS)); if (bar) bar.style.width = Math.max(0, (leftS / RADIO_S) * 100) + '%'; if (leftS <= 0) answer(dil.def, true); }, 100);
     };
+    // Grand Prix Hebdomadaire : chrono total, meilleur temps de la semaine, petit bonus d'XP ; sponsors et ligue non concernés
+    const finishWeekly = (silent, me) => {
+      const ev = res.weekly, dnf = !!me.out || !!meX.pen;
+      const timeMs = dnf ? null : Math.round(meX.time * 1000);
+      const xp = Math.max(1, Math.round(MG().xpForRace(me.pos, me.out, MG().ageOf(ctx.drvM.id)) / 3));
+      const rec = F1.store.recordWeekly({ weekId: ev.id, timeMs, pos: me.pos, chassis: ctx.ch.name, chassisId: ctx.ch.id, driver: ctx.drvM.name, xp: me.out ? 0 : xp, circuit: ev.race.nameFr });
+      const so = SO();
+      const sub = so.ready && so.me ? F1.social.submitWeekly(ev.id, timeMs, me.pos, ctx.ch.name, ctx.drvM.name) : Promise.reject(Object.assign(new Error('offline'), { offline: true }));
+      if (silent || !$('.race-main')) { sub.catch(() => {}); showAchievements(); return; }
+      T = LAPS; paused = false; $('#radio').classList.remove('on'); render(LAPS); renderWall(LAPS);
+      if (S.raceMap) { S.raceMap.dispose(); S.raceMap = null; }
+      const w = F1.store.mgr().weeklyGP;
+      const why = me.out ? `abandon (${esc(meX.out.why)})` : meX.pen ? 'règle des 2 composés secs non respectée' : '';
+      const rows = res.final.filter((r) => r.pos <= 10 || r.i === meX.i).map((r) => { const x = byI.get(r.i); return `<tr class="${x.c.me ? 'me-row' : ''}"><td class="pos">${r.out ? 'AB' : r.pos}</td><td><span class="tstripe" style="background:${colorOf(x)};display:inline-block;height:13px;margin-right:7px;vertical-align:-1px"></span>${esc(x.name)}${x.c.me ? ' <small class="muted">(vous)</small>' : ''}</td><td class="r num">${r.out ? 'Abandon' : r.pos === 1 ? 'Vainqueur' : '+' + r.gap.toFixed(1).replace('.', ',') + ' s'}</td></tr>`; }).join('');
+      $('.race-main').outerHTML = `<div class="debrief">
+        <section class="db-card db-res"><header><span>Votre chrono</span><small>${esc(ev.race.nameFr)} · semaine ${ev.week} · ${LAPS} tours</small></header>
+          <div class="wk-time ${dnf ? 'dnf' : ''}"><b>${dnf ? 'DNF / Non classé' : MG().fmtRaceTime(timeMs)}</b><small class="muted">${dnf ? why : `Arrivée P${me.pos} · ${esc(ctx.ch.name)} · ${esc(ctx.drvM.name)}`}${rec.improved ? ' · <b class="up">nouveau meilleur temps de la semaine !</b>' : ''}</small></div>
+          <div class="table-wrap"><table class="tbl db-tbl"><thead><tr><th>Pos</th><th>Écurie</th><th class="r">Écart</th></tr></thead><tbody>${rows}</tbody></table></div></section>
+        <div class="db-side"><section class="db-card"><header><span>Grand Prix Hebdomadaire</span></header>
+          <div class="db-money"><div><small>Meilleur temps</small><b>${w && w.bestTime != null ? MG().fmtRaceTime(w.bestTime) : '—'}</b></div><div><small>Tentatives restantes</small><b>${rec.left} / ${MG().WEEKLY_ATTEMPTS}</b></div><div><small>Classement général</small><b id="wkRank">…</b></div></div>
+          <div class="db-stats">${rec.prime ? `<span class="chip gold">+${rec.prime} PitCoins : premier chrono de la semaine</span>` : ''}${rec.xp ? `<span class="chip green">+${rec.xp} XP de participation</span>` : ''}<span class="chip">Sponsors et ligue en pause pendant le Grand Prix Hebdomadaire</span></div>
+          <small class="muted">À la clôture (dimanche 23 h 59), une prime de PitCoins est versée selon votre rang, et un trophée pour un top 10.</small></section></div>
+        <div class="db-actions">${rec.left > 0 ? '<button class="btn ghost" data-action="wk-go">Seconde tentative</button>' : ''}<button class="btn" data-action="wk-back">Retour au Grand Prix Hebdomadaire</button></div></div>`;
+      $('.race-ctl').classList.add('done');
+      sub.then(() => (timeMs != null ? F1.social.weeklyRank(ev.id, (F1.store.mgr().weeklyGP || {}).bestTime || timeMs) : null)).then((rk) => { const el = $('#wkRank'); if (el) el.textContent = rk ? `${rk.rank}${rk.rank === 1 ? 'er' : 'e'} / ${rk.total}` : 'non classé'; })
+        .catch((e) => { const el = $('#wkRank'); if (el) el.textContent = e.offline ? 'hors ligne' : e.missing ? 'bientôt' : '—'; });
+      if (!dnf && me.pos <= 3) confetti(me.pos === 1 ? 220 : 90);
+      showAchievements();
+    };
     const finish = (silent) => {
       if (done) return; done = true;
       clearInterval(raceTimer); raceTimer = null; clearInterval(radioTimer); radioTimer = null; S.raceFinish = null;
       MG().simulate({ R: res }); // termine les tours restants sans intervention (bouton Passer, fenêtre fermée)
       const me = res.final.find((x) => x.i === meX.i);
+      if (res.weekly) return finishWeekly(silent, me);
       const rw = MG().rewards(me.pos, me.out, leagueBefore);
       rw.pc = Math.round(rw.pc * (1 + ctx.tb.pc));
       const m0 = F1.store.mgr(), drvId = m0.driver && m0.driver.id;
@@ -1759,163 +1789,83 @@
     }, STEP);
   }
 
-  /* =================== F1 Manager en ligne ===================
-     Course programmée : dès 5 joueurs dans le salon, départ 60 s plus tard ; les places libres sont prises par des IA.
-     Chacun court avec la voiture de sa campagne, avec ses réglages, ses pneus de départ, son plan d'arrêts et sa consigne
-     voiture de sécurité, figés à l'inscription. Tous les navigateurs recalculent la même course à partir du salon. */
-  const OL = { id: null, poll: null, ping: null, tick: null, data: null, shown: {} };
-  try { OL.id = +sessionStorage.getItem('pitwall:olLobby') || null; } catch (e) { /* stockage indisponible */ }
-  const olSetId = (id) => { OL.id = id; try { if (id) sessionStorage.setItem('pitwall:olLobby', id); else sessionStorage.removeItem('pitwall:olLobby'); } catch (e) { /* ignore */ } };
-  const olLapMs = (circuit) => 240000 / MG().lapsOf({ circuitId: circuit });
-  const olEnd = (lobby) => Date.parse(lobby.start_at) + olLapMs(lobby.circuit) * (MG().lapsOf({ circuitId: lobby.circuit }) + 0.5);
-  const olGpName = (circuit) => { const r = ((S.f1 || S.season).races || []).find((x) => x.circuitId === circuit); return r ? r.nameFr : circuit; };
-  function onlinePayload(ctx) {
-    const { m, drvM, car, ch } = ctx;
-    return { driver: { id: drvM.id, name: drvM.name, family: drvM.family, code: drvM.code, number: drvM.number, pace: drvM.pace, craft: drvM.craft, cons: drvM.cons, rating: drvM.rating },
-      car: JSON.parse(JSON.stringify(car)), setup: m.setup || 0, chassisId: ch.id, startTyre: m.next.tyre, plan: m.next.plan, sc: getPref('onlineSc') === 'stay' ? 'stay' : 'box', rating: MG().carRating(car) };
+  /* =================== Grand Prix Hebdomadaire ===================
+     Un Grand Prix par semaine pour tout le monde (même circuit, même météo, mêmes IA), 2 tentatives, classement au temps total.
+     Garage partagé avec la campagne ; pas de quota consommé, sponsors et ligue en pause. */
+  const WK = { tick: null };
+  function stopWeekly() { clearInterval(WK.tick); WK.tick = null; }
+  function startWeekly() {
+    const ctx = mgrCtx(); if (!ctx.drvM || !ctx.car) return;
+    const ev = MG().weeklyEvent();
+    try { F1.store.useWeeklyAttempt(ev.id); } catch (e) { return toast('⏳', esc(e.message), 'err'); }
+    const meName = (F1.social.state.me && F1.social.state.me.username) || F1.store.get().name || 'Mon écurie';
+    const player = { name: meName, driver: ctx.drvM, car: ctx.car, setup: ctx.m.setup, chassisId: ctx.ch.id };
+    const R = MG().createRace({ player, bots: MG().weeklyBots(ev.seed), race: ev.race, seed: ev.seed, wxSeed: ev.seed, startTyre: ctx.m.next.tyre, plan: ctx.m.next.plan, manual: true });
+    R.weekly = ev;
+    showRace(R, { ...ctx, race: ev.race });
   }
-  function mgrOnline(ctx) {
-    const { m, drvM, ch, car, league, race } = ctx, so = SO();
-    const div = MG().onlineDivision(league);
-    const intro = `<div class="ol-intro"><div><h2 style="margin:0">Courses en ligne</h2><div class="muted" style="font-size:14px;margin-top:4px">Affrontez d'autres managers avec la voiture de votre campagne. Dès ${MG().ONLINE_MIN} joueurs dans le salon, départ ${MG().ONLINE_WAIT_S} s plus tard ; les places libres sont prises par des IA. Tout le monde regarde la même course en direct.</div></div>
-      <span class="chip">${div === 'elite' ? 'Division Élite · ligues Or et plus' : 'Division Open · ligues Bronze et Argent'}</span></div>`;
-    if (!drvM || !ch) return intro + '<div class="notice">Recrutez un pilote et achetez un châssis dans votre campagne pour courir en ligne.</div>';
-    if (!so.enabled) return intro + '<div class="notice">Le mode en ligne utilise la base de données du système d\'amis, qui n\'est pas encore activée sur ce site.</div>';
-    if (so.error) return intro + `<div class="notice red">⚠️ Connexion impossible : ${esc(so.error)} <button class="btn sm ghost" data-action="f-retry">Réessayer</button></div>`;
-    if (!so.ready) return intro + '<div class="skeleton"></div>';
-    if (!so.me) return intro + '<div class="notice">Créez d\'abord votre profil joueur (page <a class="link" href="#/ligues">Mes ligues</a> ou <a class="link" href="#/amis">Amis</a>) : c\'est votre nom sur la grille.</div>';
-    const plan = MG().planFor(m.next.plan, MG().lapsOf(race)).stops;
-    const sc = getPref('onlineSc') === 'stay' ? 'stay' : 'box';
-    return intro + `<div class="ol-grid">
-      <section class="ol-card"><header><b>Votre engagement</b><a class="pnl-l" href="#/manager">Modifier dans le QG</a></header>
+  function mgrWeekly(ctx) {
+    const { m, drvM, ch, car } = ctx, ev = MG().weeklyEvent(), w = F1.store.weeklyGP(ev.id);
+    const fl = MG().forecastLaps(ev.seed, ev.race), plan = MG().planFor(m.next.plan, ev.laps).stops;
+    const left = MG().WEEKLY_ATTEMPTS - w.attemptsUsed;
+    const head = `<div class="wk-banner"><div class="wk-b-l"><small>Grand Prix Hebdomadaire · semaine ${ev.week}</small><h2>${flag(ev.race.iso, 'lg')} ${esc(ev.race.nameFr)}</h2>
+        <div class="muted" style="font-size:13px">${ev.laps} tours · mêmes conditions pour tous les joueurs : circuit, météo tour par tour, managers IA</div>
+        <div class="fc-segs">${fl.segs.map((g) => `<span>${g.icon} ${esc(g.txt)}</span>`).join('')}</div></div>
+      <div class="wk-b-r"><small>Clôture dimanche 23 h 59</small><b id="wkCount">${untilTxt(ev.endsAt - Date.now())}</b></div></div>`;
+    const trophies = (m.trophies || []).slice(0, 8).map((t) => `<span class="wk-trophy" title="${esc(t.circuit)} · semaine ${esc(t.week)}">${t.rank === 1 ? '🥇' : t.rank === 2 ? '🥈' : t.rank === 3 ? '🥉' : '🏅'} <b>${t.rank}${t.rank === 1 ? 'er' : 'e'}</b><small>${esc(t.week.replace('-W', ' · S'))}</small></span>`).join('');
+    if (!drvM || !ch) return head + '<div class="notice">Recrutez un pilote et achetez un châssis dans votre campagne pour participer.</div>';
+    return head + `<div class="wk-grid">
+      <section class="ol-card"><header><b>Votre engagement</b><a class="pnl-l" href="#/manager">Préparer dans le QG</a></header>
         <div class="ol-car">${F1.visuals.car(ch.id, { view: 'side', shadow: false, sponsor: livery(m) })}</div>
         <div class="ol-specs"><div><small>Pilote</small><b>${esc(drvM.name)}</b><span class="muted">${drvM.rating}</span></div><div><small>Châssis</small><b>${esc(ch.name)}</b><span class="muted">note ${MG().carRating(car)}</span></div>
-          <div><small>Départ</small><b>${tyreDot(m.next.tyre, 'sm')} ${esc(MG().TYRES[m.next.tyre].name)}</b></div><div><small>Arrêts prévus</small><b>${plan.length ? plan.map((x) => `tour ${x.lap} ${tyreDot(x.tyre, 'sm')}`).join(' · ') : 'aucun'}</b><span class="muted">sur ${MG().lapsOf(race)} tours</span></div></div>
-        <div class="ol-sc"><small>Consigne voiture de sécurité</small><div class="seg">${[['box', 'Rentrer au stand'], ['stay', 'Rester en piste']].map(([k, l]) => `<button class="${sc === k ? 'on' : ''}" data-action="ol-sc" data-v="${k}">${l}</button>`).join('')}</div></div>
-        <small class="muted">Pendant la course en ligne, il n'y a pas de muret : votre plan et vos consignes s'appliquent tout seuls (les pneus pluie sont montés automatiquement si la piste est mouillée).</small>
-        <div id="olAction"><button class="btn block" data-action="ol-join">Rejoindre une course en ligne</button></div></section>
-      <section class="ol-card" id="olLobby"><header><b>Salon</b></header><div class="muted" style="font-size:13px">Rejoignez une course : le salon s'affiche ici, avec les autres managers inscrits.</div></section>
-    </div>
-    <section class="ol-card" style="margin-top:12px"><header><b>Vos dernières courses en ligne</b>${m.online ? `<span class="muted" style="font-size:12px">${m.online.races} course${m.online.races > 1 ? 's' : ''} · ${m.online.wins} victoire${m.online.wins > 1 ? 's' : ''} · ${m.online.podiums} podium${m.online.podiums > 1 ? 's' : ''}${m.online.best ? ` · meilleur résultat P${m.online.best}` : ''}</span>` : ''}</header><div id="olRecent"><div class="skeleton" style="height:60px"></div></div></section>`;
+          <div><small>Départ</small><b>${tyreDot(m.next.tyre, 'sm')} ${esc(MG().TYRES[m.next.tyre].name)}</b></div><div><small>Arrêts prévus</small><b>${plan.length ? plan.map((x) => `tour ${x.lap} ${tyreDot(x.tyre, 'sm')}`).join(' · ') : 'aucun'}</b><span class="muted">sur ${ev.laps} tours</span></div></div>
+        <small class="muted">La course se joue comme en campagne (muret, arrêts, dilemmes radio). Elle ne consomme pas vos courses gratuites, et vos contrats sponsors sont en pause : aucun objectif ni pénalité ici.</small>
+        <div class="wk-att"><div><small>Tentatives</small><b>${left} / ${MG().WEEKLY_ATTEMPTS} restante${left > 1 ? 's' : ''}</b></div><div><small>Meilleur temps</small><b>${w.bestTime != null ? MG().fmtRaceTime(w.bestTime) : '—'}</b>${w.bestConfig ? `<small class="muted">P${w.bestPosition} · ${esc(w.bestConfig.chassis)} · ${esc(w.bestConfig.driver)}</small>` : ''}</div></div>
+        <button class="btn block" data-action="wk-go" ${left > 0 ? '' : 'disabled'}>${left > 0 ? `Lancer une tentative (${left}/${MG().WEEKLY_ATTEMPTS})` : 'Tentatives épuisées : nouveau Grand Prix lundi'}</button></section>
+      <section class="ol-card"><header><b>Classement</b><div class="seg" id="wkTabs"></div></header><div id="wkBoard"><div class="skeleton" style="height:160px"></div></div></section></div>
+      <section class="ol-card" style="margin-top:12px"><header><b>Récompenses</b></header>
+        <div class="wk-prizes"><span>+${MG().WEEKLY_FIRST_PRIME} PC au premier chrono de la semaine</span><span>Clôture : 1<sup>er</sup> +600 · 2<sup>e</sup> +450 · 3<sup>e</sup> +350 · top 10 +200 · top 25 % +120 · classé +60</span><span>Trophée pour un top 10</span></div>
+        ${trophies ? `<div class="wk-trophies">${trophies}</div>` : '<div class="muted" style="font-size:13px">Pas encore de trophée : un top 10 en rapporte un.</div>'}</section>`;
   }
-  function stopOnline() { clearInterval(OL.poll); clearInterval(OL.ping); clearInterval(OL.tick); OL.poll = OL.ping = OL.tick = null; }
-  async function mountOnline() {
-    stopOnline();
-    const so = SO(); if (!so.ready || !so.me || !$('#olLobby')) return;
-    olRecent();
-    if (OL.id) olWatchLobby();
-  }
-  async function olRecent() {
-    const box = $('#olRecent'); if (!box) return;
+  // Prime de classement de la semaine passée : versée à la première visite du F1 Manager après la clôture
+  let claiming = false;
+  async function weeklyClaim() {
+    const m = F1.store.mgr(), so = SO();
+    F1.store.weeklyGP(MG().weeklyEvent().id);   // bascule de semaine : la semaine finie passe en attente de prime
+    if (claiming || !m.weeklyPast || m.weeklyPast.rewardClaimed) return;
+    claiming = true;
     try {
-      const list = await F1.social.onlineRecent(8);
-      if (!$('#olRecent')) return;
-      const me = SO().me.id, now = Date.now();
-      const rows = list.filter((x) => x.lobby.start_at && now >= Date.parse(x.lobby.start_at)).map(({ lobby, entries }) => {
-        const over = now >= olEnd(lobby);
-        let res = '';
-        if (over) {
-          const R = MG().onlineRace(lobby, entries), mx = R.field.find((x) => x.c.uid === me);
-          const pos = mx ? R.final.findIndex((f) => f.i === mx.i) + 1 : null, dnf = !!(mx && mx.out);
-          if (mx) {
-            const pc = Math.round((dnf ? 3 : MG().PC_TABLE[pos - 1] || 2) * MG().leagueOf(F1.store.mgr().lp).mult);
-            const got = F1.store.recordOnline({ lobby: lobby.id, pos, dnf, pc, driverId: mx.c.driver && mx.c.driver.id });
-            if (got) toast('🌐', `Course en ligne ${dnf ? 'terminée sur abandon' : 'terminée en P' + pos} : +${got.pc} PitCoins${got.xp ? ` · +${got.xp} XP` : ''}`, 'win');
-          }
-          res = `<b class="${!dnf && pos <= 3 ? 'up' : ''}">${dnf ? 'Abandon' : 'P' + pos}</b>`;
-        } else res = '<span class="chip red live">En course</span>';
-        return `<div class="ol-row"><div><b>${esc(olGpName(lobby.circuit))}</b><small class="muted">${DTF.format(new Date(lobby.start_at))} · ${entries.length} joueurs + ${Math.max(0, 20 - entries.length)} IA</small></div>${res}<button class="btn sm ghost" data-action="ol-watch" data-id="${lobby.id}">${over ? 'Revoir' : 'Suivre en direct'}</button></div>`;
-      });
-      box.innerHTML = rows.length ? rows.join('') : '<div class="muted" style="font-size:13px">Aucune course en ligne terminée pour l\'instant.</div>';
-    } catch (e) { box.innerHTML = e.missing ? '<div class="notice" style="font-size:13px">Le mode en ligne n\'est pas encore activé : le propriétaire du site doit exécuter <code>supabase/migration-online.sql</code> dans Supabase.</div>' : `<div class="notice red">⚠️ ${esc(e.message)}</div>`; }
+      const past = m.weeklyPast;
+      const online = so.enabled && so.ready && so.me;
+      const rk = online ? await F1.social.weeklyRank(past.weekId, past.bestTime).catch((e) => (e.missing ? { missing: true } : null)) : null;
+      if (online && !rk) return;   // classement momentanément indisponible : on réessaiera plus tard plutôt que de verser la prime minimale
+      const got = F1.store.claimWeeklyGP(rk && rk.rank, rk && rk.total);   // sans classement en ligne : prime de participation
+      if (got) { toast('🏆', `Grand Prix Hebdomadaire ${esc(past.weekId)} : ${got.rank ? `${got.rank}${got.rank === 1 ? 'er' : 'e'} sur ${got.total}` : 'chrono validé'} · +${got.prize} PitCoins${got.rank && got.rank <= 10 ? ' et un trophée' : ''}`, 'win', 6000); if (got.rank && got.rank <= 3) confetti(160); }
+    } finally { claiming = false; }
   }
-  function olRenderLobby() {
-    const box = $('#olLobby'), act = $('#olAction'); if (!box || !OL.data) return;
-    const { lobby, entries } = OL.data, me = SO().me.id, n = entries.length, now = Date.now();
-    const st = lobby.start_at ? Date.parse(lobby.start_at) : null, left = st ? Math.max(0, Math.ceil((st - now) / 1000)) : null;
-    const list = entries.slice().sort((a, b) => String(a.joined_at).localeCompare(String(b.joined_at))).map((e) => `<div class="ol-entry ${e.user_id === me ? 'me' : ''}"><span class="tstripe" style="background:${F1.teamColor(e.payload.chassisId)}"></span><b>${esc(e.username)}</b><small class="muted">${esc((e.payload.driver && e.payload.driver.code) || '')} · ${esc(team(e.payload.chassisId).short)} · note ${e.payload.rating || '?'}</small></div>`).join('');
-    box.innerHTML = `<header><b>Salon · ${esc(olGpName(lobby.circuit))}</b><small class="muted">${n} joueur${n > 1 ? 's' : ''} / 20</small></header>
-      ${st ? `<div class="ol-count"><b>${left}</b><span>s avant le départ</span></div><div class="muted" style="font-size:12px">${20 - n} place${20 - n > 1 ? 's' : ''} libre${20 - n > 1 ? 's' : ''} : elles seront prises par des IA. D'autres managers peuvent encore entrer.</div>`
-        : `<div class="ol-wait"><div class="bar"><i style="width:${Math.min(100, (n / MG().ONLINE_MIN) * 100)}%"></i></div><span>${n} / ${MG().ONLINE_MIN} joueurs : le compte à rebours de ${MG().ONLINE_WAIT_S} s démarre au ${MG().ONLINE_MIN}<sup>e</sup>.</span></div>`}
-      <div class="ol-entries">${list}</div>`;
-    if (act) act.innerHTML = `<button class="btn block ghost" data-action="ol-leave" ${st && left <= 3 ? 'disabled' : ''}>Quitter le salon</button>`;
-  }
-  async function olWatchLobby() {
-    const refresh = async () => {
-      try {
-        const d = await F1.social.onlineLobby(OL.id);
-        if (!d.lobby || !d.entries.some((e) => e.user_id === SO().me.id)) { olSetId(null); stopOnline(); if (/^#\/manager\/enligne/.test(location.hash)) route(); return; }
-        OL.data = d; olRenderLobby();
-        if (d.lobby.start_at && Date.now() >= Date.parse(d.lobby.start_at) && !OL.shown[d.lobby.id]) {
-          OL.shown[d.lobby.id] = 1; stopOnline(); olSetId(null);
-          const fin = await F1.social.onlineLobby(d.lobby.id);   // grille définitive au départ
-          showOnlineRace(fin.lobby, fin.entries, false);
-        }
-      } catch (e) { toast('⚠️', esc(e.missing ? 'Mode en ligne pas encore activé sur ce site (migration Supabase à exécuter).' : e.message), 'err'); stopOnline(); }
-    };
-    await refresh();
-    OL.poll = setInterval(refresh, 2000);
-    OL.ping = setInterval(() => { if (OL.id) F1.social.onlinePing(OL.id).catch(() => {}); }, 15000);
-    OL.tick = setInterval(olRenderLobby, 1000);
-  }
-  // Course en ligne : la même pour tous, calée sur l'heure de départ du salon (ou rejouée depuis le début)
-  function showOnlineRace(lobby, entries, replay) {
-    const R = MG().onlineRace(lobby, entries), me = SO().me && SO().me.id;
-    const meX = R.field.find((x) => x.c.uid === me) || null;
-    if (meX) { meX.c.me = true; R.me = meX; }   // marquage pour l'affichage seulement (la course est déjà calculée)
-    const LAPS = R.LAPS, LAP_MS = 240000 / LAPS, ROW = matchMedia('(min-width: 900px)').matches ? 22 : 30;
-    const t0 = performance.now(), startMs = Date.parse(lobby.start_at);
-    let skip = false;
-    const getT = () => (skip ? LAPS : Math.min(LAPS, (replay ? performance.now() - t0 : Date.now() - startMs) / LAP_MS - 0.5));
-    const byI = new Map(R.field.map((x) => [x.i, x]));
-    const colorOf = (x) => F1.teamColor(x.c.chassisId);
-    const nm = (x) => `${x.c.human ? '👤 ' : ''}${esc(x.name)}`;
-    const tower = R.field.map((x) => `<div class="trow ${x.c.me ? 'me' : ''} ${x.c.human ? 'human' : ''}" data-i="${x.i}" style="transform:translateY(${(x.grid - 1) * ROW}px)"><b class="tp">${x.grid}</b><span class="tstripe" style="background:${colorOf(x)};height:16px"></span><span class="tn">${nm(x)}</span><span class="tt">${tyreDot(x.tyre, 'sm')}</span><span class="tg num">—</span></div>`).join('');
-    document.documentElement.classList.add('race-lock');
-    $('#modal').innerHTML = `<div class="modal race-modal"><div class="modal-box race-box">
-      <div class="race-h"><div><div class="muted" style="font-size:12px">🌐 Course en ligne · ${esc(olGpName(lobby.circuit))} · ${entries.length} joueurs${replay ? ' · rediffusion' : ''}</div><div class="race-lap">Tour <b id="lapN">0</b> / ${LAPS}</div></div>
-        <div class="race-ctl"><div class="seg" role="group" aria-label="Style de la carte">${[['anim', 'Animée'], ['flat', '2D épurée']].map(([k, l]) => `<button class="${mapStyle() === k ? 'on' : ''}" data-action="map-style" data-v="${k}">${l}</button>`).join('')}</div>
-          <button class="btn sm ghost" id="olSkip">Voir le résultat</button><button class="btn sm ghost" data-action="m-close">Fermer</button></div></div>
-      <div class="race-main"><div class="race-left"><div class="race-stage"><div class="race-map" id="raceMap"></div><div class="race-fc" id="raceFc"></div></div>
-          <div class="wx-strip" id="wxStrip" style="grid-template-columns:repeat(${LAPS}, 1fr)">${R.weather.slice(1).map((x, i) => `<i data-l="${i + 1}"></i>`).join('')}</div></div>
-        <div class="race-side"><div class="tower" style="height:${R.field.length * ROW}px;--row:${ROW}px">${tower}</div><div class="feed" id="feed"></div></div></div></div></div>`;
-    const wxCls = (x) => (x.rain > 0.6 ? 'heavy' : x.rain > 0.25 ? 'rain' : x.rain > 0.05 ? 'drizzle' : x.wet > 0.35 ? 'wet' : x.cloud > 0.5 ? 'cloud' : 'dry');
-    let lap = -1, evI = 0;
-    const evs = R.events.filter((e) => e.type === 'sc' || e.type === 'wx' || e.type === 'dnf' || (meX && e.who === meX.i)).sort((a, b) => a.lap - b.lap);
-    const render = (L) => {
-      const order = R.laps[L - 1];
-      if (order) order.forEach((o, k) => { const el = $(`.trow[data-i="${o.i}"]`); if (!el) return; el.style.transform = `translateY(${k * ROW}px)`; el.querySelector('.tp').textContent = o.out ? 'AB' : k + 1; el.querySelector('.tg').textContent = o.out ? 'Abandon' : k === 0 ? 'Leader' : '+' + o.gap.toFixed(1); el.querySelector('.tt').innerHTML = o.out ? '' : tyreDot(o.ty, 'sm'); el.classList.toggle('out', o.out); });
-      $('#lapN').textContent = Math.max(0, L);
-      const x = R.weather[Math.min(LAPS, Math.max(0, L))], stt = MG().trackState(x.wet);
-      $('#raceFc').innerHTML = `<span class="rf-state"><i class="${stt === 'Sèche' ? 'dry' : stt === 'Humide' ? 'damp' : 'soak'}"></i>Piste ${stt.toLowerCase()}</span><span>${MG().wxIcon(x)} ${MG().wxLabel(x)}</span>`;
-      $$('#wxStrip i').forEach((el) => { const l = +el.dataset.l; el.className = l <= L ? wxCls(R.weather[l]) + ' past' : wxCls(R.weather[l]); });
-      const feed = $('#feed');
-      for (; evI < evs.length && evs[evI].lap <= L; evI++) { const e = evs[evI], who = e.who != null ? byI.get(e.who) : null; feed.insertAdjacentHTML('afterbegin', `<div class="ev ${e.type} ${who && who.c.me ? 'mine' : ''}"><span class="muted">T${e.lap}</span> ${who ? (who.c.me ? '<b class="me-t">Votre voiture</b>' : `<b>${nm(who)}</b>`) + ' ' : ''}${esc(e.txt)}</div>`); }
-    };
-    try { S.raceMap = F1.racemap.mount($('#raceMap'), { res: R, seedStr: lobby.circuit, colorOf, getT, style: mapStyle(), low: lowMode() }); } catch (e) { console.warn(e); }
-    const finish = () => {
-      clearInterval(raceTimer); raceTimer = null;
-      if (S.raceMap) { S.raceMap.dispose(); S.raceMap = null; }
-      render(LAPS);
-      const rows = R.final.map((f, k) => { const x = byI.get(f.i); return `<tr class="${x.c.me ? 'me-row' : ''} ${x.c.human ? 'human' : ''}"><td class="pos">${f.out ? 'AB' : k + 1}</td><td><span class="tstripe" style="background:${colorOf(x)};display:inline-block;height:13px;margin-right:7px;vertical-align:-1px"></span>${nm(x)}</td><td class="r num">${f.out ? 'Abandon' : k === 0 ? 'Vainqueur' : '+' + f.gap.toFixed(1).replace('.', ',') + ' s'}</td></tr>`; }).join('');
-      const pos = meX ? R.final.findIndex((f) => f.i === meX.i) + 1 : null, dnf = !!(meX && meX.out);
-      let got = null;
-      if (meX) { const pc = Math.round((dnf ? 3 : MG().PC_TABLE[pos - 1] || 2) * MG().leagueOf(F1.store.mgr().lp).mult); got = F1.store.recordOnline({ lobby: lobby.id, pos, dnf, pc, driverId: meX.c.driver && meX.c.driver.id }); }
-      const humans = R.final.filter((f) => byI.get(f.i).c.human), hPos = meX ? humans.findIndex((f) => f.i === meX.i) + 1 : null;
-      $('.race-main').outerHTML = `<div class="debrief"><section class="db-card db-res"><header><span>Classement final</span><small>${esc(olGpName(lobby.circuit))} · ${LAPS} tours</small></header>
-          ${meX ? `<div class="db-pos"><b>${dnf ? 'Abandon' : 'P' + pos}</b><div><div>${hPos}<sup>${hPos === 1 ? 'er' : 'e'}</sup> des ${humans.length} managers en ligne</div><small class="muted">${got ? `+${got.pc} PitCoins${got.xp ? ` · +${got.xp} XP pilote` : ''}` : 'Gains déjà comptés'}</small></div></div>` : ''}
-          <div class="table-wrap"><table class="tbl db-tbl"><thead><tr><th>Pos</th><th>Écurie</th><th class="r">Écart</th></tr></thead><tbody>${rows}</tbody></table></div></section>
-        <div class="db-actions"><button class="btn" data-action="m-close">Retour au mode en ligne</button></div></div>`;
-      $('#olSkip') && ($('#olSkip').style.display = 'none');
-      if (meX && !dnf && pos <= 3) confetti(pos === 1 ? 220 : 90);
-    };
-    $('#olSkip').onclick = () => { skip = true; };
-    S.raceFinish = null;
-    raceTimer = setInterval(() => {
-      const T = getT(), L = Math.floor(T + 1e-6);
-      if (L !== lap && L >= 0) { lap = L; render(Math.min(L, LAPS)); }
-      if (T >= LAPS) finish();
-    }, 100);
+  async function mountWeekly() {
+    stopWeekly();
+    const ev = MG().weeklyEvent();
+    WK.tick = setInterval(() => { const el = $('#wkCount'); if (!el) return stopWeekly(); el.textContent = untilTxt(Math.max(0, ev.endsAt - Date.now())); if (Date.now() >= ev.endsAt) route(); }, 30000);
+    const so = SO(), board = $('#wkBoard'), tabs = $('#wkTabs'); if (!board) return;
+    const m = F1.store.mgr(), me = so.me ? so.me.id : null;
+    await weeklyClaim();
+    if (!so.enabled || !so.ready || !so.me) {
+      const w = m.weeklyGP;
+      board.innerHTML = `${w && w.bestTime != null ? `<div class="wk-row me"><span class="pos">—</span><b>Vous</b><span class="num">${MG().fmtRaceTime(w.bestTime)}</span></div>` : ''}<div class="muted" style="font-size:13px;margin-top:6px">${!so.enabled ? 'Le classement en ligne utilise la base de données du système d\'amis, qui n\'est pas encore activée sur ce site.' : !so.ready ? 'Connexion…' : 'Créez votre profil joueur (page <a class="link" href="#/ligues">Mes ligues</a>) pour apparaître au classement.'}</div>`;
+      return;
+    }
+    let leagues = []; try { leagues = await F1.social.myLeagues(); } catch (e) { /* ligues pas encore activées */ }
+    const sel = S.wkBoard && leagues.some((l) => String(l.id) === String(S.wkBoard)) ? S.wkBoard : 'all';
+    if (tabs) tabs.innerHTML = `<button class="${sel === 'all' ? 'on' : ''}" data-action="wk-board" data-v="all">Général</button>${leagues.map((l) => `<button class="${String(sel) === String(l.id) ? 'on' : ''}" data-action="wk-board" data-v="${l.id}">${esc(l.name)}</button>`).join('')}`;
+    try {
+      let rows = await F1.social.weeklyBoard(ev.id);
+      if (sel !== 'all') { const mem = new Set((await F1.social.leagueBoard(sel)).map((p) => p.id)); rows = rows.filter((x) => mem.has(x.user_id)); }
+      if (!$('#wkBoard')) return;
+      const lead = rows.find((x) => x.time_ms != null);
+      board.innerHTML = rows.length ? `<div class="table-wrap"><table class="tbl lg-tbl"><thead><tr><th>#</th><th>Joueur</th><th class="r">Temps total</th><th class="r">Écart</th><th>Arrivée · voiture</th></tr></thead><tbody>${rows.map((x, i) => `<tr class="${x.user_id === me ? 'me-row' : ''}"><td class="pos">${x.time_ms != null ? i + 1 : '—'}</td><td><span class="row" style="gap:8px;flex-wrap:nowrap">${uava(x.p, '')}<b>${esc(x.p.username)}</b></span></td><td class="r num">${x.time_ms != null ? MG().fmtRaceTime(x.time_ms) : '<span class="muted">DNF / Non classé</span>'}</td><td class="r num">${x.time_ms != null && lead && x !== lead ? MG().fmtGap(x.time_ms - lead.time_ms) : x === lead ? '<span class="muted">leader</span>' : ''}</td><td><small>${x.position ? 'P' + x.position + ' · ' : ''}${esc(x.chassis || '')}${x.driver ? ' · ' + esc(x.driver) : ''}</small></td></tr>`).join('')}</tbody></table></div>`
+        : '<div class="muted" style="font-size:13px">Aucun chrono pour l\'instant cette semaine : soyez le premier !</div>';
+    } catch (e) { if ($('#wkBoard')) board.innerHTML = e.missing ? '<div class="notice" style="font-size:13px">Le classement du Grand Prix Hebdomadaire n\'est pas encore activé : le propriétaire du site doit exécuter <code>supabase/migration-weekly.sql</code> dans Supabase. Vos chronos sont gardés sur cet appareil.</div>' : `<div class="notice red">⚠️ ${esc(e.message)}</div>`; }
   }
 
   /* =================== Mes paris =================== */
@@ -2216,19 +2166,9 @@
       case 'f-retry': F1.social.init().then(route); break;
       case 'f-refresh': socialAct(() => F1.social.refresh()); break;
       case 'lg-sel': S.lgSel = a.dataset.id; mountLeagues(); break;
-      case 'ol-sc': setPref('onlineSc', a.dataset.v === 'stay' ? 'stay' : ''); $$('[data-action="ol-sc"]').forEach((b) => b.classList.toggle('on', b === a)); if (OL.id) toast('ℹ️', 'La consigne s\'appliquera à votre prochaine inscription', 'win'); break;
-      case 'ol-join': {
-        const ctx = mgrCtx(); if (!ctx.drvM || !ctx.ch) break;
-        const div = MG().onlineDivision(ctx.league);
-        const bots = JSON.parse(JSON.stringify(MG().botField(ctx.mk, ctx.league, 'online-' + Date.now())));
-        a.disabled = true;
-        F1.social.onlineJoin({ division: div, version: MG().ONLINE_V, season: (S.f1 || S.season).year, round: ctx.race.round, circuit: ctx.race.circuitId, payload: onlinePayload(ctx), bots })
-          .then((l) => { olSetId(l.id); toast('🌐', 'Vous êtes inscrit : en attente des autres managers', 'win'); stopOnline(); olWatchLobby(); })
-          .catch((e) => { a.disabled = false; toast('⚠️', esc(e.missing ? 'Mode en ligne pas encore activé sur ce site (migration Supabase à exécuter).' : e.message), 'err'); });
-        break;
-      }
-      case 'ol-leave': { const id = OL.id; stopOnline(); olSetId(null); F1.social.onlineLeave(id).then(() => toast('👋', 'Vous avez quitté le salon', 'win')).catch((e) => toast('⚠️', esc(e.message), 'err')).finally(() => route()); break; }
-      case 'ol-watch': { F1.social.onlineLobby(+a.dataset.id).then((d) => { if (!d.lobby || !d.lobby.start_at) return; const live = Date.now() < olEnd(d.lobby); showOnlineRace(d.lobby, d.entries, !live); }).catch((e) => toast('⚠️', esc(e.message), 'err')); break; }
+      case 'wk-go': closeModal(); setTimeout(startWeekly, 50); break;
+      case 'wk-back': closeModal(); if (location.hash !== '#/manager/hebdo') location.hash = '#/manager/hebdo'; else route(); break;
+      case 'wk-board': S.wkBoard = a.dataset.v; mountWeekly(); break;
       case 'pd-pick': { const d = S.pdDraft[a.dataset.s], id = a.dataset.d; const j = d.indexOf(id); if (j >= 0) d[j] = null; else { const i = d.indexOf(null); d[i >= 0 ? i : 2] = id; } pdRefresh(); break; }
       case 'pd-clear': { S.pdDraft[a.dataset.s][+a.dataset.i] = null; pdRefresh(); break; }
       case 'pd-save': {
