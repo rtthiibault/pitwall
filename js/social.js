@@ -164,6 +164,22 @@
     leagueErr(r.error);
   }
 
+  /* ---------- Pronostics podium des ligues (supabase/migration-podium.sql) ---------- */
+  async function savePodium(season, round, session, picks, lockAt) {
+    const row = { user_id: S.user.id, season, round, session, p1: picks[0], p2: picks[1], p3: picks[2], lock_at: new Date(lockAt).toISOString() };
+    const r = await S.client.from('podium_picks').upsert(row, { onConflict: 'user_id,season,round,session' }).select().maybeSingle();
+    if (r.error && /podium_picks|does not exist|schema cache|42P01|PGRST20[02]/i.test((r.error.message || '') + (r.error.code || ''))) { const x = new Error('PODIUM_MISSING'); x.missing = true; throw x; }
+    fail(r.error);
+    return r.data;
+  }
+  async function podiumPicks(ids, season) {
+    if (!ids.length) return [];
+    const r = await S.client.from('podium_picks').select('user_id,round,session,p1,p2,p3,lock_at,updated_at').eq('season', season).in('user_id', ids);
+    if (r.error && /podium_picks|does not exist|schema cache|42P01|PGRST20[02]/i.test((r.error.message || '') + (r.error.code || ''))) { const x = new Error('PODIUM_MISSING'); x.missing = true; throw x; }
+    fail(r.error);
+    return r.data || [];
+  }
+
   // Classement mondial des managers (null si la migration n'a pas été appliquée)
   async function leaderboard() {
     const r = await S.client.from('profiles').select('id,username,team,lp,league').order('lp', { ascending: false }).limit(30);
@@ -234,5 +250,5 @@
   // Rafraîchissement périodique des demandes (toutes les 60 s quand l'onglet est visible)
   setInterval(() => { if (S.ready && S.me && !document.hidden) refresh().catch(() => {}); }, 60000);
 
-  F1.social = { state: S, officialBoard, myLeagues, leagueBoard, createLeague, joinLeague, leaveLeague, leaderboard, init, claim, sync, search, byUsername, refresh, relation, linkWith, request, accept, remove, onChange: (f) => listeners.push(f), cleanName, USER_RE };
+  F1.social = { state: S, savePodium, podiumPicks, officialBoard, myLeagues, leagueBoard, createLeague, joinLeague, leaveLeague, leaderboard, init, claim, sync, search, byUsername, refresh, relation, linkWith, request, accept, remove, onChange: (f) => listeners.push(f), cleanName, USER_RE };
 })(globalThis.F1 = globalThis.F1 || {});

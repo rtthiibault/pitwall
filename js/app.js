@@ -47,7 +47,7 @@
     await lights.finish();
     F1.store.onChange(updateWallet);
     F1.store.onChange(() => F1.social.sync());
-    F1.social.onChange(() => { friendsBadge(); if (/^#\/amis/.test(location.hash) && !document.activeElement.closest('#friendSearch')) route(); if (/^#\/paris\/ligues/.test(location.hash) && !$('#lgList') && !document.activeElement.closest('.lg-form')) route(); });
+    F1.social.onChange(() => { friendsBadge(); if (/^#\/amis/.test(location.hash) && !document.activeElement.closest('#friendSearch')) route(); if (/^#\/ligues/.test(location.hash) && !$('#lgList') && !document.activeElement.closest('.lg-form')) route(); });
     F1.social.init().then((so) => { if (so.incoming.length) toast('👋', `${so.incoming.length} demande${so.incoming.length > 1 ? 's' : ''} d'ami en attente`, 'win', 5000); });
     updateWallet();
     route();
@@ -188,7 +188,8 @@
     const app = $('#app');
     let html;
     switch (r) {
-      case 'paris': html = pageBets(parts[1] || 'populaires'); break;
+      case 'paris': if (parts[1] === 'ligues') { location.replace('#/ligues' + (parts[2] ? '/rejoindre/' + parts[2] : '')); return; } html = pageBets(parts[1] || 'populaires'); break;
+      case 'ligues': html = pageLeagues(parts); break;
       case 'calendrier': html = pageCalendar(+parts[1] || null); break;
       case 'classements': html = pageStandings(); break;
       case 'gp': html = pageGP(+parts[1]); break;
@@ -246,7 +247,7 @@
     }
     if (r === 'mes-paris') mountBankroll();
     if (r === 'amis') mountFriends(parts);
-    if (r === 'paris' && parts[1] === 'ligues') mountLeagues();
+    if (r === 'ligues') mountLeagues();
     if (r === 'manager') mountManager(parts[1]);
   }
 
@@ -457,7 +458,7 @@
   /* =================== Paris =================== */
   const TABS = [
     ['populaires', 'Populaires'], ['pilotes', 'Pilotes'], ['duels', 'Duels'], ['ecuries', 'Écuries'],
-    ['speciaux', 'Spéciaux'], ['tierce', 'Tiercé'], ['saison', 'Saison'], ['ligues', 'Ligues'],
+    ['speciaux', 'Spéciaux'], ['tierce', 'Tiercé'], ['saison', 'Saison'],
   ];
   function pageBets(tab) {
     const s = S.season, nx = s.next, M = S.markets;
@@ -467,7 +468,6 @@
       <h1>${nx ? flag(nx.iso, 'lg') + esc(nx.nameFr) : 'Marchés de saison'}</h1>${nx ? `<div class="muted" style="margin-top:6px">${esc(nx.circuit)} · départ ${DTF.format(nx.date)}</div>` : ''}</div>
       ${nx ? `<div><div class="muted upper" style="font-size:11px;font-weight:700;text-align:right">Départ dans</div>${countdown(nx.date.getTime())}</div>` : ''}</div>`;
     h += `<div class="tabs">${TABS.map(([k, l]) => `<a class="tab ${k === tab ? 'on' : ''}" href="#/paris/${k}">${l}${counts[k] ? `<span class="cnt">${counts[k]}</span>` : ''}</a>`).join('')}</div>`;
-    if (tab === 'ligues') return h + '<div class="section" style="margin-top:20px">' + leaguesPanel() + '</div>';
     if (!nx && tab !== 'saison') return h + `<div class="empty"><div class="ic">🏆</div>Aucun Grand Prix à venir. Rendez-vous la saison prochaine !</div>`;
     h += '<div class="section" style="margin-top:20px">';
     switch (tab) {
@@ -792,61 +792,145 @@
       ic.innerHTML = p ? `<div class="sub" style="margin-bottom:8px">🎟️ Invitation reçue</div>${playerRow(p)}` : `<div class="muted">Aucun joueur nommé « ${esc(decodeURIComponent(parts[2]))} ».</div>`;
     }).catch((e) => { ic.innerHTML = `<div class="muted">${esc(e.message)}</div>`; });
   }
-  /* ---------- Ligues de pronostics (style Mon Petit Prono) ----------
-     Ligue officielle (tous les joueurs) + ligues privées créées avec un nom et rejointes avec un code PIT-XXXX. */
-  function leaguesPanel() {
-    const so = SO();
-    const intro = '<div class="muted" style="font-size:14px;margin-bottom:14px">Comparez vos pronostics : la ligue officielle classe tous les joueurs, vos ligues privées seulement vos amis. Classement aux gains nets des paris.</div>';
-    if (!so.enabled) return intro + '<div class="notice">Les ligues utilisent la même base de données que le système d\'amis, qui n\'est pas encore activé sur ce site. Voir la page <a class="link" href="#/amis">Amis</a>.</div>';
-    if (so.error) return intro + `<div class="notice red">⚠️ Connexion impossible : ${esc(so.error)} <button class="btn sm ghost" data-action="f-retry">Réessayer</button></div>`;
-    if (!so.ready) return intro + '<div class="skeleton"></div>';
+  /* =================== Mes ligues : pronostics podium entre amis ===================
+     Chaque joueur pronostique le top 3 des qualifications et de la course de chaque Grand Prix. Ses pronostics valent
+     pour toutes ses ligues. Points de ligue uniquement (aucune monnaie) ; verrouillage au début de chaque session. */
+  const PODIUM = {
+    quali: { label: 'Qualifications', exact: [10, 8, 6], podium: 3, perfect: 5 },
+    race: { label: 'Course', exact: [25, 18, 15], podium: 5, perfect: 15 },
+  };
+  function podiumScore(pick, top, k) {
+    if (!pick || !top || top.length < 3) return null;
+    const B = PODIUM[k]; let pts = 0, exact = 0;
+    pick.forEach((d, i) => { if (d === top[i]) { pts += B.exact[i]; exact++; } else if (top.includes(d)) pts += B.podium; });
+    return exact === 3 ? pts + B.perfect : pts;
+  }
+  const sessionStart = (race, k) => (k === 'quali' ? race.qualiDate || ((race.sessions || []).find((x) => x.key === 'quali') || {}).date : race.date) || null;
+  const actualTop = (race, k) => { const arr = k === 'quali' ? race.qualifying : race.results; if (!arr || arr.length < 3) return null; return arr.filter((x) => x.pos > 0).sort((a, b) => a.pos - b.pos).slice(0, 3).map((x) => x.driverId); };
+  const PKEY = 'pitwall:podium';
+  const localPicks = () => { try { return JSON.parse(localStorage.getItem(PKEY)) || {}; } catch (e) { return {}; } };
+  const pkKey = (y, r, k) => `${y}-${r}-${k}`;
+  function setLocalPick(y, r, k, picks) { const o = localPicks(); o[pkKey(y, r, k)] = { p: picks, t: Date.now() }; try { localStorage.setItem(PKEY, JSON.stringify(o)); } catch (e) { /* stockage indisponible */ } }
+  const untilTxt = (ms) => { const d = Math.floor(ms / 864e5), h = Math.floor((ms % 864e5) / 36e5), mn = Math.floor((ms % 36e5) / 6e4); return d ? `${d} j ${h} h` : h ? `${h} h ${mn} min` : `${Math.max(1, mn)} min`; };
+  // Grand Prix du moment : le prochain ; sinon le dernier disputé
+  const leagueGp = () => { const f1 = S.f1 || S.season; return f1.next || [...f1.races].reverse().find((r) => r.results) || null; };
+  const drvOf = (id) => (S.f1 || S.season).drivers.get(id) || { code: String(id).slice(0, 3).toUpperCase(), family: id, teamId: '' };
+  const drvTag = (id, cls = '') => { const d = drvOf(id); return `<span class="pd-tag ${cls}" style="--tc:${F1.teamColor(d.teamId)}">${esc(d.code || '?')}</span>`; };
+  function podiumCard(gp, k, y) {
+    const st = sessionStart(gp, k), locked = !st || Date.now() >= st.getTime();
+    const saved = (localPicks()[pkKey(y, gp.round, k)] || {}).p || null;
+    const draft = S.pdDraft[k];
+    const dirty = !saved || draft.join() !== saved.join(), full = draft.filter(Boolean).length === 3;
+    const top = actualTop(gp, k), pts = saved && top ? podiumScore(saved, top, k) : null;
+    const f1 = S.f1 || S.season;
+    const ids = (f1.entrants && f1.entrants.length ? f1.entrants : [...f1.drivers.keys()]).filter((id) => f1.drivers.has(id));
+    const order = [...f1.teams.values()].sort((a, b) => (a.position || 99) - (b.position || 99)).map((t) => t.id);
+    ids.sort((a, b) => order.indexOf(drvOf(a).teamId) - order.indexOf(drvOf(b).teamId));
+    const show = locked ? saved || [] : draft;
+    const slots = [0, 1, 2].map((i) => { const id = show[i], d = id && drvOf(id); return `<button class="pd-slot ${id ? 'on' : ''}" ${locked ? 'disabled' : `data-action="pd-clear" data-s="${k}" data-i="${i}" title="Retirer"`} style="--tc:${d ? F1.teamColor(d.teamId) : 'var(--line2)'}"><span class="pd-step">P${i + 1}</span>${d ? `<b>${esc(d.code)}</b><small>${esc(d.family)}</small>` : '<em>Choisir un pilote</em>'}${top ? `<i class="pd-real">${drvTag(top[i])}</i>` : ''}</button>`; }).join('');
+    const picker = locked ? '' : `<div class="pd-grid">${ids.map((id) => { const d = drvOf(id), used = draft.includes(id); return `<button class="pd-drv ${used ? 'used' : ''}" data-action="pd-pick" data-s="${k}" data-d="${esc(id)}" style="--tc:${F1.teamColor(d.teamId)}"><b>${esc(d.code)}</b><small>${esc(d.family)}</small></button>`; }).join('')}</div>`;
+    const status = locked
+      ? (top ? `<span>Résultat officiel à droite de chaque marche</span>${pts != null ? `<b class="pd-pts">+${pts} pts</b>` : '<span class="muted">Pas de pronostic</span>'}` : `<span>🔒 Verrouillé depuis le ${DTF.format(st)}${saved ? '' : ' · aucun pronostic'}</span>`)
+      : `<span>Verrouillage dans <b>${untilTxt(st.getTime() - Date.now())}</b> (${DTF.format(st)})</span><button class="btn sm" data-action="pd-save" data-s="${k}" ${full && dirty ? '' : 'disabled'}>${saved && !dirty ? 'Enregistré ✓' : 'Enregistrer'}</button>`;
+    return `<section class="pd-card ${locked ? 'locked' : ''}"><div class="pd-h"><b>${PODIUM[k].label}</b><small class="muted">exact ${PODIUM[k].exact.join(' / ')} · sur le podium +${PODIUM[k].podium} · podium parfait +${PODIUM[k].perfect}</small></div>
+      <div class="pd-slots">${slots}</div>${picker}<div class="pd-foot">${status}</div></section>`;
+  }
+  function pageLeagues(parts) {
+    const so = SO(), gp = leagueGp(), y = (S.f1 || S.season).year;
+    const head = `<div class="market-head"><div><h1>Mes ligues</h1><div class="muted" style="margin-top:6px">Pronostiquez le podium des qualifications et de la course, et affrontez vos amis au classement. Des points de ligue seulement : ni jetons, ni PitCoins.</div></div></div>`;
+    let h = head;
+    if (gp) {
+      const key = `${y}-${gp.round}`;
+      if (!S.pdDraft || S.pdDraft.key !== key) { const lp = localPicks(); S.pdDraft = { key, quali: ((lp[pkKey(y, gp.round, 'quali')] || {}).p || [null, null, null]).slice(), race: ((lp[pkKey(y, gp.round, 'race')] || {}).p || [null, null, null]).slice() }; }
+      h += `<div class="pd-gp"><div class="row" style="gap:10px;flex-wrap:nowrap">${flag(gp.iso, 'lg')}<div><div class="pd-gp-name">${esc(gp.nameFr)}</div><small class="muted">Manche ${gp.round} · ${esc(gp.circuit)} · vos pronostics valent pour toutes vos ligues</small></div></div></div>
+        <div class="pd-cards">${podiumCard(gp, 'quali', y)}${podiumCard(gp, 'race', y)}</div>`;
+    } else h += '<div class="empty"><div class="ic">🏁</div>Aucun Grand Prix à pronostiquer pour le moment.</div>';
+    const code = parts[1] === 'rejoindre' && parts[2] ? decodeURIComponent(parts[2]) : '';
+    h += '<div class="section-h" style="margin-top:28px"><h2>Classements entre amis</h2></div>';
+    if (!so.enabled) return h + '<div class="notice">Les ligues utilisent la base de données du système d\'amis, qui n\'est pas encore activée sur ce site. Vos pronostics sont gardés sur cet appareil.</div>';
+    if (so.error) return h + `<div class="notice red">⚠️ Connexion impossible : ${esc(so.error)} <button class="btn sm ghost" data-action="f-retry">Réessayer</button></div>`;
+    if (!so.ready) return h + '<div class="skeleton"></div>';
     if (!so.me) {
       const sug = F1.social.cleanName(F1.store.get().name);
-      return intro + `<div class="card" style="max-width:560px"><h3>Créez votre profil pour jouer en ligue</h3>
-        <p class="muted" style="font-size:14px">Votre pseudo apparaîtra dans les classements. 3 à 24 caractères : lettres sans accent, chiffres, _ . -</p>
+      return h + `<div class="card" style="max-width:560px"><h3>Créez votre profil pour jouer en ligue</h3>
+        <p class="muted" style="font-size:14px">Votre pseudo apparaîtra dans les classements de vos ligues. 3 à 24 caractères : lettres sans accent, chiffres, _ . -</p>
         <input class="field" id="claimName" maxlength="24" value="${esc(sug)}" placeholder="ex. Lewis_du_93" style="margin:6px 0 12px">
         <label class="muted" style="font-size:13px;font-weight:700">Écurie favorite</label>
         <select class="field" id="claimTeam" style="margin:6px 0 16px">${teamOptions('')}</select>
         <button class="btn block" data-action="f-claim">Créer mon profil joueur</button></div>`;
     }
-    return intro + `<div class="lg-wrap"><aside class="lg-side"><div class="lg-list" id="lgList"><div class="skeleton" style="height:120px"></div></div>
-        <div class="card lg-form"><b>Créer une ligue</b><div class="row" style="gap:6px;flex-wrap:nowrap"><input class="field" id="lgName" maxlength="40" placeholder="Nom de la ligue (ex. Les potes du lycée)"><button class="btn sm" data-action="lg-create">Créer</button></div><small class="muted">Un code d'invitation unique est généré pour vos amis.</small></div>
-        <div class="card lg-form"><b>Rejoindre avec un code</b><div class="row" style="gap:6px;flex-wrap:nowrap"><input class="field" id="lgCode" maxlength="9" placeholder="PIT-XXXX" style="text-transform:uppercase" value="${esc(decodeURIComponent((location.hash.match(/#\/paris\/ligues\/([^/?]+)/) || [])[1] || ''))}"><button class="btn sm ghost" data-action="lg-join">Rejoindre</button></div></div></aside>
-      <section class="card lg-board" id="lgBoard"><div class="skeleton" style="height:240px"></div></section></div>`;
+    return h + `<div class="lg-wrap"><aside class="lg-side"><div class="lg-list" id="lgList"><div class="skeleton" style="height:120px"></div></div>
+        <div class="card lg-form"><b>Créer une ligue</b><div class="row" style="gap:6px;flex-wrap:nowrap"><input class="field" id="lgName" maxlength="40" placeholder="Nom (ex. Les potes du lycée)"><button class="btn sm" data-action="lg-create">Créer</button></div><small class="muted">Un code d'invitation unique est généré (ex. PIT-K7Q2).</small></div>
+        <div class="card lg-form"><b>Rejoindre avec un code</b><div class="row" style="gap:6px;flex-wrap:nowrap"><input class="field" id="lgCode" maxlength="9" placeholder="PIT-XXXX" style="text-transform:uppercase" value="${esc(code)}"><button class="btn sm ${code ? '' : 'ghost'}" data-action="lg-join">Rejoindre</button></div></div></aside>
+      <section class="lg-main" id="lgBoard"><div class="skeleton" style="height:240px"></div></section></div>`;
   }
+  // Classement d'une ligue : points de la saison, du dernier GP, et comparaison des pronostics une fois verrouillés
   async function mountLeagues() {
     const so = SO(); if (!so.ready || !so.me) return;
     const list = $('#lgList'), board = $('#lgBoard'); if (!list) return;
+    // pronostics enregistrés hors ligne : envoyés au serveur s'ils sont encore modifiables
+    syncLocalPicks();
     let leagues = [], missing = false;
     try { leagues = await F1.social.myLeagues(); } catch (e) { if (e.missing) missing = true; else toast('⚠️', esc(e.message), 'err'); }
     if (!$('#lgList')) return;
-    const sel = S.lgSel && (S.lgSel === 'off' || leagues.some((l) => String(l.id) === String(S.lgSel))) ? S.lgSel : 'off';
-    S.lgSel = sel;
-    list.innerHTML = `<button class="lg-item ${sel === 'off' ? 'on' : ''}" data-action="lg-sel" data-id="off"><b>🌍 Ligue officielle</b><small>Tous les joueurs</small></button>
-      ${missing ? '<div class="notice" style="font-size:13px">Les ligues privées ne sont pas encore activées : le propriétaire du site doit exécuter <code>supabase/migration-bet-leagues.sql</code> dans Supabase.</div>'
-      : leagues.length ? leagues.map((l) => `<button class="lg-item ${String(sel) === String(l.id) ? 'on' : ''}" data-action="lg-sel" data-id="${l.id}"><b>${esc(l.name)}</b><small>${l.members} membre${l.members > 1 ? 's' : ''} · ${esc(l.code)}</small></button>`).join('')
-      : '<div class="muted" style="font-size:13px;padding:6px 2px">Aucune ligue privée : créez-en une ou rejoignez celle d\'un ami.</div>'}`;
-    const me = so.me.id;
-    const tbl = (rows, startRank = 1) => `<div class="table-wrap"><table class="tbl lg-tbl"><thead><tr><th>#</th><th>Joueur</th><th class="r">Gains nets</th><th class="r">Paris gagnés</th><th class="r">Solde</th></tr></thead><tbody>${rows.map((p, i) => `<tr class="${p.id === me ? 'me-row' : ''}"><td class="pos">${startRank + i}</td><td><span class="row" style="gap:8px;flex-wrap:nowrap">${uava(p, '')}<b>${esc(p.username)}</b>${p.id === me ? '<small class="muted">(vous)</small>' : ''}</span></td><td class="r num ${(p.profit || 0) >= 0 ? 'up' : 'down'}">${(p.profit || 0) >= 0 ? '+' : ''}${fmt(p.profit || 0)}</td><td class="r num">${p.bets_won || 0} / ${p.bets_done || 0}</td><td class="r num">${fmt(p.balance || 0)}</td></tr>`).join('')}</tbody></table></div>`;
+    const sel = leagues.find((l) => String(l.id) === String(S.lgSel)) || leagues[0] || null;
+    S.lgSel = sel ? sel.id : null;
+    list.innerHTML = missing ? '<div class="notice" style="font-size:13px">Les ligues privées ne sont pas encore activées : le propriétaire du site doit exécuter <code>supabase/migration-bet-leagues.sql</code> puis <code>supabase/migration-podium.sql</code> dans Supabase.</div>'
+      : leagues.length ? leagues.map((l) => `<button class="lg-item ${sel && sel.id === l.id ? 'on' : ''}" data-action="lg-sel" data-id="${l.id}"><b>${esc(l.name)}</b><small>${l.members} membre${l.members > 1 ? 's' : ''} · ${esc(l.code)}</small></button>`).join('')
+        : '<div class="muted" style="font-size:13px;padding:6px 2px">Aucune ligue pour l\'instant : créez-en une et partagez le code, ou rejoignez celle d\'un ami.</div>';
+    if (!sel) { board.innerHTML = `<div class="card"><h3>Comment ça marche</h3><ol class="muted" style="line-height:1.8;margin:0;padding-left:18px"><li>Créez une ligue et partagez son code (PIT-XXXX) à vos amis.</li><li>Chaque week-end, pronostiquez le podium des qualifications et de la course, avant le départ de chaque session.</li><li>Les points tombent avec les résultats officiels ; les pronostics de chacun deviennent visibles au verrouillage.</li></ol>${bareme()}</div>`; return; }
     try {
-      if (sel === 'off') {
-        const o = await F1.social.officialBoard();
-        if (!$('#lgBoard')) return;
-        board.innerHTML = `<div class="lg-h"><div><h3>🌍 Ligue officielle</h3><small class="muted">${o.total ? `${fmt(o.total)} joueurs` : 'Tous les joueurs'}${o.myRank ? ` · vous êtes ${o.myRank}${o.myRank === 1 ? 'er' : 'e'}` : ''}</small></div></div>${o.rows.length ? tbl(o.rows) : '<div class="muted">Aucun joueur classé pour l\'instant.</div>'}`;
-      } else {
-        const l = leagues.find((x) => String(x.id) === String(sel));
-        const rows = await F1.social.leagueBoard(l.id);
-        if (!$('#lgBoard')) return;
-        const link = `${location.origin}${location.pathname}#/paris/ligues/${encodeURIComponent(l.code)}`;
-        board.innerHTML = `<div class="lg-h"><div><h3>${esc(l.name)}</h3><small class="muted">${rows.length} membre${rows.length > 1 ? 's' : ''}${l.owner === me ? ' · vous êtes le créateur' : ''}</small></div>
-          <div class="lg-code"><small>Code d'invitation</small><b>${esc(l.code)}</b><button class="btn sm ghost" data-action="lg-copy" data-code="${esc(l.code)}" data-link="${esc(link)}">Copier le lien</button></div></div>
-          ${tbl(rows)}<div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn sm ghost" data-action="lg-leave" data-id="${l.id}">Quitter la ligue</button></div>`;
-      }
+      const f1 = S.f1 || S.season, y = f1.year, me = so.me.id;
+      const members = await F1.social.leagueBoard(sel.id);
+      let picks = [], podMissing = false;
+      try { picks = await F1.social.podiumPicks(members.map((p) => p.id), y); } catch (e) { if (e.missing) podMissing = true; else throw e; }
+      if (!$('#lgBoard')) return;
+      const lp = localPicks();
+      const pickOf = (uid, round, k) => { const r = picks.find((x) => x.user_id === uid && x.round === round && x.session === k); if (r) return { p: [r.p1, r.p2, r.p3], at: new Date(r.updated_at) }; if (uid === me && lp[pkKey(y, round, k)]) return { p: lp[pkKey(y, round, k)].p, at: new Date(lp[pkKey(y, round, k)].t), local: true }; return null; };
+      const done = f1.races.filter((r) => r.results);
+      const last = done[done.length - 1] || null;
+      const ptsOf = (uid, race, k) => { const pk = pickOf(uid, race.round, k), top = actualTop(race, k), st = sessionStart(race, k); if (!pk || !top) return null; if (st && pk.at > st && !pk.local) return 0; return podiumScore(pk.p, top, k); };
+      const rows = members.map((p) => {
+        let total = 0; done.forEach((r) => { total += (ptsOf(p.id, r, 'quali') || 0) + (ptsOf(p.id, r, 'race') || 0); });
+        const lastPts = last ? (ptsOf(p.id, last, 'quali') || 0) + (ptsOf(p.id, last, 'race') || 0) : 0;
+        return { p, total, lastPts };
+      }).sort((a, b) => b.total - a.total || b.lastPts - a.lastPts);
+      const link = `${location.origin}${location.pathname}#/ligues/rejoindre/${encodeURIComponent(sel.code)}`;
+      // Grand Prix comparé : celui en cours si ses qualifications ont commencé, sinon le dernier disputé
+      const gp = leagueGp(), gq = gp && sessionStart(gp, 'quali');
+      const cmp = gp && gq && Date.now() >= gq.getTime() ? gp : last;
+      const cell = (uid, race, k) => {
+        const st = sessionStart(race, k), locked = st && Date.now() >= st.getTime(), pk = pickOf(uid, race.round, k);
+        if (!locked && uid !== me) return '<td class="pd-hide" colspan="2">🔒 visible au départ</td>';
+        if (!pk) return '<td class="muted" colspan="2">—</td>';
+        const pts = ptsOf(uid, race, k), top = actualTop(race, k);
+        return `<td><span class="pd-mini">${pk.p.map((d, i) => drvTag(d, top ? (d === top[i] ? 'ok' : top.includes(d) ? 'mid' : 'ko') : '')).join('')}</span></td><td class="r num">${pts == null ? '' : `+${pts}`}</td>`;
+      };
+      board.innerHTML = `<div class="card"><div class="lg-h"><div><h3>${esc(sel.name)}</h3><small class="muted">${members.length} membre${members.length > 1 ? 's' : ''}${sel.owner === me ? ' · vous êtes le créateur' : ''}${last ? ` · dernier GP : ${esc(last.nameFr)}` : ''}</small></div>
+          <div class="lg-code"><small>Code d'invitation</small><b>${esc(sel.code)}</b><button class="btn sm ghost" data-action="lg-copy" data-code="${esc(sel.code)}" data-link="${esc(link)}">Copier l'invitation</button></div></div>
+        ${podMissing ? '<div class="notice" style="font-size:13px;margin-bottom:10px">Les pronostics partagés ne sont pas encore activés : le propriétaire du site doit exécuter <code>supabase/migration-podium.sql</code> dans Supabase. Vos pronostics sont gardés sur cet appareil.</div>' : ''}
+        <div class="table-wrap"><table class="tbl lg-tbl"><thead><tr><th>#</th><th>Joueur</th><th class="r">Saison</th><th class="r">Dernier GP</th></tr></thead><tbody>${rows.map((x, i) => `<tr class="${x.p.id === me ? 'me-row' : ''}"><td class="pos">${i + 1}</td><td><span class="row" style="gap:8px;flex-wrap:nowrap">${uava(x.p, '')}<b>${esc(x.p.username)}</b>${x.p.id === me ? '<small class="muted">(vous)</small>' : ''}</span></td><td class="r num"><b>${x.total}</b> pts</td><td class="r num ${x.lastPts ? 'up' : ''}">${x.lastPts ? '+' + x.lastPts : '0'}</td></tr>`).join('')}</tbody></table></div></div>
+      ${cmp ? `<div class="card" style="margin-top:12px"><div class="lg-h"><div><h3>Pronostics · ${esc(cmp.nameFr)}</h3><small class="muted">Vert : bonne marche · jaune : sur le podium, mauvaise marche · les pronostics des autres apparaissent au début de chaque session</small></div></div>
+        <div class="table-wrap"><table class="tbl lg-tbl pd-cmp"><thead><tr><th>Joueur</th><th>Qualifications</th><th class="r">Pts</th><th>Course</th><th class="r">Pts</th></tr></thead><tbody>
+          ${actualTop(cmp, 'quali') || actualTop(cmp, 'race') ? `<tr class="pd-real-row"><td><b>Résultat officiel</b></td><td>${actualTop(cmp, 'quali') ? `<span class="pd-mini">${actualTop(cmp, 'quali').map((d) => drvTag(d)).join('')}</span>` : '<span class="muted">à venir</span>'}</td><td></td><td>${actualTop(cmp, 'race') ? `<span class="pd-mini">${actualTop(cmp, 'race').map((d) => drvTag(d)).join('')}</span>` : '<span class="muted">à venir</span>'}</td><td></td></tr>` : ''}
+          ${rows.map((x) => `<tr class="${x.p.id === me ? 'me-row' : ''}"><td><b>${esc(x.p.username)}</b></td>${cell(x.p.id, cmp, 'quali')}${cell(x.p.id, cmp, 'race')}</tr>`).join('')}</tbody></table></div></div>` : ''}
+      <div class="card" style="margin-top:12px">${bareme()}<div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn sm ghost" data-action="lg-leave" data-id="${sel.id}">Quitter la ligue</button></div></div>`;
     } catch (e) { if ($('#lgBoard')) board.innerHTML = `<div class="notice red">⚠️ ${esc(e.message)}</div>`; }
+  }
+  const bareme = () => `<div class="pd-bareme"><b>Barème</b>${['race', 'quali'].map((k) => `<div><span>${PODIUM[k].label}</span><span>P1 exact +${PODIUM[k].exact[0]} · P2 exact +${PODIUM[k].exact[1]} · P3 exact +${PODIUM[k].exact[2]} · pilote sur le podium à une autre marche +${PODIUM[k].podium} · podium parfait dans l'ordre +${PODIUM[k].perfect}</span></div>`).join('')}<small class="muted">Un pronostic modifié après le début de la session ne rapporte rien.</small></div>`;
+  // Rafraîchit seulement les deux cartes de pronostics (pas toute la page)
+  function pdRefresh() { const c = $('.pd-cards'), gp = leagueGp(); if (!c || !gp) return route(); const y = (S.f1 || S.season).year; c.innerHTML = podiumCard(gp, 'quali', y) + podiumCard(gp, 'race', y); }
+  // Envoie au serveur les pronostics gardés sur l'appareil (session pas encore commencée)
+  let syncedPicks = false;
+  function syncLocalPicks() {
+    if (syncedPicks) return; syncedPicks = true;
+    const gp = leagueGp(); if (!gp) return;
+    const y = (S.f1 || S.season).year, lp = localPicks();
+    ['quali', 'race'].forEach((k) => { const v = lp[pkKey(y, gp.round, k)], st = sessionStart(gp, k); if (v && st && Date.now() < st.getTime()) F1.social.savePodium(y, gp.round, k, v.p, st).catch(() => {}); });
   }
   async function socialAct(fn, okMsg) {
     try { await fn(); if (okMsg) toast('✅', okMsg, 'win'); } catch (e) { toast('⚠️', esc(e.message), 'err'); }
-    if (/^#\/(amis|paris\/ligues)/.test(location.hash)) { route(); }
+    if (/^#\/(amis|ligues)/.test(location.hash)) { route(); }
   }
 
   /* =================== Mode manager =================== */
@@ -1970,6 +2054,18 @@
       case 'f-retry': F1.social.init().then(route); break;
       case 'f-refresh': socialAct(() => F1.social.refresh()); break;
       case 'lg-sel': S.lgSel = a.dataset.id; mountLeagues(); break;
+      case 'pd-pick': { const d = S.pdDraft[a.dataset.s], id = a.dataset.d; const j = d.indexOf(id); if (j >= 0) d[j] = null; else { const i = d.indexOf(null); d[i >= 0 ? i : 2] = id; } pdRefresh(); break; }
+      case 'pd-clear': { S.pdDraft[a.dataset.s][+a.dataset.i] = null; pdRefresh(); break; }
+      case 'pd-save': {
+        const k = a.dataset.s, gp = leagueGp(), y = (S.f1 || S.season).year, picks = S.pdDraft[k].slice(), st = sessionStart(gp, k);
+        if (picks.filter(Boolean).length !== 3) break;
+        if (!st || Date.now() >= st.getTime()) { toast('🔒', 'Session commencée : pronostics verrouillés', 'err'); route(); break; }
+        setLocalPick(y, gp.round, k, picks);
+        const so = SO();
+        if (so.ready && so.me) F1.social.savePodium(y, gp.round, k, picks, st).then(() => toast('✅', `Pronostic ${PODIUM[k].label.toLowerCase()} enregistré pour toutes vos ligues`, 'win')).catch((e) => toast('💾', e.missing ? 'Pronostic gardé sur cet appareil (pronostics partagés pas encore activés sur ce site)' : esc(e.message), e.missing ? 'win' : 'err'));
+        else toast('💾', 'Pronostic enregistré sur cet appareil', 'win');
+        pdRefresh(); break;
+      }
       case 'lg-create': { const n = ($('#lgName') || {}).value; (async () => { try { const l = await F1.social.createLeague(n); S.lgSel = l.id; toast('🏆', `Ligue <b>${esc(l.name)}</b> créée. Code à partager : <b>${esc(l.code)}</b>`, 'win'); route(); } catch (e) { toast('⚠️', esc(e.missing ? 'Ligues privées pas encore activées sur ce site (migration Supabase à exécuter).' : e.message), 'err'); } })(); break; }
       case 'lg-join': { const c = ($('#lgCode') || {}).value; (async () => { try { const l = await F1.social.joinLeague(c); S.lgSel = l.id; toast('🤝', `Vous avez rejoint <b>${esc(l.name)}</b>`, 'win'); route(); } catch (e) { toast('⚠️', esc(e.missing ? 'Ligues privées pas encore activées sur ce site (migration Supabase à exécuter).' : e.message), 'err'); } })(); break; }
       case 'lg-copy': { const txt = `Rejoins ma ligue de pronostics F1 sur PITWALL avec le code ${a.dataset.code} : ${a.dataset.link}`; (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast('📋', 'Invitation copiée : collez-la à vos amis', 'win')).catch(() => toast('📋', `Code : <b>${esc(a.dataset.code)}</b>`, 'win')); break; }

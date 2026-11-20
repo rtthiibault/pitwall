@@ -429,3 +429,37 @@ html.race-lock, html.race-lock body { overflow: hidden !important; overscroll-be
 .lg-code small { color: var(--muted); font-size: 11px; } .lg-code b { font-size: 18px; letter-spacing: .06em; font-variant-numeric: tabular-nums; }
 .lg-tbl td { vertical-align: middle; }
 @media (max-width: 860px) { .lg-wrap { grid-template-columns: minmax(0, 1fr); } }
+
+/* =====================================================================
+   Mes ligues : pronostics podium
+   ===================================================================== */
+@media (max-width: 760px) { .bottomnav { grid-template-columns: repeat(7, minmax(0, 1fr)) !important; } .bottomnav a { font-size: 9px; } }
+.pd-gp { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.pd-gp-name { font-weight: 750; font-size: 20px; font-variation-settings: 'wdth' 112; }
+.pd-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.pd-card { display: grid; gap: 10px; align-content: start; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+.pd-h { display: grid; gap: 2px; } .pd-h b { font-size: 16px; } .pd-h small { font-size: 12px; }
+.pd-cards { align-items: start; } .pd-card { margin: 0; }
+.pd-card.locked { background: var(--bg2); }
+.pd-slots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.pd-slot { position: relative; display: grid; gap: 1px; justify-items: start; text-align: left; min-height: 64px; padding: 8px 10px 8px 12px; border-radius: var(--radius-s);
+  background: var(--raised); border: 1px dashed var(--line2); color: var(--text); }
+.pd-slot.on { border-style: solid; border-color: var(--line); border-left: 4px solid var(--tc); }
+.pd-slot:not([disabled]):hover { border-color: var(--muted); }
+.pd-step { font-size: 11px; color: var(--muted); font-weight: 600; } .pd-slot b { font-size: 18px; font-weight: 750; letter-spacing: .02em; } .pd-slot small { font-size: 11px; color: var(--muted); }
+.pd-slot em { font-style: normal; font-size: 12px; color: var(--muted); }
+.pd-real { position: absolute; right: 8px; top: 8px; font-style: normal; }
+.pd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 4px; }
+.pd-drv { display: grid; gap: 0; justify-items: start; padding: 5px 7px; border-radius: 3px; background: var(--bg); border: 1px solid var(--line); border-left: 3px solid var(--tc); color: var(--text); text-align: left; }
+.pd-drv b { font-size: 13px; letter-spacing: .02em; } .pd-drv small { font-size: 10px; color: var(--muted); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pd-drv:hover { background: var(--raised); } .pd-drv.used { background: var(--raised); border-color: var(--tc); opacity: .55; }
+.pd-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.pd-foot b { color: var(--text); } .pd-pts { color: var(--win) !important; font-size: 18px; }
+.pd-tag { display: inline-grid; place-items: center; min-width: 38px; padding: 2px 5px; border-radius: 3px; background: var(--bg); border-left: 3px solid var(--tc); font-size: 11px; font-weight: 700; letter-spacing: .03em; color: var(--text); }
+.pd-tag.ok { background: color-mix(in srgb, var(--win) 28%, var(--bg)); } .pd-tag.mid { background: color-mix(in srgb, var(--gold) 26%, var(--bg)); } .pd-tag.ko { opacity: .55; }
+.pd-mini { display: inline-flex; gap: 3px; }
+.pd-hide { color: var(--muted); font-size: 12px; }
+.pd-real-row td { background: var(--bg2); }
+.pd-bareme { display: grid; gap: 6px; font-size: 13px; } .pd-bareme > div { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 8px; } .pd-bareme > div span:first-child { color: var(--muted); }
+.lg-main { min-width: 0; }
+@media (max-width: 860px) { .pd-cards { grid-template-columns: minmax(0, 1fr); } .pd-bareme > div { grid-template-columns: minmax(0, 1fr); gap: 0; } }

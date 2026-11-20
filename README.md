@@ -241,10 +241,19 @@ Un sélecteur en haut de l'accueil bascule tout le site entre la **Formule 1** e
 ## Avertissement
 Ce jeu est gratuit, sans argent réel ni gain matériel. C'est un site de fans non officiel, sans lien avec la Formula One Group, la FIA ou les écuries.
 
-### Ligues de pronostics entre amis
+### Mes ligues : pronostics podium entre amis
 
-L'onglet **Paris → Ligues** propose la ligue officielle (tous les joueurs, classés aux gains nets) et des ligues privées :
-« Créer une ligue » génère un code d'invitation unique (`PIT-XXXX`), « Rejoindre avec un code » ajoute le joueur à la ligue d'un ami.
-Elles utilisent la même base Supabase que le système d'amis. Pour les activer, exécutez une fois `supabase/migration-bet-leagues.sql`
-dans Supabase (SQL Editor → New query → Run). Les règles RLS limitent la lecture d'une ligue à ses membres ; création et adhésion
-passent par les fonctions `create_bet_league` et `join_bet_league`.
+L'onglet **Mes ligues** (à côté de Paris) permet de créer une ligue privée (code d'invitation unique `PIT-XXXX`, lien de partage)
+ou d'en rejoindre une avec un code. Chaque week-end, chaque joueur pronostique le **podium des qualifications et de la course** ;
+ses pronostics valent pour toutes ses ligues et se verrouillent au début de chaque session.
+
+- Points de ligue uniquement (aucune monnaie du jeu) : course 25 / 18 / 15 pour la bonne marche, +5 pour un pilote sur le podium
+  à une autre marche, +15 pour le podium parfait ; qualifications 10 / 8 / 6, +3, +5. Barème dans `PODIUM` (`js/app.js`).
+- Classement de la ligue : total de la saison, points du dernier GP, et comparaison des pronostics de chacun une fois la session verrouillée.
+- Sans base de données, les pronostics restent sur l'appareil (localStorage `pitwall:podium`).
+
+Activation (une seule fois, dans Supabase → SQL Editor → New query → Run), dans cet ordre :
+1. `supabase/migration-bet-leagues.sql` (ligues et codes d'invitation) ;
+2. `supabase/migration-podium.sql` (pronostics). Le serveur horodate chaque pronostic, refuse toute modification après le début
+   de la session, et ne montre les pronostics des autres qu'aux membres d'une même ligue, une fois la session commencée.
+   Le site ne compte pas un pronostic modifié après l'heure officielle de la session.
