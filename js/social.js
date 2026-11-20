@@ -164,6 +164,31 @@
     leagueErr(r.error);
   }
 
+  /* ---------- F1 Manager en ligne (supabase/migration-online.sql) ---------- */
+  const ONLINE_MISS = /online_|join_online|does not exist|schema cache|42P01|42883|PGRST20[02]/i;
+  const onlineErr = (e) => { if (e && ONLINE_MISS.test((e.message || '') + (e.code || ''))) { const x = new Error('ONLINE_MISSING'); x.missing = true; throw x; } fail(e); };
+  async function onlineJoin(a) {
+    const r = await S.client.rpc('join_online', { p_division: a.division, p_version: a.version, p_season: a.season, p_round: a.round, p_circuit: a.circuit, p_payload: a.payload, p_bots: a.bots });
+    onlineErr(r.error); return r.data;
+  }
+  async function onlineLobby(id) {
+    const [l, e] = await Promise.all([S.client.from('online_lobbies').select('*').eq('id', id).maybeSingle(), S.client.from('online_entries').select('lobby_id,user_id,username,payload,joined_at').eq('lobby_id', id)]);
+    onlineErr(l.error); onlineErr(e.error);
+    return { lobby: l.data, entries: e.data || [] };
+  }
+  async function onlinePing(id) { await S.client.rpc('ping_online', { p_lobby: id }); }
+  async function onlineLeave(id) { const r = await S.client.rpc('leave_online', { p_lobby: id }); onlineErr(r.error); }
+  // mes dernières courses en ligne (salons partis), avec leurs engagés
+  async function onlineRecent(n = 6) {
+    const r = await S.client.from('online_entries').select('lobby_id').eq('user_id', S.user.id).order('joined_at', { ascending: false }).limit(n);
+    onlineErr(r.error);
+    const ids = (r.data || []).map((x) => x.lobby_id);
+    if (!ids.length) return [];
+    const [l, e] = await Promise.all([S.client.from('online_lobbies').select('*').in('id', ids), S.client.from('online_entries').select('lobby_id,user_id,username,payload,joined_at').in('lobby_id', ids)]);
+    onlineErr(l.error); onlineErr(e.error);
+    return (l.data || []).map((lobby) => ({ lobby, entries: (e.data || []).filter((x) => x.lobby_id === lobby.id) })).sort((a, b) => b.lobby.id - a.lobby.id);
+  }
+
   /* ---------- Pronostics podium des ligues (supabase/migration-podium.sql) ---------- */
   async function savePodium(season, round, session, picks, lockAt) {
     const row = { user_id: S.user.id, season, round, session, p1: picks[0], p2: picks[1], p3: picks[2], lock_at: new Date(lockAt).toISOString() };
@@ -250,5 +275,5 @@
   // Rafraîchissement périodique des demandes (toutes les 60 s quand l'onglet est visible)
   setInterval(() => { if (S.ready && S.me && !document.hidden) refresh().catch(() => {}); }, 60000);
 
-  F1.social = { state: S, savePodium, podiumPicks, officialBoard, myLeagues, leagueBoard, createLeague, joinLeague, leaveLeague, leaderboard, init, claim, sync, search, byUsername, refresh, relation, linkWith, request, accept, remove, onChange: (f) => listeners.push(f), cleanName, USER_RE };
+  F1.social = { state: S, onlineJoin, onlineLobby, onlinePing, onlineLeave, onlineRecent, savePodium, podiumPicks, officialBoard, myLeagues, leagueBoard, createLeague, joinLeague, leaveLeague, leaderboard, init, claim, sync, search, byUsername, refresh, relation, linkWith, request, accept, remove, onChange: (f) => listeners.push(f), cleanName, USER_RE };
 })(globalThis.F1 = globalThis.F1 || {});

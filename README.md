@@ -257,3 +257,18 @@ Activation (une seule fois, dans Supabase → SQL Editor → New query → Run),
 2. `supabase/migration-podium.sql` (pronostics). Le serveur horodate chaque pronostic, refuse toute modification après le début
    de la session, et ne montre les pronostics des autres qu'aux membres d'une même ligue, une fois la session commencée.
    Le site ne compte pas un pronostic modifié après l'heure officielle de la session.
+
+### F1 Manager en ligne
+
+Onglet **En ligne** du QG : en plus de la campagne contre l'IA, des courses programmées entre joueurs.
+Un salon se remplit ; dès 5 managers inscrits, un compte à rebours de 60 s démarre (jusqu'à 20 joueurs) ; au départ, les places libres
+sont prises par des IA. Chacun court avec la voiture de sa campagne (pilote, châssis, R&D, réglage, pneus de départ, plan d'arrêts,
+consigne voiture de sécurité, figés à l'inscription). Deux divisions : Open (ligues Bronze et Argent) et Élite (Or et plus).
+Il n'y a pas de muret pendant la course : plan et consignes s'appliquent tout seuls.
+
+Le salon stocke tout ce qui décide de la course (voitures des joueurs, grille d'IA, graine, circuit, version du moteur `ONLINE_V`) :
+chaque navigateur recalcule exactement la même course (`onlineRace` dans `js/manager.js`) et l'affiche calée sur l'heure de départ.
+Gains : PitCoins selon la position (barème de la campagne × multiplicateur de ligue), XP pour le pilote, statistiques en ligne.
+
+Activation : exécuter une fois `supabase/migration-online.sql` dans Supabase (SQL Editor → New query → Run).
+

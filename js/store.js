@@ -376,6 +376,21 @@
     }
     return out;
   }
+  // Course en ligne terminée : gains comptés une seule fois par salon (PitCoins, statistiques, XP si c'est toujours le même pilote)
+  function recordOnline(r) {
+    const m = mgr();
+    if (!m.online) m.online = { done: {}, races: 0, wins: 0, podiums: 0, best: null };
+    if (m.online.done[r.lobby]) return null;
+    m.online.done[r.lobby] = Date.now();
+    const keys = Object.keys(m.online.done); if (keys.length > 60) delete m.online.done[keys.sort((a, b) => m.online.done[a] - m.online.done[b])[0]];
+    m.online.races++; if (!r.dnf && r.pos === 1) m.online.wins++; if (!r.dnf && r.pos <= 3) m.online.podiums++;
+    if (!r.dnf && (m.online.best == null || r.pos < m.online.best)) m.online.best = r.pos;
+    addPC(r.pc, `Course en ligne : ${r.dnf ? 'abandon' : 'P' + r.pos}`);
+    let xp = 0;
+    if (m.driver && r.driverId === m.driver.id && F1.manager) { const x = m.drvXp[m.driver.id] || (m.drvXp[m.driver.id] = { xp: 0, races: 0 }); xp = F1.manager.xpForRace(r.pos, r.dnf, F1.manager.ageOf(m.driver.id)); x.xp += xp; x.races++; }
+    save();
+    return { pc: r.pc, xp };
+  }
   function setName(n) { get().name = String(n).slice(0, 24); save(); }
   function exportCode() { return btoa(unescape(encodeURIComponent(JSON.stringify(get())))); }
   function importCode(code) {
@@ -386,5 +401,5 @@
   function reset() { const n = get().name; state = blank(); state.name = n; save(); }
   const popUnlocked = () => unlocked.splice(0);
 
-  F1.store = { signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
+  F1.store = { recordOnline, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
 })(globalThis.F1 = globalThis.F1 || {});
