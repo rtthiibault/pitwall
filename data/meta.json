@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-22T02:17:36.960Z",
+  "updated": "2026-11-22T19:46:27.068Z",
   "seasons": {
     "2025": {
       "races": 24,
@@ -9,9 +9,9 @@
     },
     "2026": {
       "races": 23,
-      "done": 20,
+      "done": 21,
       "sprints": 6,
-      "leader": "Antonelli (390)"
+      "leader": "Antonelli (402)"
     }
   },
   "current": 2026,
