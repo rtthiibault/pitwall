@@ -14,7 +14,11 @@
   const HM = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' });
   const WD = new Intl.DateTimeFormat('fr-FR', { weekday: 'short' });
   const flag = (iso, cls = '') => (iso ? `<img class="flag ${cls}" src="${F1.flagUrl(iso, cls === 'lg' ? 160 : 80)}" alt="" loading="lazy" onerror="this.style.display='none'">` : '');
-  const coin = '<span class="coin sm">J</span>';
+  // Monnaies : jeton (paris) et PitCoin (F1 Manager), pictogrammes vectoriels
+  const COIN_J = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11.2" fill="#e8b63a"/><g fill="#8a5d0c"><rect x="10.5" y=".8" width="3" height="3.6" rx=".7" transform="rotate(0 12 12)"/><rect x="10.5" y=".8" width="3" height="3.6" rx=".7" transform="rotate(60 12 12)"/><rect x="10.5" y=".8" width="3" height="3.6" rx=".7" transform="rotate(120 12 12)"/><rect x="10.5" y=".8" width="3" height="3.6" rx=".7" transform="rotate(180 12 12)"/><rect x="10.5" y=".8" width="3" height="3.6" rx=".7" transform="rotate(240 12 12)"/><rect x="10.5" y=".8" width="3" height="3.6" rx=".7" transform="rotate(300 12 12)"/></g><circle cx="12" cy="12" r="10.4" fill="none" stroke="#a87414" stroke-width=".9"/><circle cx="12" cy="12" r="6.6" fill="#f7d877" stroke="#9a6810" stroke-width="1.1"/><path d="M8.9 8.9h3.1V12H8.9zM12 12h3.1v3.1H12z" fill="#5c3c05"/><path d="M12 8.9h3.1V12H12zM8.9 12H12v3.1H8.9z" fill="#fff3c4"/></svg>';
+  const COIN_P = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M23 12 17.5 21.5h-11L1 12l5.5-9.5h11Z" fill="#1fc9b0" stroke="#0a7565" stroke-width="1"/><path d="M6.5 2.5h11L23 12h-4.4L15 6.2H9L6.5 2.5Z" fill="#7ff3e1" opacity=".55"/><circle cx="12" cy="12" r="5.6" fill="#0c4a42"/><circle cx="12" cy="12" r="3.6" fill="none" stroke="#5ee8d3" stroke-width="1.2" stroke-dasharray="2.2 1.3"/><circle cx="12" cy="12" r="1.5" fill="#5ee8d3"/></svg>';
+  const coin = `<span class="coin sm jcoin" title="jetons">${COIN_J}</span>`;
+  const jt = (n) => `<span class="amt">${coin}${fmt(n)}</span>`;   // montant en jetons avec le logo
 
   const S = {
     season: null, sim: null, markets: [], seasonMarkets: [], seasonSim: null, weather: null,
@@ -449,10 +453,10 @@
     const nx = s.next;
     let h = seriesSwitch() + hero(nx);
     if (s.pending) h += `<div class="notice red" style="margin-top:18px">🏁 <b>${esc(s.pending.nameFr)}</b> : course terminée ou en cours — vos paris seront réglés dès la publication des résultats officiels.</div>`;
-    if (S.series !== 'wec' && s.doneCount === 0 && nx && F1.store.canClaimSeason(s)) h += `<div class="notice" style="margin-top:18px">🎆 Nouvelle saison ${s.year} : prime de lancement <b>+${F1.store.SEASON_BONUS} jetons</b>. <span class="sp"></span><button class="btn sm gold" data-action="claim-season">Récupérer</button></div>`;
+    if (S.series !== 'wec' && s.doneCount === 0 && nx && F1.store.canClaimSeason(s)) h += `<div class="notice" style="margin-top:18px">🎆 Nouvelle saison ${s.year} : prime de lancement <b>+${jt(F1.store.SEASON_BONUS)}</b>. <span class="sp"></span><button class="btn sm gold" data-action="claim-season">Récupérer</button></div>`;
     if (s.prev && s.doneCount === 0) { const ch = [...s.prev.drivers.values()].sort((a, b) => b.points - a.points)[0]; if (ch) h += `<div class="notice" style="margin-top:18px">🏆 Saison ${s.prev.year} terminée : <b>${esc(ch.given + ' ' + ch.family)}</b> champion du monde avec ${fmt(ch.points)} points. Les cotes ${s.year} partent de la hiérarchie ${s.prev.year}.</div>`; }
-    if (S.series !== 'wec' && nx && F1.store.canClaim(s, nx)) h += `<div class="notice" style="margin-top:18px">🎁 Prime du week-end disponible : <b>+${F1.store.WEEKLY} jetons</b> pour le ${esc(nx.nameFr)}. <span class="sp"></span><button class="btn sm gold" data-action="claim">Récupérer</button></div>`;
-    if (S.series !== 'wec' && nx && F1.store.canRescue(s, nx)) h += `<div class="notice red" style="margin-top:18px">💸 Réservoir vide ? Le stand vous ravitaille : <b>+${F1.store.RESCUE} jetons</b>. <span class="sp"></span><button class="btn sm" data-action="rescue">Ravitailler</button></div>`;
+    if (S.series !== 'wec' && nx && F1.store.canClaim(s, nx)) h += `<div class="notice" style="margin-top:18px">🎁 Prime du week-end disponible : <b>+${jt(F1.store.WEEKLY)}</b> pour le ${esc(nx.nameFr)}. <span class="sp"></span><button class="btn sm gold" data-action="claim">Récupérer</button></div>`;
+    if (S.series !== 'wec' && nx && F1.store.canRescue(s, nx)) h += `<div class="notice red" style="margin-top:18px">💸 Réservoir vide ? Le stand vous ravitaille : <b>+${jt(F1.store.RESCUE)}</b>. <span class="sp"></span><button class="btn sm" data-action="rescue">Ravitailler</button></div>`;
 
     h += pwHome();
     if (S.markets.length) {
@@ -1031,7 +1035,7 @@
 
   /* =================== Mode manager =================== */
   const MG = () => F1.manager;
-  const pcoin = '<span class="coin sm pcoin">P</span>';
+  const pcoin = `<span class="coin sm pcoin" title="PitCoins">${COIN_P}</span>`;
   const fmtPC = (n) => `${pcoin}${fmt(Math.round(n))}`;
   function mgrRace() { const s = S.f1 || S.season; return s.next || s.pending || s.lastDone || s.races[0]; }
   function mgrCtx() {
@@ -1367,7 +1371,7 @@
           <div class="row" style="margin-top:14px;gap:10px">${max ? '<span class="chip green">🧬 Spécification maximale atteinte</span>' : !can ? '<span class="chip">🔒 Développez d\'abord la pièce précédente</span>'
             : `<button class="btn" data-action="rd-buy" data-p="${sel.id}" data-mode="safe" ${cost > m.pc + 1e-9 ? 'disabled' : ''}>🔬 ${lv ? 'Passer en' : 'Développer'} ${MG().LV_NAME[nl]} · ${cost} PC</button>
               <button class="btn ghost tunnel-btn" data-action="rd-buy" data-p="${sel.id}" data-mode="tunnel" ${half > m.pc + 1e-9 ? 'disabled' : ''} title="Moitié prix, mais la pièce peut échouer en soufflerie. Chaque échec augmente les chances de la tentative suivante.">🎲 Pari soufflerie · ${half} PC · ${Math.round(ch2 * 100)} %</button>
-              ${cost > m.pc + 1e-9 ? `<span class="muted" style="font-size:13px">Il vous manque ${Math.ceil(cost - m.pc)} PitCoins pour le développement sûr</span>` : ''}`}</div>
+              ${cost > m.pc + 1e-9 ? `<span class="muted" style="font-size:13px">Il vous manque ${fmtPC(Math.ceil(cost - m.pc))} pour le développement sûr</span>` : ''}`}</div>
           ${fails ? `<div class="muted" style="font-size:12px;margin-top:8px">📈 ${fails} essai${fails > 1 ? 's' : ''} raté${fails > 1 ? 's' : ''} en soufflerie : les données récoltées augmentent vos chances.</div>` : ''}`;
         })()}</div>`;
     } else {
@@ -1572,7 +1576,7 @@
     const refill = `${h ? h + ' h ' : ''}${mn} min`;
     if (left > 0) return `<button class="${cls}" data-action="${act}">🚦 ${act === 'm-again' ? 'Nouvelle course' : 'Lancer la course'} · ${left}/${F1.store.racesPerDay()} gratuite${left > 1 ? 's' : ''}</button>`;
     const cost = F1.store.extraCost(), ok = F1.store.canPayExtra();
-    return `<button class="${cls}" data-action="${act}" ${ok ? '' : 'disabled'} title="Les 3 courses gratuites reviennent dans ${refill}">Course supplémentaire · ${fmt(cost)} jetons</button><div class="muted" style="font-size:12px;margin-top:6px;text-align:center">0/${F1.store.racesPerDay()} gratuite · recharge dans ${refill}${ok ? '' : ' · solde de jetons insuffisant'}</div>`;
+    return `<button class="${cls}" data-action="${act}" ${ok ? '' : 'disabled'} title="Les 3 courses gratuites reviennent dans ${refill}">Course supplémentaire · ${jt(cost)}</button><div class="muted" style="font-size:12px;margin-top:6px;text-align:center">0/${F1.store.racesPerDay()} gratuite · recharge dans ${refill}${ok ? '' : ' · solde de jetons insuffisant'}</div>`;
   }
   const F1_ICON = '<svg class="f1-ico" viewBox="0 0 64 24" aria-hidden="true"><path fill="currentColor" d="M8 15.2 10 10.6 22 9 24.6 6.4H29l2.2 3.2 12.6 2 12.4 2 6 2.2V17H8Z"/><path fill="currentColor" d="M1.5 2.5h10V5.6H5.6V15.4H1.5Z"/><path fill="currentColor" d="M49 18.2h14.5v2.2H49Z"/><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" d="M31.2 9.7Q36.4 4.6 42.4 10.9"/><circle fill="currentColor" cx="15.2" cy="17.4" r="4.7"/><circle fill="currentColor" cx="48" cy="17.4" r="4.7"/><circle fill="var(--f1-hub, #13171c)" cx="15.2" cy="17.4" r="1.6"/><circle fill="var(--f1-hub, #13171c)" cx="48" cy="17.4" r="1.6"/></svg>';
   // Texte lisible sur une couleur d'écurie : noir sur les couleurs claires, blanc sur les foncées
@@ -1593,14 +1597,14 @@
   function startRace() {
     const ctx = mgrCtx();
     if (!ctx.drvM || !ctx.car) return;
-    if (F1.store.racesLeft() <= 0 && !F1.store.canPayExtra()) return toast('⏳', `Courses gratuites épuisées. Une course supplémentaire coûte ${F1.store.extraCost()} jetons.`, 'err');
+    if (F1.store.racesLeft() <= 0 && !F1.store.canPayExtra()) return toast('⏳', `Courses gratuites épuisées. Une course supplémentaire coûte ${jt(F1.store.extraCost())}.`, 'err');
     const meName = (F1.social.state.me && F1.social.state.me.username) || F1.store.get().name || 'Mon écurie';
     const player = { name: meName, driver: ctx.drvM, car: ctx.car, setup: ctx.m.setup, chassisId: ctx.ch.id };
     const seed = MG().hash(`${Date.now()}-${Math.random()}`);
     // la météo de la course est celle annoncée par le bulletin ; la course est décomptée dès le départ
     const R = MG().createRace({ player, bots: ctx.bots, race: ctx.race, seed, wxSeed: ctx.m.next.seed, startTyre: ctx.m.next.tyre, plan: ctx.m.next.plan, manual: true, news: F1.news ? F1.news.teamMods() : null });
     let bill; try { bill = F1.store.consumeRace(); } catch (err) { return toast('⚠️', esc(err.message), 'err'); }
-    if (bill.paid) toast('🟡', `Course supplémentaire : −${bill.paid} jetons`, 'win');
+    if (bill.paid) toast('🟡', `Course supplémentaire : −${jt(bill.paid)}`, 'win');
     showRace(R, ctx);
   }
   function showRace(res, ctx) {
@@ -1787,7 +1791,7 @@
           <div class="table-wrap"><table class="tbl db-tbl"><thead><tr><th>Pos</th><th>Écurie</th><th class="r">Écart</th></tr></thead><tbody>${rows}</tbody></table></div></section>
         <div class="db-side"><section class="db-card"><header><span>Grand Prix Hebdomadaire</span></header>
           <div class="db-money"><div><small>Meilleur temps</small><b>${w && w.bestTime != null ? MG().fmtRaceTime(w.bestTime) : '—'}</b></div><div><small>Tentatives restantes</small><b>${rec.left} / ${MG().WEEKLY_ATTEMPTS}</b></div><div><small>Classement général</small><b id="wkRank">…</b></div></div>
-          <div class="db-stats">${rec.prime ? `<span class="chip gold">+${rec.prime} PitCoins : premier chrono de la semaine</span>` : ''}${rec.xp ? `<span class="chip green">+${rec.xp} XP de participation</span>` : ''}<span class="chip">Sponsors et ligue en pause pendant le Grand Prix Hebdomadaire</span></div>
+          <div class="db-stats">${rec.prime ? `<span class="chip gold">+${fmtPC(rec.prime)} : premier chrono de la semaine</span>` : ''}${rec.xp ? `<span class="chip green">+${rec.xp} XP de participation</span>` : ''}<span class="chip">Sponsors et ligue en pause pendant le Grand Prix Hebdomadaire</span></div>
           <small class="muted">À la clôture (dimanche 23 h 59), une prime de PitCoins est versée selon votre rang, et un trophée pour un top 10.</small></section></div>
         <div class="db-actions">${rec.left > 0 ? '<button class="btn ghost" data-action="wk-go">Seconde tentative</button>' : ''}<button class="btn" data-action="wk-back">Retour au Grand Prix Hebdomadaire</button></div></div>`;
       $('.race-ctl').classList.add('done');
@@ -2069,7 +2073,7 @@
       const rk = online ? await F1.social.weeklyRank(past.weekId, past.bestTime).catch((e) => (e.missing ? { missing: true } : null)) : null;
       if (online && !rk) return;   // classement momentanément indisponible : on réessaiera plus tard plutôt que de verser la prime minimale
       const got = F1.store.claimWeeklyGP(rk && rk.rank, rk && rk.total);   // sans classement en ligne : prime de participation
-      if (got) { toast('🏆', `Grand Prix Hebdomadaire ${esc(past.weekId)} : ${got.rank ? `${got.rank}${got.rank === 1 ? 'er' : 'e'} sur ${got.total}` : 'chrono validé'} · +${got.prize} PitCoins${got.rank && got.rank <= 10 ? ' et un trophée' : ''}`, 'win', 6000); if (got.rank && got.rank <= 3) confetti(160); }
+      if (got) { toast('🏆', `Grand Prix Hebdomadaire ${esc(past.weekId)} : ${got.rank ? `${got.rank}${got.rank === 1 ? 'er' : 'e'} sur ${got.total}` : 'chrono validé'} · +${fmtPC(got.prize)}${got.rank && got.rank <= 10 ? ' et un trophée' : ''}`, 'win', 6000); if (got.rank && got.rank <= 3) confetti(160); }
     } finally { claiming = false; }
   }
   async function mountWeekly() {
@@ -2191,7 +2195,7 @@
       <div class="slip-body">${n ? S.slip.map((l) => `<div class="sleg ${conf.has(l.sid) ? 'conflict' : ''}"><button class="x" data-action="rm" data-sid="${esc(l.sid)}" aria-label="Retirer">✕</button><div class="sl">${l.teamId ? `<span class="tstripe" style="background:${tcol(l.teamId)};display:inline-block;height:12px;margin-right:6px"></span>` : ''}${esc(l.label)}</div><div class="srow"><span class="sm">${esc(l.mtitle)}</span><span class="so">${fmtOdds(l.odds)}</span></div></div>`).join('')
         : '<div class="slip-empty"><div class="ic">🎟️</div><b>Votre ticket est vide</b><br>Cliquez sur une cote pour l\'ajouter.<br><br><span style="font-size:13px">Astuce : combinez plusieurs sélections pour multiplier les cotes.</span></div>'}</div>
       ${n ? `<div class="slip-f"><div class="sum"><span>${S.mode === 'single' ? 'Mise par sélection' : 'Mise'}</span><span>Solde ${coin}<b>${fmtJ(bal)}</b></span></div>
-        <label class="stake"><span class="coin sm">J</span><input id="stakeIn" type="number" inputmode="decimal" min="1" step="1" value="${stake}"><span class="muted" style="padding-right:8px">jetons</span></label>
+        <label class="stake">${coin}<input id="stakeIn" type="number" inputmode="decimal" min="1" step="1" value="${stake}"><span class="muted" style="padding-right:8px">jetons</span></label>
         <div class="chips"><button data-action="stake" data-v="10">+10</button><button data-action="stake" data-v="50">+50</button><button data-action="stake" data-v="100">+100</button><button data-action="stake" data-v="max">Max</button></div>
         ${S.mode === 'combo' ? `<div class="sum"><span>Cote totale</span><b style="color:var(--gold);font-size:18px">${fmtOdds(Math.round(totalOdds * 100) / 100)}</b></div>` : `<div class="sum"><span>Mise totale</span><b>${fmtJ(totalStake)}</b></div>`}
         <div class="sum big"><span>Gain potentiel</span><b>${fmtJ(Math.round(gain * 100) / 100)}</b></div>
@@ -2348,9 +2352,9 @@
       case 'chart-toggle': { const k = a.dataset.k; S.chartHidden.has(k) ? S.chartHidden.delete(k) : S.chartHidden.add(k); a.classList.toggle('off'); const g = $(`#chartWrap g[data-k="${CSS.escape(k)}"]`); if (g) g.style.display = S.chartHidden.has(k) ? 'none' : ''; break; }
       case 'gptab': S.gpTab = a.dataset.t; route(); break;
       case 'betstab': S.betsTab = a.dataset.t; route(); break;
-      case 'claim': { const g = F1.store.claimWeekly(S.season, S.season.next); if (g) { toast('🎁', `+${g} jetons crédités !`, 'win'); confetti(100); showAchievements(); route(); } break; }
-      case 'claim-season': { const g = F1.store.claimSeason(S.season); if (g) { toast('🎆', `+${g} jetons pour la saison ${S.season.year} !`, 'win'); confetti(160); route(); } break; }
-      case 'rescue': { const g = F1.store.rescue(S.season, S.season.next); if (g) { toast('⛽', `Ravitaillement : +${g} jetons`, 'win'); route(); } break; }
+      case 'claim': { const g = F1.store.claimWeekly(S.season, S.season.next); if (g) { toast('🎁', `+${jt(g)} crédités !`, 'win'); confetti(100); showAchievements(); route(); } break; }
+      case 'claim-season': { const g = F1.store.claimSeason(S.season); if (g) { toast('🎆', `+${jt(g)} pour la saison ${S.season.year} !`, 'win'); confetti(160); route(); } break; }
+      case 'rescue': { const g = F1.store.rescue(S.season, S.season.next); if (g) { toast('⛽', `Ravitaillement : +${jt(g)}`, 'win'); route(); } break; }
       case 'profile': profile(); break;
       case 'credits': credits(); break;
       case 'm-buy-d': { const ctx = mgrCtx(); const d0 = ctx.mk.byDriver.get(a.dataset.id); const d = { ...d0, price: MG().valueOfDriver(MG().withExperience(d0, ctx.m.drvXp)) }; try { F1.store.buyDriver(d, resaleD(ctx)); toast('🤝', `<b>${esc(d.name)}</b> rejoint votre écurie !`, 'win'); confetti(80); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
@@ -2385,7 +2389,7 @@
         } catch (err) { toast('⚠️', esc(err.message), 'err'); }
         break;
       }
-      case 'obj-claim': { try { const pc = F1.store.claimObjective(a.dataset.id, mgrCtx().league.mult); toast('🎯', `Objectif rempli : +${pc} PitCoins`, 'win'); confetti(60); showAchievements(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
+      case 'obj-claim': { try { const pc = F1.store.claimObjective(a.dataset.id, mgrCtx().league.mult); toast('🎯', `Objectif rempli : +${fmtPC(pc)}`, 'win'); confetti(60); showAchievements(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'm-up': { const k = a.dataset.k; const lvl = F1.store.mgr().ups[k] || 0; try { F1.store.upgrade(k, MG().upCost(lvl)); const st = MG().STATS.find((x) => x.k === k); toast('🔬', `${st.icon} ${esc(st.label)} : niveau ${lvl + 1} !`, 'win'); showAchievements(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'm-race': startRace(); break;
       case 'm-again': closeModal(); setTimeout(startRace, 50); break;
