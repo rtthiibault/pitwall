@@ -609,3 +609,12 @@ html.race-lock, html.race-lock body { overflow: hidden !important; overscroll-be
 .pdw-strip .pdw-ico { width: 24px; height: 15px; }
 .pdw-strip.neg b.num { color: #ff9b94; } .pdw-strip.pos b.num { color: var(--win); }
 .pdw-go { margin-left: auto; color: var(--pw); font-size: 12.5px; }
+
+/* Endurance pas encore ouverte : banderole « Coming soon » en travers de l'icône */
+.series-tile.soon[disabled] { opacity: 1; }
+.series-tile.soon .series-ic { position: relative; overflow: hidden; }
+.series-tile.soon .series-ic svg { opacity: .35; }
+.series-tile.soon b, .series-tile.soon small { opacity: .55; }
+.soon-band { position: absolute; left: -30%; right: -30%; top: 50%; transform: translateY(-50%) rotate(-16deg); z-index: 2; text-align: center;
+  background: var(--pw, #ffa51f); color: #111; font-style: normal; font-size: 7.5px; font-weight: 800; letter-spacing: .05em; white-space: nowrap; text-transform: uppercase; line-height: 1; padding: 3px 0; box-shadow: 0 1px 4px rgba(0,0,0,.5); pointer-events: none; }
+.series-tile.soon:hover { transform: none; }

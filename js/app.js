@@ -77,13 +77,14 @@
     pickSeries();
   }
   function pickSeries() {
-    if (S.series === 'wec' && !S.wec) S.series = 'f1';
+    if (S.series === 'wec' && (!S.wec || WEC_LOCKED)) S.series = 'f1';
     S.season = S.series === 'wec' ? S.wec : S.f1;
     S.other = S.series === 'wec' ? S.f1 : S.wec;
     document.body.classList.toggle('wec', S.series === 'wec');
   }
+  const WEC_LOCKED = true;
   function setSeries(k) {
-    if (k === S.series || (k === 'wec' && !S.wec)) return;
+    if (k === S.series || (k === 'wec' && (!S.wec || WEC_LOCKED))) return;
     S.series = k;
     try { localStorage.setItem('pitwall:series', k); } catch (e) { /* */ }
     const swap = () => {
@@ -436,8 +437,9 @@
 
   /* =================== Accueil =================== */
   // Sélecteur de championnat (pictogrammes originaux, pas les logos officiels)
+  // Endurance (WEC) : page conservée mais pas encore ouverte au public
   function seriesSwitch() {
-    const tile = (k, name, sub, svg) => `<button class="series-tile ${S.series === k ? 'on' : ''}" data-action="series" data-s="${k}" ${k === 'wec' && !S.wec ? 'disabled' : ''} aria-pressed="${S.series === k}"><span class="series-ic ${k}">${svg}${S.series === k ? '<i class="series-ck">✓</i>' : ''}</span><b>${name}</b><small>${sub}</small></button>`;
+    const tile = (k, name, sub, svg) => { const lock = k === 'wec' && WEC_LOCKED; return `<button class="series-tile ${S.series === k ? 'on' : ''} ${lock ? 'soon' : ''}" data-action="series" data-s="${k}" ${k === 'wec' && (!S.wec || lock) ? 'disabled' : ''} ${lock ? 'title="Endurance : bientôt disponible"' : ''} aria-pressed="${S.series === k}"><span class="series-ic ${k}">${lock ? '<i class="soon-band">Coming soon</i>' : ''}${svg}${S.series === k ? '<i class="series-ck">✓</i>' : ''}</span><b>${name}</b><small>${lock ? 'Bientôt disponible' : sub}</small></button>`; };
     const f1 = '<svg viewBox="0 0 64 64"><path d="M8 44 L20 24 H44 L40 31 H25 L22 36 H36 L32 43 H18 L17.5 44Z M46 24 H58 L46 44 H34Z" fill="#fff"/><path d="M8 50 H50" stroke="#fff" stroke-width="2.5" stroke-dasharray="7 4" opacity=".65"/></svg>';
     const wec = '<svg viewBox="0 0 64 64"><circle cx="32" cy="30" r="17" fill="none" stroke="#fff" stroke-width="3"/><path d="M32 30 V19 M32 30 L40 35" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M32 9 V13 M53 30 H49 M11 30 H15" stroke="#fff" stroke-width="2.5"/><text x="32" y="60" text-anchor="middle" font-size="12" font-weight="900" font-style="italic" fill="#fff" font-family="Titillium Web, sans-serif" letter-spacing="1.5">24H</text></svg>';
     return `<div class="series-sw">${tile('f1', 'Formule 1', S.f1 ? `Saison ${S.f1.year}` : '', f1)}${tile('wec', 'WEC', S.wec ? `Endurance ${S.wec.year}` : 'Indisponible', wec)}</div>`;
