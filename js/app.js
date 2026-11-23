@@ -65,7 +65,7 @@
     setInterval(refresh, 15 * 60 * 1000);
     F1.data.onLive(() => setTimeout(refresh, 200));
     if (F1.news) {
-      F1.news.onChange(() => { computeMarkets(); renderSlip(); if (!document.documentElement.classList.contains('race-lock') && /^(#\/?)?$|^#\/(paris|paddock)/.test(location.hash)) route(); });
+      F1.news.onChange(() => { computeMarkets(); renderSlip(); if (!document.documentElement.classList.contains('race-lock') && /^(#\/?)?$|^#\/(paris|paddock|ligues)/.test(location.hash)) route(); });
       let pwLast = Date.now();
       setInterval(() => { const n = F1.news.nextAt(); if (!document.hidden && n && Date.now() > n + 60e3 && Date.now() - pwLast > 120e3) { pwLast = Date.now(); F1.news.load(true); } }, 30e3);
     } // l'API live a répondu après l'affichage : mise à jour en arrière-plan
@@ -312,7 +312,7 @@
     const closed = m && isClosed(m);
     const color = x.teamId ? tcol(x.teamId) : 'var(--gold)';
     const lbl = label != null ? label : `${x.teamId ? `<span class="tstripe" style="background:${color}"></span>` : ''}${esc(x.label)}`;
-    return `<button class="odd ${compact ? 'compact' : ''} ${on ? 'on' : ''} ${cls}" data-sid="${esc(x.sid)}" ${closed ? 'disabled' : ''} title="${esc(x.mtitle)} — ${esc(x.label)} · probabilité estimée ${pct(x.prob)}">${compact ? '' : `<span class="lbl">${lbl}</span>`}<span class="o">${fmtOdds(x.odds)}</span>${x.news ? `<span class="pdw-odd ${x.news > 1 ? 'up' : 'dn'}" title="Paddock Wire : cote ${x.news > 1 ? '+' : ''}${Math.round((x.news - 1) * 100)} % sous l'effet de l'actualité">${x.news > 1 ? '▲' : '▼'}</span>` : ''}${compact ? '' : `<span class="bar" style="width:${Math.min(100, x.prob * 100)}%;color:${color}"></span>`}</button>`;
+    return `<button class="odd ${compact ? 'compact' : ''} ${on ? 'on' : ''} ${cls}" data-sid="${esc(x.sid)}" ${closed ? 'disabled' : ''} title="${esc(x.mtitle)} — ${esc(x.label)} · probabilité estimée ${pct(x.prob)}">${compact ? '' : `<span class="lbl">${lbl}</span>`}<span class="o">${fmtOdds(x.odds)}</span>${x.news ? `<span class="pdw-odd ${x.news > 1 ? 'up' : 'dn'}" title="Paddock Wire : cote ${x.news > 1 ? 'en hausse' : 'en baisse'} de ${Math.abs(Math.round((x.news - 1) * 100))} % sous l'effet de l'actualité">${x.news > 1 ? '▲' : '▼'}</span>` : ''}${compact ? '' : `<span class="bar" style="width:${Math.min(100, x.prob * 100)}%;color:${color}"></span>`}</button>`;
   }
   function closeChip(m) {
     if (!m.closes) return '';
@@ -899,18 +899,31 @@
     quali: { label: 'Qualifications', exact: [10, 8, 6], podium: 3, perfect: 5 },
     race: { label: 'Course', exact: [25, 18, 15], podium: 5, perfect: 15 },
   };
-  function podiumScore(pick, top, k) {
+  /* Prime de risque : chaque pilote bien placé rapporte ses points × un coefficient tiré de sa cote « podium »
+     figée à l'enregistrement du pronostic (cote 1,5 ou moins : ×1 ; cote 6 : ×2 ; plafond ×3 dès la cote 13,5).
+     La cote intègre l'effet des dépêches Paddock Wire. Le bonus « podium parfait » n'est pas multiplié. */
+  const riskK = (o) => (o > 1 ? Math.min(3, Math.max(1, Math.sqrt(o / 1.5))) : 1);
+  const fmtK = (k) => '×' + k.toFixed(k >= 2.95 ? 0 : 1).replace('.', ',');
+  function podiumScore(pick, top, k, odds) {
     if (!pick || !top || top.length < 3) return null;
     const B = PODIUM[k]; let pts = 0, exact = 0;
-    pick.forEach((d, i) => { if (d === top[i]) { pts += B.exact[i]; exact++; } else if (top.includes(d)) pts += B.podium; });
+    pick.forEach((d, i) => { const m = riskK(odds && odds[i]); if (d === top[i]) { pts += Math.round(B.exact[i] * m); exact++; } else if (top.includes(d)) pts += Math.round(B.podium * m); });
     return exact === 3 ? pts + B.perfect : pts;
   }
+  // Cote « podium » de chaque pilote pour le Grand Prix à venir (marché des Paris, actualité Paddock Wire comprise)
+  function podOdds() {
+    const m = (S.markets || []).find((x) => x.kind === 'podium'); const out = new Map();
+    if (m) m.selections.forEach((x) => out.set(x.driverId, { odds: x.odds, news: x.news || 1 }));
+    return out;
+  }
+  // Flèche de tendance : rouge ▲ quand l'actualité fait monter la cote, vert ▼ quand elle la fait baisser
+  const oddArrow = (news, withPct) => (!news || Math.abs(news - 1) < 0.005 ? '' : `<i class="odd-mv ${news > 1 ? 'up' : 'dn'}" title="Paddock Wire : cote ${news > 1 ? 'en hausse' : 'en baisse'} de ${Math.abs(Math.round((news - 1) * 100))} %">${news > 1 ? '▲' : '▼'}${withPct ? Math.abs(Math.round((news - 1) * 100)) + ' %' : ''}</i>`);
   const sessionStart = (race, k) => (k === 'quali' ? race.qualiDate || ((race.sessions || []).find((x) => x.key === 'quali') || {}).date : race.date) || null;
   const actualTop = (race, k) => { const arr = k === 'quali' ? race.qualifying : race.results; if (!arr || arr.length < 3) return null; return arr.filter((x) => x.pos > 0).sort((a, b) => a.pos - b.pos).slice(0, 3).map((x) => x.driverId); };
   const PKEY = 'pitwall:podium';
   const localPicks = () => { try { return JSON.parse(localStorage.getItem(PKEY)) || {}; } catch (e) { return {}; } };
   const pkKey = (y, r, k) => `${y}-${r}-${k}`;
-  function setLocalPick(y, r, k, picks) { const o = localPicks(); o[pkKey(y, r, k)] = { p: picks, t: Date.now() }; try { localStorage.setItem(PKEY, JSON.stringify(o)); } catch (e) { /* stockage indisponible */ } }
+  function setLocalPick(y, r, k, picks, odds) { const o = localPicks(); o[pkKey(y, r, k)] = { p: picks, t: Date.now(), o: odds || null }; try { localStorage.setItem(PKEY, JSON.stringify(o)); } catch (e) { /* stockage indisponible */ } }
   const untilTxt = (ms) => { const d = Math.floor(ms / 864e5), h = Math.floor((ms % 864e5) / 36e5), mn = Math.floor((ms % 36e5) / 6e4); return d ? `${d} j ${h} h` : h ? `${h} h ${mn} min` : `${Math.max(1, mn)} min`; };
   // Grand Prix du moment : le prochain ; sinon le dernier disputé
   const leagueGp = () => { const f1 = S.f1 || S.season; return f1.next || [...f1.races].reverse().find((r) => r.results) || null; };
@@ -918,22 +931,26 @@
   const drvTag = (id, cls = '') => { const d = drvOf(id); return `<span class="pd-tag ${cls}" style="--tc:${F1.teamColor(d.teamId)}">${esc(d.code || '?')}</span>`; };
   function podiumCard(gp, k, y) {
     const st = sessionStart(gp, k), locked = !st || Date.now() >= st.getTime();
-    const saved = (localPicks()[pkKey(y, gp.round, k)] || {}).p || null;
+    const savedE = localPicks()[pkKey(y, gp.round, k)] || {}, saved = savedE.p || null, savedO = savedE.o || null;
+    const OD = podOdds(), oddOf = (id) => (OD.get(id) || {}).odds || null;
     const draft = S.pdDraft[k];
     const dirty = !saved || draft.join() !== saved.join(), full = draft.filter(Boolean).length === 3;
-    const top = actualTop(gp, k), pts = saved && top ? podiumScore(saved, top, k) : null;
+    const top = actualTop(gp, k), pts = saved && top ? podiumScore(saved, top, k, savedO) : null;
     const f1 = S.f1 || S.season;
     const ids = (f1.entrants && f1.entrants.length ? f1.entrants : [...f1.drivers.keys()]).filter((id) => f1.drivers.has(id));
     const order = [...f1.teams.values()].sort((a, b) => (a.position || 99) - (b.position || 99)).map((t) => t.id);
     ids.sort((a, b) => order.indexOf(drvOf(a).teamId) - order.indexOf(drvOf(b).teamId));
     const show = locked ? saved || [] : draft;
-    const slots = [0, 1, 2].map((i) => { const id = show[i], d = id && drvOf(id); return `<button class="pd-slot ${id ? 'on' : ''}" ${locked ? 'disabled' : `data-action="pd-clear" data-s="${k}" data-i="${i}" title="Retirer"`} style="--tc:${d ? F1.teamColor(d.teamId) : 'var(--line2)'}"><span class="pd-step">P${i + 1}</span>${d ? `<b>${esc(d.code)}</b><small>${esc(d.family)}</small>` : '<em>Choisir un pilote</em>'}${top ? `<i class="pd-real">${drvTag(top[i])}</i>` : ''}</button>`; }).join('');
-    const picker = locked ? '' : `<div class="pd-grid">${ids.map((id) => { const d = drvOf(id), used = draft.includes(id); return `<button class="pd-drv ${used ? 'used' : ''}" data-action="pd-pick" data-s="${k}" data-d="${esc(id)}" style="--tc:${F1.teamColor(d.teamId)}"><b>${esc(d.code)}</b><small>${esc(d.family)}</small></button>`; }).join('')}</div>`;
+    // cote retenue pour chaque marche : celle figée à l'enregistrement, sinon la cote du moment
+    const oddAt = (i) => (locked || (saved && !dirty) ? (savedO && savedO[i]) : oddOf(show[i])) || null;
+    const slots = [0, 1, 2].map((i) => { const id = show[i], d = id && drvOf(id), o = id ? oddAt(i) : null, m = riskK(o); return `<button class="pd-slot ${id ? 'on' : ''}" ${locked ? 'disabled' : `data-action="pd-clear" data-s="${k}" data-i="${i}" title="Retirer"`} style="--tc:${d ? F1.teamColor(d.teamId) : 'var(--line2)'}"><span class="pd-step">P${i + 1}</span>${d ? `<b>${esc(d.code)}</b><small>${esc(d.family)}</small>${o ? `<span class="pd-k ${m >= 2 ? 'hi' : m > 1.05 ? 'mid' : ''}">cote ${fmtOdds(o)} · ${fmtK(m)}</span>` : ''}` : '<em>Choisir un pilote</em>'}${top ? `<i class="pd-real">${drvTag(top[i])}</i>` : ''}</button>`; }).join('');
+    const maxPts = show.filter(Boolean).length === 3 ? [0, 1, 2].reduce((a, i) => a + Math.round(PODIUM[k].exact[i] * riskK(oddAt(i))), 0) + PODIUM[k].perfect : 0;
+    const picker = locked ? '' : `<div class="pd-grid">${ids.map((id) => { const d = drvOf(id), used = draft.includes(id), od = OD.get(id); return `<button class="pd-drv ${used ? 'used' : ''}" data-action="pd-pick" data-s="${k}" data-d="${esc(id)}" style="--tc:${F1.teamColor(d.teamId)}"><b>${esc(d.code)}</b><small>${esc(d.family)}</small>${od ? `<span class="pd-odd num">${fmtOdds(od.odds)}${oddArrow(od.news)}</span>` : ''}</button>`; }).join('')}</div>`;
     const status = locked
       ? (top ? `<span>Résultat officiel à droite de chaque marche</span>${pts != null ? `<b class="pd-pts">+${pts} pts</b>` : '<span class="muted">Pas de pronostic</span>'}` : `<span>🔒 Verrouillé depuis le ${DTF.format(st)}${saved ? '' : ' · aucun pronostic'}</span>`)
-      : `<span>Verrouillage dans <b>${untilTxt(st.getTime() - Date.now())}</b> (${DTF.format(st)})</span><button class="btn sm" data-action="pd-save" data-s="${k}" ${full && dirty ? '' : 'disabled'}>${saved && !dirty ? 'Enregistré ✓' : 'Enregistrer'}</button>`;
+      : `<span>Verrouillage dans <b>${untilTxt(st.getTime() - Date.now())}</b> (${DTF.format(st)})${maxPts ? ` · podium exact : <b class="pd-max">${maxPts} pts</b>` : ''}</span><button class="btn sm" data-action="pd-save" data-s="${k}" ${full && dirty ? '' : 'disabled'}>${saved && !dirty ? 'Enregistré ✓' : 'Enregistrer'}</button>`;
     return `<section class="pd-card ${locked ? 'locked' : ''}"><div class="pd-h"><b>${PODIUM[k].label}</b><small class="muted">exact ${PODIUM[k].exact.join(' / ')} · sur le podium +${PODIUM[k].podium} · podium parfait +${PODIUM[k].perfect}</small></div>
-      <div class="pd-slots">${slots}</div>${picker}<div class="pd-foot">${status}</div></section>`;
+      <div class="pd-slots">${slots}</div>${picker}<div class="pd-foot">${status}</div>${locked ? '' : '<small class="pd-risk">Plus la cote d\'un pilote est haute, plus il rapporte : jusqu\'à ×3. Les cotes bougent avec les dépêches Paddock Wire (▲ rouge : en hausse, ▼ vert : en baisse) et sont figées quand vous enregistrez.</small>'}</section>`;
   }
   function pageLeagues(parts) {
     const so = SO(), gp = leagueGp(), y = (S.f1 || S.season).year;
@@ -986,10 +1003,10 @@
       try { picks = await F1.social.podiumPicks(members.map((p) => p.id), y); } catch (e) { if (e.missing) podMissing = true; else throw e; }
       if (!$('#lgBoard')) return;
       const lp = localPicks();
-      const pickOf = (uid, round, k) => { const r = picks.find((x) => x.user_id === uid && x.round === round && x.session === k); if (r) return { p: [r.p1, r.p2, r.p3], at: new Date(r.updated_at) }; if (uid === me && lp[pkKey(y, round, k)]) return { p: lp[pkKey(y, round, k)].p, at: new Date(lp[pkKey(y, round, k)].t), local: true }; return null; };
+      const pickOf = (uid, round, k) => { const r = picks.find((x) => x.user_id === uid && x.round === round && x.session === k); if (r) return { p: [r.p1, r.p2, r.p3], o: [r.o1, r.o2, r.o3].map(Number), at: new Date(r.updated_at) }; if (uid === me && lp[pkKey(y, round, k)]) return { p: lp[pkKey(y, round, k)].p, o: lp[pkKey(y, round, k)].o, at: new Date(lp[pkKey(y, round, k)].t), local: true }; return null; };
       const done = f1.races.filter((r) => r.results);
       const last = done[done.length - 1] || null;
-      const ptsOf = (uid, race, k) => { const pk = pickOf(uid, race.round, k), top = actualTop(race, k), st = sessionStart(race, k); if (!pk || !top) return null; if (st && pk.at > st && !pk.local) return 0; return podiumScore(pk.p, top, k); };
+      const ptsOf = (uid, race, k) => { const pk = pickOf(uid, race.round, k), top = actualTop(race, k), st = sessionStart(race, k); if (!pk || !top) return null; if (st && pk.at > st && !pk.local) return 0; return podiumScore(pk.p, top, k, pk.o); };
       const rows = members.map((p) => {
         let total = 0; done.forEach((r) => { total += (ptsOf(p.id, r, 'quali') || 0) + (ptsOf(p.id, r, 'race') || 0); });
         const lastPts = last ? (ptsOf(p.id, last, 'quali') || 0) + (ptsOf(p.id, last, 'race') || 0) : 0;
@@ -1017,7 +1034,7 @@
       <div class="card" style="margin-top:12px">${bareme()}<div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn sm ghost" data-action="lg-leave" data-id="${sel.id}">Quitter la ligue</button></div></div>`;
     } catch (e) { if ($('#lgBoard')) board.innerHTML = `<div class="notice red">⚠️ ${esc(e.message)}</div>`; }
   }
-  const bareme = () => `<div class="pd-bareme"><b>Barème</b>${['race', 'quali'].map((k) => `<div><span>${PODIUM[k].label}</span><span>P1 exact +${PODIUM[k].exact[0]} · P2 exact +${PODIUM[k].exact[1]} · P3 exact +${PODIUM[k].exact[2]} · pilote sur le podium à une autre marche +${PODIUM[k].podium} · podium parfait dans l'ordre +${PODIUM[k].perfect}</span></div>`).join('')}<small class="muted">Un pronostic modifié après le début de la session ne rapporte rien.</small></div>`;
+  const bareme = () => `<div class="pd-bareme"><b>Barème</b>${['race', 'quali'].map((k) => `<div><span>${PODIUM[k].label}</span><span>P1 exact +${PODIUM[k].exact[0]} · P2 exact +${PODIUM[k].exact[1]} · P3 exact +${PODIUM[k].exact[2]} · pilote sur le podium à une autre marche +${PODIUM[k].podium} · podium parfait dans l'ordre +${PODIUM[k].perfect}</span></div>`).join('')}<div><span>Prime de risque</span><span>chaque pilote bien placé rapporte ses points × un coefficient lié à sa cote podium au moment du pronostic : ×1 jusqu'à la cote 1,5, ×2 à la cote 6, ×3 au maximum (cote 13,5 et plus). Le bonus du podium parfait n'est pas multiplié.</span></div><small class="muted">Un pronostic modifié après le début de la session ne rapporte rien.</small></div>`;
   // Rafraîchit seulement les deux cartes de pronostics (pas toute la page)
   function pdRefresh() { const c = $('.pd-cards'), gp = leagueGp(); if (!c || !gp) return route(); const y = (S.f1 || S.season).year; c.innerHTML = podiumCard(gp, 'quali', y) + podiumCard(gp, 'race', y); }
   // Envoie au serveur les pronostics gardés sur l'appareil (session pas encore commencée)
@@ -2408,9 +2425,10 @@
         const k = a.dataset.s, gp = leagueGp(), y = (S.f1 || S.season).year, picks = S.pdDraft[k].slice(), st = sessionStart(gp, k);
         if (picks.filter(Boolean).length !== 3) break;
         if (!st || Date.now() >= st.getTime()) { toast('🔒', 'Session commencée : pronostics verrouillés', 'err'); route(); break; }
-        setLocalPick(y, gp.round, k, picks);
+        const OD = podOdds(), odds = picks.map((id) => { const o = OD.get(id); return o ? Math.round(Math.min(50, o.odds) * 100) / 100 : null; });
+        setLocalPick(y, gp.round, k, picks, odds);
         const so = SO();
-        if (so.ready && so.me) F1.social.savePodium(y, gp.round, k, picks, st).then(() => toast('✅', `Pronostic ${PODIUM[k].label.toLowerCase()} enregistré pour toutes vos ligues`, 'win')).catch((e) => toast('💾', e.missing ? 'Pronostic gardé sur cet appareil (pronostics partagés pas encore activés sur ce site)' : esc(e.message), e.missing ? 'win' : 'err'));
+        if (so.ready && so.me) F1.social.savePodium(y, gp.round, k, picks, st, odds).then(() => toast('✅', `Pronostic ${PODIUM[k].label.toLowerCase()} enregistré pour toutes vos ligues`, 'win')).catch((e) => toast('💾', e.missing ? 'Pronostic gardé sur cet appareil (pronostics partagés pas encore activés sur ce site)' : esc(e.message), e.missing ? 'win' : 'err'));
         else toast('💾', 'Pronostic enregistré sur cet appareil', 'win');
         pdRefresh(); break;
       }

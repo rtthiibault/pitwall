@@ -9,12 +9,17 @@ create table if not exists public.podium_picks (
   round int not null,
   session text not null check (session in ('quali', 'race')),
   p1 text not null, p2 text not null, p3 text not null,
+  o1 numeric, o2 numeric, o3 numeric,          -- cotes « podium » figées à l'enregistrement (prime de risque, ×1 à ×3)
   lock_at timestamptz not null,               -- début de la session : plus aucune modification ensuite
   updated_at timestamptz not null default now(),
   primary key (user_id, season, round, session),
   check (p1 <> p2 and p1 <> p3 and p2 <> p3)
 );
 create index if not exists podium_picks_season on public.podium_picks (season, round);
+-- (si la table existait déjà sans les cotes)
+alter table public.podium_picks add column if not exists o1 numeric;
+alter table public.podium_picks add column if not exists o2 numeric;
+alter table public.podium_picks add column if not exists o3 numeric;
 
 -- Garde-fou côté serveur : horodatage par le serveur, heure de verrouillage figée à la première saisie,
 -- refus de toute saisie ou modification une fois la session commencée.
@@ -27,6 +32,8 @@ begin
   end if;
   if now() >= new.lock_at then raise exception 'Pronostics verrouillés : la session a commencé'; end if;
   if new.lock_at > now() + interval '14 days' then raise exception 'Les pronostics ouvrent 14 jours avant la session'; end if;
+  -- cotes plausibles uniquement (la prime de risque est plafonnée à ×3 par le site)
+  if coalesce(new.o1, 1.01) not between 1.01 and 50 or coalesce(new.o2, 1.01) not between 1.01 and 50 or coalesce(new.o3, 1.01) not between 1.01 and 50 then raise exception 'Cote invalide'; end if;
   new.updated_at := now();
   return new;
 end $$;

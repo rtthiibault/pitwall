@@ -192,8 +192,9 @@
   }
 
   /* ---------- Pronostics podium des ligues (supabase/migration-podium.sql) ---------- */
-  async function savePodium(season, round, session, picks, lockAt) {
-    const row = { user_id: S.user.id, season, round, session, p1: picks[0], p2: picks[1], p3: picks[2], lock_at: new Date(lockAt).toISOString() };
+  async function savePodium(season, round, session, picks, lockAt, odds) {
+    const o = (i) => (odds && odds[i] > 1 ? Math.min(50, odds[i]) : null);
+    const row = { user_id: S.user.id, season, round, session, p1: picks[0], p2: picks[1], p3: picks[2], o1: o(0), o2: o(1), o3: o(2), lock_at: new Date(lockAt).toISOString() };
     const r = await S.client.from('podium_picks').upsert(row, { onConflict: 'user_id,season,round,session' }).select().maybeSingle();
     if (r.error && /podium_picks|does not exist|schema cache|42P01|PGRST20[02]/i.test((r.error.message || '') + (r.error.code || ''))) { const x = new Error('PODIUM_MISSING'); x.missing = true; throw x; }
     fail(r.error);
@@ -201,7 +202,7 @@
   }
   async function podiumPicks(ids, season) {
     if (!ids.length) return [];
-    const r = await S.client.from('podium_picks').select('user_id,round,session,p1,p2,p3,lock_at,updated_at').eq('season', season).in('user_id', ids);
+    const r = await S.client.from('podium_picks').select('user_id,round,session,p1,p2,p3,o1,o2,o3,lock_at,updated_at').eq('season', season).in('user_id', ids);
     if (r.error && /podium_picks|does not exist|schema cache|42P01|PGRST20[02]/i.test((r.error.message || '') + (r.error.code || ''))) { const x = new Error('PODIUM_MISSING'); x.missing = true; throw x; }
     fail(r.error);
     return r.data || [];

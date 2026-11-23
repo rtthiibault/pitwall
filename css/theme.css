@@ -603,7 +603,8 @@ html.race-lock, html.race-lock body { overflow: hidden !important; overscroll-be
 .pdw-mini-imp.neg { color: #ff9b94; } .pdw-mini-imp.pos { color: var(--win); }
 /* Cotes touchées par l'actualité */
 .odd { position: relative; }
-.pdw-odd { position: absolute; top: 2px; right: 3px; font-size: 8px; line-height: 1; color: var(--pw); }
+.pdw-odd { position: absolute; top: 3px; right: 5px; font-size: 12px; line-height: 1; font-style: normal; }
+.pdw-odd.up { color: #ff5b55; } .pdw-odd.dn { color: #3fcf78; }
 /* QG F1 Manager */
 .pdw-strip { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; padding: 8px 12px; margin-bottom: 10px; border: 1px solid var(--pw-line); border-radius: var(--radius-s); background: var(--pw-dim); color: var(--text); font-size: 13.5px; text-decoration: none; }
 .pdw-strip .pdw-ico { width: 24px; height: 15px; }
@@ -839,3 +840,14 @@ html.low .trr-eq.talking i { animation: none; height: 9px; }
 /* pictogramme F1 Manager (tracé au trait, blanc) */
 .f1-ico { color: #fff; overflow: visible; }
 .top-right .mgr-btn .f1-ico, .nav a.nav-mgr .f1-ico { width: 40px; height: 14px; }
+
+/* Mes ligues : cotes des pilotes, tendance Paddock Wire, prime de risque */
+.odd-mv { font-style: normal; font-size: 10px; font-weight: 800; margin-left: 3px; letter-spacing: 0; }
+.odd-mv.up { color: #ff5b55; } .odd-mv.dn { color: #3fcf78; }
+.pd-drv { position: relative; }
+.pd-odd { display: block; margin-top: 3px; font-size: 12px; font-weight: 700; color: var(--text); white-space: nowrap; }
+.pd-drv.used .pd-odd { opacity: .6; }
+.pd-k { display: block; margin-top: 3px; font-size: 11px; font-weight: 650; color: var(--muted); white-space: nowrap; }
+.pd-k.mid { color: var(--gold); } .pd-k.hi { color: #ff9b4a; }
+.pd-max { color: var(--gold); }
+.pd-risk { display: block; margin-top: 8px; font-size: 12px; color: var(--muted); line-height: 1.45; }
