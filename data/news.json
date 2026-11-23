@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-23T17:06:47.563Z",
+ "updated": "2026-11-23T17:36:51.009Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-23T17:36:47.563Z",
+ "next": "2026-11-23T18:06:51.009Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -37,6 +37,18 @@
    "url": "https://www.autohebdo.fr/actualites/f1/rien-ne-va-plus-chez-ferrari-apres-le-grand-prix-de-las-vegas.html",
    "impact": null,
    "firstSeen": "2026-11-23T17:06:47.563Z"
+  },
+  {
+   "id": "news_1wsb3t5",
+   "timestamp": "2026-11-23T16:26:00.000Z",
+   "category": "PADDOCK",
+   "title": "La F1 est 'très petite' aux Etats-Unis mais Domenicali veut concurrencer la NFL et la NBA",
+   "summary": "Stefano Domenicali a relativisé l'ampleur de la F1 aux Etats-Unis, malgré les trois courses annuelles qui s'y tiennent, et le succès populaire d'Austin quand la catégorie reine du sport automobile s'y rend. Le PDG de la Formule 1 a parlé du développement de la…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/la-f1-est-tres-petite-aux-etats-unis-mais-domenicali-veut-concurrencer-la-nfl,213678.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T17:36:51.009Z"
   },
   {
    "id": "news_y47glz",
@@ -145,7 +157,7 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "impact": null,
-   "firstSeen": "2026-11-23T17:06:47.563Z"
+   "firstSeen": "2026-11-23T17:36:51.009Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -768,18 +780,6 @@
    "source": "Nextgen-Auto",
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/photos/photos-gp-de-las-vegas-de-f1-2026-avant-course,213619.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_vs09il",
-   "timestamp": "2026-11-22T07:48:15.000Z",
-   "category": "RÈGLEMENT",
-   "title": "Leclerc reconnaît une situation \"inacceptable\" après un nouvel incident avec Hamilton",
-   "summary": "Charles Leclerc a terminé le Grand Prix de Las Vegas avec une pénalité de 10 secondes pour un accrochage évitable avec son coéquipier chez Ferrari, Lewis Hamilton. Les remontrances de son directeur d'équipe, Frédéric Vasseur, résonnent encore dans ses…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/leclerc-reaction-accrochage-hamilton-las-vegas/10876792/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
    "impact": null,
    "firstSeen": "2026-11-23T10:59:50.658Z"
   }
