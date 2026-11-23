@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-23T16:36:43.989Z",
+ "updated": "2026-11-23T17:06:47.563Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-23T17:06:43.989Z",
+ "next": "2026-11-23T17:36:47.563Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,18 @@
   }
  ],
  "items": [
+  {
+   "id": "news_rnblpl",
+   "timestamp": "2026-11-23T17:00:00.000Z",
+   "category": "PADDOCK",
+   "title": "Rien ne va plus chez Ferrari après le Grand Prix de Las Vegas",
+   "summary": "Quand on porte le rouge de Ferrari, on attire forcément davantage les regards que n’importe quelle autre équipe. Arborer fièrement le Cheval cabré sur sa poitrine est un honneur auquel aspirent tous les pilotes. Après tout, « tout le monde est fan de Ferrari…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/rien-ne-va-plus-chez-ferrari-apres-le-grand-prix-de-las-vegas.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T17:06:47.563Z"
+  },
   {
    "id": "news_y47glz",
    "timestamp": "2026-11-23T16:00:03.000Z",
@@ -133,7 +145,7 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "impact": null,
-   "firstSeen": "2026-11-23T16:36:43.989Z"
+   "firstSeen": "2026-11-23T17:06:47.563Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -768,18 +780,6 @@
    "source": "Motorsport.com",
    "lang": "fr",
    "url": "https://fr.motorsport.com/f1/news/leclerc-reaction-accrochage-hamilton-las-vegas/10876792/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_1woejty",
-   "timestamp": "2026-11-22T07:32:00.000Z",
-   "category": "PADDOCK",
-   "title": "Verstappen humilie Russell : 'il est tellement loin de mon niveau'",
-   "summary": "Max Verstappen n'a pas mâché ses mots à l'encontre de George Russell après sa victoire au Grand Prix de Las Vegas. Déjà opposés lors des derniers essais libres, les deux pilotes avaient échangé des critiques particulièrement virulentes avant de se retrouver…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-humilie-russell-il-est-tellement-loin-de-mon-niveau,213649.html",
    "impact": null,
    "firstSeen": "2026-11-23T10:59:50.658Z"
   }
