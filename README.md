@@ -322,5 +322,5 @@ Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectoriel
 - **F1 Manager · Transferts** : recrutement d'un coéquipier en PitCoins ; prix et cote de performance suivent l'actualité Paddock Wire (`newsForm`, `mateValue`). Le coéquipier court la seconde voiture de l'équipe (22 voitures au total) et rapporte la moitié du barème de PitCoins selon sa position.
 - **F1 Manager · Ligues** : classement détaillé des managers (équipe, coéquipier, victoires, podiums, meilleure position, courses, points au barème F1). Nécessite `supabase/migration-profile-v2.sql`.
 - **Mes ligues (Paris)** : liste épurée des ligues ; le classement complet et les pronostics s'ouvrent avec « Voir le classement de la ligue ».
-- **Succès** : onglet dédié (à la place d'Amis, toujours accessible depuis l'en-tête), 40 succès sur tout le site avec progression, récompense en jetons à réclamer.
+- **Succès** : onglet dédié (à la place d'Amis, toujours accessible depuis l'en-tête), 39 succès sur tout le site avec progression, récompense en jetons à réclamer.
 - **Profil** (`#/profil`, clic sur l'avatar) : tableau de bord F1 Manager et Paris, activité récente, succès à la une, galerie d'avatars (`assets/avatars/`).
