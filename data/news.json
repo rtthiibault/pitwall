@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-23T12:35:31.503Z",
+ "updated": "2026-11-23T15:36:35.718Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-23T13:05:31.503Z",
+ "next": "2026-11-23T16:06:35.718Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 111
+   "n": 113
   },
   {
    "name": "F1i",
@@ -27,6 +27,115 @@
  ],
  "items": [
   {
+   "id": "news_vt47of",
+   "timestamp": "2026-11-23T14:47:00.000Z",
+   "category": "PADDOCK",
+   "title": "Hamilton déplore un déficit 'brutal' en vitesse de pointe, mais la réalité le contredit",
+   "summary": "Lewis Hamilton, affirme que le déficit de vitesse de pointe de la Ferrari SF-26 a été encore plus coûteux dans les longues lignes droites de Las Vegas. Une double élimination en Q2 et des septième et dixième places à l'arrivée pourraient laisser penser que le…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hamilton-deplore-un-deficit-brutal-en-vitesse-de-pointe-mais-la-realite-le,213684.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T15:36:35.718Z"
+  },
+  {
+   "id": "news_enyy40",
+   "timestamp": "2026-11-23T14:18:30.000Z",
+   "category": "PADDOCK",
+   "title": "Hamilton sidéré par le manque de vitesse de pointe de Ferrari à Las Vegas",
+   "summary": "Lewis Hamilton estime que le déficit de vitesse de pointe de la SF-26 a été encore plus \"brutal\" que prévu sur les longues lignes droites de Las Vegas. Hamilton et Charles Leclerc ont tous deux été éliminés en Q2 et ont terminé la course aux 7e et 10e places…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/hamilton-sidere-manque-vitesse-pointe-ferrari-las-vegas/10877234/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "impact": null,
+   "firstSeen": "2026-11-23T15:36:35.718Z"
+  },
+  {
+   "id": "news_ihho01",
+   "timestamp": "2026-11-23T14:09:00.000Z",
+   "category": "PADDOCK",
+   "title": "'Il perd les pédales' : Russell ne devrait pas s'attaquer à Verstappen",
+   "summary": "Günther Steiner a suggéré que George Russell devrait cesser de provoquer Max Verstappen à l'avenir et se concentrer sur le pilotage plutôt que chercher une confrontation qui ne lui rend pas service. Les deux hommes se sont accrochés pendant le week-end du…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/il-perd-les-pedales-russell-ne-devrait-pas-s-attaquer-a-verstappen,213682.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T15:36:35.718Z"
+  },
+  {
+   "id": "news_1nfq1de",
+   "timestamp": "2026-11-23T14:00:00.000Z",
+   "category": "PADDOCK",
+   "title": "Laurent Mekies après la victoire de Verstappen à Las Vegas : « Max vient d’une autre planètre »",
+   "summary": "Quelle est la part des progrès du moteur dans cette victoire, et quelle est celle de Max, plus malin que la concurrence dans le déploiement ? Je pense que Max a clairement été plus malin que la concurrence aujourd’hui, dans la manière dont il a réussi à…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/laurent-mekies-apres-la-victoire-de-verstappen-a-las-vegas-max-vient-dune-autre-planetre.html",
+   "impact": {
+    "targetType": "driver",
+    "targetIds": [
+     "max_verstappen"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 0.95,
+    "impactLabel": "Cotes -5%",
+    "teamId": "red_bull"
+   },
+   "firstSeen": "2026-11-23T15:36:35.718Z"
+  },
+  {
+   "id": "news_1n9i7xf",
+   "timestamp": "2026-11-23T13:38:00.000Z",
+   "category": "PADDOCK",
+   "title": "Critiqué dès ses débuts, le Madring confirme des changements dès le GP d'Espagne 2027",
+   "summary": "Le Grand Prix d'Espagne de Formule 1 va faire évoluer son nouveau circuit de Madrid dès 2027. Après une première édition marquée par de nombreuses critiques concernant le tracé du Madring, les organisateurs ont annoncé un programme d'améliorations destiné à…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/critique-des-ses-debuts-le-madring-confirme-des-changements-des-le-gp-d-espagne,213681.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T15:36:35.718Z"
+  },
+  {
+   "id": "news_1lvgbzd",
+   "timestamp": "2026-11-23T13:03:00.000Z",
+   "category": "PADDOCK",
+   "title": "Des pneus 'constants' et pas de graining : Pirelli a apprécié son week-end à Las Vegas",
+   "summary": "Pirelli a apprécié une course intense à Las Vegas, mais le manufacturier a surtout noté que les pneus amenés dans le Nevada, les trois composés les plus tendres de la gamme, ont fait leur travail à la perfection, de la manière dont l'entreprise le souhaitait…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T15:36:35.718Z"
+  },
+  {
+   "id": "news_1ya8qqd",
+   "timestamp": "2026-11-23T13:00:00.000Z",
+   "category": "PADDOCK",
+   "title": "Le programme du Grand Prix du Qatar 2026 de Formule 1",
+   "summary": "Après les néons du Strip, la Formule 1 met le cap sur le Moyen-Orient pour la deuxième étape de son triplé de fin de saison. Le circuit de Lusail accueille ce week-end l’avant-dernière manche du championnat, sans enjeu pour la couronne : Andrea Kimi Antonelli…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/le-programme-du-grand-prix-de-qatar-2026-de-formule-1.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T15:36:35.718Z"
+  },
+  {
+   "id": "news_6etg37",
+   "timestamp": "2026-11-23T12:59:37.000Z",
+   "category": "PADDOCK",
+   "title": "Verstappen fait confiance à la F1, mais préférerait rester chez lui",
+   "summary": "Après avoir informé Imola qu'il était inutile de préparer davantage le plan B, la F1 est désormais pleinement engagée à terminer sa saison 2026 au Moyen-Orient. Si elle a toujours assuré qu'elle prendrait \"la bonne décision\" en cas de dégradation de la…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/verstappen-confiance-securite-f1-qatar-abu-dhabi/10877205/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "impact": null,
+   "firstSeen": "2026-11-23T15:36:35.718Z"
+  },
+  {
    "id": "news_mxam5k",
    "timestamp": "2026-11-23T12:21:06.000Z",
    "category": "PADDOCK",
@@ -37,6 +146,18 @@
    "url": "https://fr.motorsport.com/f1/news/ferrari-vasseur-croit-pas-regles-ecrites-gerer-hamilton-leclerc/10877160/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
    "impact": null,
    "firstSeen": "2026-11-23T12:35:31.503Z"
+  },
+  {
+   "id": "news_1xkpudo",
+   "timestamp": "2026-11-23T12:15:00.000Z",
+   "category": "RÈGLEMENT",
+   "title": "'C'était fou' : Piastri revient de l'enfer et arrache un podium surprise !",
+   "summary": "Avant le Grand Prix de Las Vegas, Oscar Piastri s'attendait à un Grand Prix difficile, en raison de la faible vitesse de pointe de sa McLaren F1… Et c'était même encore avant de savoir qu'il partirait 17e, en raison d'une pénalité moteur. Personne ne…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/c-etait-fou-piastri-revient-de-l-enfer-et-arrache-un-podium-surprise,213655.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T15:36:35.718Z"
   },
   {
    "id": "news_1ftl3wp",
@@ -686,140 +807,6 @@
     "impactLabel": "Cotes +6%",
     "teamId": "red_bull"
    },
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_1h92ru2",
-   "timestamp": "2026-11-22T07:09:21.000Z",
-   "category": "PADDOCK",
-   "title": "Antonelli voulait piéger Verstappen, mais 'ma stratégie sur l'énergie a tourné au désastre'",
-   "summary": "Kimi Antonelli a vu ses espoirs de victoire, puis de podium, s'envoler dans les derniers instants du Grand Prix de Las Vegas. Longtemps engagé dans une bataille stratégique avec Max Verstappen, le pilote Mercedes a commis une erreur dans la gestion de son…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/antonelli-voulait-pieger-verstappen-mais-ma-strategie-sur-l-energie-a-tourne-au,213642.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_fflfhd",
-   "timestamp": "2026-11-22T06:54:00.000Z",
-   "category": "PADDOCK",
-   "title": "'J'en ai assez' : Hamilton met Ferrari et Leclerc face à leurs responsabilités !",
-   "summary": "Lewis Hamilton a une nouvelle fois appelé Ferrari à clarifier les règles de conduite entre ses pilotes après un Grand Prix de Las Vegas marqué par un nouvel accrochage avec Charles Leclerc. Le septuple champion du monde estime avoir déjà fait tout ce qui était…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/j-en-ai-assez-hamilton-met-ferrari-et-leclerc-face-a-leurs-responsabilites,213630.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_1s1f34x",
-   "timestamp": "2026-11-22T06:44:10.000Z",
-   "category": "PADDOCK",
-   "title": "Russell explique son crash alors qu'il tentait le tout pour le tout à Las Vegas",
-   "summary": "George Russell a reconnu avoir tenté \"une manœuvre à haut risque\" avant de sortir de la piste dans l'avant-dernier tour du Grand Prix de Las Vegas, alors qu'il essayait de décrocher la victoire. Alors que la course en \"yo-yo\" a fait son retour en F1, le…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/george-russell-explique-crash-tentative-gagner-las-vegas/10876727/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "impact": {
-    "targetType": "driver",
-    "targetIds": [
-     "russell"
-    ],
-    "managerModifiers": {
-     "powerUnit": 0,
-     "aero": 0,
-     "reliability": 0
-    },
-    "bettingOddsMultiplier": 1.06,
-    "impactLabel": "Cotes +6%",
-    "teamId": "mercedes"
-   },
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_b5lsls",
-   "timestamp": "2026-11-22T06:43:37.000Z",
-   "category": "RÈGLEMENT",
-   "title": "Leclerc 'ne cherche pas d'excuse' après avoir accroché Hamilton mais juge sa pénalité 'sévère'",
-   "summary": "Charles Leclerc a reconnu son erreur après avoir à nouveau accroché Lewis Hamilton. Un quatrième incident entre les deux Ferrari depuis la pause estivale, et de la responsabilité du Monégasque comme les trois précédents, qu'il n'a pas essayé de défendre. Il…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/leclerc-ne-cherche-pas-d-excuse-apres-avoir-accroche-hamilton-mais-juge-sa,213631.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_sax3wl",
-   "timestamp": "2026-11-22T06:35:00.000Z",
-   "category": "PADDOCK",
-   "title": "Russell jette sa Mercedes dans le mur à Las Vegas : 'je ne regrette rien !'",
-   "summary": "George Russell est passé tout près d'un résultat majeur au Grand Prix de Las Vegas, avant de voir ses espoirs s'effondrer à deux tours de l'arrivée. Engagé dans une lutte intense avec Max Verstappen pour la victoire, le Britannique a terminé dans les barrières…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/russell-jette-sa-mercedes-dans-le-mur-a-las-vegas-je-ne-regrette-rien,213641.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_unvtjw",
-   "timestamp": "2026-11-22T06:27:05.000Z",
-   "category": "PADDOCK",
-   "title": "Vasseur s'en prend à Leclerc et lui reproche une 'erreur professionnelle inacceptable' face à Hamilton",
-   "summary": "La tension est encore montée d'un cran chez Ferrari lors du Grand Prix de Las Vegas. Alors que Lewis Hamilton et Charles Leclerc tentaient de remonter dans la hiérarchie, le Monégasque a percuté son équipier au 38e tour, provoquant un tête-à-queue du…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/vasseur-s-en-prend-a-leclerc-et-lui-reproche-une-erreur-professionnelle,213647.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_n793pe",
-   "timestamp": "2026-11-22T06:16:13.000Z",
-   "category": "PADDOCK",
-   "title": "Norris 'ne s'attendait pas' à un double podium de McLaren F1, Piastri a fait une remontée 'incroyable'",
-   "summary": "La course de McLaren F1 à Las Vegas aura alterné le pire et le meilleur, mais l'équipe signe un très bon résultat avec un double podium, qui était clairement inespéré au moment où Lando Norris et Oscar Piastri se sont retrouvés respectivement 11e et neuvième à…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/norris-ne-s-attendait-pas-a-un-double-podium-de-mclaren-f1-piastri-a-fait-une,213643.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_5x95vb",
-   "timestamp": "2026-11-22T06:08:22.000Z",
-   "category": "PADDOCK",
-   "title": "'Je n'ai jamais vu ça en F1' : Verstappen commente une victoire 'surréelle'",
-   "summary": "Max Verstappen a remporté le Grand Prix de Las Vegas au terme de 50 tours de folie sur le circuit du Strip. Le pilote Red Bull a résisté aux pilotes Mercedes F1 et à de nombreuses batailles pour finalement devancer les McLaren de Lando Norris et Oscar Piastri…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/je-n-ai-jamais-vu-ca-en-f1-verstappen-commente-une-victoire-surreelle,213629.html",
-   "impact": {
-    "targetType": "driver",
-    "targetIds": [
-     "max_verstappen"
-    ],
-    "managerModifiers": {
-     "powerUnit": 0,
-     "aero": 0,
-     "reliability": 0
-    },
-    "bettingOddsMultiplier": 0.95,
-    "impactLabel": "Cotes -5%",
-    "teamId": "red_bull"
-   },
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_1s3dyrl",
-   "timestamp": "2026-11-22T06:02:55.000Z",
-   "category": "PADDOCK",
-   "title": "5 choses à retenir du Grand Prix de Las Vegas",
-   "summary": "Las Vegas a offert la course en peloton tant attendue Dans la capitale américaine du divertissement artificiel, la F1 a offert le spectacle le plus artificiel et le plus divertissant qui soit. Comme quoi, les choses sont bien faites. La course en yo-yo, qui…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/cinq-choses-a-retenir-du-grand-prix-de-las-vegas-2026/10876696/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "impact": null,
    "firstSeen": "2026-11-23T10:59:50.658Z"
   }
  ]
