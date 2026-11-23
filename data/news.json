@@ -1,1 +1,911 @@
-{"updated":null,"periodHours":5,"next":null,"sources":[],"items":[]}
+{
+ "updated": "2026-11-23T10:51:02.379Z",
+ "periodHours": 5,
+ "next": "2026-11-23T15:51:02.379Z",
+ "sources": [
+  {
+   "name": "Motorsport.com",
+   "ok": true,
+   "n": 50
+  },
+  {
+   "name": "Nextgen-Auto",
+   "ok": true,
+   "n": 112
+  },
+  {
+   "name": "F1i",
+   "ok": true,
+   "n": 30
+  },
+  {
+   "name": "AutoHebdo",
+   "ok": true,
+   "n": 15
+  },
+  {
+   "name": "Motorsport.com (EN)",
+   "ok": true,
+   "n": 50
+  },
+  {
+   "name": "The Race",
+   "ok": false,
+   "err": "HTTP 404"
+  }
+ ],
+ "items": [
+  {
+   "id": "news_1wmy1gf",
+   "timestamp": "2026-11-23T10:03:00.000Z",
+   "category": "PADDOCK",
+   "title": "Le programme du Grand Prix de Valence de MotoGP 2026",
+   "summary": "Ce week-end sur le circuit Ricardo Tormo de Cheste, le MotoGP referme sa saison 2026 sans suspense pour la couronne : Marc Márquez a été sacré dimanche dernier à Portimão, où une huitième place lui a suffi pour décrocher un huitième titre dans la catégorie…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/motogp/le-programme-du-grand-prix-de-valence-de-motogp-2026.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_11xikel",
+   "timestamp": "2026-11-23T10:00:42.000Z",
+   "category": "PADDOCK",
+   "title": "Who slept worst last night: Charles Leclerc",
+   "summary": "Frederic Vasseur suggested on Saturday evening (Sunday morning in Europe) that, following the Las Vegas Grand Prix, he could essentially deliver the very same dressing-down he had already given his drivers after Mexico. Because Charles Leclerc and Lewis…",
+   "source": "Motorsport.com (EN)",
+   "lang": "en",
+   "url": "https://www.motorsport.com/f1/news/who-slept-worst-last-night-charles-leclerc-10877136/10877136/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=www",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_u6ln6g",
+   "timestamp": "2026-11-23T09:51:38.000Z",
+   "category": "PADDOCK",
+   "title": "Norris unpacks ‘most chaotic race ever’ and recovery to Vegas P2",
+   "summary": "Lando Norris emerged from the Las Vegas Grand Prix with a runner-up finish, a valuable haul of points... The post Norris unpacks ‘most chaotic race ever’ and recovery to Vegas P2 appeared first on F1i.com .",
+   "source": "F1i",
+   "lang": "fr",
+   "url": "https://f1i.com/news/578695-norris-unpacks-most-chaotic-race-ever-and-recovery-to-vegas-p2.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_1rlctei",
+   "timestamp": "2026-11-23T09:44:06.000Z",
+   "category": "PADDOCK",
+   "title": "Colton Herta met fin prématurément à son calvaire en F2",
+   "summary": "Colton Herta met fin prématurément à sa difficile aventure en Formule 2. Il ne participera pas aux deux dernières manches de la saison 2026, à la suite d'un \"accord mutuel\" avec Hitech. Vainqueur de neuf courses en IndyCar, l'Américain avait fait le choix de…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/fia-f2/news/colton-herta-met-fin-prematurement-calvaire-f2/10877138/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_1ikacfh",
+   "timestamp": "2026-11-23T09:38:18.000Z",
+   "category": "PADDOCK",
+   "title": "Colton Herta replaced at Hitech to end poor F2 season early",
+   "summary": "Colton Herta will end his torrid time in Formula 2 early by not returning for the final two rounds of the 2026 season following a “mutual agreement” with Hitech. The nine-time IndyCar race winner made the transition to European single-seaters this year as part…",
+   "source": "Motorsport.com (EN)",
+   "lang": "en",
+   "url": "https://www.motorsport.com/fia-f2/news/colton-herta-replaced-at-hitech-to-end-poor-f2-season-early/10877134/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=www",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_w3cs28",
+   "timestamp": "2026-11-23T09:30:00.000Z",
+   "category": "PADDOCK",
+   "title": "Ocon chez Aston Martin F1 ? Le Français sème de nouveaux indices !",
+   "summary": "Esteban Ocon pourrait avoir trouvé une porte de sortie en Formule 1 pour 2027. Écarté de Haas au profit de Rafael Câmara, le Français alimente désormais les rumeurs d'une arrivée chez Aston Martin dans un rôle de pilote de réserve, avec la possibilité de…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/ocon-chez-aston-martin-f1-le-francais-seme-de-nouveaux-indices,213673.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_1efzp2b",
+   "timestamp": "2026-11-23T09:06:19.000Z",
+   "category": "PADDOCK",
+   "title": "Pourquoi le contrat de Bearman chez Haas pour 2027 n'est toujours pas signé",
+   "summary": "Protégé de Ferrari, Oliver Bearman est le seul pilote du plateau à ne pas disposer d'un contrat pour 2027. Une situation difficile à imaginer il y a encore quelques semaines, tant son maintien chez Haas semblait acquis depuis l'été dernier. L'annonce de Rafael…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/pourquoi-contrat-bearman-haas-2027-toujours-pas-signe/10877121/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "impact": {
+    "targetType": "driver",
+    "targetIds": [
+     "bearman"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 1.06,
+    "impactLabel": "Cotes +6%",
+    "teamId": "haas"
+   },
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_1cbd9c7",
+   "timestamp": "2026-11-23T09:02:57.000Z",
+   "category": "PADDOCK",
+   "title": "Salary dispute holding up Ollie Bearman’s new Haas F1 deal",
+   "summary": "Ferrari protege Oliver Bearman remains the only driver on the Formula 1 grid without a contract for 2027. It is a situation that would have been hard to imagine just a few weeks ago, given that his retention at Haas had been taken for granted since last…",
+   "source": "Motorsport.com (EN)",
+   "lang": "en",
+   "url": "https://www.motorsport.com/f1/news/salary-dispute-holding-up-oliver-bearmans-new-haas-f1-deal/10877064/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=www",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_g6ewh3",
+   "timestamp": "2026-11-23T08:51:00.000Z",
+   "category": "PADDOCK",
+   "title": "Piastri snaps at McLaren but Stella applauds",
+   "summary": "Oscar Piastri has been praised by McLaren boss Andrea Stella despite angrily swearing at his race engineer during a battle with teammate Lando Norris in Las Vegas. The outburst comes amid speculation about Piastri's future following his recent split with…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/en/formula-1/piastri-snaps-at-mclaren-but-stella-applauds,213676.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_lw0052",
+   "timestamp": "2026-11-23T08:49:00.000Z",
+   "category": "PADDOCK",
+   "title": "Piastri recadre violemment son ingénieur, Stella y voit l'étoffe d'un champion",
+   "summary": "Oscar Piastri n'a pas caché son agacement envers McLaren pendant le Grand Prix de Las Vegas, répondant sèchement à son ingénieur de course lorsque celui-ci lui a demandé de faire preuve de prudence dans sa bataille avec Lando Norris. Mais loin de condamner…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/piastri-recadre-violemment-son-ingenieur-stella-y-voit-l-etoffe-d-un-champion,213677.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_10hafc9",
+   "timestamp": "2026-11-23T08:42:06.000Z",
+   "category": "PADDOCK",
+   "title": "Antonello Coletta sur la saison de Ferrari en WEC : « Nous avons aussi commis quelques petites erreurs »",
+   "summary": "Les Finali Mondiali ont beau être, selon Antonello Coletta, « la traditionnelle fête de fin d’année » de Ferrari, l’heure était aussi au bilan sur le circuit de Barcelone-Catalogne. Plus de 200 voitures étaient en piste ce week-end, et c’est en Catalogne que…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/endurance/antonello-coletta-sur-la-saison-de-ferrari-en-wec-nous-avons-aussi-commis-quelques-petites-erreurs.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_484mis",
+   "timestamp": "2026-11-23T08:39:44.000Z",
+   "category": "PADDOCK",
+   "title": "Haas confirms Camara for final two F1 races",
+   "summary": "Haas has confirmed that Rafael Camara will remain with the team for the final two rounds of the... The post Haas confirms Camara for final two F1 races appeared first on F1i.com .",
+   "source": "F1i",
+   "lang": "fr",
+   "url": "https://f1i.com/news/578691-haas-confirms-camara-for-final-two-f1-races.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_8y4pvx",
+   "timestamp": "2026-11-23T08:16:27.000Z",
+   "category": "PADDOCK",
+   "title": "Vasseur reconnaît que la rivalité entre Leclerc et Hamilton est 'devenue incontrôlable'",
+   "summary": "La crise entre Charles Leclerc et Lewis Hamilton a pris une dimension particulièrement inquiétante chez Ferrari après leur nouvel accrochage au Grand Prix de Las Vegas. Frédéric Vasseur reconnaît désormais que la Scuderia aurait peut-être pris une décision…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/vasseur-reconnait-que-la-rivalite-entre-leclerc-et-hamilton-est-devenue,213674.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_1rlv2nk",
+   "timestamp": "2026-11-23T08:00:00.000Z",
+   "category": "PADDOCK",
+   "title": "Le programme TV de la semaine – 23 au 29 novembre",
+   "summary": "Formule 1Grand Prix du Qatar, 22e mancheVendredi 27 novembre14h15 – Essais Libres 1 (Canal+ Sport 360)17h50 – Essais Libres 2 (Canal+ Sport 360)Samedi 28 novembre15h15 – Essais Libres 3 (Canal+ Sport 360)18h40 – Qualifications (Canal+ Sport 360)Dimanche 29…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/programme-tv/le-programme-tv-de-la-semaine-23-au-29-novembre.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_1w0vpjy",
+   "timestamp": "2026-11-23T07:40:00.000Z",
+   "category": "TECHNIQUE",
+   "title": "Mercedes faces 2030 customer dilemma",
+   "summary": "McLaren CEO Zak Brown insists his team has no intention of abandoning Mercedes engines, amid reported proposals to restrict how many Formula 1 teams each manufacturer can supply from 2030. The planned return of V8 engines could also introduce a new rule…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/en/formula-1/mercedes-faces-2030-customer-dilemma,213668.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_1q9kiv0",
+   "timestamp": "2026-11-23T07:38:00.000Z",
+   "category": "TECHNIQUE",
+   "title": "Mercedes pourrait devoir sacrifier deux équipes en F1",
+   "summary": "Mercedes F1 pourrait se retrouver face à un choix particulièrement délicat à l'horizon 2030, alors que la Formule 1 envisage de limiter le nombre d'écuries pouvant être motorisées par un même constructeur. Avec le retour annoncé des moteurs V8, une proposition…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/mercedes-pourrait-devoir-sacrifier-deux-equipes-en-f1,213667.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_11rldsw",
+   "timestamp": "2026-11-23T07:26:39.000Z",
+   "category": "PADDOCK",
+   "title": "\"J'ai bien aimé\" : Stella défend le coup de gueule de Piastri à Las Vegas",
+   "summary": "Terminer sur le podium derrière le vainqueur Max Verstappen à Las Vegas n'était probablement pas prévu dans les plans de McLaren, après une séance de qualifications compliquée pour Lando Norris et Oscar Piastri. La troisième place semblait particulièrement…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/stella-defend-coup-de-gueule-piastri-las-vegas/10877100/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "impact": {
+    "targetType": "driver",
+    "targetIds": [
+     "piastri"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 0.95,
+    "impactLabel": "Cotes -5%",
+    "teamId": "mclaren"
+   },
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_1t4g953",
+   "timestamp": "2026-11-23T06:58:00.000Z",
+   "category": "PADDOCK",
+   "title": "Verstappen savages Russell after Vegas crash",
+   "summary": "Max Verstappen has launched an extraordinary attack on George Russell after their bitter Las Vegas rivalry ended with the Mercedes driver crashing out of contention for victory. The pair had already clashed during practice, before Russell accused Verstappen of…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/en/formula-1/verstappen-savages-russell-after-vegas-crash,213670.html",
+   "impact": {
+    "targetType": "team",
+    "targetIds": [
+     "mercedes"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": -1,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 1.04,
+    "impactLabel": "Aéro -1 pts | Cotes +4%"
+   },
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_12az6q7",
+   "timestamp": "2026-11-23T06:51:00.000Z",
+   "category": "PADDOCK",
+   "title": "'Hamilton a fait de Ferrari son équipe' : la grande erreur de Leclerc selon Villeneuve",
+   "summary": "Jacques Villeneuve estime que Charles Leclerc a commis une erreur majeure en laissant Lewis Hamilton prendre progressivement le contrôle de Ferrari depuis son arrivée à Maranello. Selon le champion du monde 1997, le Britannique aurait profité de sa première…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hamilton-a-fait-de-ferrari-son-equipe-la-grande-erreur-de-leclerc-selon,213665.html",
+   "impact": {
+    "targetType": "team",
+    "targetIds": [
+     "ferrari"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": -1,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 1.04,
+    "impactLabel": "Aéro -1 pts | Cotes +4%"
+   },
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_wmrrom",
+   "timestamp": "2026-11-23T06:17:00.000Z",
+   "category": "PADDOCK",
+   "title": "Verstappen mocks 'Mario Kart' F1 after Vegas win",
+   "summary": "Max Verstappen has dismissed Formula 1's extraordinary Las Vegas GP as little more than Mario Kart, despite winning a race featuring an astonishing 352 overtakes and 35 changes of the lead. Germany's Bild newspaper described the spectacle as 'Mario Kart on…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/en/formula-1/verstappen-mocks-mario-kart-f1-after-vegas-win,213669.html",
+   "impact": {
+    "targetType": "driver",
+    "targetIds": [
+     "max_verstappen"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 0.95,
+    "impactLabel": "Cotes -5%",
+    "teamId": "red_bull"
+   },
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_1plm0ta",
+   "timestamp": "2026-11-23T06:10:00.000Z",
+   "category": "TECHNIQUE",
+   "title": "Norris raconte un GP passé à 'appuyer sur neuf boutons par tour'",
+   "summary": "C'est une 2e place inattendue qu'a pu signer hier Lando Norris pour McLaren F1 : le champion du monde s'attendait à souffrir en lignes droites à Las Vegas, mais son rythme de course aura été supérieur aux attentes. En toute fin d'épreuve, il a aussi, bien sûr…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/norris-raconte-un-gp-passe-a-appuyer-sur-neuf-boutons-par-tour,213654.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_txt6w9",
+   "timestamp": "2026-11-22T20:50:17.000Z",
+   "category": "RÈGLEMENT",
+   "title": "La F1 devrait réduire le nombre d'équipes clientes, alors que des détails sur 2030 émergent",
+   "summary": "La F1 prévoit de limiter à deux le nombre d'équipes fournies par chaque motoriste à partir de 2030, a appris Motorsport.com, ce qui soulève des questions sur le statut des trois clients actuels de Mercedes. Lors du week-end de Las Vegas, la FIA a annoncé qu'un…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/f1-devrait-reduire-nombre-equipes-clientes-details-cles-2030-emergent/10877063/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_klr50x",
+   "timestamp": "2026-11-22T20:26:49.000Z",
+   "category": "RÈGLEMENT",
+   "title": "F1 set to reduce customer teams as key 2030 details emerge",
+   "summary": "F1 is planning a shift to just two power unit supplies per manufacturer in 2030, Motorsport.com has learned, raising questions over the status of Mercedes' three current customers. Over the Las Vegas weekend the FIA announced there was unanimous support to…",
+   "source": "Motorsport.com (EN)",
+   "lang": "en",
+   "url": "https://www.motorsport.com/f1/news/f1-set-to-reduce-customer-teams-as-key-2030-details-emerge/10877055/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=www",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_1bdgf1c",
+   "timestamp": "2026-11-22T18:41:54.000Z",
+   "category": "PADDOCK",
+   "title": "Haas maintient Rafael Câmara en F1, mettant fin à ses espoirs de titre en F2",
+   "summary": "Le rookie de Haas Rafael Câmara terminera la saison avec l'écurie américaine au Qatar et à Abu Dhabi, mettant de fait un terme à ses chances de titre en F2. Câmara a été officiellement annoncé en octobre comme remplaçant à temps plein d'Esteban Ocon pour 2027…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/haas-maintien-rafael-camara-f1-mettant-fin-espoirs-f2/10877051/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "impact": {
+    "targetType": "driver",
+    "targetIds": [
+     "rafael_camara"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 1.25,
+    "impactLabel": "Cotes +25%",
+    "teamId": "haas"
+   },
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_65723z",
+   "timestamp": "2026-11-22T18:28:04.000Z",
+   "category": "PADDOCK",
+   "title": "Haas keeps Rafael Camara in F1, ending his 2026 F2 title bid",
+   "summary": "Haas rookie Rafael Camara will see out the season with Haas in Qatar and Abu Dhabi, effectively ending his F2 championship challenge. Camara was confirmed in October as a full-time replacement for Esteban Ocon in 2027, and was fast-tracked into the seat after…",
+   "source": "Motorsport.com (EN)",
+   "lang": "en",
+   "url": "https://www.motorsport.com/f1/news/rafael-camara-gives-up-f2-title-chance-to-finish-2026-f1-season-with-haas/10877028/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=www",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_1mrjzsw",
+   "timestamp": "2026-11-22T18:19:27.000Z",
+   "category": "PADDOCK",
+   "title": "Rafael Câmara confirmé chez Haas pour la fin de saison, le titre en F2 s’éloigne",
+   "summary": "Rafael Câmara ne quittera plus le paddock de Formule 1 cette saison. Ce dimanche 22 novembre, Haas a officialisé la présence du Brésilien lors des Grands Prix du Qatar (27-29 novembre) et d’Abu Dhabi (5-7 décembre), les deux dernières manches du championnat…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/rafael-camara-confirme-chez-haas-pour-la-fin-de-saison-le-titre-en-f2-seloigne.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_1kxggub",
+   "timestamp": "2026-11-22T18:04:00.000Z",
+   "category": "PADDOCK",
+   "title": "Officiel : Haas F1 finira la saison avec Câmara, pas de titre F2 pour le Brésilien",
+   "summary": "Haas F1 a confirmé que Rafael Câmara disputera les deux derniers Grands Prix de la saison 2026 de Formule 1, au Qatar et à Abu Dhabi, aux côtés d'Oliver Bearman. Le jeune Brésilien de 21 ans, déjà titularisé pour l'ensemble du championnat 2027, poursuivra…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/officiel-haas-f1-finira-la-saison-avec-camara-pas-de-titre-f2-pour-le-bresilien,213663.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_docct3",
+   "timestamp": "2026-11-22T18:01:18.000Z",
+   "category": "PADDOCK",
+   "title": "\"I actually liked it\" – McLaren boss defends Piastri's four-letter outburst in Las Vegas GP",
+   "summary": "Completing the podium behind a victorious Max Verstappen in Las Vegas probably wasn't on McLaren's bingo card after a troubled qualifying session for Lando Norris and Oscar Piastri. Finishing third would have seemed particularly unlikely for Piastri given that…",
+   "source": "Motorsport.com (EN)",
+   "lang": "en",
+   "url": "https://www.motorsport.com/f1/news/i-actually-liked-it-mclaren-boss-defends-piastris-four-letter-outburst-in-las-vegas-gp/10876928/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=www",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_nddezp",
+   "timestamp": "2026-11-22T17:42:44.000Z",
+   "category": "PADDOCK",
+   "title": "Toto Wolff raconte l’improbable fiasco de Mercedes à Las Vegas",
+   "summary": "Mercedes pouvait rêver d’un doublé à Las Vegas. Elle a finalement quitté le Nevada avec une quatrième et une neuvième places ! Un scénario invraisemblable tant les Flèches d’argent avaient animé la course, George Russell et Kimi Antonelli ayant chacun mené le…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/toto-wolff-raconte-limprobable-fiasco-de-mercedes-a-las-vegas.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_ayehsz",
+   "timestamp": "2026-11-22T17:15:00.000Z",
+   "category": "RÈGLEMENT",
+   "title": "Verstappen s'est amusé mais allume le règlement F1 : c'était Mario Kart à Vegas !",
+   "summary": "Dans une course de Las Vegas aussi étrange et animée que piégeuse, c'est Max Verstappen qui l'aura emporté : le Néerlandais, en tête durant la majorité des tours, a remporté un 4e succès de l'année entièrement mérité, et qui doit beaucoup à sa maîtrise de…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-s-est-amuse-mais-allume-le-reglement-f1-c-etait-mario-kart-a-vegas,213653.html",
+   "impact": {
+    "targetType": "driver",
+    "targetIds": [
+     "max_verstappen"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 0.95,
+    "impactLabel": "Cotes -5%",
+    "teamId": "red_bull"
+   },
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_qnsok4",
+   "timestamp": "2026-11-22T16:46:12.000Z",
+   "category": "RÈGLEMENT",
+   "title": "Un Grand Prix totalement fou à Las Vegas grâce au règlement F1 2026 ?",
+   "summary": "Rarement une course de Formule 1 aura offert autant de rebondissements ! Le Grand Prix de Las Vegas a été le théâtre de 352 changements de position, dont 35 changements de leader. Un spectacle qui ne doit rien au hasard : le tracé américain semble avoir été…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/un-grand-prix-totalement-fou-a-las-vegas-grace-au-reglement-f1-2026.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_15spdk4",
+   "timestamp": "2026-11-22T16:31:00.000Z",
+   "category": "PADDOCK",
+   "title": "Verstappen has GTA6 ready as drivers reveal plans",
+   "summary": "Max Verstappen has already downloaded the long-awaited Grand Theft Auto VI, although the Red Bull driver admits he has been too busy to start playing it. The game's release coincided with the Las Vegas GP, prompting a string of drivers to reveal whether they…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/en/formula-1/verstappen-has-gta6-ready-as-drivers-reveal-plans,213635.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_v5mhe8",
+   "timestamp": "2026-11-22T16:29:00.000Z",
+   "category": "PADDOCK",
+   "title": "Verstappen, Hamilton, Antonelli : la folie GTA VI s'empare du paddock",
+   "summary": "La sortie très attendue de Grand Theft Auto VI n'a pas échappé aux pilotes de Formule 1, même en plein week-end du Grand Prix de Las Vegas. Max Verstappen a déjà téléchargé le jeu, Lewis Hamilton a emporté sa PlayStation et Kimi Antonelli compte sur son père…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-hamilton-antonelli-la-folie-gta-vi-s-empare-du-paddock,213646.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_1khdvrp",
+   "timestamp": "2026-11-22T15:45:00.000Z",
+   "category": "PADDOCK",
+   "title": "Verstappen voted F1's greatest ever",
+   "summary": "Max Verstappen has been voted Formula 1's greatest driver of all time by readers of a Dutch magazine, just as George Russell accused the Red Bull star of behaving as though he is better than everyone else. Almost 10,000 readers of Formule 1 Magazine…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/en/formula-1/verstappen-voted-f1-s-greatest-ever,213638.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_1f7tl6z",
+   "timestamp": "2026-11-22T15:43:00.000Z",
+   "category": "PADDOCK",
+   "title": "Verstappen élu meilleur pilote de l'histoire de la F1",
+   "summary": "Max Verstappen a été désigné meilleur pilote de l'histoire de la Formule 1 par les lecteurs d'un magazine néerlandais, mais le quadruple champion du monde ne semble guère impressionné par cette distinction. Alors que George Russell lui reproche justement de se…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-elu-meilleur-pilote-de-l-histoire-de-la-f1,213660.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_4tztq1",
+   "timestamp": "2026-11-22T15:40:13.000Z",
+   "category": "PADDOCK",
+   "title": "Las Vegas GP: Saturday's action in pictures",
+   "summary": "Under the neon glow of the Strip, Saturday night delivered another cocktail of high-speed drama, bruised egos and... The post Las Vegas GP: Saturday's action in pictures appeared first on F1i.com .",
+   "source": "F1i",
+   "lang": "fr",
+   "url": "https://f1i.com/news/578505-las-vegas-gp-saturdays-action-in-pictures-3.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_oy80vc",
+   "timestamp": "2026-11-22T15:22:39.000Z",
+   "category": "PADDOCK",
+   "title": "L'aspect de la course où Verstappen a \"pris de vitesse\" Mercedes et laissé Red Bull sans voix",
+   "summary": "Max Verstappen a décroché sa quatrième victoire en six Grands Prix de Formule 1. Cette fois, le Néerlandais s'est imposé sur un circuit réputé peu gourmand en énergie, ce qui est notable quand on sait que Red Bull Ford Powertrains éprouvait encore des…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/aspect-course-verstappen-pris-de-vitesse-mercedes-laisse-sans-voix-red-bull/10876991/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "impact": {
+    "targetType": "driver",
+    "targetIds": [
+     "max_verstappen"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 0.95,
+    "impactLabel": "Cotes -5%",
+    "teamId": "red_bull"
+   },
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_1ifyk6r",
+   "timestamp": "2026-11-22T15:03:00.000Z",
+   "category": "TECHNIQUE",
+   "title": "Alonso mocks Honda as Dakar escape beckons",
+   "summary": "Fernando Alonso has again expressed his frustration with Honda's struggling Formula 1 engine, describing Aston Martin's lack of straight-line speed in Las Vegas as \"ridiculous\". Years after his famous \"GP2 engine\" insult, the Spaniard finds himself grappling…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/en/formula-1/alonso-mocks-honda-as-dakar-escape-beckons,213636.html",
+   "impact": {
+    "targetType": "team",
+    "targetIds": [
+     "aston_martin"
+    ],
+    "managerModifiers": {
+     "powerUnit": -2,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 1.08,
+    "impactLabel": "Moteur -2 pts | Cotes +8%"
+   },
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_xg6mfj",
+   "timestamp": "2026-11-22T14:52:00.000Z",
+   "category": "PADDOCK",
+   "title": "Fabio Quartararo : « Márquez est le GOAT. Il me donne envie de retrouver la victoire »",
+   "summary": "Fabio Quartararo ne cache pas son admiration pour Marc Márquez. Interrogé après le Grand Prix du Portugal, le Français a rendu un vibrant hommage à son rival espagnol, dont le retour au sommet constitue une véritable source d’inspiration. « Sincèrement, le…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/motogp/fabio-quartararo-marquez-est-le-goat-il-me-donne-envie-de-retrouver-la-victoire.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_1ebd6hk",
+   "timestamp": "2026-11-22T14:18:17.000Z",
+   "category": "PADDOCK",
+   "title": "L’odyssée du dixième titre de Marc Márquez",
+   "summary": "Cent deux points. Au soir du Grand Prix d’Italie, le gouffre semblait trop profond. Son pied avait été opéré, son épaule aussi, mais Marc Márquez venait de terminer septième au Mugello, loin de la victoire et de Marco Bezzecchi. Plus loin encore de cette…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/motogp/lodyssee-du-dixieme-titre-de-marc-marquez.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_13iq6a1",
+   "timestamp": "2026-11-22T14:18:00.000Z",
+   "category": "PADDOCK",
+   "title": "Briatore says Ferrari's driver policy cannot work",
+   "summary": "Flavio Briatore has criticised Ferrari's policy of allowing Lewis Hamilton and Charles Leclerc to race as equals, warning that the approach could cost the Italian team a world championship. The Alpine advisor was asked by La Gazzetta dello Sport how he would…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/en/formula-1/briatore-says-ferrari-s-driver-policy-cannot-work,213639.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_z9i657",
+   "timestamp": "2026-11-22T14:16:00.000Z",
+   "category": "PADDOCK",
+   "title": "Briatore démolit la politique de Ferrari avec Hamilton et Leclerc",
+   "summary": "Flavio Briatore estime que Ferrari commet une erreur majeure en laissant Lewis Hamilton et Charles Leclerc se battre librement en piste. Après un accrochage entre les deux pilotes lors du Grand Prix de Las Vegas, le conseiller exécutif d'Alpine a remis en…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/briatore-demolit-la-politique-de-ferrari-avec-hamilton-et-leclerc,213657.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_2tnewi",
+   "timestamp": "2026-11-22T13:48:36.000Z",
+   "category": "PADDOCK",
+   "title": "GP du Portugal : Bezzecchi s’impose, Márquez est champion du monde !",
+   "summary": "Marc Márquez (Ducati) a assuré l’essentiel. Pour décrocher son dixième titre mondial lors du GP du Portugal, le huitième en catégorie reine, l’Espagnol devait terminer dans le top 9, quels que soient les résultats de ses adversaires. Après avoir pris la tête…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/motogp/motogp-classement-gp-du-portugal.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_x7j8ja",
+   "timestamp": "2026-11-22T13:35:00.000Z",
+   "category": "PADDOCK",
+   "title": "Bearman linked to shock Alpine switch",
+   "summary": "Oliver Bearman could be preparing a shock departure from Haas and Ferrari's driver program, with reports claiming his management has held talks with Alpine about replacing Franco Colapinto in 2027. Bearman's representatives are reportedly increasingly…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/en/formula-1/bearman-linked-to-shock-alpine-switch,213640.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_8wjvtz",
+   "timestamp": "2026-11-22T13:33:00.000Z",
+   "category": "PADDOCK",
+   "title": "Coup de théâtre : Bearman pourrait quitter Ferrari et Haas pour Alpine F1",
+   "summary": "Oliver Bearman pourrait être au cœur d'un étonnant mouvement sur le marché des transferts de Formule 1. Alors que son avenir chez Haas semblait assuré, le Britannique de 21 ans serait désormais en discussions avec Alpine pour rejoindre Pierre Gasly en 2027, au…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/coup-de-theatre-bearman-pourrait-quitter-ferrari-et-haas-pour-alpine-f1,213658.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_kel3dc",
+   "timestamp": "2026-11-22T12:59:00.000Z",
+   "category": "RÈGLEMENT",
+   "title": "Verstappen ne veut pas aller au GP du Qatar, Alonso s'en prend au calendrier de la F1",
+   "summary": "Max Verstappen ne cache pas ses inquiétudes à l'approche des deux derniers Grands Prix de la saison 2026, programmés au Qatar et à Abu Dhabi dans un contexte de tensions persistantes au Moyen-Orient. Malgré les garanties de sécurité communiquées par la FIA et…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-ne-veut-pas-aller-au-gp-du-qatar-alonso-s-en-prend-au-calendrier-de,213656.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_8224r9",
+   "timestamp": "2026-11-22T12:57:00.000Z",
+   "category": "RÈGLEMENT",
+   "title": "Verstappen admits again he would rather skip Qatar",
+   "summary": "Max Verstappen has admitted he would rather stay home than travel to Formula 1's final two races in the Middle East, despite assurances from the FIA and F1 that Qatar and Abu Dhabi are safe. With regional tensions continuing and broadcasters including Sky…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/en/formula-1/verstappen-admits-again-he-would-rather-skip-qatar,213637.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_pl27tz",
+   "timestamp": "2026-11-22T12:21:00.000Z",
+   "category": "PADDOCK",
+   "title": "Mekies salue un Verstappen 'incroyable' et présente ses excuses à Hadjar",
+   "summary": "Laurent Mekies a salué la performance exceptionnelle de Max Verstappen après sa victoire au Grand Prix de Las Vegas, au terme d'une course spectaculaire marquée par d'innombrables dépassements et une gestion de l'énergie particulièrement complexe. Mais…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/mekies-salue-un-verstappen-incroyable-et-presente-ses-excuses-a-hadjar,213644.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_y3bthv",
+   "timestamp": "2026-11-22T11:58:03.000Z",
+   "category": "PADDOCK",
+   "title": "The one aspect of Max Verstappen \"outsmarting\" Mercedes that left Red Bull speechless",
+   "summary": "Max Verstappen claimed his fourth victory in the last six Formula 1 Grands Prix. This time, the Dutchman won at what is known as an energy-poor circuit, which is noteworthy given that Red Bull Ford Powertrains was still struggling at such venues at the start…",
+   "source": "Motorsport.com (EN)",
+   "lang": "en",
+   "url": "https://www.motorsport.com/f1/news/the-one-aspect-of-max-verstappen-outsmarting-mercedes-that-left-red-bull-speechless/10876912/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=www",
+   "impact": {
+    "targetType": "driver",
+    "targetIds": [
+     "max_verstappen"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 0.95,
+    "impactLabel": "Cotes -5%",
+    "teamId": "red_bull"
+   },
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_np2luw",
+   "timestamp": "2026-11-22T11:56:59.000Z",
+   "category": "PADDOCK",
+   "title": "Piastri insists McLaren duo know how to race each other",
+   "summary": "Oscar Piastri has made it clear that McLaren does not need to play referee when it comes to... The post Piastri insists McLaren duo know how to race each other appeared first on F1i.com .",
+   "source": "F1i",
+   "lang": "fr",
+   "url": "https://f1i.com/news/578569-piastri-insists-mclaren-duo-know-how-to-race-each-other.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_15420a8",
+   "timestamp": "2026-11-22T11:46:10.000Z",
+   "category": "PADDOCK",
+   "title": "Hamilton : \"L'état d'esprit de Charles Leclerc nous a coûté beaucoup de points aujourd'hui\"",
+   "summary": "Lewis Hamilton a subtilement laissé entendre que \"l'état d'esprit\" de Charles Leclerc était à l'origine de leur accrochage lors du Grand Prix de Las Vegas de Formule 1. Hamilton et Leclerc occupaient les sixième et septième places au 37e tour de la course dans…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/lewis-hamilton-charles-leclercs-etat-esprit-coute-beaucoup-points/10876914/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_33efcj",
+   "timestamp": "2026-11-22T11:40:00.000Z",
+   "category": "PADDOCK",
+   "title": "'Peut-être la meilleure course de F1' : Zak Brown émerveillé par le Grand Prix du jour à Las Vegas",
+   "summary": "McLaren a signé un double podium au Grand Prix de Las Vegas, avec Lando Norris deuxième et Oscar Piastri troisième, au terme d'une course que Zak Brown considère comme l'une des plus spectaculaires de l'histoire de la Formule 1. Malgré un important déficit de…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/peut-etre-la-meilleure-course-de-f1-zak-brown-emerveille-par-le-grand-prix-du,213648.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_2fqqcg",
+   "timestamp": "2026-11-22T11:26:45.000Z",
+   "category": "PADDOCK",
+   "title": "Lewis Hamilton: ‘Charles Leclerc’s frame of mind cost us a lot of points today’",
+   "summary": "Lewis Hamilton subtly implied Charles Leclerc’s “frame of mind” was to blame for their collision in Formula 1’s Las Vegas Grand Prix. Hamilton and Leclerc were sixth and seventh on lap 37 of the Nevadan race, only some two seconds adrift of race leader Max…",
+   "source": "Motorsport.com (EN)",
+   "lang": "en",
+   "url": "https://www.motorsport.com/f1/news/lewis-hamilton-charles-leclercs-frame-of-mind-cost-us-a-lot-of-points-today/10876902/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=www",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_1gp9ddw",
+   "timestamp": "2026-11-22T11:09:00.000Z",
+   "category": "PADDOCK",
+   "title": "Que faire après le nouvel accrochage entre Hamilton et Leclerc ? Vasseur annonce la couleur !",
+   "summary": "Frédéric Vasseur a donc haussé le ton après le nouvel accrochage entre Charles Leclerc et Lewis Hamilton lors du Grand Prix de Las Vegas. Pour la deuxième fois en trois courses, les deux pilotes Ferrari se sont retrouvés impliqués dans un incident que leur…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/que-faire-apres-le-nouvel-accrochage-entre-hamilton-et-leclerc-vasseur-annonce,213652.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_okc7k8",
+   "timestamp": "2026-11-22T10:56:16.000Z",
+   "category": "PADDOCK",
+   "title": "Les tops et les flops d'un Grand Prix de Las Vegas complètement fou",
+   "summary": "Des monoplaces regroupées à quelques secondes d'intervalle, 35 changements de leader et des pilotes qui cherchaient à trouver le meilleur positionnement pour franchir la ligne d'arrivée en tête dans le dernier tour : le Grand Prix de Las Vegas a ressemblé à…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/tops-flops-grand-prix-las-vegas-2026/10876897/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_12wqvi3",
+   "timestamp": "2026-11-22T10:38:00.000Z",
+   "category": "TECHNIQUE",
+   "title": "'Aucune performance' : Alonso et Stroll tirent à boulets rouges sur Honda après la course",
+   "summary": "Aston Martin F1 a vécu un nouveau Grand Prix particulièrement difficile à Las Vegas, où les performances du moteur Honda ont une fois encore lourdement handicapé Fernando Alonso et Lance Stroll. Le Canadien a terminé à une modeste 17e place, tandis que…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/aucune-performance-alonso-et-stroll-tirent-a-boulets-rouges-sur-honda-apres-la,213622.html",
+   "impact": {
+    "targetType": "engine",
+    "targetIds": [
+     "aston_martin"
+    ],
+    "managerModifiers": {
+     "powerUnit": -2,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 1.08,
+    "impactLabel": "Moteur -2 pts | Cotes +8%"
+   },
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_ybdqzq",
+   "timestamp": "2026-11-22T10:34:15.000Z",
+   "category": "PADDOCK",
+   "title": "Winners and losers from F1's chaotically extraordinary Las Vegas GP",
+   "summary": "A pack of cars covered by seconds, the top three trading first position as part of 35 lead changes, and drivers trying to figure out the best positioning to be ahead at the finish line on the final lap; The Las Vegas Grand Prix felt like the glitzy…",
+   "source": "Motorsport.com (EN)",
+   "lang": "en",
+   "url": "https://www.motorsport.com/f1/news/winners-and-losers-from-f1s-chaotically-extraordinary-las-vegas/10876889/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=www",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_1wuji1x",
+   "timestamp": "2026-11-22T10:25:57.000Z",
+   "category": "PADDOCK",
+   "title": "Verstappen dézingue la saison 2026 de Russell : \"Un désastre complet\"",
+   "summary": "Alors que l'accrochage entre Max Verstappen et George Russell lors de la troisième séance d'essais libres du Grand Prix de Las Vegas semblait avoir été réglé par un simple avertissement adressé au pilote Red Bull, le différend a depuis pris une nouvelle…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/verstappen-dezingue-saison-2026-russell-desastre-complet/10876887/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_2kosa0",
+   "timestamp": "2026-11-22T10:13:23.000Z",
+   "category": "PADDOCK",
+   "title": "Max Verstappen continues George Russell fallout, labels his 2026 F1 season a \"complete disaster\"",
+   "summary": "While the clash between Max Verstappen and George Russell during the third free practice session for the Formula 1 Las Vegas Grand Prix appeared to have been settled with a warning for the Red Bull driver, the dispute has since escalated in the media. Speaking…",
+   "source": "Motorsport.com (EN)",
+   "lang": "en",
+   "url": "https://www.motorsport.com/f1/news/max-verstappen-calls-george-russells-2026-f1-season-a-complete-disaster-after-vegas-clash/10876885/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=www",
+   "impact": null,
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  },
+  {
+   "id": "news_fmakdd",
+   "timestamp": "2026-11-22T10:05:00.000Z",
+   "category": "RÈGLEMENT",
+   "title": "Haas F1 : Bearman savoure sa remontée spectaculaire à Las Vegas",
+   "summary": "Haas F1 a conclu le Grand Prix de Las Vegas sans inscrire de points, mais avec plusieurs motifs de satisfaction. Parti dernier après une pénalité liée au remplacement de composants de son groupe propulseur, Oliver Bearman a réalisé une belle remontée jusqu'à…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/haas-f1-bearman-savoure-sa-remontee-spectaculaire-a-las-vegas,213623.html",
+   "impact": {
+    "targetType": "driver",
+    "targetIds": [
+     "bearman"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 1.06,
+    "impactLabel": "Cotes +6%",
+    "teamId": "haas"
+   },
+   "firstSeen": "2026-11-23T10:51:02.379Z"
+  }
+ ]
+}
