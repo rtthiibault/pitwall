@@ -2,7 +2,7 @@
 // Lancé toutes les heures par .github/workflows/news.yml : le relevé n'a lieu que si le précédent date
 // de 5 h ou plus (cadence exacte de 5 h). FORCE=1 pour relever tout de suite.
 import { readFile, writeFile } from 'node:fs/promises';
-import { analyze, driverKeys, isF1 } from './news-analyze.mjs';
+import { analyze, driverKeys, isF1, isEnglish } from './news-analyze.mjs';
 
 const OUT = 'data/news.json';
 const PERIOD = 5 * 36e5;
@@ -13,8 +13,8 @@ const FEEDS = [
   { name: 'Nextgen-Auto', url: 'https://motorsport.nextgen-auto.com/backend.php', lang: 'fr', filter: true },
   { name: 'F1i', url: 'https://f1i.com/feed', lang: 'fr', filter: true },
   { name: 'AutoHebdo', url: 'https://www.autohebdo.fr/feed/', lang: 'fr', filter: true },
-  { name: 'Motorsport.com (EN)', url: 'https://www.motorsport.com/rss/f1/news/', lang: 'en' },
-  { name: 'The Race', url: 'https://www.the-race.com/formula-1/feed/', lang: 'en' },
+  // secours anglophone : utilisé seulement si les sources françaises donnent moins de 15 dépêches
+  { name: 'Motorsport.com (EN)', url: 'https://www.motorsport.com/rss/f1/news/', lang: 'en', backup: true },
 ];
 
 const ENT = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', rsquo: '’', lsquo: '‘', ldquo: '“', rdquo: '”', hellip: '…', eacute: 'é', egrave: 'è', agrave: 'à', ccedil: 'ç', ecirc: 'ê', ocirc: 'ô', icirc: 'î', ndash: '–', mdash: '—', laquo: '«', raquo: '»' };
@@ -54,12 +54,14 @@ async function main() {
 
   const now = Date.now(), seen = new Set(), fresh = [], sources = [];
   for (const f of FEEDS) {
+    if (f.backup && fresh.length >= 15) continue;
     try {
       const list = await fetchFeed(f);
       sources.push({ name: f.name, ok: true, n: list.length });
       for (const x of list) {
         if (now - x.date > KEEP_DAYS * 864e5) continue;
-        if (f.filter && !isF1(x)) continue;
+        if (!isF1(x, drivers, !!f.filter)) continue;
+        if (f.lang === 'fr' && isEnglish(x)) continue;   // certaines sources publient aussi en anglais
         const key = x.title.toLowerCase().replace(/[^a-z0-9]+/g, '').slice(0, 60);
         if (seen.has(key)) continue; seen.add(key);
         const summary = cut(x.summary.replace(/^(.{0,20}\s)?(lire la suite|read more).*/i, ''), 260);
@@ -70,7 +72,10 @@ async function main() {
     } catch (e) { sources.push({ name: f.name, ok: false, err: e.message }); console.warn(`${f.name} : ${e.message}`); }
   }
   // fusion avec les dépêches déjà publiées (une dépêche garde son id et sa date de première détection)
-  const byId = new Map((prev.items || []).filter((x) => now - Date.parse(x.timestamp) < KEEP_DAYS * 864e5).map((x) => [x.id, x]));
+  // les dépêches déjà publiées sont ré-analysées (règles améliorées entre deux relevés) et re-filtrées
+  const byId = new Map((prev.items || []).filter((x) => now - Date.parse(x.timestamp) < KEEP_DAYS * 864e5)
+    .filter((x) => isF1(x, drivers, /AutoHebdo|F1i|Nextgen/.test(x.source)) && !(x.lang === 'fr' && isEnglish(x)))
+    .map((x) => { const a = analyze({ title: x.title, summary: x.summary }, drivers); return [x.id, { ...x, category: a.category, impact: a.impact }]; }));
   for (const x of fresh) if (!byId.has(x.id)) byId.set(x.id, { ...x, firstSeen: new Date(now).toISOString() });
   const items = [...byId.values()].sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp)).slice(0, MAX_ITEMS);
   if (!sources.some((s) => s.ok) && prev.items && prev.items.length) console.warn('Aucune source joignable : dépêches précédentes conservées');

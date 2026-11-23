@@ -59,14 +59,20 @@
     if (!F1.store.get().name) setTimeout(welcome, 700);
     setInterval(tick, 1000);
     setInterval(refresh, 15 * 60 * 1000);
-    F1.data.onLive(() => setTimeout(refresh, 200)); // l'API live a répondu après l'affichage : mise à jour en arrière-plan
+    F1.data.onLive(() => setTimeout(refresh, 200));
+    if (F1.news) {
+      F1.news.onChange(() => { computeMarkets(); renderSlip(); if (!document.documentElement.classList.contains('race-lock') && /^(#\/?)?$|^#\/(paris|paddock)/.test(location.hash)) route(); });
+      let pwLast = Date.now();
+      setInterval(() => { const n = F1.news.nextAt(); if (!document.hidden && n && Date.now() > n + 60e3 && Date.now() - pwLast > 120e3) { pwLast = Date.now(); F1.news.load(true); } }, 30e3);
+    } // l'API live a répondu après l'affichage : mise à jour en arrière-plan
     document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
   }
 
   /* ---------- Championnats : la F1 et le WEC sont chargés tous les deux, un seul est affiché ---------- */
   const skey = (ss) => ss.key || ss.year;
   async function loadAll() {
-    const [f1, wec] = await Promise.all([F1.data.loadSeason(), F1.wec ? F1.wec.loadSeason().catch(() => null) : null]);
+    const nw = F1.news && !F1.news.data ? Promise.race([F1.news.load(), new Promise((r) => setTimeout(r, 1500))]) : null;
+    const [f1, wec] = await Promise.all([F1.data.loadSeason(), F1.wec ? F1.wec.loadSeason().catch(() => null) : null, nw]);
     S.f1 = f1; S.wec = wec;
     pickSeries();
   }
@@ -199,6 +205,7 @@
       case 'mes-paris': html = pageMyBets(); break;
       case 'amis': html = pageFriends(parts); break;
       case 'manager': html = pageManager(parts[1]); break;
+      case 'paddock': html = pagePaddock(); break;
       default: html = pageHome();
     }
     app.innerHTML = sourceNotice() + html;
@@ -300,7 +307,7 @@
     const closed = m && isClosed(m);
     const color = x.teamId ? tcol(x.teamId) : 'var(--gold)';
     const lbl = label != null ? label : `${x.teamId ? `<span class="tstripe" style="background:${color}"></span>` : ''}${esc(x.label)}`;
-    return `<button class="odd ${compact ? 'compact' : ''} ${on ? 'on' : ''} ${cls}" data-sid="${esc(x.sid)}" ${closed ? 'disabled' : ''} title="${esc(x.mtitle)} — ${esc(x.label)} · probabilité estimée ${pct(x.prob)}">${compact ? '' : `<span class="lbl">${lbl}</span>`}<span class="o">${fmtOdds(x.odds)}</span>${compact ? '' : `<span class="bar" style="width:${Math.min(100, x.prob * 100)}%;color:${color}"></span>`}</button>`;
+    return `<button class="odd ${compact ? 'compact' : ''} ${on ? 'on' : ''} ${cls}" data-sid="${esc(x.sid)}" ${closed ? 'disabled' : ''} title="${esc(x.mtitle)} — ${esc(x.label)} · probabilité estimée ${pct(x.prob)}">${compact ? '' : `<span class="lbl">${lbl}</span>`}<span class="o">${fmtOdds(x.odds)}</span>${x.news ? `<span class="pdw-odd ${x.news > 1 ? 'up' : 'dn'}" title="Paddock Wire : cote ${x.news > 1 ? '+' : ''}${Math.round((x.news - 1) * 100)} % sous l'effet de l'actualité">${x.news > 1 ? '▲' : '▼'}</span>` : ''}${compact ? '' : `<span class="bar" style="width:${Math.min(100, x.prob * 100)}%;color:${color}"></span>`}</button>`;
   }
   function closeChip(m) {
     if (!m.closes) return '';
@@ -349,6 +356,84 @@
     });
   }
 
+
+  /* =================== Paddock Wire : actualité F1 et moteur d'impact =================== */
+  const PW_ICON = '<svg class="pdw-ico" viewBox="0 0 32 20" aria-hidden="true"><path d="M1 6.5h5M0 10h6M2 13.5h4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M9 2.5h16.5a1 1 0 0 1 1 1v12.2a1.8 1.8 0 0 0 1.8 1.8H10.6A1.6 1.6 0 0 1 9 15.9Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M26.5 6.5h3a.9.9 0 0 1 .9.9v8.3a1.8 1.8 0 0 1-3.6 0" fill="none" stroke="currentColor" stroke-width="1.4"/><rect x="12" y="5.4" width="5.6" height="4.4" fill="currentColor"/><path d="M19.6 5.9h4.2M19.6 9.3h4.2M12 12.6h11.8" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
+  const PW_CAT = { TECHNIQUE: ['tech', 'Technique'], PADDOCK: ['pad', 'Paddock'], 'RÈGLEMENT': ['reg', 'Règlement'], 'MÉTÉO': ['wx', 'Météo'] };
+  const pwAgo = (t) => { const m = Math.max(0, Math.round((Date.now() - t) / 60e3)); return m < 1 ? "à l'instant" : m < 60 ? `il y a ${m} min` : m < 1440 ? `il y a ${Math.floor(m / 60)} h` : `il y a ${Math.floor(m / 1440)} j`; };
+  const pwTime = (t) => new Date(t).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const pwName = (id) => { const t = S.f1 && S.f1.teams.get(id); if (t) return t.short; const d = S.f1 && S.f1.drivers.get(id); return d ? d.family : F1.teamShort(id); };
+  const pwSign = (v) => (v > 0 ? '+' : '') + String(v).replace('.', ',');
+  function pwImpact(x) {
+    const im = x.impact; if (!im) return '';
+    const w = F1.news.weight(x), live = w > 0;
+    const ids = im.targetIds.map((id) => { const tid = im.targetType === 'driver' ? (drv(id) || {}).teamId : id; return `<span class="pdw-tgt" style="--tc:${F1.teamColor(tid)}">${esc(pwName(id))}</span>`; }).join('');
+    const kind = { engine: 'Motoriste', team: 'Écurie', driver: 'Pilote' }[im.targetType] || '';
+    const left = Date.parse(x.firstSeen || x.timestamp) + 7 * 864e5 - Date.now();
+    return `<div class="pdw-imp ${im.bettingOddsMultiplier > 1 ? 'neg' : 'pos'} ${live ? '' : 'off'}"><div class="pdw-imp-h"><span class="pdw-k">Impact · ${kind}</span>${ids}</div>
+      <div class="pdw-imp-b"><b class="num">${esc(im.impactLabel)}</b><span class="pdw-w">${live ? `${w >= 1 ? 'Plein effet' : `Effet ${Math.round(w * 100)} %`} · s'estompe d'ici ${Math.max(1, Math.ceil(left / 864e5))} j` : 'Effet terminé'}</span></div><i class="pdw-gauge" style="--w:${Math.round(w * 100)}%"></i></div>`;
+  }
+  function pwCard(x) {
+    const [cc, cl] = PW_CAT[x.category] || PW_CAT.PADDOCK;
+    return `<article class="pdw-card ${x.impact ? 'has-imp' : ''}" data-cat="${cc}"><header class="pdw-meta"><span class="pdw-cat ${cc}">${cl}</span><span>${esc(x.source)}</span><time datetime="${esc(x.timestamp)}" title="${esc(pwTime(Date.parse(x.timestamp)))}">${pwAgo(Date.parse(x.timestamp))}</time></header>
+      <h3>${esc(x.title)}</h3>${x.summary ? `<p>${esc(x.summary)}</p>` : ''}${pwImpact(x)}
+      <a class="pdw-src" href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">Lire sur ${esc(x.source)} ↗</a></article>`;
+  }
+  function pagePaddock() {
+    if (!F1.news) return '<div class="empty">Module indisponible.</div>';
+    const d = F1.news.data, items = F1.news.items(), nx = F1.news.nextAt();
+    const f = S.pwFilter || 'all';
+    const list = items.filter((x) => (f === 'all' ? true : f === 'imp' ? x.impact && F1.news.weight(x) > 0 : (PW_CAT[x.category] || [])[0] === f));
+    const b = F1.news.board();
+    const srcOk = d && d.sources ? d.sources.filter((x) => x.ok && !/\(EN\)/.test(x.name)).map((x) => x.name) : [];
+    const late = nx && Date.now() > nx;
+    const status = `<div class="pdw-status"><span class="pdw-live"><i></i>${d && d.updated ? 'Liaison paddock' : 'En attente'}</span>
+      <div class="pdw-st"><small>Dernier relevé</small><b>${d && d.updated ? esc(pwTime(Date.parse(d.updated))) : '—'}</b></div>
+      <div class="pdw-st"><small>${late ? 'Relevé en cours' : 'Prochaine mise à jour dans'}</small>${nx && !late ? `<b class="num pdw-cd" data-cd="${nx}"><span data-u="1">--</span>h <span data-u="2">--</span>m <span data-u="3">--</span>s</b>` : `<b>${late ? 'quelques minutes…' : '—'}</b>`}</div>
+      <div class="pdw-st"><small>Sources</small><b>${srcOk.length ? esc(srcOk.join(' · ')) : '—'}</b></div>
+      <button class="btn sm pdw-sync" data-action="pw-sync">↻ Forcer la synchro</button></div>`;
+    const chips = [['all', 'Tout', items.length], ['imp', 'Impact actif', items.filter((x) => x.impact && F1.news.weight(x) > 0).length], ['tech', 'Technique'], ['pad', 'Paddock'], ['reg', 'Règlement'], ['wx', 'Météo']]
+      .map(([k, l, n]) => `<button class="pdw-chip ${f === k ? 'on' : ''}" data-action="pw-filter" data-f="${k}">${l}${n != null ? ` <span class="num">${n}</span>` : ''}</button>`).join('');
+    const stat = (v) => (v ? `<b class="num ${v > 0 ? 'pos' : 'neg'}">${pwSign(v)}</b>` : '<span class="dim">·</span>');
+    const multTxt = (m) => `<b class="num ${m > 1 ? 'neg' : 'pos'}">${m > 1 ? '+' : ''}${Math.round((m - 1) * 100)} %</b>`;
+    const teamsRows = b.teams.map((t) => `<tr><td><span class="pdw-tgt" style="--tc:${F1.teamColor(t.id)}">${esc(pwName(t.id))}</span></td><td>${stat(t.mods.speed)}</td><td>${stat(t.mods.df)}</td><td>${stat(t.mods.rel)}</td><td>${multTxt(t.mult)}</td></tr>`).join('');
+    const drvRows = b.drivers.map((x) => `<li><span class="pdw-tgt" style="--tc:${F1.teamColor((drv(x.id) || {}).teamId)}">${esc(pwName(x.id))}</span>${multTxt(x.mult)}</li>`).join('');
+    const side = `<aside class="pdw-side"><div class="card pdw-board"><div class="pdw-bh"><h3>Impact en direct</h3><span class="muted">${b.teams.length + b.drivers.length ? 'cumul des dépêches actives' : ''}</span></div>
+      ${b.teams.length ? `<table class="pdw-tab"><thead><tr><th>Écurie</th><th title="Vitesse de pointe (moteur)">Vit.</th><th title="Appui (aéro)">Appui</th><th title="Fiabilité">Fiab.</th><th>Cotes</th></tr></thead><tbody>${teamsRows}</tbody></table>` : '<p class="muted" style="font-size:14px">Aucune écurie touchée en ce moment : les dernières dépêches ne portent pas sur la performance.</p>'}
+      ${b.drivers.length ? `<h4>Pilotes</h4><ul class="pdw-drv">${drvRows}</ul>` : ''}</div>
+      <div class="card pdw-how"><h4>Comment l'actualité agit</h4><ul>
+        <li><b>F1 Manager</b> : moteur → vitesse de pointe, aéro → appui, fiabilité → risque de casse, pour l'écurie concernée (IA et votre châssis) en course de campagne.</li>
+        <li><b>Paris</b> : les cotes des pilotes et écuries visés sont multipliées (▲ cote plus haute, ▼ plus basse). Les paris déjà placés gardent leur cote.</li>
+        <li><b>Durée</b> : plein effet 48 h, puis effet dégressif jusqu'à 7 jours.</li>
+        <li><b>GP Hebdomadaire</b> : non concerné, pour que tout le monde court à armes égales.</li></ul></div></aside>`;
+    const feed = list.length ? list.map(pwCard).join('') : `<div class="empty">${items.length ? 'Aucune dépêche dans cette catégorie.' : 'Premier relevé du paddock en attente.'}</div>`;
+    return `<section class="pdw-page"><div class="pdw-hero"><div class="pdw-title">${PW_ICON}<h1 class="pdw-word">Paddock Wire</h1></div><p class="muted">Dépêches F1 relevées toutes les 5 heures. Chaque information analysée agit sur les monoplaces de F1 Manager et sur les cotes.</p></div>
+      ${status}<div class="pdw-chips">${chips}</div><div class="pdw-grid"><div class="pdw-feed">${feed}</div>${side}</div></section>`;
+  }
+  // Accueil : les dernières dépêches
+  function pwHome() {
+    if (!F1.news || S.series === 'wec') return '';
+    // les dépêches qui pèsent en ce moment d'abord, puis les plus récentes
+    const all = F1.news.items(), hot = all.filter((x) => x.impact && F1.news.weight(x) > 0);
+    const it = [...hot.slice(0, 2), ...all.filter((x) => !hot.slice(0, 2).includes(x))].slice(0, 3);
+    if (!it.length) return '';
+    return `<section class="section"><div class="section-h"><h2 class="pdw-h2">${PW_ICON}<span class="pdw-word">Paddock Wire</span></h2><a class="link" href="#/paddock">Toutes les dépêches</a></div>
+      <div class="grid g3 pdw-mini">${it.map((x) => `<a class="pdw-card mini" href="#/paddock"><header class="pdw-meta"><span class="pdw-cat ${(PW_CAT[x.category] || PW_CAT.PADDOCK)[0]}">${(PW_CAT[x.category] || PW_CAT.PADDOCK)[1]}</span><time>${pwAgo(Date.parse(x.timestamp))}</time></header><h3>${esc(x.title)}</h3>${x.impact ? `<span class="pdw-mini-imp ${x.impact.bettingOddsMultiplier > 1 ? 'neg' : 'pos'}">${esc(x.impact.impactLabel)}</span>` : ''}</a>`).join('')}</div></section>`;
+  }
+  async function pwSync(btn) {
+    if (btn) { btn.disabled = true; btn.textContent = 'Synchro…'; }
+    const before = new Map([...S.markets, ...S.seasonMarkets].flatMap((m) => m.selections.map((x) => [x.sid, x.odds])));
+    const n0 = F1.news.items().length;
+    const r = await F1.news.load(true);
+    computeMarkets();
+    let moved = 0; [...S.markets, ...S.seasonMarkets].forEach((m) => m.selections.forEach((x) => { const o = before.get(x.sid); if (o && o !== x.odds) moved++; }));
+    const n1 = F1.news.items().length;
+    route();
+    if (F1.news.error && !r.changed) toast('⚠️', 'Paddock injoignable, dépêches en cache conservées', 'lose');
+    else if (r.changed) toast('📰', `${Math.max(0, n1 - n0) ? `${n1 - n0} nouvelle(s) dépêche(s)` : 'Relevé mis à jour'} · ${moved} cote(s) recalculée(s)`, 'win');
+    else toast('📡', `Synchro faite : déjà à jour. Impacts réappliqués aux monoplaces et aux cotes${moved ? ` (${moved} cote(s) modifiée(s))` : ''}.`);
+  }
+
   /* =================== Accueil =================== */
   // Sélecteur de championnat (pictogrammes originaux, pas les logos officiels)
   function seriesSwitch() {
@@ -367,6 +452,7 @@
     if (S.series !== 'wec' && nx && F1.store.canClaim(s, nx)) h += `<div class="notice" style="margin-top:18px">🎁 Prime du week-end disponible : <b>+${F1.store.WEEKLY} jetons</b> pour le ${esc(nx.nameFr)}. <span class="sp"></span><button class="btn sm gold" data-action="claim">Récupérer</button></div>`;
     if (S.series !== 'wec' && nx && F1.store.canRescue(s, nx)) h += `<div class="notice red" style="margin-top:18px">💸 Réservoir vide ? Le stand vous ravitaille : <b>+${F1.store.RESCUE} jetons</b>. <span class="sp"></span><button class="btn sm" data-action="rescue">Ravitailler</button></div>`;
 
+    h += pwHome();
     if (S.markets.length) {
       const win = S.markets.find((m) => m.kind === 'win');
       h += `<section class="section"><div class="section-h"><h2>Favoris pour la victoire</h2><a class="link" href="#/paris">Tous les marchés</a></div><div class="grid g4">${win.selections.slice(0, 4).map((x, i) => favCard(x, win, i)).join('')}</div></section>`;
@@ -1094,7 +1180,10 @@
     const owned = m.parts || {};
     // 01 — stand : la voiture et sa télémétrie face à la moyenne de la ligue
     const tele = MG().STATS.map((st) => { const v = car[st.k], o = botAvg(st.k), mx = Math.max(v, o, 1) * 1.08; return `<div class="tl"><small>${st.icon} ${st.short}</small><div class="tl-bars"><i class="me" style="width:${(v / mx) * 100}%"></i><i class="ia" style="width:${(o / mx) * 100}%"></i></div><b class="num">${Math.round(v)}</b><span class="muted num">IA ${Math.round(o)}</span></div>`; }).join('');
-    const stand = `<div class="hq-car">${F1.visuals.car(ch.id, { live: true, number: drvM.number, sponsor: livery(m) })}</div><div class="tele-grid">${tele}</div>${mechChips(car)}`;
+    const nwm = F1.news && F1.news.teamMods()[ch.id];
+    const nwTxt = nwm ? [['speed', 'Vitesse'], ['df', 'Appui'], ['rel', 'Fiabilité']].filter(([k]) => nwm[k]).map(([k, l]) => `${l} ${nwm[k] > 0 ? '+' : ''}${nwm[k]}`).join(' · ') : '';
+    const pwStrip = nwm ? `<a class="pdw-strip ${nwm.speed + nwm.df + nwm.rel < 0 ? 'neg' : 'pos'}" href="#/paddock">${PW_ICON}<span><b>Paddock Wire</b> · l'actualité ${esc(F1.teamShort(ch.id))} pèse sur votre châssis en course : <b class="num">${nwTxt}</b></span><span class="pdw-go">Voir les dépêches →</span></a>` : '';
+    const stand = pwStrip + `<div class="hq-car">${F1.visuals.car(ch.id, { live: true, number: drvM.number, sponsor: livery(m) })}</div><div class="tele-grid">${tele}</div>${mechChips(car)}`;
     // 02 — pilote
     const e = drvM.exp;
     const dstat = (l, k) => statBar(l, drvM[k], drvM.base[k], 'var(--gold)');
@@ -1519,7 +1608,7 @@
     const player = { name: meName, driver: ctx.drvM, car: ctx.car, setup: ctx.m.setup, chassisId: ctx.ch.id };
     const seed = MG().hash(`${Date.now()}-${Math.random()}`);
     // la météo de la course est celle annoncée par le bulletin ; la course est décomptée dès le départ
-    const R = MG().createRace({ player, bots: ctx.bots, race: ctx.race, seed, wxSeed: ctx.m.next.seed, startTyre: ctx.m.next.tyre, plan: ctx.m.next.plan, manual: true });
+    const R = MG().createRace({ player, bots: ctx.bots, race: ctx.race, seed, wxSeed: ctx.m.next.seed, startTyre: ctx.m.next.tyre, plan: ctx.m.next.plan, manual: true, news: F1.news ? F1.news.teamMods() : null });
     let bill; try { bill = F1.store.consumeRace(); } catch (err) { return toast('⚠️', esc(err.message), 'err'); }
     if (bill.paid) toast('🟡', `Course supplémentaire : −${bill.paid} jetons`, 'win');
     showRace(R, ctx);
@@ -2204,6 +2293,8 @@
       case 'close-modal': closeModal(); break;
       case 'modal-bg': if (e.target === a && F1.store.get().name) closeModal(); break;
       case 'reload': F1.data.clearCache(); location.reload(); break;
+      case 'pw-sync': pwSync(a); break;
+      case 'pw-filter': S.pwFilter = a.dataset.f; route(); break;
       default:
     }
   });

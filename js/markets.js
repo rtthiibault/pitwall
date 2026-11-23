@@ -14,12 +14,21 @@
   const lex = (s) => LEX[s.series === 'wec' ? 'wec' : 'f1'];
   const skey = (s) => s.key || s.year;
 
+  // Paddock Wire : multiplicateur de cote issu de l'actualité (F1 uniquement ; pour « Abandon », l'effet est inversé)
+  let NEWS = null;
   function sel(market, key, label, p, extra = {}) {
-    return { mid: market.id, key, sid: market.id + '|' + key, label, prob: p, odds: toOdds(p, market.margin || 1.07), kind: market.kind, round: market.round, mtitle: market.title, ...extra };
+    let nm = 1;
+    if (NEWS && (extra.driverId || extra.teamId)) {
+      nm = NEWS.oddsMult(extra.teamId, extra.driverId);
+      if (Math.abs(nm - 1) > 0.005) p = market.kind === 'dnf' ? Math.min(0.95, p * nm) : p / nm;
+      else nm = 1;
+    }
+    return { mid: market.id, key, sid: market.id + '|' + key, label, prob: p, odds: toOdds(p, market.margin || 1.07), kind: market.kind, round: market.round, mtitle: market.title, ...(nm !== 1 ? { news: Math.round((market.kind === 'dnf' ? 1 / nm : nm) * 100) / 100 } : {}), ...extra };
   }
 
   /* Marchés d'un Grand Prix */
   function buildRace(season, race, sim) {
+    NEWS = season.series !== 'wec' && F1.news ? F1.news : null;
     const R = race.round, X = lex(season);
     const M = [];
     const add = (m) => { m.round = R; M.push(m); return m; };
@@ -120,6 +129,7 @@
 
   /* Marchés de saison */
   function buildSeason(season, ss) {
+    NEWS = season.series !== 'wec' && F1.news ? F1.news : null;
     const closes = (season.races.filter((r) => !r.results).slice(-1)[0] || {}).date || null;
     const X = lex(season);
     const m1 = { id: `s${skey(season)}:wdc`, kind: 'wdc', round: 0, title: X.wdc(season.year), sub: season.doneCount ? `Simulation des ${ss.remaining} manches restantes` : `Avant-saison · simulation des ${ss.remaining} manches`, closes, group: 'season', margin: 1.1, layout: 'drivers' };

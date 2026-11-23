@@ -594,7 +594,7 @@
   const DILEMMA_AT = [0.25, 0.55, 0.8];   // dilemmes radio vers 25 %, 55 % et 80 % de la course
   const dilemmaLaps = (laps) => DILEMMA_AT.map((f) => Math.round(f * laps));
   const DILEMMA_LAPS = dilemmaLaps(LAPS);
-  function createRace({ player, bots, grid, race, seed, wxSeed, rainProb, temp, startTyre, plan, manual }) {
+  function createRace({ player, bots, grid, race, seed, wxSeed, rainProb, temp, startTyre, plan, manual, news }) {
     const w = circuitProfile(race);
     const LAPS = lapsOf(race), K = LAPS / 20, DL = dilemmaLaps(LAPS);
     // générateur aléatoire dont l'état peut être sauvegardé : un tour peut être recalculé à l'identique
@@ -605,7 +605,10 @@
     const abr = 0.88 + w.df * 0.35 + w.rel * 0.3;   // abrasivité du circuit
     const wet0 = weather[0].wet;
     const field = (grid || [{ ...player, me: true }, ...bots]).map((c0, i) => {
-      const c = c0.human ? { ...c0, plan: planFor(c0.plan, LAPS).stops } : c0;   // joueur en ligne : plan d'arrêts mis à l'échelle du circuit
+      let c = c0.human ? { ...c0, plan: planFor(c0.plan, LAPS).stops } : c0;   // joueur en ligne : plan d'arrêts mis à l'échelle du circuit
+      // Paddock Wire : l'actualité réelle modifie la monoplace de l'écurie concernée (moteur -> vitesse, aéro -> appui, fiabilité)
+      const nm = news && news[c.chassisId];
+      if (nm) c = { ...c, news: nm, car: { ...c.car, speed: c.car.speed + nm.speed, df: c.car.df + nm.df, rel: Math.min(99, Math.max(30, c.car.rel + nm.rel)) } };
       const car = withSetup(c.car, c.setup);
       const cs = carScore(car, w);
       const mech = c.car.mech || {};

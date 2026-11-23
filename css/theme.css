@@ -502,3 +502,110 @@ html.race-lock, html.race-lock body { overflow: hidden !important; overscroll-be
 .wk-row { display: flex; gap: 10px; align-items: center; padding: 8px 10px; background: var(--raised); border-radius: var(--radius-s); } .wk-row .num { margin-left: auto; }
 #wkTabs { flex-wrap: wrap; }
 @media (max-width: 860px) { .wk-grid { grid-template-columns: minmax(0, 1fr); } .wk-b-r { justify-items: start; } }
+
+/* =================== Paddock Wire (actualité F1 · Information & Data live) =================== */
+:root { --pw: #ffa51f; --pw-dim: rgba(255, 165, 31, .14); --pw-line: rgba(255, 165, 31, .45); }
+/* Titre « vitesse » : italique marqué, police étirée, hachures de fuite à gauche, dégradé directionnel */
+.pdw-word { position: relative; display: inline-block; font-style: italic !important; font-weight: 800; font-variation-settings: 'wdth' 118; letter-spacing: .01em; text-transform: uppercase;
+  padding-left: .62em; background: linear-gradient(90deg, rgba(255, 165, 31, .55) 0%, var(--pw) 22%, #fff 78%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.pdw-word::before { content: ''; position: absolute; left: 0; top: 18%; bottom: 18%; width: .5em; transform: skewX(-14deg);
+  background: repeating-linear-gradient(to bottom, var(--pw) 0 1.5px, transparent 1.5px 3.6px);
+  -webkit-mask: linear-gradient(90deg, transparent, #000 85%); mask: linear-gradient(90deg, transparent, #000 85%); }
+.pdw-ico { width: 30px; height: 19px; flex: none; color: var(--pw); }
+
+/* Bouton d'accès (en-tête), même gabarit que F1 Manager, bordure en pointillés télémétrie */
+.top-right .pw-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px 6px 9px; border-radius: var(--radius-s); white-space: nowrap; font-size: 14px; color: var(--text);
+  border: 1px dashed var(--pw-line); background: linear-gradient(90deg, var(--pw-dim), transparent 70%); }
+.top-right .pw-btn:hover, .top-right .pw-btn.active { border-style: solid; border-color: var(--pw); background: linear-gradient(90deg, rgba(255, 165, 31, .22), var(--raised) 75%); }
+.top-right .pw-btn .pdw-word { font-size: 13.5px; }
+.top-right .pw-btn i { font-style: normal; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #111; background: var(--pw); border-radius: 2px; padding: 0 4px; display: inline-flex; align-items: center; gap: 4px; }
+.top-right .pw-btn i::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #111; animation: pdwBlink 1.6s steps(2, start) infinite; }
+@keyframes pdwBlink { to { visibility: hidden; } }
+.nav a { white-space: nowrap; }
+/* en-tête entre tablette et petit écran de bureau : on resserre pour que tout tienne sur une ligne */
+@media (max-width: 1360px) and (min-width: 901px) { .nav { gap: 0; margin-left: 2px; } .nav a { padding: 8px 8px; font-size: 13.5px; } .top-right { gap: 6px; } }
+@media (max-width: 1240px) and (min-width: 901px) { .top-right .mgr-btn { font-size: 0; gap: 0; padding: 6px 8px; } .top-right .wallet { padding-left: 8px; padding-right: 8px; } }
+@media (max-width: 1120px) and (min-width: 901px) { .logo-word { display: none; } .nav a { padding: 8px 6px; font-size: 13px; } }
+@media (max-width: 1640px) { .top-right .pw-btn i { display: none; } }
+@media (max-width: 1480px) { .top-right .pw-btn .pdw-word { display: none; } .top-right .pw-btn { padding: 6px 8px; } }
+@media (max-width: 760px) { .top-right .pw-btn { display: inline-flex; padding: 5px 6px; } }
+
+/* Page */
+.pdw-page { padding-top: 6px; }
+.pdw-hero { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 6px 24px; margin-bottom: 16px; }
+.pdw-hero p { margin: 0; max-width: 560px; font-size: 14px; }
+.pdw-title { display: flex; align-items: center; gap: 12px; }
+.pdw-title .pdw-ico { width: 52px; height: 33px; }
+.pdw-title h1 { margin: 0; font-size: clamp(30px, 5vw, 48px); line-height: 1; }
+.pdw-status { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 26px; padding: 12px 16px; border: 1px solid var(--line); border-left: 3px solid var(--pw); border-radius: var(--radius);
+  background: repeating-linear-gradient(90deg, transparent 0 22px, rgba(255, 255, 255, .018) 22px 23px), var(--panel); margin-bottom: 14px; }
+.pdw-live { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--pw); }
+.pdw-live i { width: 8px; height: 8px; border-radius: 50%; background: var(--pw); box-shadow: 0 0 0 0 var(--pw); animation: pdwPulse 2s infinite; }
+@keyframes pdwPulse { 0% { box-shadow: 0 0 0 0 rgba(255, 165, 31, .6); } 80%, 100% { box-shadow: 0 0 0 8px rgba(255, 165, 31, 0); } }
+.pdw-st { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.pdw-st small { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.pdw-st b { font-size: 14.5px; font-weight: 650; }
+.pdw-cd { color: var(--pw); font-size: 17px !important; font-variant-numeric: tabular-nums; }
+.pdw-sync { margin-left: auto; background: transparent !important; color: var(--pw) !important; border: 1px solid var(--pw-line) !important; }
+.pdw-sync:hover { background: var(--pw-dim) !important; border-color: var(--pw) !important; }
+.pdw-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.pdw-chip { border: 1px solid var(--line2); background: transparent; color: var(--muted); border-radius: 999px; padding: 5px 12px; font-size: 13px; cursor: pointer; }
+.pdw-chip span { color: var(--dim); margin-left: 2px; }
+.pdw-chip.on { color: #111; background: var(--pw); border-color: var(--pw); }
+.pdw-chip.on span { color: rgba(0, 0, 0, .6); }
+.pdw-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
+@media (max-width: 980px) { .pdw-grid { grid-template-columns: 1fr; } .pdw-side { order: -1; } }
+.pdw-feed { display: flex; flex-direction: column; gap: 10px; }
+.pdw-card { position: relative; display: block; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px 12px; color: var(--text); }
+.pdw-card.has-imp { border-left: 3px solid var(--pw); }
+.pdw-card h3 { font-size: 17px; line-height: 1.3; margin: 6px 0 4px; font-weight: 700; }
+.pdw-card p { margin: 0 0 8px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.pdw-meta { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); }
+.pdw-meta time { margin-left: auto; color: var(--dim); }
+.pdw-cat { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 2px 6px; border-radius: 2px; border: 1px solid currentColor; }
+.pdw-cat.tech { color: var(--pw); } .pdw-cat.pad { color: #9fb3c8; } .pdw-cat.reg { color: var(--purple); } .pdw-cat.wx { color: #5ab0ff; }
+.pdw-src { font-size: 12.5px; color: var(--muted); text-decoration: none; }
+.pdw-src:hover { color: var(--pw); }
+.pdw-imp { position: relative; margin: 6px 0 10px; padding: 9px 11px 11px; border-radius: var(--radius-s); background: rgba(0, 0, 0, .22); border: 1px solid var(--line); overflow: hidden; }
+.pdw-imp-h { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 5px; }
+.pdw-k { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--pw); margin-right: 4px; }
+.pdw-imp-b { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; font-size: 14px; }
+.pdw-imp.neg .pdw-imp-b b { color: #ff7b72; } .pdw-imp.pos .pdw-imp-b b { color: var(--win); }
+.pdw-imp.off { opacity: .55; }
+.pdw-w { font-size: 12px; color: var(--dim); }
+.pdw-gauge { position: absolute; left: 0; bottom: 0; height: 2px; width: var(--w); background: var(--pw); }
+.pdw-tgt { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 650; padding: 1px 7px 1px 0; }
+.pdw-tgt::before { content: ''; width: 3px; height: 13px; border-radius: 1px; background: var(--tc, #888); }
+.pdw-side { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 84px; }
+@media (max-width: 980px) { .pdw-side { position: static; } }
+.pdw-board h3 { margin: 0; font-size: 15px; text-transform: uppercase; letter-spacing: .06em; }
+.pdw-bh { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 10px; }
+.pdw-bh span { font-size: 12px; text-align: right; }
+.pdw-tab { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.pdw-tab th { text-align: right; font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; padding: 0 4px 6px; }
+.pdw-tab th:first-child, .pdw-tab td:first-child { text-align: left; }
+.pdw-tab td { text-align: right; padding: 6px 4px; border-top: 1px solid var(--line); }
+.pdw-board .pos, .pdw-drv .pos { color: var(--win); } .pdw-board .neg, .pdw-drv .neg { color: #ff7b72; }
+.pdw-board h4, .pdw-how h4 { margin: 14px 0 6px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.pdw-how h4 { margin-top: 0; }
+.pdw-drv { list-style: none; margin: 0; padding: 0; }
+.pdw-drv li { display: flex; justify-content: space-between; padding: 5px 0; border-top: 1px solid var(--line); font-size: 13.5px; }
+.pdw-how ul { margin: 0; padding-left: 16px; font-size: 13px; color: var(--muted); line-height: 1.5; }
+.pdw-how li + li { margin-top: 6px; }
+.pdw-how b { color: var(--text); }
+/* Accueil */
+.pdw-h2 { display: flex; align-items: center; gap: 8px; }
+.pdw-h2 .pdw-word { font-size: inherit; }
+.pdw-card.mini { text-decoration: none; transition: border-color .15s; }
+.pdw-card.mini:hover { border-color: var(--pw-line); }
+.pdw-card.mini h3 { font-size: 15px; margin: 8px 0 6px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.pdw-mini-imp { display: inline-block; font-size: 12px; font-weight: 650; padding: 2px 6px; border-radius: 2px; background: var(--pw-dim); }
+.pdw-mini-imp.neg { color: #ff9b94; } .pdw-mini-imp.pos { color: var(--win); }
+/* Cotes touchées par l'actualité */
+.odd { position: relative; }
+.pdw-odd { position: absolute; top: 2px; right: 3px; font-size: 8px; line-height: 1; color: var(--pw); }
+/* QG F1 Manager */
+.pdw-strip { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; padding: 8px 12px; margin-bottom: 10px; border: 1px dashed var(--pw-line); border-radius: var(--radius-s); background: var(--pw-dim); color: var(--text); font-size: 13.5px; text-decoration: none; }
+.pdw-strip .pdw-ico { width: 24px; height: 15px; }
+.pdw-strip.neg b.num { color: #ff9b94; } .pdw-strip.pos b.num { color: var(--win); }
+.pdw-go { margin-left: auto; color: var(--pw); font-size: 12.5px; }

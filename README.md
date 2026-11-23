@@ -276,3 +276,14 @@ Onglet **GP Hebdo** du QG, en parallèle de la campagne et avec le même garage 
 
 Activation du classement : exécuter une fois `supabase/migration-weekly.sql` dans Supabase (SQL Editor → New query → Run).
 Le serveur compte les tentatives, n'accepte que la semaine en cours et garde le meilleur temps.
+
+
+## Paddock Wire (actualité F1 et moteur d'impact)
+
+Page `#/paddock`, accessible par le bouton « Paddock Wire » de l'en-tête et par le bloc de l'accueil.
+
+- **Relevé toutes les 5 h** : `.github/workflows/news.yml` tourne chaque heure et lance `scripts/update-news.mjs`, qui ne relève que si le dernier relevé date de 5 h ou plus. Lancement manuel (Actions → Paddock Wire → Run workflow) pour relever tout de suite.
+- **Sources** : flux RSS francophones (Motorsport.com, Nextgen-Auto, F1i, AutoHebdo) ; Motorsport.com en anglais seulement en secours. Seuls le titre, un extrait court et le lien vers l'article sont repris.
+- **Analyse** (`scripts/news-analyze.mjs`, règles par mots-clés FR/EN) : écuries, motoristes et pilotes cités, sujet (moteur, aéro, fiabilité, pilote, règlement, météo) et tonalité → catégorie `TECHNIQUE | PADDOCK | RÈGLEMENT | MÉTÉO` et `impact { targetType, targetIds, managerModifiers { powerUnit, aero, reliability }, bettingOddsMultiplier, impactLabel }`. Transferts, contrats et rumeurs n'ont pas d'impact.
+- **Effets** (`js/news.js`) : moteur → vitesse de pointe, aéro → appui, fiabilité → risque de casse, pour l'écurie visée dans les courses de campagne F1 Manager ; cotes des pilotes et écuries visés multipliées dans les Paris (inversé pour le marché « Abandon »). Plein effet 48 h, puis dégressif jusqu'à 7 jours ; une même info reprise par plusieurs médias ne compte qu'une fois. Le GP Hebdomadaire n'est pas affecté (même course pour tous).
+- **Synchro** : le site recharge `data/news.json` dès qu'un relevé est attendu ; le bouton « Forcer la synchro » le recharge immédiatement et réapplique les impacts.

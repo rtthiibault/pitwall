@@ -35,9 +35,12 @@ const RX = {
   reliab: /\b(fiabilite|fiable|pannes?|casses?|abandons?|surchauffe|fuites?|reliability|reliable|failures?|retire[sd]?|retirement|dnf|boite de vitesses|gearbox|hydraulique|probleme technique|technical (issue|problem)|blown|incendie|fire)\b/,
   upgrade: /\b(evolutions?|nouvelles? (specification|version|spec|package|aileron|fond|piece)s?|ameliorations?|ameliore|upgrades?|upgraded|mise a jour|package|nouveautes?)\b/,
   pos: /\b(gains?|gagne|progres|progresse|plus rapide|en forme|domine|domination|dominante?|record|pole|victoire|vainqueur|remporte|triomphe|wins?|won|victory|dominant|dominates|fastest|quickest|boost|ameliore|ameliorations?|confiant|competitif|competitive|step forward|pas en avant|reussite|efficace|solide|leader|en tete|meilleur temps|upgrade)\b/,
-  neg: /\b(deficit|manque|pertes?|perd|probleme|problemes|difficultes?|difficile|lutte|galere|souffre|crise|pannes?|casses?|abandons?|decevant|deception|recul|lent|lenteur|penalite|penalites|sanction|sanctionne|disqualifie|disqualification|struggles?|struggling|problems?|issues?|lack|slow|crisis|penalty|penalised|penalized|disqualified|blesse|blessure|malade|forfait|injur(y|ed)|ill(ness)?|accident|crash|sortie de piste|erreur|deficit|retard|handicap|inquietude|alerte|worry|concern|setback|surchauffe|fuite)\b/,
+  neg: /\b(deficit|manque|pertes?|perd|probleme|problemes|difficultes?|difficile|lutte|galere|souffre|crise|pannes?|casses?|abandons?|decevant|deception|recul|lent|lenteur|penalite|penalites|sanction|sanctionne|disqualifie|disqualification|struggles?|struggling|problems?|issues?|lack|slow|crisis|penalty|penalised|penalized|disqualified|blesse|blessure|malade|forfait|injur(y|ed)|ill(ness)?|accident|crash|sortie de piste|erreur|deficit|retard|handicap|inquietude|alerte|worry|concern|setback|surchauffe|fuite|fiasco|desastre|cauchemar|naufrage|disaster|nightmare|humiliation|calvaire)\b/,
   strong: /\b(gros|grosse|majeure?|important|importante|significati\w*|enorme|massive|major|big|huge|serieu\w*|grave|catastroph\w*|\d{2}\s?ch|\d{2}\s?hp|\d+\s?dixiemes?|\d+(,\d+)?\s?s(econdes?)? (au|par) tour)\b/,
-  injury: /\b(blesse|blessure|malade|forfait|injur(y|ed)|illness|hopital|hospital|remplace|remplacant|replaced|absent|withdraw\w*|declare forfait)\b/,
+  injury: /\b(blesse|blessure|malade|maladie|forfait|injur(y|ed)|illness|hopital|hospital|fracture|commotion)\b/,
+  contract: /\b(contrat|contract|deal|signe|signature|transfert|mercato|rumeur|piste|baquet|volant|remplace|remplacant|replaced|confirme|confirmed|titularise|prolong\w*|extension|salaire|salary|202[7-9]|2030)\b/,
+  form: /\b(crise|domine|domination|doubles?|victoire|triomphe|fiasco|desastre|catastroph\w*|naufrage|cauchemar|crisis|dominat\w*|one-two|disaster|nightmare)\b/,
+  other: /\b(motogp|moto ?gp|wec|hypercar|indycar|nascar|rallye|wrc|dakar|endurance|le mans|formule e|formula e|superbike|moto2|moto3)\b/,
   gridpen: /(penalite\w* (de |sur la )?(grille|\d+ places?)|recul\w* (de \d+ places )?sur la grille|grid penalty|place grid|depart (du fond|des stands|depuis la voie des stands)|pit ?lane start|back of the grid)/,
   driverPos: /\b(pole|victoire|vainqueur|remporte|triomphe|wins?|won|victory|domine|dominates|en forme|record|meilleur temps|fastest|quickest|confiant|leader|en tete|podium)\b/,
   driverNeg: /\b(erreur|crash|accident|sortie de piste|tete-a-queue|spin|mistake|penalite|penalty|sanction|disqualifie|disqualified|difficile|lutte|struggl\w*|decevant|deception)\b/,
@@ -89,18 +92,20 @@ export function analyze(item, drivers = []) {
 
   // 1) pilote cité dans le titre : blessure, pénalité de grille, forme
   const mainTeams = titleTeams.length ? titleTeams : teams;
-  if (titleDrv.length === 1 && (has('injury') || has('gridpen') || ((has('driverPos') || has('driverNeg')) && !tech))) {
+  // (transferts, contrats et rumeurs : pas d'effet sur la performance)
+  const ttone = Math.sign(count(RX.pos, tt) - count(RX.neg, tt)) || tone;
+  if (titleDrv.length === 1 && !RX.contract.test(tt) && (has('injury') || has('gridpen') || ((RX.driverPos.test(tt) || RX.driverNeg.test(tt)) && !tech))) {
     const d = titleDrv[0];
     impact.targetType = 'driver'; impact.targetIds = [d.id];
     if (has('injury') && tone <= 0) impact.bettingOddsMultiplier = 1.25;
     else if (has('gridpen')) impact.bettingOddsMultiplier = 1.15;
-    else if (has('driverPos') && tone > 0) impact.bettingOddsMultiplier = 0.95;
-    else if (has('driverNeg') && tone < 0) impact.bettingOddsMultiplier = 1.06;
+    else if (RX.driverPos.test(tt) && ttone > 0) impact.bettingOddsMultiplier = 0.95;
+    else if (RX.driverNeg.test(tt) && ttone < 0) impact.bettingOddsMultiplier = 1.06;
     else impact.targetType = null;
     if (impact.targetType) { impact.teamId = d.teamId; if (category === 'TECHNIQUE') category = 'PADDOCK'; }
   }
   // 2) sujet technique sur 1 à 3 écuries (au-delà : article de synthèse, pas d'impact)
-  if (!impact.targetType && tech && tone && mainTeams.length >= 1 && mainTeams.length <= 3) {
+  if (!impact.targetType && tech && tone && !RX.contract.test(tt) && mainTeams.length >= 1 && mainTeams.length <= 3) {
     const eng = has('engine'), aero = has('aero') || has('upgrade'), rel = has('reliab');
     if (eng) M.powerUnit = tone * (mag === 2 ? 4 : 2);
     if (aero && !(eng && !RX.aero.test(t))) M.aero = tone * (mag === 2 ? 3 : 2);
@@ -118,7 +123,7 @@ export function analyze(item, drivers = []) {
     }
   }
   // 3) forme générale d'une écurie (victoire, crise...) sans détail technique
-  if (!impact.targetType && !tech && tone && mainTeams.length === 1 && (pos + neg) >= 2 && category === 'PADDOCK') {
+  if (!impact.targetType && !tech && tone && titleTeams.length === 1 && RX.form.test(tt) && !RX.contract.test(tt) && category === 'PADDOCK') {
     impact.targetType = 'team'; impact.targetIds = mainTeams;
     M.aero = tone; M.powerUnit = tone > 0 ? 1 : 0;
   }
@@ -140,5 +145,15 @@ export function analyze(item, drivers = []) {
   return { category, impact };
 }
 
-export const isF1 = (item) => RX.f1.test(norm(`${item.title} ${item.summary}`)) || findTeams(norm(item.title)).length > 0;
+// strict = flux généraliste (toutes disciplines) : la F1 doit être explicitement citée
+export function isF1(item, drivers = [], strict = true) {
+  const t = norm(`${item.title} ${item.summary}`), tt = norm(item.title);
+  if (RX.other.test(tt) || /\b(f2|f3|formule 2|formule 3)\b/.test(tt)) return /\b(f1|formule 1)\b/.test(tt); // autre championnat dans le titre
+  if (!strict) return true;
+  return /\b(f1|formule 1|formula 1|formula one)\b/.test(t) || findTeams(tt).length > 0 || drivers.some((d) => tt.includes(` ${d.key} `));
+}
+// Langue : anglais si les mots outils anglais dominent
+const EN = /\b(the|and|after|with|for|to|of|his|her|as|says|over|from|into|why|how|what|who|is|was|has|be|at|on|in)\b/g;
+const FR = /\b(le|la|les|des|du|de|et|pour|sur|une|un|est|a|au|aux|son|sa|ses|qui|que|dans|avec|pas|ne|se|il|elle)\b/g;
+export const isEnglish = (item) => { const t = norm(item.title + ' ' + (item.summary || '').slice(0, 200)); return (t.match(EN) || []).length > (t.match(FR) || []).length; };
 export const driverKeys = (list) => list.map((d) => ({ ...d, key: norm(d.family).trim() })).filter((d) => d.key.length >= 4);
