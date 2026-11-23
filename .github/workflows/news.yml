@@ -1,8 +1,11 @@
 name: Paddock Wire (actualités F1)
 
+# Relevé toutes les 30 minutes, sans dépendre du planificateur de GitHub (qui retarde ou saute souvent les
+# tâches fréquentes) : un même passage reste actif ~5 h 40, relève toutes les 30 min, puis relance lui-même le
+# passage suivant. La tâche planifiée horaire ne sert que de filet de sécurité si la chaîne s'interrompt.
 on:
   schedule:
-    - cron: '11,41 * * * *'   # toutes les 30 min ; le script ne relève que si le dernier relevé a au moins ~30 min
+    - cron: '17 * * * *'
   workflow_dispatch:
     inputs:
       force:
@@ -12,6 +15,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: news
@@ -20,21 +24,35 @@ concurrency:
 jobs:
   news:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 355
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Relever et analyser les dépêches
-        run: node scripts/update-news.mjs
+      - name: Relever toutes les 30 minutes pendant ~5 h 40
         env:
-          FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force && '1' || '' }}
-      - name: Commit si nouveau relevé
+          FIRST_FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force && '1' || '' }}
         run: |
           git config user.name "pitwall-bot"
           git config user.email "pitwall-bot@users.noreply.github.com"
-          git add data/news.json
-          if git diff --cached --quiet; then echo "Pas de relevé"; exit 0; fi
-          git commit -m "Paddock Wire : relevé $(date -u '+%F %H:%M') UTC"
-          for i in 1 2 3; do git pull --rebase origin main && git push && break; sleep 5; done
+          end=$(( $(date +%s) + 340*60 ))
+          force="$FIRST_FORCE"
+          while :; do
+            git pull -q --rebase origin main || true
+            FORCE="$force" node scripts/update-news.mjs || echo "Relevé en échec, nouvel essai dans 30 min"
+            force=""
+            git add data/news.json
+            if ! git diff --cached --quiet; then
+              git commit -q -m "Paddock Wire : relevé $(date -u '+%F %H:%M') UTC"
+              for i in 1 2 3; do git pull -q --rebase origin main && git push -q && break; sleep 5; done
+            fi
+            # prochain relevé dans 30 min (si le passage a encore le temps)
+            [ $(( $(date +%s) + 30*60 )) -lt $end ] || break
+            sleep 1800
+          done
+      - name: Relancer le passage suivant
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run news.yml --repo "${{ github.repository }}" -f force=false || true
