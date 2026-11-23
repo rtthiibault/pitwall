@@ -836,3 +836,6 @@ html.low .trr-eq.talking i { animation: none; height: 9px; }
 .hq-rail a span { filter: none !important; }
 .hq-rail a span .pi { width: 22px; height: 22px; }
 .hq-rail a:not(.on):not(.active) span .pi { opacity: .82; }
+/* pictogramme F1 Manager (tracé au trait, blanc) */
+.f1-ico { color: #fff; overflow: visible; }
+.top-right .mgr-btn .f1-ico, .nav a.nav-mgr .f1-ico { width: 40px; height: 14px; }
