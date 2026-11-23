@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-23T18:06:54.493Z",
+ "updated": "2026-11-23T18:37:00.937Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-23T18:36:54.493Z",
+ "next": "2026-11-23T19:07:00.937Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 113
+   "n": 114
   },
   {
    "name": "F1i",
@@ -52,6 +52,18 @@
    "firstSeen": "2026-11-23T18:06:54.493Z"
   },
   {
+   "id": "news_nzmtz9",
+   "timestamp": "2026-11-23T18:00:00.000Z",
+   "category": "PADDOCK",
+   "title": "Photos - GP de Las Vegas de F1 2026 - La galerie 'bonus' du week-end",
+   "summary": "",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/photos/photos-gp-de-las-vegas-de-f1-2026-la-galerie-bonus-du-week-end,213683.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T18:37:00.937Z"
+  },
+  {
    "id": "news_13jh7jv",
    "timestamp": "2026-11-23T17:54:13.000Z",
    "category": "PADDOCK",
@@ -62,6 +74,31 @@
    "url": "https://fr.motorsport.com/f1/news/max-verstappen-envisage-24h-daytona-des-2027/10877165/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
    "impact": null,
    "firstSeen": "2026-11-23T18:06:54.493Z"
+  },
+  {
+   "id": "news_lcmlia",
+   "timestamp": "2026-11-23T17:18:00.000Z",
+   "category": "TECHNIQUE",
+   "title": "Comment Ford a aidé Red Bull à créer l'un des meilleurs moteurs de la F1",
+   "summary": "Le retour de Ford en Formule 1 aux côtés de Red Bull s'est transformé en réussite technique et sportive dès sa première saison. Alors que le groupe américain avait initialement été soupçonné de se contenter d'apposer son logo sur un moteur développé à Milton…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/comment-ford-a-aide-red-bull-a-creer-l-un-des-meilleurs-moteurs-de-la-f1,213470.html",
+   "impact": {
+    "targetType": "engine",
+    "targetIds": [
+     "red_bull",
+     "rb"
+    ],
+    "managerModifiers": {
+     "powerUnit": 2,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 0.92,
+    "impactLabel": "Moteur +2 pts | Cotes -8%"
+   },
+   "firstSeen": "2026-11-23T18:37:00.937Z"
   },
   {
    "id": "news_rnblpl",
@@ -194,7 +231,7 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "impact": null,
-   "firstSeen": "2026-11-23T18:06:54.493Z"
+   "firstSeen": "2026-11-23T18:37:00.937Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -769,30 +806,6 @@
    "source": "Nextgen-Auto",
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/perez-accuse-camara-de-ne-pas-l-avoir-vu-la-fia-lui-met-5-places-pour-le-qatar,213621.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_1dgnbzp",
-   "timestamp": "2026-11-22T07:57:41.000Z",
-   "category": "PADDOCK",
-   "title": "La revanche cinglante de Verstappen sur Russell : \"Il est très loin de mon niveau\"",
-   "summary": "Max Verstappen a répondu aux propos tenus vendredi par George Russell sur la piste, en remportant le Grand Prix de Las Vegas de Formule 1, avant d'envoyer quelques attaques cinglantes après l'arrivée. Les deux hommes avaient été impliqués dans un incident lors…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/revanche-cinglante-de-verstappen-sur-russell-karma-niveau-las-vegas/10876810/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_7i9aw3",
-   "timestamp": "2026-11-22T07:53:00.000Z",
-   "category": "PADDOCK",
-   "title": "Gasly regrette un podium manqué mais il a 'pris du plaisir' à Las Vegas",
-   "summary": "Alpine F1 a signé un excellent résultat à Las Vegas, après une série de six courses durant lesquelles l'équipe n'avait marqué qu'un point. Pierre Gasly a roulé dans le groupe de tête en course jusqu'à connaître une surchauffe, mais les erreurs d'autres pilotes…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/gasly-regrette-un-podium-manque-mais-il-a-pris-du-plaisir-a-las-vegas,213625.html",
    "impact": null,
    "firstSeen": "2026-11-23T10:59:50.658Z"
   }
