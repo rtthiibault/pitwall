@@ -300,3 +300,7 @@ Page `#/paddock`, accessible par le bouton « Paddock Wire » de l'en-tête et p
 - **IA** : chaque voiture gère aussi son carburant, sa batterie et ses températures. Tous les débits sont ramenés à la longueur de la course (÷ K) comme le reste du moteur.
 - **Classement** : écarts au leader ou intervalles, interpolés toutes les 250 ms ; nombre d'arrêts de chaque voiture.
 - **Radio du pilote** : messages tirés de l'état réel de la voiture (surchauffe, batterie vide, carburant, issue d'une attaque ou d'une défense), dans un encart aux couleurs de l'écurie.
+
+## Pictogrammes
+
+Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectorielles originales (`js/icons.js` : trait 1,7 px sur une grille de 24, couleur héritée du texte, teintes sémantiques pour alerte, validation, médailles, météo…). Dans le code, les emojis servent de noms lisibles ; un `MutationObserver` les convertit partout (pages, fenêtres, messages, fil de course). `F1.icon(nom)` renvoie directement une icône.

@@ -785,3 +785,13 @@ html.low .trr-eq.talking i { animation: none; height: 9px; }
 .coin.sm { width: 1.05em; height: 1.05em; min-width: 14px; min-height: 14px; vertical-align: -.17em; margin-right: .28em; }
 .amt { white-space: nowrap; }
 .btn .coin.sm { width: 1.3em; height: 1.3em; vertical-align: -.3em; margin-right: .3em; }
+
+/* =================== Pictogrammes PITWALL (remplacent les emojis) =================== */
+.pi { width: 1.15em; height: 1.15em; display: inline-block; vertical-align: -.2em; flex: none; overflow: visible; }
+.pt-warn { color: #f2b632; } .pt-ok { color: var(--win); } .pt-no { color: var(--lose); } .pt-gold { color: var(--gold); }
+.pt-gem { color: #7fe3d6; } .pt-volt { color: #f6c445; } .pt-hot { color: #ff7a3d; } .pt-cold { color: #7cc2ff; } .pt-sun { color: #f6c445; } .pt-mute { color: var(--muted); }
+.pi-medal0, .pi-medal1 { --pi-m: #e9be3e; color: #b88a1c; } .pi-medal2 { --pi-m: #d3d8df; color: #9aa1ab; } .pi-medal3 { --pi-m: #d08a52; color: #9c5f2f; }
+.pi-pitcoin, .pi-jeton { filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .4)); }
+.btn .pi, .chip .pi, .tab .pi { vertical-align: -.22em; }
+.empty .ic .pi { width: 44px; height: 44px; color: var(--muted); }
+.toast .pi { width: 22px; height: 22px; }
