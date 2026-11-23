@@ -148,26 +148,59 @@
     return out;
   }
 
+  /* Démarrage rapide : l'API live n'a que LIVE_BUDGET ms pour répondre. Au-delà, on affiche l'instantané du dépôt
+     (régénéré par la GitHub Action) ou le cache, et l'API continue en arrière-plan : dès qu'elle répond, ses données
+     sont mises en cache et onLive() prévient l'application, qui se met à jour sans recharger la page. */
+  const LIVE_BUDGET = 2500;
+  let apiDown = false;
+  const liveWait = new Map(), liveCbs = [];
+  function onLive(fn) { liveCbs.push(fn); }
+  function liveFor(path) {
+    if (!liveWait.has(path)) {
+      const pr = loadLive(path).then((raw) => { cacheSet(RAW_KEY + ':' + path, raw); apiDown = false; return raw; });
+      liveWait.set(path, pr);
+      pr.catch((e) => { apiDown = true; console.warn(`[PITWALL] API live indisponible (${path}) :`, e.message); })
+        .finally(() => liveWait.delete(path));
+      pr.then(() => liveCbs.forEach((f) => { try { f(path); } catch (e) { /* */ } }), () => {});
+    }
+    return liveWait.get(path);
+  }
+  async function loadSnapshot(path) {
+    try {
+      const file = path === 'current' ? 'data/snapshot.json' : `data/seasons/${path}.json`;
+      const snap = await getJSON(file + '?v=' + Math.floor(Date.now() / 36e5), 6000);
+      if (snap && snap.schedule && snap.schedule.length) return snap;
+    } catch (e) { /* pas de fichier hebdo */ }
+    return null;
+  }
+
   async function loadRaw(path = 'current') {
     const key = RAW_KEY + ':' + path;
     const c = cacheGet(key);
     const ttl = path === 'current' ? TTL : 6 * 36e5;
     if (c && Date.now() - c.t < ttl) return { raw: withEmbedded(c.d), source: 'live' };
-    try {
-      const raw = await loadLive(path);
-      cacheSet(key, raw);
-      return { raw: withEmbedded(raw), source: 'live' };
-    } catch (e) {
-      console.warn(`[PITWALL] API live indisponible (${path}) :`, e.message);
+    const live = liveFor(path);
+    const snapP = loadSnapshot(path);
+    // l'API a LIVE_BUDGET ms (moins si on la sait déjà en panne) pour répondre
+    // instantané récent (< 36 h, régénéré 2 fois par jour) : affiché sans attendre, l'API live prend le relais en arrière-plan
+    const fresh = await Promise.race([snapP.then((x) => (x && Date.now() - (Date.parse(x.updated || '') || 0) < 36 * 36e5 ? x : null)), live.then(() => null, () => null)]);
+    let quick = null;
+    if (!fresh) {
+      quick = await Promise.race([live.then((r) => r, () => null), sleep(apiDown ? 300 : path === 'current' ? LIVE_BUDGET : 1200).then(() => null)]);
+      if (quick) return { raw: withEmbedded(quick), source: 'live' };
+      apiDown = true; // API lente : les autres appels de ce démarrage n'attendent plus (remis à zéro dès qu'elle répond)
     }
-    // repli : fichiers régénérés automatiquement par la GitHub Action (data/snapshot.json, data/seasons/<année>.json)
-    try {
-      const file = path === 'current' ? 'data/snapshot.json' : `data/seasons/${path}.json`;
-      const snap = await getJSON(file + '?v=' + Math.floor(Date.now() / 36e5), 6000);
-      if (snap && snap.schedule && snap.schedule.length) return { raw: withEmbedded({ year: +snap.schedule[0].season, ...snap }), source: 'snapshot' };
-    } catch (e) { /* pas de fichier hebdo */ }
-    if (c) return { raw: withEmbedded(c.d), source: 'cache' };
+    else apiDown = true; // l'API n'a pas encore répondu : les autres appels du démarrage ne l'attendent pas
+    const snap = fresh || await snapP;
+    // le plus récent entre l'instantané et le cache local
+    const snapT = snap ? Date.parse(snap.updated || '') || 0 : 0;
+    if (c && c.t > snapT) return { raw: withEmbedded(c.d), source: Date.now() - c.t < 36 * 36e5 ? 'live' : 'cache' };
+    if (snap) return { raw: withEmbedded({ year: +snap.schedule[0].season, ...snap }), source: 'snapshot', updated: snapT };
     const year = path === 'current' ? embeddedYear() : +path;
+    // saison future intégrée au site : affichée tout de suite, l'API la remplacera en arrière-plan
+    if (path !== 'current' && F1.SEASONS[year]) return { raw: F1.SEASONS[year], source: 'fallback' };
+    // ni instantané ni cache : on laisse à l'API le reste de son délai
+    try { return { raw: withEmbedded(await live), source: 'live' }; } catch (e) { /* */ }
     if (F1.SEASONS[year]) return { raw: F1.SEASONS[year], source: 'fallback' };
     return null;
   }
@@ -306,6 +339,7 @@
   async function loadSeason() {
     const cur = await loadRaw('current');
     let season = normalize(cur.raw, cur.source);
+    if (cur.updated) season.snapAt = cur.updated;
     const nextYear = season.year + 1;
     let upcoming = null;
     if (F1.SEASONS[nextYear] || season.finished || !season.next) {
@@ -342,7 +376,8 @@
     const c = cacheGet(key);
     if (c && (c.d || Date.now() - c.t < 10 * 60e3)) { race.qualifying = c.d; return c.d; }
     try {
-      const j = await getJSON(`${API}/${season.year}/${race.round}/qualifying.json`);
+      if (apiDown) return null;
+      const j = await getJSON(`${API}/${season.year}/${race.round}/qualifying.json`, 4000);
       const r = j.MRData.RaceTable.Races[0];
       const q = r ? r.QualifyingResults.map(normQuali).sort((a, b) => a.pos - b.pos) : null;
       cacheSet(key, q);
@@ -381,5 +416,5 @@
     try { return await getJSON('data/meta.json?v=' + Math.floor(Date.now() / 36e5), 5000); } catch (e) { return null; }
   }
 
-  F1.data = { loadMeta, loadSeason, loadYear, loadQualifying, loadWeather, normalize, clearCache, embeddedYear };
+  F1.data = { onLive, loadMeta, loadSeason, loadYear, loadQualifying, loadWeather, normalize, clearCache, embeddedYear };
 })(globalThis.F1 = globalThis.F1 || {});

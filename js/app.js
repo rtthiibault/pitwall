@@ -38,11 +38,11 @@
       pickSeries();
       await prepare();
     }
-    // portraits : on attend au plus 2,5 s, puis on redessine quand tout est arrivé
+    // portraits : on attend au plus 1,2 s, puis on redessine quand tout est arrivé
     const pp = F1.visuals.loadPortraits([...S.f1.drivers.values(), ...(S.f1.upcoming ? S.f1.upcoming.drivers.values() : [])]);
     let portraitsDone = false;
     pp.then(() => { portraitsDone = true; });
-    await Promise.race([pp, new Promise((r) => setTimeout(r, 2500))]);
+    await Promise.race([pp, new Promise((r) => setTimeout(r, 1200))]);
     if (!portraitsDone) pp.then(() => route());
     await lights.finish();
     F1.store.onChange(updateWallet);
@@ -59,6 +59,7 @@
     if (!F1.store.get().name) setTimeout(welcome, 700);
     setInterval(tick, 1000);
     setInterval(refresh, 15 * 60 * 1000);
+    F1.data.onLive(() => setTimeout(refresh, 200)); // l'API live a répondu après l'affichage : mise à jour en arrière-plan
     document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
   }
 
@@ -142,6 +143,7 @@
 
   async function refresh() {
     if (document.hidden || !S.season) return;
+    const src0 = S.season.source;
     const before = `${S.season.doneCount}|${S.season.next && S.season.next.round}|${S.season.next && !!S.season.next.qualifying}`;
     try {
       await loadAll();
@@ -150,6 +152,7 @@
       const after = `${ns.doneCount}|${ns.next && ns.next.round}|${ns.next && !!ns.next.qualifying}`;
       runSettlement();
       if (before !== after) { route(); renderSlip(); renderFooter(); toast('🔄', 'Données mises à jour : nouvelles cotes disponibles'); }
+      else if (src0 !== S.season.source && !/^#\/manager/.test(location.hash)) route();
     } catch (e) { /* silencieux */ }
   }
 
@@ -158,17 +161,17 @@
     const pods = $$('.pod', el);
     let i = 0;
     const seen = sessionStorage.getItem('pitwall:lights');
-    const step = seen ? 120 : 420;
+    const step = seen ? 100 : 240;
     const timer = setInterval(() => { if (i < pods.length) pods[i++].classList.add('on'); }, step);
     el.addEventListener('click', () => { clearInterval(timer); el.classList.add('out'); });
     return {
       finish: async () => {
         while (i < pods.length && !el.classList.contains('out')) await new Promise((r) => setTimeout(r, 60));
         clearInterval(timer);
-        await new Promise((r) => setTimeout(r, seen ? 150 : 400 + Math.random() * 600));
+        await new Promise((r) => setTimeout(r, seen ? 120 : 250 + Math.random() * 350));
         pods.forEach((p) => p.classList.remove('on'));
         $('#lightsCaption').innerHTML = '<b>Extinction des feux</b> — c\'est parti !';
-        await new Promise((r) => setTimeout(r, seen ? 150 : 450));
+        await new Promise((r) => setTimeout(r, seen ? 120 : 300));
         el.classList.add('out');
         try { sessionStorage.setItem('pitwall:lights', '1'); } catch (e) { /* */ }
       },
@@ -257,7 +260,9 @@
     if (src === 'live') return '';
     if (S.series === 'wec') return `<div class="notice" style="margin-bottom:18px">🏁 WEC ${S.season.year} : calendrier officiel et plateau Hypercar provisoire intégrés au site (liste des engagés pas encore publiée). Horaires estimés. Les résultats sont saisis après chaque course, puis les paris se règlent automatiquement.</div>`;
     if (src === 'embedded') return `<div class="notice" style="margin-bottom:18px">📅 Saison ${S.season.year} : calendrier officiel et grille provisoire intégrés au site. Horaires estimés, remplacés automatiquement dès leur publication par l'API.</div>`;
-    const msg = src === 'snapshot' ? 'API live injoignable : affichage du dernier instantané hebdomadaire des données.'
+    // instantané de moins de 36 h (mis à jour automatiquement) : les données sont à jour, aucun bandeau
+    if (src === 'snapshot' && S.season.snapAt && Date.now() - S.season.snapAt < 36 * 36e5) return '';
+    const msg = src === 'snapshot' ? 'API live injoignable : affichage du dernier instantané des données.'
       : src === 'cache' ? 'API live injoignable : affichage des dernières données en cache.'
         : 'Mode hors ligne : données live indisponibles, calendrier et grille de secours affichés. Les cotes reposent sur un modèle a priori.';
     return `<div class="notice" style="margin-bottom:18px">⚠️ ${msg} <button class="btn sm ghost" data-action="reload">Réessayer</button></div>`;
