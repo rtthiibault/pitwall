@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-23T15:36:35.718Z",
+ "updated": "2026-11-23T16:06:40.426Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-23T16:06:35.718Z",
+ "next": "2026-11-23T16:36:40.426Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,18 @@
   }
  ],
  "items": [
+  {
+   "id": "news_y47glz",
+   "timestamp": "2026-11-23T16:00:03.000Z",
+   "category": "PADDOCK",
+   "title": "Le programme du Grand Prix du Qatar F1 2026 : dates, horaires et infos",
+   "summary": "Le Grand Prix du Qatar, disputé sur le circuit de Losail, est la 22e et avant-dernière manche de la saison. Le décalage horaire entre Losail et Paris est de deux heures, donc quand il est 9h en France, il est 11h au Qatar. Toutefois, Grand Prix semi-nocturne…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/gp-qatar-2026-dates-horaires-infos-programme/10877189/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "impact": null,
+   "firstSeen": "2026-11-23T16:06:40.426Z"
+  },
   {
    "id": "news_vt47of",
    "timestamp": "2026-11-23T14:47:00.000Z",
@@ -109,7 +121,7 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "impact": null,
-   "firstSeen": "2026-11-23T15:36:35.718Z"
+   "firstSeen": "2026-11-23T16:06:40.426Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -781,31 +793,6 @@
     "bettingOddsMultiplier": 1.06,
     "impactLabel": "Cotes +6%",
     "teamId": "mercedes"
-   },
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_dna60q",
-   "timestamp": "2026-11-22T07:16:10.000Z",
-   "category": "PADDOCK",
-   "title": "'J'ai montré que j'étais là' : Hadjar reste positif après la déception de Las Vegas",
-   "summary": "Isack Hadjar nourrissait quelques regrets après la course du Grand Prix de Las Vegas, puisqu'une casse d'aileron l'a renvoyé en fond de classement, avec une 15e place finale à la suite d'un arrêt au stand inattendu. Mais le pilote Red Bull n'a pas de…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/j-ai-montre-que-j-etais-la-hadjar-reste-positif-apres-la-deception-de-las-vegas,213628.html",
-   "impact": {
-    "targetType": "driver",
-    "targetIds": [
-     "hadjar"
-    ],
-    "managerModifiers": {
-     "powerUnit": 0,
-     "aero": 0,
-     "reliability": 0
-    },
-    "bettingOddsMultiplier": 1.06,
-    "impactLabel": "Cotes +6%",
-    "teamId": "red_bull"
    },
    "firstSeen": "2026-11-23T10:59:50.658Z"
   }
