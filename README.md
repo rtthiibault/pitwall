@@ -282,8 +282,21 @@ Le serveur compte les tentatives, n'accepte que la semaine en cours et garde le 
 
 Page `#/paddock`, accessible par le bouton « Paddock Wire » de l'en-tête et par le bloc de l'accueil.
 
-- **Relevé toutes les 5 h** : `.github/workflows/news.yml` tourne chaque heure et lance `scripts/update-news.mjs`, qui ne relève que si le dernier relevé date de 5 h ou plus. Lancement manuel (Actions → Paddock Wire → Run workflow) pour relever tout de suite.
+- **Relevé toutes les 30 min** : `.github/workflows/news.yml` tourne à :11 et :41 et lance `scripts/update-news.mjs`, qui relève si le dernier relevé date d'environ 30 min ou plus. Lancement manuel (Actions → Paddock Wire → Run workflow) pour relever tout de suite.
 - **Sources** : flux RSS francophones (Motorsport.com, Nextgen-Auto, F1i, AutoHebdo) ; Motorsport.com en anglais seulement en secours. Seuls le titre, un extrait court et le lien vers l'article sont repris.
 - **Analyse** (`scripts/news-analyze.mjs`, règles par mots-clés FR/EN) : écuries, motoristes et pilotes cités, sujet (moteur, aéro, fiabilité, pilote, règlement, météo) et tonalité → catégorie `TECHNIQUE | PADDOCK | RÈGLEMENT | MÉTÉO` et `impact { targetType, targetIds, managerModifiers { powerUnit, aero, reliability }, bettingOddsMultiplier, impactLabel }`. Transferts, contrats et rumeurs n'ont pas d'impact.
 - **Effets** (`js/news.js`) : moteur → vitesse de pointe, aéro → appui, fiabilité → risque de casse, pour l'écurie visée dans les courses de campagne F1 Manager ; cotes des pilotes et écuries visés multipliées dans les Paris (inversé pour le marché « Abandon »). Plein effet 48 h, puis dégressif jusqu'à 7 jours ; une même info reprise par plusieurs médias ne compte qu'une fois. Le GP Hebdomadaire n'est pas affecté (même course pour tous).
 - **Synchro** : le site recharge `data/news.json` dès qu'un relevé est attendu ; le bouton « Forcer la synchro » le recharge immédiatement et réapplique les impacts.
+
+## F1 Manager : télémétrie de course (carburant, ERS, températures)
+
+Écran de course en plein écran (API Fullscreen si le navigateur l'accepte, sinon toute la fenêtre), avec une fine barre supérieure.
+
+- **Grille** : charge de carburant choisie avant les feux (Sous-chargé 95 % de la consommation standard, Standard 102 %, Surchargé 106 %). Le poids coûte 3 s par tour réservoir plein (`FUEL_W`).
+- **Mélange** Économie / Standard / Attaque (consommation ×0,88 / ×1 / ×1,1, rythme +0,3 / 0 / −0,28 s). Jauge en kg et marge en tours (`fuelDelta`). Réservoir vide : mode dégradé (+14 s par tour), puis panne sèche.
+- **ERS** Recharge / Équilibré / Dépassement / Tour de qualif : batterie 0–100 %, le déploiement donne du rythme et un bonus en duel ; sans charge, plus d'effet.
+- **Températures** : pneus (fenêtre 90–105 °C ; au-delà usure et chrono dégradés) et moteur (critique au-delà de 115 °C : perte de puissance, puis risque de casse qui grandit avec la durée). Elles montent avec les modes agressifs et l'air sale (moins d'1 s derrière une voiture).
+- **Consignes** : Tenter un dépassement (écart < 1,0 s ; batterie −18 %, chauffe, risque de blocage si la batterie ou les pneus ne sont pas prêts), Défendre la position, Air propre / Refroidir.
+- **IA** : chaque voiture gère aussi son carburant, sa batterie et ses températures. Tous les débits sont ramenés à la longueur de la course (÷ K) comme le reste du moteur.
+- **Classement** : écarts au leader ou intervalles, interpolés toutes les 250 ms ; nombre d'arrêts de chaque voiture.
+- **Radio du pilote** : messages tirés de l'état réel de la voiture (surchauffe, batterie vide, carburant, issue d'une attaque ou d'une défense), dans un encart aux couleurs de l'écurie.

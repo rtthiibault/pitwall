@@ -1,4 +1,4 @@
-/* Paddock Wire : dépêches F1 relevées toutes les 5 h (data/news.json, GitHub Action) et moteur d'impact.
+/* Paddock Wire : dépêches F1 relevées toutes les 30 min (data/news.json, GitHub Action) et moteur d'impact.
    Chaque dépêche analysée porte un impact : modificateurs de monoplace (F1 Manager) et multiplicateur de cotes (Paris).
    L'impact est plein pendant 48 h puis s'estompe linéairement jusqu'à 7 jours. */
 (function (F1) {
@@ -65,8 +65,8 @@
     }
     return Math.max(MULT_MIN, Math.min(MULT_MAX, ext.t[0] * ext.t[1] * ext.d[0] * ext.d[1]));
   }
-  // Prochain relevé : dernier relevé + 5 h
-  const nextAt = () => { const u = S.data && Date.parse(S.data.updated); return u ? u + ((S.data.periodHours || 5) * 36e5) : null; };
+  // Prochain relevé : dernier relevé + 30 min (période annoncée par le fichier)
+  const nextAt = () => { const u = S.data && Date.parse(S.data.updated); if (!u) return null; const min = S.data.periodMinutes || (S.data.periodHours || 0.5) * 60; return u + min * 60e3; };
   // Tableau de bord : écuries et pilotes touchés en ce moment
   function board(now = Date.now()) {
     const tm = teamMods(now), teams = new Set(Object.keys(tm)), drivers = new Set();

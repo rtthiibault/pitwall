@@ -2,11 +2,11 @@ name: Paddock Wire (actualités F1)
 
 on:
   schedule:
-    - cron: '23 * * * *'   # chaque heure ; le script ne relève que si le dernier relevé a 5 h ou plus
+    - cron: '11,41 * * * *'   # toutes les 30 min ; le script ne relève que si le dernier relevé a au moins ~30 min
   workflow_dispatch:
     inputs:
       force:
-        description: 'Relever tout de suite, même si le dernier relevé a moins de 5 h'
+        description: 'Relever tout de suite, même si le dernier relevé a moins de 30 min'
         type: boolean
         default: true
 

@@ -1,11 +1,11 @@
 // Paddock Wire : relève les flux RSS F1, analyse chaque dépêche et écrit data/news.json (Node 18+).
 // Lancé toutes les heures par .github/workflows/news.yml : le relevé n'a lieu que si le précédent date
-// de 5 h ou plus (cadence exacte de 5 h). FORCE=1 pour relever tout de suite.
+// de 30 min ou plus (cadence de 30 min). FORCE=1 pour relever tout de suite.
 import { readFile, writeFile } from 'node:fs/promises';
 import { analyze, driverKeys, isF1, isEnglish } from './news-analyze.mjs';
 
 const OUT = 'data/news.json';
-const PERIOD = 5 * 36e5;
+const PERIOD = 30 * 60e3;   // 30 minutes
 const KEEP_DAYS = 10, MAX_ITEMS = 60;
 // Sources francophones d'abord ; filter = flux généraliste, on ne garde que la F1
 const FEEDS = [
@@ -43,7 +43,7 @@ async function main() {
   let prev = { items: [] };
   try { prev = JSON.parse(await readFile(OUT, 'utf8')); } catch (e) { /* premier relevé */ }
   const last = Date.parse(prev.updated || '') || 0;
-  if (!process.env.FORCE && Date.now() - last < PERIOD - 10 * 60e3) { console.log('Dernier relevé il y a', ((Date.now() - last) / 36e5).toFixed(2), 'h : rien à faire'); return; }
+  if (!process.env.FORCE && Date.now() - last < PERIOD - 8 * 60e3) { console.log('Dernier relevé il y a', ((Date.now() - last) / 36e5).toFixed(2), 'h : rien à faire'); return; }
 
   // grille actuelle pour reconnaître les pilotes
   let drivers = [];
@@ -79,7 +79,7 @@ async function main() {
   for (const x of fresh) if (!byId.has(x.id)) byId.set(x.id, { ...x, firstSeen: new Date(now).toISOString() });
   const items = [...byId.values()].sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp)).slice(0, MAX_ITEMS);
   if (!sources.some((s) => s.ok) && prev.items && prev.items.length) console.warn('Aucune source joignable : dépêches précédentes conservées');
-  const out = { updated: new Date(now).toISOString(), periodHours: 5, next: new Date(now + PERIOD).toISOString(), sources, items };
+  const out = { updated: new Date(now).toISOString(), periodHours: 0.5, periodMinutes: 30, next: new Date(now + PERIOD).toISOString(), sources, items };
   await writeFile(OUT, JSON.stringify(out, null, 1) + '\n');
   console.log(`${items.length} dépêches, dont ${items.filter((x) => x.impact).length} avec impact`);
 }

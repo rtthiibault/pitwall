@@ -390,7 +390,7 @@
     const late = nx && Date.now() > nx;
     const status = `<div class="pdw-status"><span class="pdw-live"><i></i>${d && d.updated ? 'Liaison paddock' : 'En attente'}</span>
       <div class="pdw-st"><small>Dernier relevé</small><b>${d && d.updated ? esc(pwTime(Date.parse(d.updated))) : '—'}</b></div>
-      <div class="pdw-st"><small>${late ? 'Relevé en cours' : 'Prochaine mise à jour dans'}</small>${nx && !late ? `<b class="num pdw-cd" data-cd="${nx}"><span data-u="1">--</span>h <span data-u="2">--</span>m <span data-u="3">--</span>s</b>` : `<b>${late ? 'quelques minutes…' : '—'}</b>`}</div>
+      <div class="pdw-st"><small>${late ? 'Relevé en cours' : 'Prochaine mise à jour dans'}</small>${nx && !late ? `<b class="num pdw-cd" data-cd="${nx}"><span data-u="1">--</span>:<span data-u="2">--</span>:<span data-u="3">--</span></b>` : `<b>${late ? 'quelques minutes…' : '—'}</b>`}</div>
       <div class="pdw-st"><small>Sources</small><b>${srcOk.length ? esc(srcOk.join(' · ')) : '—'}</b></div>
       <button class="btn sm pdw-sync" data-action="pw-sync">↻ Forcer la synchro</button></div>`;
     const chips = [['all', 'Tout', items.length], ['imp', 'Impact actif', items.filter((x) => x.impact && F1.news.weight(x) > 0).length], ['tech', 'Technique'], ['pad', 'Paddock'], ['reg', 'Règlement'], ['wx', 'Météo']]
@@ -408,7 +408,7 @@
         <li><b>Durée</b> : plein effet 48 h, puis effet dégressif jusqu'à 7 jours.</li>
         <li><b>GP Hebdomadaire</b> : non concerné, pour que tout le monde court à armes égales.</li></ul></div></aside>`;
     const feed = list.length ? list.map(pwCard).join('') : `<div class="empty">${items.length ? 'Aucune dépêche dans cette catégorie.' : 'Premier relevé du paddock en attente.'}</div>`;
-    return `<section class="pdw-page"><div class="pdw-hero"><div class="pdw-title">${PW_ICON}<h1 class="pdw-word">Paddock Wire</h1></div><p class="muted">Dépêches F1 relevées toutes les 5 heures. Chaque information analysée agit sur les monoplaces de F1 Manager et sur les cotes.</p></div>
+    return `<section class="pdw-page"><div class="pdw-hero"><div class="pdw-title">${PW_ICON}<h1 class="pdw-word">Paddock Wire</h1></div><p class="muted">Dépêches F1 relevées toutes les 30 minutes. Chaque information analysée agit sur les monoplaces de F1 Manager et sur les cotes.</p></div>
       ${status}<div class="pdw-chips">${chips}</div><div class="pdw-grid"><div class="pdw-feed">${feed}</div>${side}</div></section>`;
   }
   // Accueil : les dernières dépêches
@@ -1620,29 +1620,38 @@
     const ROW = matchMedia('(min-width: 900px)').matches ? 22 : 30, LAPS = res.LAPS, leagueBefore = ctx.league;
     const meX = res.me;
     const colorOf = (x) => F1.teamColor(x.c.chassisId || (ctx.ch && ctx.ch.id));
-    const tower = res.field.map((x) => `<div class="trow ${x.c.me ? 'me' : ''}" data-i="${x.i}" style="transform:translateY(${(x.grid - 1) * ROW}px)"><b class="tp">${x.grid}</b><span class="tstripe" style="background:${colorOf(x)};height:16px"></span><span class="tn">${esc(x.name)}</span><span class="tc">${esc(x.driver.code)}</span><span class="tt">${tyreDot(x.tyre, 'sm')}</span><span class="tg num">—</span></div>`).join('');
+    const tower = res.field.map((x) => `<div class="trow ${x.c.me ? 'me' : ''}" data-i="${x.i}" style="transform:translateY(${(x.grid - 1) * ROW}px)"><b class="tp">${x.grid}</b><span class="tstripe" style="background:${colorOf(x)};height:16px"></span><span class="tn">${esc(x.name)}</span><span class="tc">${esc(x.driver.code)}</span><span class="tt">${tyreDot(x.tyre, 'sm')}</span><span class="tps" title="Arrêts aux stands"></span><span class="tg num">—</span></div>`).join('');
+    const drvNum = (ctx.drvM && ctx.drvM.number) || (meX.driver && meX.driver.number) || '', meCol = colorOf(meX), meInk = inkOn(meCol);
+    // en-tête radio : numéro du pilote aux couleurs de l'écurie + égaliseur
+    const RHEAD = (title, extra = '') => `<div class="radio-h"><span class="rdo-plate" style="--tc:${meCol};--ti:${meInk}">${esc(String(drvNum || meX.driver.code))}</span><span class="radio-wave"><i></i><i></i><i></i><i></i><i></i></span><span class="rdo-title">${title}</span>${extra}</div>`;
     // portée du radar : tours de prévision visibles à l'avance
     const sg = MG().staffOf(ctx.m, 'st');
     const range = Math.round((1 + MG().garageLevel(ctx.m, 'radar') + (sg && sg.tier >= 4 ? 1 : 0)) * res.K);
     const wxCls = (x) => (x.rain > 0.6 ? 'heavy' : x.rain > 0.25 ? 'rain' : x.rain > 0.05 ? 'drizzle' : x.wet > 0.35 ? 'wet' : x.cloud > 0.5 ? 'cloud' : 'dry');
     document.documentElement.classList.add('race-lock');
-    $('#modal').innerHTML = `<div class="modal race-modal"><div class="modal-box race-box">
+    // plein écran : le navigateur bascule si possible ; sinon la course occupe déjà toute la fenêtre
+    const goFull = () => { const de = document.documentElement; if (!document.fullscreenElement && de.requestFullscreen) de.requestFullscreen({ navigationUI: 'hide' }).catch(() => {}); };
+    goFull();
+    $('#modal').innerHTML = `<div class="modal race-modal race-full"><div class="modal-box race-box">
       <div class="race-h"><div><div class="muted upper" style="font-size:11px;font-weight:700">${leagueBadge(leagueBefore)} · ${esc(ctx.race.nameFr)}</div><div class="race-lap">Tour <b id="lapN">0</b> / ${LAPS}</div></div>
         <div class="wx-now" id="wxNow"></div>
         <div class="race-ctl">
           <div class="seg" role="group" aria-label="Vitesse de la course">${[1, 2, 4].map((v) => `<button class="${v === 1 ? 'on' : ''}" data-action="race-speed" data-v="${v}">×${v}</button>`).join('')}</div>
           <div class="seg" role="group" aria-label="Style de la carte">${[['anim', 'Animée'], ['flat', '2D épurée']].map(([k, l]) => `<button class="${mapStyle() === k ? 'on' : ''}" data-action="map-style" data-v="${k}">${l}</button>`).join('')}</div>
           <button class="btn sm ghost low-btn ${lowMode() ? 'on' : ''}" data-action="low-mode" title="Désactive les effets visuels lourds et limite la carte à 24 images par seconde">Config basse${lowMode() ? ' ✓' : ''}</button>
+          <button class="btn sm ghost" data-rfs="1" title="Plein écran">⛶</button>
           <button class="btn sm ghost" data-action="m-skip">Passer ⏭</button></div></div>
       <div class="race-main">
         <div class="race-left">
           <div class="race-stage"><div class="race-map" id="raceMap"></div>
             <div class="race-flag" id="raceFlag"></div><div class="race-fc" id="raceFc"></div>
+            <div class="tr-radio" id="trRadio" aria-live="polite"></div>
             <div class="radio" id="radio"></div><div class="race-end" id="raceEnd"></div></div>
+          <div class="rtele" id="tele"></div>
           <div class="wx-strip" id="wxStrip" style="grid-template-columns:repeat(${LAPS}, 1fr)" title="Radar météo : ${range} tour${range > 1 ? 's' : ''} de prévision (améliorez la station météo du garage pour voir plus loin)">${res.weather.slice(1).map((x, i) => `<i data-l="${i + 1}"></i>`).join('')}</div>
           <div class="pitwall" id="pitwall"></div>
         </div>
-        <div class="race-side"><div class="tower" style="height:${res.field.length * ROW}px;--row:${ROW}px">${tower}</div><div class="feed" id="feed"><div class="ev"><b>Départ</b> — vous partez P${meX.grid} sur la grille, en ${MG().TYRES[meX.tyre].name.toLowerCase()}${res.weather[0].wet > 0.12 ? `, sur piste ${MG().trackState(res.weather[0].wet).toLowerCase()}` : ''}</div></div></div>
+        <div class="race-side"><div class="tower-h"><span>Classement</span><div class="seg tw-mode"><button class="on" data-tw="gap">Leader</button><button data-tw="int">Intervalle</button></div></div><div class="tower" style="height:${res.field.length * ROW}px;--row:${ROW}px">${tower}</div><div class="feed" id="feed"><div class="ev"><b>Départ</b> — vous partez P${meX.grid} sur la grille, en ${MG().TYRES[meX.tyre].name.toLowerCase()}${res.weather[0].wet > 0.12 ? `, sur piste ${MG().trackState(res.weather[0].wet).toLowerCase()}` : ''}</div></div></div>
       </div></div></div>`;
     const STEP = 50, LAP_MS = 240000 / LAPS; // une course dure environ 4 minutes en vitesse ×1, quel que soit le nombre de tours
     let lap = 0, T = -0.5, flagT = 0, started = false, paused = false, done = false, evI = 0, radioTimer = null; // T < 0 : procédure de départ (5 feux rouges)
@@ -1679,12 +1688,13 @@
       const o = L > 0 && res.laps[L - 1] ? res.laps[L - 1].find((y) => y.i === meX.i) : null;
       const ty = o ? o.ty : meX.tyre, wear = o ? o.wear : 0, c = res.ctl;
       const ts = MG().tyreStatus(ty, wear, res.weather[Math.min(LAPS, L)].wet, c.mode, L > 0 && meX.pitLaps.includes(L));
+      const tTy = (res.tele[Math.min(L, res.tele.length - 1)] || res.tele[0]).tTyre;
       const ps = c.plan ? res.plan.stops[meX.pits - (meX.pitLaps.includes(res.lap) && res.lap > L ? 1 : 0)] : null;
       const boxLap = canRedo() || paused || T < 0 ? lap + 1 : lap + 2;
       const pending = res.lap > L && meX.pitLaps.includes(res.lap); // l'arrêt est acquis pour la fin du tour en cours
       const rule = MG().ruleOk(meX);
-      el.innerHTML = `<div class="pw-cell pw-tyre">${tyreDot(ty)}<div><b>${MG().TYRES[ty].name}</b><div class="wearbar ${wear > 0.75 ? 'bad' : wear > 0.5 ? 'mid' : ''}"><i style="width:${Math.round(wear * 100)}%"></i></div><small>Usure <b>${Math.round(wear * 100)} %</b> · <span class="${ts.hot ? 'hot' : ts.cold ? 'cold' : ''}">${ts.temp}</span> · perf. ${ts.perf} %</small></div></div>
-        <div class="pw-cell"><small>Rythme</small><div class="pw-mode">${Object.entries(MG().MODES).map(([k, v]) => `<button class="${c.mode === k ? 'on' : ''} m-${k}" data-pw="mode" data-v="${k}" title="${k === 'push' ? 'Plus rapide de 0,4 s par tour, usure +50 %' : k === 'save' ? 'Plus lent de 0,3 s par tour, usure −35 %' : 'Rythme et usure normaux'}">${v.name}</button>`).join('')}</div></div>
+      el.innerHTML = `<div class="pw-cell pw-tyre">${tyreDot(ty)}<div><b>${MG().TYRES[ty].name}</b><div class="wearbar ${wear > 0.75 ? 'bad' : wear > 0.5 ? 'mid' : ''}"><i style="width:${Math.round(wear * 100)}%"></i></div><small>Usure <b>${Math.round(wear * 100)} %</b> · <span class="${tTy > MG().TYRE_HI ? 'hot' : tTy < 85 ? 'cold' : ''}">${Math.round(tTy)} °C</span> · perf. ${ts.perf} %</small></div></div>
+        <div class="pw-cell"><small>Rythme pneus</small><div class="pw-mode">${Object.entries(MG().MODES).map(([k, v]) => `<button class="${c.mode === k ? 'on' : ''} m-${k}" data-pw="mode" data-v="${k}" title="${k === 'push' ? 'Plus rapide de 0,4 s par tour, usure +50 %' : k === 'save' ? 'Plus lent de 0,3 s par tour, usure −35 %' : 'Rythme et usure normaux'}">${v.name}</button>`).join('')}</div></div>
         <div class="pw-cell"><small>Prochain train</small><div class="pw-next">${Object.values(MG().TYRES).map((t) => `<button class="${c.tyre === t.id ? 'on' : ''}" data-pw="tyre" data-v="${t.id}" style="--ty:${t.color}" title="${esc(t.name)}"><span class="tyre2 sm"></span></button>`).join('')}</div></div>
         <div class="pw-cell pw-boxc"><button class="pw-box ${c.box || pending ? 'on' : ''}" data-pw="box">${pending ? 'BOX CE TOUR ✓' : c.box ? `BOX ${boxLap === lap + 1 ? 'CE TOUR' : 'AU PROCHAIN TOUR'} ✓` : 'BOX · rentrer au stand'}</button><small>${pending ? `Arrêt en fin de tour ${res.lap} → ${MG().TYRES[meX.tyre].name}${canRedo() ? ' · cliquer pour annuler' : ''}` : c.box ? `Arrêt en fin de tour ${Math.min(LAPS, boxLap)} → ${MG().TYRES[c.tyre].name} · cliquer pour annuler` : ps && ps.lap > L ? `Plan : arrêt au tour ${ps.lap} → ${MG().TYRES[ps.tyre].name} <button class="pw-link" data-pw="plan">annuler le plan</button>` : c.plan ? 'Aucun autre arrêt prévu' : 'Plan annulé : arrêts manuels <button class="pw-link" data-pw="plan">reprendre le plan</button>'}</small></div>
         <div class="pw-rule ${rule ? 'ok' : 'ko'}">${rule ? '✓ Règle des 2 composés respectée' : `⚠️ Un seul composé utilisé : +${MG().RULE_PENALTY} s à l'arrivée sans changement de gomme`}</div>`;
@@ -1704,7 +1714,7 @@
       const wasRedo = canRedo();
       paused = true;
       const box = $('#radio');
-      box.innerHTML = `<div class="radio-box"><div class="radio-h"><span class="radio-wave"><i></i><i></i><i></i><i></i></span>Box, box · quels pneus monter ?</div>
+      box.innerHTML = `<div class="radio-box">${RHEAD('Box, box · quels pneus monter ?')}
         <p>Arrêt en fin de tour ${Math.min(LAPS, wasRedo ? lap + 1 : lap + 2)}. Le composé choisi décide de la suite de votre stratégie.</p>${tyreChoice(lap)}
         <div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn sm ghost" data-tc-cancel="1">Annuler, rester en piste</button></div></div>`;
       box.classList.add('on');
@@ -1718,14 +1728,11 @@
     }
     const render = (L) => {
       const order = res.laps[L - 1];
-      order.forEach((o, k) => {
+      order.forEach((o) => {
         const el = $(`.trow[data-i="${o.i}"]`); if (!el) return;
-        el.style.transform = `translateY(${k * ROW}px)`;
-        el.querySelector('.tp').textContent = o.out ? 'AB' : k + 1;
-        el.querySelector('.tg').textContent = o.out ? 'Abandon' : k === 0 ? 'Leader' : '+' + o.gap.toFixed(1);
         el.querySelector('.tt').innerHTML = o.out ? '' : tyreDot(o.ty, 'sm' + (o.wear > 0.75 ? ' worn' : ''));
-        el.classList.toggle('out', o.out);
       });
+      towerTick();
       $('#lapN').textContent = L;
       wx(L);
       const feed = $('#feed');
@@ -1735,6 +1742,7 @@
         const who = e.who != null ? byI.get(e.who) : null;
         if (e.type === 'sc') showFlag('🚨 VOITURE DE SÉCURITÉ', 'sc', 4500);
         if (e.type !== 'sc' && e.type !== 'wx' && who && !who.c.me && e.type !== 'dnf') continue; // n'affiche que les faits marquants
+        if (e.type === 'tr') { trSay(e.txt); feed.insertAdjacentHTML('afterbegin', `<div class="ev tr mine"><span class="muted">T${e.lap}</span> 📻 <b class="me-t">${esc(meX.driver.code)}</b> « ${esc(e.txt)} »</div>`); continue; }
         const nm = who ? (who.c.me ? '<b class="me-t">Votre voiture</b>' : `<b>${esc(who.name)}</b>`) : '';
         feed.insertAdjacentHTML('afterbegin', `<div class="ev ${e.type} ${who && who.c.me ? 'mine' : ''}"><span class="muted">T${e.lap}</span> ${e.type === 'sc' ? '🚨 ' + esc(e.txt) : e.type === 'wx' || e.type === 'radio' ? esc(e.txt) : nm + ' ' + esc(e.txt)}</div>`);
       }
@@ -1750,10 +1758,10 @@
         if (auto && box.dataset.pick != null && box.dataset.pick !== '') { idx = +box.dataset.pick; } // temps écoulé pendant le choix des pneus : l'option choisie s'applique avec le composé prévu
         delete box.dataset.pick;
         const r = MG().applyChoice(res, dil, +idx, tyre);
-        box.innerHTML = `<div class="radio-box res ${r.out ? 'bad' : r.dt < 0 ? 'good' : r.dt > 0 ? 'bad' : ''}"><div class="radio-h"><span class="radio-wave"><i></i><i></i><i></i><i></i></span>Radio stand${auto ? ' · temps écoulé, choix prudent appliqué' : ''}</div><div class="radio-pick">${esc(r.choice)}</div><p>${esc(r.msg)}</p></div>`;
+        box.innerHTML = `<div class="radio-box res ${r.out ? 'bad' : r.dt < 0 ? 'good' : r.dt > 0 ? 'bad' : ''}">${RHEAD('Radio stand' + (auto ? ' · temps écoulé, choix prudent appliqué' : ''))}<div class="radio-pick">${esc(r.choice)}</div><p>${esc(r.msg)}</p></div>`;
         setTimeout(() => { box.classList.remove('on'); box.innerHTML = ''; paused = false; then(); renderWall(lap); }, 2600);
       };
-      box.innerHTML = `<div class="radio-box"><div class="radio-h"><span class="radio-wave"><i></i><i></i><i></i><i></i></span>Radio stand · ${esc(dil.title)}<b class="radio-cd" id="radioCd">${RADIO_S}</b></div>
+      box.innerHTML = `<div class="radio-box">${RHEAD('Radio stand · ' + esc(dil.title), `<b class="radio-cd" id="radioCd">${RADIO_S}</b>`)}
         <p>${esc(dil.text)}</p><div class="radio-opts">${dil.options.map((o, i) => `<button class="btn sm ghost" data-radio="${i}">${esc(o)}</button>`).join('')}</div>
         <div class="radio-bar"><i id="radioBar"></i></div></div>`;
       box.classList.add('on'); renderWall(lap);
@@ -1780,7 +1788,7 @@
       const so = SO();
       const sub = so.ready && so.me ? F1.social.submitWeekly(ev.id, timeMs, me.pos, ctx.ch.name, ctx.drvM.name) : Promise.reject(Object.assign(new Error('offline'), { offline: true }));
       if (silent || !$('.race-main')) { sub.catch(() => {}); showAchievements(); return; }
-      T = LAPS; paused = false; $('#radio').classList.remove('on'); render(LAPS); renderWall(LAPS);
+      T = LAPS; paused = false; $('#radio').classList.remove('on'); render(LAPS); renderWall(LAPS); renderTele();
       if (S.raceMap) { S.raceMap.dispose(); S.raceMap = null; }
       const w = F1.store.mgr().weeklyGP;
       const why = me.out ? `abandon (${esc(meX.out.why)})` : meX.pen ? 'règle des 2 composés secs non respectée' : '';
@@ -1813,7 +1821,7 @@
       F1.store.recordRace({ pos: me.pos, dnf: me.out, grid: meX.grid, fastest: res.fastest.who === meX.i, rain: res.weather.some((x) => x.rain > 0.25), lp: rw.lp, pc: rw.pc, gp: ctx.race.nameFr.replace('Grand Prix', 'GP'), league: leagueBefore.name, driver: ctx.drvM.family, chassis: ctx.ch.name });
       F1.social.sync(true);
       if (silent || !$('#raceEnd')) { showAchievements(); return; }
-      T = LAPS; paused = false; $('#radio').classList.remove('on'); render(LAPS); renderWall(LAPS);
+      T = LAPS; paused = false; $('#radio').classList.remove('on'); render(LAPS); renderWall(LAPS); renderTele();
       const m = F1.store.mgr();
       const Lnow = MG().leagueOf(m.lp);
       const promo = Lnow.min > leagueBefore.min, demo = Lnow.min < leagueBefore.min;
@@ -1857,8 +1865,144 @@
       if (promo) setTimeout(() => confetti(260), 400);
       showAchievements();
     };
+    /* ---------- Tour de classement en continu (toutes les 250 ms) ----------
+       Les écarts au leader sont connus à chaque fin de tour : entre deux, ils sont interpolés, si bien qu'on voit
+       les voitures se rapprocher, s'éloigner et se dépasser en plein tour. */
+    let twMode = 'gap';
+    const near = { ahead: 99, behind: 99 };
+    function towerTick() {
+      const L = Math.max(0, Math.floor(T)), f = Math.max(0, Math.min(1, T - L)), L1 = Math.min(res.lap, L + 1);
+      const rows = res.field.map((x) => {
+        const g = res.gapArr[x.i], g0 = g[Math.min(L, g.length - 1)], g1 = g[Math.min(L1, g.length - 1)];
+        const outNow = !!(x.out && L >= x.out.lap);
+        return { x, gp: outNow ? Infinity : g0 + (g1 - g0) * f, outNow, stops: x.pitLaps.filter((l) => l <= L).length };
+      });
+      const run = rows.filter((r) => !r.outNow).sort((a, b) => a.gp - b.gp), outs = rows.filter((r) => r.outNow).sort((a, b) => b.x.out.lap - a.x.out.lap);
+      const lead = run.length ? run[0].gp : 0;
+      [...run, ...outs].forEach((r, k) => {
+        const el = $(`.trow[data-i="${r.x.i}"]`); if (!el) return;
+        const ty = `translateY(${k * ROW}px)`; if (el.style.transform !== ty) el.style.transform = ty;
+        const pos = r.outNow ? 'AB' : String(k + 1);
+        const tp = el.querySelector('.tp'); if (tp.textContent !== pos) tp.textContent = pos;
+        let gt;
+        if (r.outNow) gt = 'Abandon';
+        else if (k === 0) gt = twMode === 'gap' ? 'Leader' : 'Intervalle';
+        else { const v = twMode === 'gap' ? r.gp - lead : r.gp - run[k - 1].gp; gt = '+' + (v < 60 ? v.toFixed(3) : v.toFixed(1)); }
+        const tg = el.querySelector('.tg'); if (tg.textContent !== gt) tg.textContent = gt;
+        const st = r.stops ? `${r.stops} STOP${r.stops > 1 ? 'S' : ''}` : '';
+        const ps = el.querySelector('.tps'); if (ps.textContent !== st) { ps.textContent = st; ps.className = 'tps s' + Math.min(3, r.stops); }
+        el.classList.toggle('out', r.outNow);
+        if (r.x === meX && !r.outNow) { near.ahead = k > 0 ? r.gp - run[k - 1].gp : 99; near.behind = k < run.length - 1 ? run[k + 1].gp - r.gp : 99; }
+      });
+    }
+    $('.tower-h').addEventListener('click', (e) => { const b = e.target.closest('[data-tw]'); if (!b) return; twMode = b.dataset.tw; $$('.tower-h [data-tw]').forEach((x) => x.classList.toggle('on', x === b)); towerTick(); });
+
+    /* ---------- Télémétrie : carburant, batterie ERS, températures, et commandes ---------- */
+    const TE = MG();
+    const teleAt = () => {
+      const L = Math.max(0, Math.floor(T)), f = Math.max(0, Math.min(1, T - L));
+      const a = res.tele[Math.min(L, res.tele.length - 1)] || res.tele[0], b = res.tele[Math.min(L + 1, res.tele.length - 1)] || a;
+      const mix = (k) => a[k] + (b[k] - a[k]) * f;
+      return { fuel: mix('fuel'), bat: mix('bat'), tEng: mix('tEng'), tTyre: mix('tTyre'), lapsLeft: Math.max(0, LAPS - T) };
+    };
+    const lvl = (v, warn, crit, low) => (v >= crit ? 'crit' : v >= warn ? 'warn' : low != null && v < low ? 'cold' : 'ok');
+    const gauge = (k, label) => `<div class="tg-g" data-g="${k}"><div class="tg-h"><small>${label}</small><b class="num" data-v></b><em data-s></em></div><div class="tg-bar">${k === 'tyre' ? '<span class="tg-win" style="left:42.9%;width:21.4%"></span>' : k === 'eng' ? '<span class="tg-red" style="left:70%;width:30%"></span>' : ''}<i data-b></i></div></div>`;
+    const ctlSeg = (key, opts) => `<div class="seg tl-seg" data-tl="${key}">${Object.entries(opts).map(([k, v]) => `<button data-v="${k}" class="${res.ctl[key] === k ? 'on' : ''} tl-${k}">${esc(v.name)}</button>`).join('')}</div>`;
+    function renderTele() {
+      const el = $('#tele'); if (!el) return;
+      if (done || meX.out && lap >= meX.out.lap) { el.innerHTML = ''; return; }
+      const act = res.ctl.act, actLap = act ? act.lap : 0, pend = act && actLap > lap;
+      el.innerHTML = `<div class="tl-gauges">${gauge('fuel', 'Carburant')}${gauge('bat', 'Batterie ERS')}${gauge('tyre', 'Temp. pneus')}${gauge('eng', 'Temp. moteur')}</div>
+        <div class="tl-ctl">
+          <div class="tl-c"><small>Mélange carburant</small>${ctlSeg('mix', TE.MIX)}</div>
+          <div class="tl-c"><small>Mode ERS</small>${ctlSeg('ers', TE.ERS)}</div>
+          <div class="tl-c tl-acts"><small>Consignes pilote</small><div class="tl-btns">
+            <button class="tl-act atk ${pend && act.k === 'attack' ? 'on' : ''}" data-act="attack" title="Manœuvre agressive au prochain freinage si l'écart est sous 1,0 s : batterie −18 %, pneus et moteur chauffent, risque de blocage si mal préparée">⚔ Tenter un dépassement<span data-hint="attack"></span></button>
+            <button class="tl-act def ${pend && act.k === 'defend' ? 'on' : ''}" data-act="defend" title="Fermer les portes face à une voiture à moins d'1 s : batterie −12 %, gomme sollicitée">🛡 Défendre la position<span data-hint="defend"></span></button>
+            <button class="tl-act cool ${res.ctl.cool ? 'on' : ''}" data-act="cool" title="Lift & coast hors de l'aspiration : −0,25 s par tour, mais le moteur et les pneus refroidissent, consommation −4 %">❄ Air propre / Refroidir${res.ctl.cool ? ' ✓' : ''}</button></div></div>
+        </div>`;
+      teleTick();
+    }
+    function teleTick() {
+      const el = $('#tele'); if (!el || !el.firstChild) return;
+      const v = teleAt(), burn = (TE.MIX[res.ctl.mix] || TE.MIX.std).burn;
+      const fd = TE.fuelDelta(v.fuel, burn, v.lapsLeft), fuel0 = res.tele[0].fuel;
+      const set = (k, val, pct, cls, sub) => {
+        const g = el.querySelector(`[data-g="${k}"]`); if (!g) return;
+        g.className = 'tg-g ' + cls; g.querySelector('[data-v]').textContent = val; g.querySelector('[data-s]').textContent = sub || '';
+        g.querySelector('[data-b]').style.width = Math.max(0, Math.min(100, pct)) + '%';
+      };
+      const fr = (n, d = 1) => n.toFixed(d).replace('.', ',');
+      set('fuel', `${fr(Math.max(0, TE.KG(v.fuel, LAPS)))} kg`, (v.fuel / fuel0) * 100, v.fuel <= 0 ? 'crit' : fd < 0 ? 'crit' : fd < 0.6 ? 'warn' : 'ok', `${fd >= 0 ? '+' : '−'}${fr(Math.abs(fd))} tour${Math.abs(fd) >= 2 ? 's' : ''}`);
+      set('bat', `${Math.round(v.bat)} %`, v.bat, v.bat < 12 ? 'crit' : v.bat < 35 ? 'warn' : 'ok', (TE.ERS[res.ctl.ers] || {}).name || '');
+      set('tyre', `${Math.round(v.tTyre)} °C`, ((v.tTyre - 60) / 70) * 100, v.tTyre > TE.TYRE_HI + 5 ? 'crit' : v.tTyre > TE.TYRE_HI ? 'warn' : v.tTyre < 85 ? 'cold' : 'ok', v.tTyre > TE.TYRE_HI ? 'surchauffe' : v.tTyre < 85 ? 'froids' : 'fenêtre 90–105');
+      set('eng', `${Math.round(v.tEng)} °C`, ((v.tEng - 80) / 50) * 100, v.tEng > TE.ENG_CRIT ? 'crit' : v.tEng > TE.ENG_CRIT - 5 ? 'warn' : 'ok', v.tEng > TE.ENG_CRIT ? 'critique' : 'limite 115');
+      // consignes possibles selon les écarts du moment
+      const ha = el.querySelector('[data-hint="attack"]'), hd = el.querySelector('[data-hint="defend"]');
+      if (ha) ha.textContent = near.ahead < 90 ? ` · ${fr(near.ahead)} s` : '';
+      if (hd) hd.textContent = near.behind < 90 ? ` · ${fr(near.behind)} s` : '';
+      const ba = el.querySelector('[data-act="attack"]'), bd = el.querySelector('[data-act="defend"]');
+      if (ba) { ba.classList.toggle('ready', near.ahead <= 1.0); ba.disabled = near.ahead >= 90 && !ba.classList.contains('on'); }   // en tête : personne à attaquer
+      if (bd) { bd.classList.toggle('ready', near.behind <= 1.0); bd.disabled = near.behind >= 90 && !bd.classList.contains('on'); }
+    }
+    $('#tele').addEventListener('click', (e) => {
+      if (done || T < 0) return;
+      const seg = e.target.closest('[data-tl] [data-v]'), a = e.target.closest('[data-act]');
+      if (!seg && !a) return;
+      if (seg) res.ctl[seg.parentElement.dataset.tl] = seg.dataset.v;
+      if (a) {
+        const k = a.dataset.act;
+        if (k === 'cool') res.ctl.cool = !res.ctl.cool;
+        else {
+          const forLap = canRedo() ? lap + 1 : lap + 2;
+          if (res.ctl.act && res.ctl.act.k === k && res.ctl.act.lap === forLap) res.ctl.act = null; // second clic : annuler
+          else res.ctl.act = { k, lap: forLap };
+        }
+      }
+      // l'ordre s'applique au tour en cours tant que la voiture n'a pas atteint le point de freinage : le tour est recalculé
+      if (canRedo()) MG().redoLap(res);
+      renderTele(); renderWall(lap);
+    });
+
+    /* ---------- Radio du pilote : encart flottant (numéro, couleurs de l'écurie, égaliseur pendant le message) ---------- */
+    const trQ = []; let trBusy = false;
+    function trSay(txt) { trQ.push(txt); if (!trBusy) trNext(); }
+    function trNext() {
+      const el = $('#trRadio'); if (!el) { trQ.length = 0; trBusy = false; return; }
+      const txt = trQ.shift(); if (!txt) { trBusy = false; return; }
+      trBusy = true;
+      el.innerHTML = `<div class="trr" style="--tc:${meCol};--ti:${meInk}"><span class="trr-num">${esc(String(drvNum || meX.driver.code))}</span><div class="trr-body"><div class="trr-h"><b>${esc(meX.driver.name || meX.driver.code)}</b><span class="trr-eq talking"><i></i><i></i><i></i><i></i><i></i><i></i></span><small>RADIO</small></div><p>« <span class="trr-t"></span> »</p></div></div>`;
+      el.classList.add('on');
+      const out = el.querySelector('.trr-t'), eq = el.querySelector('.trr-eq'); let n = 0;
+      const typ = setInterval(() => { n += 2; out.textContent = txt.slice(0, n); if (n >= txt.length) { clearInterval(typ); eq.classList.remove('talking'); setTimeout(() => { el.classList.remove('on'); setTimeout(trNext, 350); }, 3600); } }, 28);
+    }
+
+    /* ---------- Grille de départ : charge de carburant ---------- */
+    function gridChoice() {
+      paused = true;
+      const box = $('#radio');
+      const card = (k, v) => `<button class="fl-opt ${k === res.ctl.fuelLoad ? 'on' : ''}" data-fl="${k}"><b>${esc(v.name)}</b><span class="num">${Math.round(TE.KG(LAPS * v.k, LAPS))} kg</span><small>${esc(v.desc)}</small><em>${v.k >= 1.05 ? 'marge ≈ ' + Math.round((v.k - 1) * LAPS) + ' tours au mélange standard' : v.k < 1 ? 'manque ≈ ' + Math.round((1 - v.k) * LAPS) + ' tours : mélange Économie obligatoire' : 'marge ≈ ' + Math.max(1, Math.round((v.k - 1) * LAPS)) + ' tour'}</em></button>`;
+      box.innerHTML = `<div class="radio-box grid-box">${RHEAD('Grille de départ · charge de carburant')}
+        <p>Chaque kilo se paie au chrono : environ ${fr3((TE.KG ? 3 / 100 : 0.03))} s par kilo et par tour. Moins de carburant, c'est une voiture plus légère mais des tours en économie ; plus, c'est de la marge pour le mélange riche.</p>
+        <div class="fl-grid">${Object.entries(TE.FUEL_LOAD).map(([k, v]) => card(k, v)).join('')}</div>
+        <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn" data-fl-go="1">Valider · extinction des feux</button></div></div>`;
+      box.classList.add('on');
+      box.onclick = (e) => {
+        const c = e.target.closest('[data-fl]');
+        if (c) { res.ctl.fuelLoad = c.dataset.fl; $$('.fl-opt', box).forEach((x) => x.classList.toggle('on', x === c)); return; }
+        if (!e.target.closest('[data-fl-go]')) return;
+        res.tele[0].fuel = LAPS * TE.FUEL_LOAD[res.ctl.fuelLoad].k;
+        MG().redoLap(res);   // le tour 1 est recalculé avec la charge choisie
+        box.classList.remove('on'); box.innerHTML = ''; box.onclick = null; paused = false;
+        renderTele(); renderWall(0);
+      };
+    }
+    const fr3 = (n) => n.toFixed(2).replace('.', ',');
+    $('.race-ctl').addEventListener('click', (e) => { if (e.target.closest('[data-rfs]')) { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); else goFull(); } });
+
     S.raceFinish = finish;
     wx(0);
+    towerTick(); renderTele(); gridChoice();
     // carte 2D : tracé du circuit et un point par voiture
     try {
       S.raceMap = F1.racemap.mount($('#raceMap'), {
@@ -1866,7 +2010,7 @@
         onIncident: (x, out) => showFlag(out.crash ? `🟡 DRAPEAU JAUNE · accident de <b>${esc(x.c.me ? 'votre voiture' : x.name)}</b>` : `💨 ${esc(out.why)} · <b>${esc(x.c.me ? 'votre voiture' : x.name)}</b> s'arrête`, out.crash ? 'yellow' : 'mech'),
       });
     } catch (e) { console.warn(e); const st = $('.race-stage'); if (st) st.classList.add('off'); }
-    let lastTick = performance.now();
+    let lastTick = performance.now(), hfT = 0;
     raceTimer = setInterval(() => {
       // temps réel écoulé (et non nombre de ticks) : la course garde son rythme même sur un appareil lent
       const nowT = performance.now(), el = Math.min(500, nowT - lastTick); lastTick = nowT;
@@ -1874,11 +2018,12 @@
       if (paused) return;
       T = Math.min(lap + 1, LAPS, T + (el / LAP_MS) * (T < 0 ? 1 : S.raceSpeed || 1)); // ne dépasse jamais le dernier tour calculé
       if (!started && T >= 0) { started = true; showFlag('🚦 Extinction des feux : c\'est parti !', 'mech', 2200); }
+      if (nowT - hfT >= 250) { hfT = nowT; towerTick(); teleTick(); }
       const L = Math.floor(T + 1e-6);
       if (L > lap) {
         lap = L;
         if (lap >= LAPS) return finish(false);
-        render(lap);
+        render(lap); renderTele();
         const dil = res.DL.includes(lap) ? MG().dilemmaFor(res) : null;
         if (dil) { T = lap; askRadio(dil, () => MG().stepLap(res)); } else MG().stepLap(res);
       }
@@ -2125,7 +2270,7 @@
     $('#modal').innerHTML = `<div class="modal" data-action="modal-bg"><div class="modal-box">${html}</div></div>`;
     const f = $('#modal input'); if (f) setTimeout(() => f.focus(), 50);
   }
-  const closeModal = () => { if (S.raceFinish) S.raceFinish(true); if (raceTimer) { clearInterval(raceTimer); raceTimer = null; } if (S.raceMap) { S.raceMap.dispose(); S.raceMap = null; } const wasRace = !!$('#modal .race-modal'); document.documentElement.classList.remove('race-lock'); $('#modal').innerHTML = ''; if (wasRace && /^#\/manager/.test(location.hash)) route(); };
+  const closeModal = () => { if (S.raceFinish) S.raceFinish(true); if (raceTimer) { clearInterval(raceTimer); raceTimer = null; } if (S.raceMap) { S.raceMap.dispose(); S.raceMap = null; } const wasRace = !!$('#modal .race-modal'); if (wasRace && document.fullscreenElement) document.exitFullscreen().catch(() => {}); document.documentElement.classList.remove('race-lock'); $('#modal').innerHTML = ''; if (wasRace && /^#\/manager/.test(location.hash)) route(); };
   function welcome() {
     modal(`<div style="font-size:42px">🏎️</div><h2>Bienvenue au muret des stands</h2>
       <p class="muted">PITWALL est un jeu de pronostics <b>gratuit</b> sur la Formule 1. Vous démarrez avec <b style="color:var(--gold)">${fmt(F1.store.START)} jetons virtuels</b> et recevez une prime à chaque Grand Prix. Les cotes sont recalculées après chaque course à partir des résultats officiels, et vos paris sont réglés automatiquement.</p>
