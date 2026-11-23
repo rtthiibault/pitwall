@@ -6,34 +6,65 @@
   const RESCUE = 300;
   const MAX_ODDS = 2000; // plafond d'un combiné
 
+  /* ---------- Succès ----------
+     cat : rubrique · reward : jetons crédités en réclamant · goal(state) : progression { v, max } (sinon succès « événement »,
+     débloqué par unlock()). Un succès est acquis quand sa progression est complète ; ses jetons se réclament dans l'onglet Succès. */
+  const nBets = (s) => s.bets.length, nWon = (s) => s.bets.filter((b) => b.status === 'won').length;
+  const bestStreak = (s) => { let best = 0, cur = 0; s.bets.filter((b) => b.status === 'won' || b.status === 'lost').sort((a, b) => (a.settledAt || 0) - (b.settledAt || 0)).forEach((b) => { cur = b.status === 'won' ? cur + 1 : 0; best = Math.max(best, cur); }); return best; };
+  const MS = (s) => (s.manager && s.manager.stats) || {};
   const ACH = [
-    { id: 'first', icon: '🏁', title: 'Lights out', desc: 'Placer votre premier pari' },
-    { id: 'win1', icon: '🍾', title: 'Champagne !', desc: 'Gagner un premier pari' },
-    { id: 'combo', icon: '🔗', title: 'Train DRS', desc: 'Gagner un combiné de 3 sélections ou plus' },
-    { id: 'long', icon: '🚀', title: 'Remontée fantastique', desc: 'Gagner un pari à cote ≥ 10' },
-    { id: 'tierce', icon: '🥇', title: 'Podium parfait', desc: 'Gagner un tiercé' },
-    { id: 'streak', icon: '🔥', title: 'Grand Chelem', desc: '5 paris gagnés d\'affilée' },
-    { id: 'rich', icon: '💎', title: 'Budget cap explosé', desc: 'Atteindre 5 000 jetons' },
-    { id: 'season', icon: '🏆', title: 'Visionnaire', desc: 'Parier sur le champion du monde' },
-    { id: 'loyal', icon: '📅', title: 'Abonné du paddock', desc: 'Récupérer 5 primes de week-end' },
-    { id: 'mgr_team', icon: '🏗️', title: 'Team principal', desc: 'Posséder un pilote et un châssis' },
-    { id: 'mgr_win', icon: '🏁', title: 'Victoire constructeur', desc: 'Gagner une course de manager' },
-    { id: 'mgr_or', icon: '🥇', title: 'Ligue Or', desc: 'Atteindre la ligue Or en mode manager' },
-    { id: 'mgr_rd', icon: '🔬', title: 'Bureau d\'études', desc: 'Développer 5 pièces en R&D' },
-    { id: 'mgr_mk5', icon: '🧬', title: 'Spécification ultime', desc: 'Amener une pièce au niveau Mk V' },
-    { id: 'mgr_pkg', icon: '📦', title: 'Package complet', desc: 'Toutes les pièces d\'une branche de R&D développées' },
-    { id: 'mgr_tunnel', icon: '🎲', title: 'Coup de poker', desc: 'Réussir un pari soufflerie' },
-    { id: 'mgr_staff', icon: '🎧', title: 'Muret au complet', desc: 'Pourvoir les 5 postes du muret des stands' },
-    { id: 'mgr_garage', icon: '🧰', title: 'Garage dernier cri', desc: 'Cumuler 25 niveaux d\'équipements de garage' },
-    { id: 'mgr_rain', icon: '🌧️', title: 'Maître de la pluie', desc: 'Gagner une course manager sous la pluie' },
-    { id: 'mgr_obj', icon: '🎯', title: 'Feuille de route', desc: 'Remplir les 3 objectifs d\'une journée' },
+    // Paris
+    { id: 'first', cat: 'paris', icon: '🎟️', title: 'Lights out', desc: 'Placer votre premier pari', reward: 50, goal: (s) => ({ v: nBets(s), max: 1 }) },
+    { id: 'bets25', cat: 'paris', icon: '📋', title: 'Habitué des tribunes', desc: 'Placer 25 paris', reward: 120, goal: (s) => ({ v: nBets(s), max: 25 }) },
+    { id: 'win1', cat: 'paris', icon: '🍾', title: 'Champagne !', desc: 'Gagner un premier pari', reward: 60, goal: (s) => ({ v: nWon(s), max: 1 }) },
+    { id: 'wins10', cat: 'paris', icon: '🏅', title: 'Parieur affûté', desc: 'Gagner 10 paris', reward: 150, goal: (s) => ({ v: nWon(s), max: 10 }) },
+    { id: 'wins50', cat: 'paris', icon: '🏆', title: 'Oracle du paddock', desc: 'Gagner 50 paris', reward: 500, goal: (s) => ({ v: nWon(s), max: 50 }) },
+    { id: 'streak', cat: 'paris', icon: '🔥', title: 'Grand Chelem', desc: 'Gagner 5 paris d\'affilée', reward: 300, goal: (s) => ({ v: bestStreak(s), max: 5 }) },
+    { id: 'combo', cat: 'paris', icon: '🔗', title: 'Train DRS', desc: 'Gagner un combiné de 3 sélections ou plus', reward: 150 },
+    { id: 'long', cat: 'paris', icon: '🚀', title: 'Remontée fantastique', desc: 'Gagner un pari à cote 10 ou plus', reward: 200 },
+    { id: 'tierce', cat: 'paris', icon: '🥇', title: 'Podium parfait', desc: 'Gagner un tiercé', reward: 300 },
+    { id: 'season', cat: 'paris', icon: '🔮', title: 'Visionnaire', desc: 'Parier sur le champion du monde', reward: 80 },
+    { id: 'rich', cat: 'paris', icon: '💎', title: 'Budget cap explosé', desc: 'Atteindre 5 000 jetons', reward: 250, goal: (s) => ({ v: Math.floor(s.balance), max: 5000 }) },
+    { id: 'loyal', cat: 'paris', icon: '📅', title: 'Abonné du paddock', desc: 'Récupérer 5 primes de week-end', reward: 100, goal: (s) => ({ v: Object.keys(s.claimed || {}).filter((k) => k[0] !== 'S').length, max: 5 }) },
+    // Paddock Wire
+    { id: 'news_win', cat: 'paddock', icon: '📰', title: 'Coup de scoop', desc: 'Gagner un pari dont la cote avait bougé sur une info Paddock Wire', reward: 200, goal: (s) => ({ v: (s.stats || {}).newsWins || 0, max: 1 }) },
+    { id: 'news_win5', cat: 'paddock', icon: '📡', title: 'Toujours à l\'écoute', desc: 'Gagner 5 paris influencés par l\'actualité', reward: 400, goal: (s) => ({ v: (s.stats || {}).newsWins || 0, max: 5 }) },
+    { id: 'pw_reader', cat: 'paddock', icon: '🔍', title: 'Lecteur assidu', desc: 'Consulter le Paddock Wire 10 fois', reward: 60, goal: (s) => ({ v: (s.stats || {}).pwVisits || 0, max: 10 }) },
+    // Ligues
+    { id: 'league_join', cat: 'ligues', icon: '🤝', title: 'Esprit d\'équipe', desc: 'Créer ou rejoindre une ligue privée', reward: 100, goal: (s) => ({ v: (s.stats || {}).leagueJoined ? 1 : 0, max: 1 }) },
+    { id: 'podium_pick', cat: 'ligues', icon: '🎯', title: 'Pronostiqueur', desc: 'Enregistrer 5 pronostics de podium', reward: 120, goal: (s) => ({ v: (s.stats || {}).podiumPicks || 0, max: 5 }) },
+    // F1 Manager
+    { id: 'mgr_team', cat: 'manager', icon: '🏗️', title: 'Team principal', desc: 'Avoir un pilote et une équipe', reward: 80 },
+    { id: 'mate1', cat: 'manager', icon: '👤', title: 'Duo de choc', desc: 'Recruter votre premier coéquipier', reward: 100 },
+    { id: 'mgr_first', cat: 'manager', icon: '🚦', title: 'Baptême du feu', desc: 'Terminer une course en F1 Manager', reward: 50, goal: (s) => ({ v: MS(s).races || 0, max: 1 }) },
+    { id: 'mgr_win', cat: 'manager', icon: '🏁', title: 'Première victoire', desc: 'Gagner une course en F1 Manager', reward: 200, goal: (s) => ({ v: MS(s).wins || 0, max: 1 }) },
+    { id: 'mgr_win10', cat: 'manager', icon: '👑', title: 'Dynastie', desc: 'Gagner 10 courses en F1 Manager', reward: 600, goal: (s) => ({ v: MS(s).wins || 0, max: 10 }) },
+    { id: 'mgr_pod10', cat: 'manager', icon: '🥈', title: 'Habitué du podium', desc: 'Monter 10 fois sur le podium', reward: 300, goal: (s) => ({ v: MS(s).podiums || 0, max: 10 }) },
+    { id: 'mgr_50', cat: 'manager', icon: '🛞', title: 'Marathonien', desc: 'Disputer 50 courses en F1 Manager', reward: 300, goal: (s) => ({ v: MS(s).races || 0, max: 50 }) },
+    { id: 'one_two', cat: 'manager', icon: '🎆', title: 'Doublé !', desc: 'Finir 1er et 2e avec votre coéquipier', reward: 400 },
+    { id: 'cool_race', cat: 'manager', icon: '❄', title: 'Sang-froid', desc: 'Terminer une course sans jamais dépasser 115 °C moteur', reward: 100, goal: (s) => ({ v: MS(s).coolRaces || 0, max: 1 }) },
+    { id: 'mgr_rain', cat: 'manager', icon: '🌧️', title: 'Maître de la pluie', desc: 'Gagner une course sous la pluie', reward: 250 },
+    { id: 'pc10k', cat: 'manager', icon: '💰', title: 'Coffre-fort', desc: 'Atteindre 10 000 PitCoins', reward: 500, goal: (s) => ({ v: Math.floor((s.manager || {}).pc || 0), max: 10000 }) },
+    { id: 'mgr_or', cat: 'manager', icon: '🥇', title: 'Ligue Or', desc: 'Atteindre la ligue Or', reward: 300 },
+    { id: 'mgr_rd', cat: 'manager', icon: '🔬', title: 'Bureau d\'études', desc: 'Développer 5 pièces en R&D', reward: 100, goal: (s) => ({ v: Object.keys((s.manager || {}).parts || {}).length, max: 5 }) },
+    { id: 'mgr_mk5', cat: 'manager', icon: '🧬', title: 'Spécification ultime', desc: 'Amener une pièce au niveau Mk V', reward: 200 },
+    { id: 'mgr_pkg', cat: 'manager', icon: '📦', title: 'Package complet', desc: 'Développer toutes les pièces d\'une branche de R&D', reward: 200 },
+    { id: 'mgr_tunnel', cat: 'manager', icon: '🎲', title: 'Coup de poker', desc: 'Réussir un pari en soufflerie', reward: 100 },
+    { id: 'mgr_staff', cat: 'manager', icon: '🎧', title: 'Muret au complet', desc: 'Pourvoir les 5 postes du muret', reward: 200, goal: (s) => ({ v: Object.values((s.manager || {}).staff || {}).filter(Boolean).length, max: 5 }) },
+    { id: 'mgr_garage', cat: 'manager', icon: '🧰', title: 'Garage dernier cri', desc: 'Cumuler 25 niveaux d\'équipements de garage', reward: 250, goal: (s) => ({ v: Object.values((s.manager || {}).garage || {}).reduce((a, x) => a + (+x || 0), 0), max: 25 }) },
+    { id: 'mgr_obj', cat: 'manager', icon: '🎯', title: 'Feuille de route', desc: 'Remplir les 3 objectifs d\'une journée', reward: 100 },
+    { id: 'weekly', cat: 'manager', icon: '🌐', title: 'Rendez-vous hebdo', desc: 'Signer un chrono au Grand Prix Hebdomadaire', reward: 100, goal: (s) => ({ v: ((s.manager || {}).weeklyGP || {}).bestTime != null || ((s.manager || {}).trophies || []).length ? 1 : 0, max: 1 }) },
+    { id: 'weekly_top10', cat: 'manager', icon: '🏆', title: 'Trophée hebdo', desc: 'Finir dans le top 10 d\'un Grand Prix Hebdomadaire', reward: 300, goal: (s) => ({ v: ((s.manager || {}).trophies || []).length ? 1 : 0, max: 1 }) },
+    // Profil
+    { id: 'avatar', cat: 'profil', icon: '🪪', title: 'Nouveau look', desc: 'Choisir votre photo de profil', reward: 50, goal: (s) => ({ v: s.avatar ? 1 : 0, max: 1 }) },
   ];
+  const ACH_BY = new Map(ACH.map((a) => [a.id, a]));
 
   let state = null;
   const listeners = [];
 
   function blank() {
-    return { v: 1, name: '', created: Date.now(), balance: START, bets: [], claimed: {}, rescues: {}, ach: {}, history: [{ t: Date.now(), b: START }], manager: blankManager() };
+    return { v: 1, name: '', created: Date.now(), balance: START, bets: [], claimed: {}, rescues: {}, ach: {}, achClaimed: {}, stats: { tokensEarned: 0, newsWins: 0, leagueJoined: false, pwVisits: 0, podiumPicks: 0 }, avatar: null, history: [{ t: Date.now(), b: START }], manager: blankManager() };
   }
   const blankManager = () => ({ pc: (F1.manager && F1.manager.START_PC) || 300, driver: null, chassis: null, ups: { speed: 0, df: 0, rel: 0 }, parts: {}, rdSpent: 0, setup: 0, lp: 0, best: 0, races: [], day: { key: 0, n: 0, paid: 0 }, log: [], staff: {}, garage: {}, fails: {}, daily: { key: '' }, drvXp: {}, next: { seed: (Math.random() * 4294967296) >>> 0, tyre: 'M', plan: { stops: [{ lap: 9, tyre: 'H' }] } } });
   function load() {
@@ -55,9 +86,21 @@
     if (!m.next.plan || !Array.isArray(m.next.plan.stops)) m.next.plan = { stops: [{ lap: 9, tyre: 'H' }] };
     if (!m.garage) m.garage = {};
     if (!m.sponsors) m.sponsors = { main: null, sub: null, log: [] };
+    if (m.mate === undefined) m.mate = null;
+    // statistiques de carrière du manager (reconstituées depuis l'historique des anciennes sauvegardes)
+    if (!m.stats) {
+      const rs = m.races || [], P = (F1.manager && F1.manager.F1_POINTS) || [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
+      m.stats = { races: rs.length, wins: rs.filter((x) => x.pos === 1 && !x.dnf).length, podiums: rs.filter((x) => x.pos <= 3 && !x.dnf).length,
+        best: rs.reduce((b, x) => (x.dnf ? b : Math.min(b, x.pos)), 99), points: rs.reduce((a, x) => a + (x.dnf ? 0 : P[x.pos - 1] || 0), 0), dnf: rs.filter((x) => x.dnf).length,
+        coolRaces: 0, pcEarned: 0, mateWins: 0, matePodiums: 0 };
+    }
+    if (!state.stats) state.stats = { tokensEarned: 0, newsWins: 0, leagueJoined: false, pwVisits: 0, podiumPicks: 0 };
+    if (!state.achClaimed) state.achClaimed = {};
+    if (state.avatar === undefined) state.avatar = null;
     return state;
   }
   function save() {
+    checkAch();
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* stockage indisponible */ }
     listeners.forEach((f) => f(state));
   }
@@ -66,7 +109,25 @@
   const uid = () => Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4);
   const track = () => { state.history.push({ t: Date.now(), b: Math.round(state.balance * 100) / 100 }); if (state.history.length > 400) state.history.shift(); };
   const unlocked = [];
-  function unlock(id) { if (!state.ach[id]) { state.ach[id] = Date.now(); unlocked.push(ACH.find((a) => a.id === id)); } }
+  function unlock(id) { const a = ACH_BY.get(id); if (a && !state.ach[id]) { state.ach[id] = Date.now(); unlocked.push(a); } }
+  // Progression d'un succès (0..1) ; ceux qui sont complets sont marqués acquis automatiquement
+  function achProgress(a) { if (state.ach[a.id]) return { v: 1, max: 1, done: true }; if (!a.goal) return { v: 0, max: 1, done: false }; const g = a.goal(state); return { v: Math.min(g.v, g.max), max: g.max, done: g.v >= g.max }; }
+  function checkAch() { if (!state) return; for (const a of ACH) if (a.goal && !state.ach[a.id]) { try { if (achProgress(a).done) unlock(a.id); } catch (e) { /* données incomplètes */ } } }
+  // Réclamer les jetons d'un succès acquis
+  function claimAch(id) {
+    get(); const a = ACH_BY.get(id);
+    if (!a || !state.ach[id]) throw new Error('Succès pas encore débloqué');
+    if (!state.achClaimed) state.achClaimed = {};
+    if (state.achClaimed[id]) throw new Error('Récompense déjà réclamée');
+    state.achClaimed[id] = Date.now();
+    state.balance = Math.round((state.balance + a.reward) * 100) / 100;
+    state.stats.tokensEarned = (state.stats.tokensEarned || 0) + a.reward;
+    track(); save();
+    return a.reward;
+  }
+  const achClaimable = () => { get(); return ACH.filter((a) => state.ach[a.id] && !(state.achClaimed || {})[a.id]); };
+  function noteStat(k, v) { get(); state.stats[k] = v === undefined ? (state.stats[k] || 0) + 1 : v; save(); }
+  function setAvatar(src) { get(); state.avatar = src; save(); }
 
   function placeBet(legs, stake) {
     get();
@@ -76,7 +137,7 @@
     const odds = Math.min(MAX_ODDS, Math.round(legs.reduce((p, l) => p * l.odds, 1) * 100) / 100);
     const bet = {
       id: uid(), placedAt: Date.now(), stake, odds, status: 'open', payout: 0,
-      legs: legs.map((l) => ({ sid: l.sid, mid: l.mid, kind: l.kind, round: l.round, key: l.key, label: l.label, mtitle: l.mtitle, odds: l.odds, args: l.args, driverId: l.driverId, teamId: l.teamId, season: l.season, result: null })),
+      legs: legs.map((l) => ({ sid: l.sid, mid: l.mid, kind: l.kind, round: l.round, key: l.key, label: l.label, mtitle: l.mtitle, odds: l.odds, args: l.args, driverId: l.driverId, teamId: l.teamId, season: l.season, news: l.news || null, result: null })),
     };
     state.balance = Math.round((state.balance - stake) * 100) / 100;
     state.bets.unshift(bet);
@@ -114,6 +175,8 @@
         if (bet.legs.length >= 3) unlock('combo');
         if (bet.effOdds >= 10) unlock('long');
         if (bet.legs.some((l) => l.kind === 'tierce' && l.result === 'won')) unlock('tierce');
+        if (bet.legs.some((l) => l.news && l.result === 'won')) state.stats.newsWins = (state.stats.newsWins || 0) + 1;
+        state.stats.tokensEarned = (state.stats.tokensEarned || 0) + Math.max(0, bet.payout - bet.stake);
       }
     }
     if (settled.length) {
@@ -187,6 +250,7 @@
   function buyDriver(d, resale) {
     const m = mgr();
     if (m.driver && m.driver.id === d.id) throw new Error('Ce pilote est déjà dans votre écurie');
+    if (m.mate && m.mate.id === d.id) throw new Error('Ce pilote est votre coéquipier : libérez-le d\'abord dans l\'onglet Transferts');
     const net = d.price - (resale || 0);
     if (m.pc + 1e-9 < net) throw new Error(`Il vous manque ${Math.ceil(net - m.pc)} PitCoins`);
     if (resale) addPC(resale, `Transfert : vente de ${m.driver.name}`);
@@ -194,6 +258,26 @@
     m.driver = { id: d.id, name: d.name, price: d.price, at: Date.now() };
     if (m.chassis) unlock('mgr_team');
     save();
+  }
+  // Coéquipier : recrutement, transfert (remplacement avec revente) ou libération
+  function buyMate(d, price, resale) {
+    const m = mgr();
+    if (m.driver && m.driver.id === d.id) throw new Error('Ce pilote est déjà votre pilote titulaire');
+    if (m.mate && m.mate.id === d.id) throw new Error('Ce pilote est déjà votre coéquipier');
+    const net = price - (resale || 0);
+    if (m.pc + 1e-9 < net) throw new Error(`Il vous manque ${Math.ceil(net - m.pc)} PitCoins`);
+    if (resale) addPC(resale, `Transfert : départ de ${m.mate.name}`);
+    spendPC(price, `Recrutement du coéquipier : ${d.name}`);
+    m.mate = { id: d.id, name: d.name, price, at: Date.now() };
+    unlock('mate1');
+    save();
+  }
+  function releaseMate(resale) {
+    const m = mgr(); if (!m.mate) return 0;
+    const name = m.mate.name;
+    if (resale) addPC(resale, `Transfert : départ de ${name}`);
+    m.mate = null; save();
+    return resale || 0;
   }
   function buyChassis(c, resale) {
     const m = mgr();
@@ -337,6 +421,21 @@
       m.races[0].xp = gain; m.races[0].grew = Math.floor(after) > Math.floor(before);
     }
     m.races[0].sponsors = sponsorsAfterRace(r.pos, r.dnf);
+    // statistiques de carrière et prime du coéquipier
+    const st = m.stats, P = (F1.manager && F1.manager.F1_POINTS) || [];
+    st.races++; if (r.dnf) st.dnf++; else { if (r.pos === 1) st.wins++; if (r.pos <= 3) st.podiums++; st.best = Math.min(st.best, r.pos); st.points += P[r.pos - 1] || 0; }
+    st.pcEarned = Math.round((st.pcEarned + Math.max(0, r.pc)) * 100) / 100;
+    if (!r.dnf && r.maxEng != null && r.maxEng < 115) { st.coolRaces++; unlock('cool_race'); }
+    if (r.mate) {
+      m.races[0].mate = r.mate;
+      if (r.mate.pc) { addPC(r.mate.pc, `Coéquipier ${r.mate.name} : P${r.mate.pos}`); st.pcEarned += r.mate.pc; }
+      if (r.mate.pos === 1 && !r.mate.dnf) st.mateWins++;
+      if (r.mate.pos <= 3 && !r.mate.dnf) st.matePodiums++;
+      if (!r.dnf && !r.mate.dnf && r.pos <= 2 && r.mate.pos <= 2) unlock('one_two');
+    }
+    if (m.pc >= 10000) unlock('pc10k');
+    if (st.podiums >= 10) unlock('mgr_pod10');
+    if (st.races >= 50) unlock('mgr_50');
     if (r.pos === 1 && !r.dnf) unlock('mgr_win');
     if (r.pos === 1 && !r.dnf && r.rain) unlock('mgr_rain');
     if (F1.manager && m.lp >= F1.manager.LEAGUES[2].min) unlock('mgr_or');
@@ -428,5 +527,5 @@
   function reset() { const n = get().name; state = blank(); state.name = n; save(); }
   const popUnlocked = () => unlocked.splice(0);
 
-  F1.store = { weeklyGP, useWeeklyAttempt, recordWeekly, claimWeeklyGP, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
+  F1.store = { achProgress, claimAch, achClaimable, noteStat, setAvatar, ACH_BY, buyMate, releaseMate, weeklyGP, useWeeklyAttempt, recordWeekly, claimWeeklyGP, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
 })(globalThis.F1 = globalThis.F1 || {});

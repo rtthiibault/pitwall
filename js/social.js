@@ -3,7 +3,8 @@
 (function (F1) {
   const CFG = window.PITWALL_CONFIG || {};
   const SDK = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js';
-  const COLS = 'id,username,team,balance,profit,bets_won,bets_done,best_odds,achievements,updated_at';
+  let COLS = 'id,username,team,balance,profit,bets_won,bets_done,best_odds,achievements,updated_at';
+  let avatarProbed = false;
   const USER_RE = /^[A-Za-z0-9_.-]{3,24}$/;
   const S = {
     enabled: !!(CFG.supabaseUrl && CFG.supabaseAnonKey), ready: false, error: null,
@@ -56,6 +57,8 @@
   }
 
   async function loadMe() {
+    // la photo de profil n'est lue que si la colonne existe (supabase/migration-profile-v2.sql)
+    if (!avatarProbed) { avatarProbed = true; const t = await S.client.from('profiles').select('avatar').limit(1); if (!t.error) COLS += ',avatar'; }
     const r = await S.client.from('profiles').select(COLS).eq('id', S.user.id).maybeSingle();
     fail(r.error);
     S.me = r.data || null;
@@ -73,10 +76,20 @@
   function mgrRow() {
     const m = F1.store.get().manager;
     if (!m || !F1.manager) return {};
-    return { lp: m.lp, league: F1.manager.leagueOf(m.lp).id, mgr_driver: m.driver ? m.driver.id : null, mgr_team: m.chassis ? m.chassis.id : null };
+    const base = { lp: m.lp, league: F1.manager.leagueOf(m.lp).id, mgr_driver: m.driver ? m.driver.id : null, mgr_team: m.chassis ? m.chassis.id : null };
+    if (!v2Cols) return base;
+    const st = m.stats || {}, p = F1.store.get();
+    // statistiques détaillées et photo de profil (supabase/migration-profile-v2.sql)
+    return { ...base, mgr_mate: m.mate ? m.mate.id : null, mgr_wins: st.wins || 0, mgr_podiums: Math.max(st.podiums || 0, st.wins || 0), mgr_races: Math.max(st.races || 0, st.podiums || 0), mgr_best: st.best && st.best < 99 ? st.best : null, mgr_points: st.points || 0, avatar: p.avatar || null };
   }
+  let v2Cols = true;
   async function updateMe(row) {
     let r = await S.client.from('profiles').update(mgrCols ? { ...row, ...mgrRow() } : row).eq('id', S.user.id);
+    // colonnes détaillées absentes (migration-profile-v2.sql pas encore exécutée) : on renvoie sans elles
+    if (r.error && v2Cols && mgrCols && /column|schema cache|PGRST204/i.test((r.error.message || '') + (r.error.code || ''))) {
+      v2Cols = false;
+      r = await S.client.from('profiles').update({ ...row, ...mgrRow() }).eq('id', S.user.id);
+    }
     if (r.error && mgrCols && /column|schema cache|PGRST204/i.test((r.error.message || '') + (r.error.code || ''))) {
       mgrCols = false;
       r = await S.client.from('profiles').update(row).eq('id', S.user.id);
@@ -209,10 +222,13 @@
   }
 
   // Classement mondial des managers (null si la migration n'a pas été appliquée)
+  // Classement des managers : statistiques détaillées si la migration v2 est passée, sinon ligue et LP seulement
   async function leaderboard() {
-    const r = await S.client.from('profiles').select('id,username,team,lp,league').order('lp', { ascending: false }).limit(30);
+    let r = await S.client.from('profiles').select('id,username,team,lp,league,mgr_team,mgr_driver,mgr_mate,mgr_wins,mgr_podiums,mgr_best,mgr_points,mgr_races,avatar').order('mgr_points', { ascending: false }).order('lp', { ascending: false }).limit(50);
+    if (!r.error) return { rows: r.data || [], detailed: true };
+    r = await S.client.from('profiles').select('id,username,team,lp,league').order('lp', { ascending: false }).limit(50);
     if (r.error) return null;
-    return r.data || [];
+    return { rows: r.data || [], detailed: false };
   }
   async function search(q) {
     q = String(q || '').trim();

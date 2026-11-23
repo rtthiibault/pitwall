@@ -171,6 +171,25 @@
     return Math.max(15, Math.round((valueCurve(rating) * (0.8 + 0.2 * upside)) / 5) * 5);
   }
   const RESALE_K = 0.78;   // revente : 78 % de la valeur marchande actuelle
+  /* Effet de l'actualité Paddock Wire sur un pilote : une bonne nouvelle (cote en baisse) fait monter sa valeur et sa
+     cote de performance, une mauvaise (blessure, pénalité, difficultés) les fait baisser. */
+  function newsForm(d) {
+    const m = F1.news && d ? F1.news.oddsMult(d.teamId, d.id) : 1;
+    const k = Math.max(0.7, Math.min(1.35, Math.pow(1 / m, 1.5)));
+    return { mult: m, priceK: k, perf: Math.round((1 - m) * 22) };
+  }
+  // Coéquipier : moins cher qu'un pilote titulaire (il ne rapporte que des PitCoins), prix suivant l'actualité
+  const MATE_K = 0.55;
+  function mateValue(d) {
+    if (!d) return 0;
+    const base = d.exp ? valueOfDriver(d) : d.price;
+    return Math.max(10, Math.round((base * MATE_K * newsForm(d).priceK) / 5) * 5);
+  }
+  // Prime du coéquipier : la moitié du barème de PitCoins de la ligue, selon sa position d'arrivée
+  const MATE_PC_K = 0.5;
+  const matePC = (pos, dnf, league) => (dnf ? 0 : Math.round((PC_TABLE[pos - 1] ?? 2) * (league ? league.mult : 1) * MATE_PC_K));
+  // Points « championnat » d'une course (barème officiel) pour les statistiques du profil
+  const F1_POINTS = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
   // valeur d'un pilote tel qu'il est aujourd'hui (objet renvoyé par withExperience)
   const valueOfDriver = (x) => (x.exp ? driverValue((x.base ? x.base.rating : x.rating) + x.exp.pts, x.exp.cap - x.exp.pts, x.exp.age) : x.price);
   function market(season) {
@@ -471,11 +490,12 @@
     const c = (v) => clamp(v + dd, 50, 99);
     return { ...d, rating: target, pace: c(d.pace), craft: c(d.craft), cons: c(d.cons) };
   }
-  function botField(mk, league, dayKey, meDriverId) {
+  function botField(mk, league, dayKey, meDriverId, mateId) {
     const r = rng(hash(`bots-${league.id}-${dayKey}`));
     const li = LEAGUES.indexOf(league);
-    let grid = GRID.filter((g) => g[0] !== meDriverId && mk.byDriver.has(g[0]));
-    if (grid.length > FIELD - 1) grid = [...grid].sort((x, y) => mk.byDriver.get(y[0]).rating - mk.byDriver.get(x[0]).rating).slice(0, FIELD - 1);
+    const slots = FIELD - 1 - (mateId ? 1 : 0);
+    let grid = GRID.filter((g) => g[0] !== meDriverId && g[0] !== mateId && mk.byDriver.has(g[0]));
+    if (grid.length > slots) grid = [...grid].sort((x, y) => mk.byDriver.get(y[0]).rating - mk.byDriver.get(x[0]).rating).slice(0, slots);
     return grid.map(([id, , , tid]) => {
       const d = leagueDriver(mk.byDriver.get(id), league);
       const c = mk.byChassis.get(tid) || mk.chassis[mk.chassis.length - 1];
@@ -487,6 +507,12 @@
       car.mech = { launch: bm * r() * 1.4, tyre: bm, push: bm * r() * 1.4, pit: bm, sc: bm * r(), drv: 0, wx: 0.4 + li * 0.35 + r() * 0.8 };
       return { bot: true, name: d.short, team: d.team, driver: d, chassisId: tid, car, setup: Math.round((r() * 1.6 - 0.8) * 10) / 10 };
     });
+  }
+
+  // Voiture du coéquipier : la même monoplace que le joueur (R&D comprise), réglage neutre, pilotée par l'ingénieur
+  function mateEntry(mate, car, chassisId, teamName) {
+    if (!mate || !car) return null;
+    return { bot: true, mate: true, name: mate.short || shortName(mate.name), team: teamName, driver: mate, chassisId, car: { ...car, mech: { ...(car.mech || {}) } }, setup: 0 };
   }
 
   /* ---------- Moteur de course ----------
@@ -1152,10 +1178,11 @@
   }
   // Managers IA de la semaine : pilotes et châssis tirés de tables fixes (identiques pour tous les joueurs), niveau « Argent »
   const WEEKLY_TEAM = { mercedes: 1, mclaren: 0.95, ferrari: 0.85, red_bull: 0.8, williams: 0.45, racing_bulls: 0.4, rb: 0.4, aston_martin: 0.35, haas: 0.3, alpine: 0.25, audi: 0.2, cadillac: 0.05 };
-  function weeklyBots(seed, meDriverId) {
+  function weeklyBots(seed, meDriverId, mateId) {
     const r = rng(seed ^ 0x9e3779b9), L = LEAGUES[1];
-    let grid = GRID.filter((g) => g[0] !== meDriverId);
-    if (grid.length > FIELD - 1) grid.splice(seed % grid.length, 1);
+    const slots = FIELD - 1 - (mateId ? 1 : 0);
+    let grid = GRID.filter((g) => g[0] !== meDriverId && g[0] !== mateId);
+    while (grid.length > slots) grid.splice(seed % grid.length, 1);
     return grid.map(([id, name, code, tid]) => {
       const t = TALENT[id] || [78, 0, 0, 0];
       const rating = t[0] - 2 + Math.round(r() * 3);
@@ -1231,7 +1258,7 @@
     CLIMATE, climateOf, trackState, forecast, TYRES, isSlick, tyreDelta, DILEMMA_LAPS, dilemmaLaps, lapsOf, RACE_LAPS, planFor, REFILL_H, createRace, stepLap, dilemmaFor, applyChoice, RADIO,
     WEEKLY_ATTEMPTS, WEEKLY_FIRST_PRIME, isoWeek, weeklyEvent, weeklyBots, fmtRaceTime, fmtGap, weeklyPrize, CIRCUIT_NAME,
     SPONSORS, SPONSOR_BY_ID, goalText, sponsorTerms, sponsorAfterRace, SUB_K,
-    TEAM_NAME, TEAM_CODE, GRID, GRID_BY, shortName, START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, lpScale, AGE_PRICE, driverValue, valueOfDriver, RESALE_K, XP_DIV, PC_TABLE,
+    TEAM_NAME, TEAM_CODE, GRID, GRID_BY, shortName, newsForm, mateValue, MATE_K, matePC, MATE_PC_K, F1_POINTS, mateEntry, START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, lpScale, AGE_PRICE, driverValue, valueOfDriver, RESALE_K, XP_DIV, PC_TABLE,
     RD_CATS, RD_PARTS, RD_BY_ID, rdBranches, partState, partsBonus,
     market, carStats, withSetup, carScore, bestSetup, compat, circuitProfile, botField, simulate, rewards, hash, TALENT,
   };

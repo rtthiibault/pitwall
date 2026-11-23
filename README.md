@@ -315,3 +315,12 @@ Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectoriel
 - Télémétrie live (bouton « Télémétrie » en haut à gauche de la carte) : vitesse tirée du profil de courbure du tracé (freinage / accélération lissés), rapport, régime, accélérateur / frein, état ERS, DRS, trace de vitesse.
 - Gestion automatique choisie sur la grille (ERS, mélange, refroidissement, rythme pneus, arrêts) ; toucher une commande rend la main.
 - Météo : température de l'air et de la piste qui dérivent pendant la course, nuages de passage (ombre sur la piste, la piste refroidit), vent ; ils agissent sur les températures moteur et pneus. Sur la carte : soleil (lune pour les courses de nuit), nuages qui défilent avec le vent, pluie inclinée par le vent.
+
+## Équipe, coéquipier, succès et profil
+
+- **F1 Manager · Équipe** : le choix du châssis devient le choix de l'équipe (stats, livrée, pilotes officiels, modificateurs Paddock Wire du moment).
+- **F1 Manager · Transferts** : recrutement d'un coéquipier en PitCoins ; prix et cote de performance suivent l'actualité Paddock Wire (`newsForm`, `mateValue`). Le coéquipier court la seconde voiture de l'équipe (22 voitures au total) et rapporte la moitié du barème de PitCoins selon sa position.
+- **F1 Manager · Ligues** : classement détaillé des managers (équipe, coéquipier, victoires, podiums, meilleure position, courses, points au barème F1). Nécessite `supabase/migration-profile-v2.sql`.
+- **Mes ligues (Paris)** : liste épurée des ligues ; le classement complet et les pronostics s'ouvrent avec « Voir le classement de la ligue ».
+- **Succès** : onglet dédié (à la place d'Amis, toujours accessible depuis l'en-tête), 40 succès sur tout le site avec progression, récompense en jetons à réclamer.
+- **Profil** (`#/profil`, clic sur l'avatar) : tableau de bord F1 Manager et Paris, activité récente, succès à la une, galerie d'avatars (`assets/avatars/`).

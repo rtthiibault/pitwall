@@ -210,7 +210,9 @@
       case 'mes-paris': html = pageMyBets(); break;
       case 'amis': html = pageFriends(parts); break;
       case 'manager': html = pageManager(parts[1]); break;
-      case 'paddock': html = pagePaddock(); break;
+      case 'paddock': html = pagePaddock(); F1.store.noteStat('pwVisits'); break;
+      case 'succes': html = pageAch(); break;
+      case 'profil': html = pageProfile(); break;
       default: html = pageHome();
     }
     app.innerHTML = sourceNotice() + html;
@@ -804,7 +806,8 @@
   }
   function uava(p, cls = '') {
     const c = p.team ? tcol(p.team) : 'var(--red)';
-    return `<span class="ava ${cls}" style="--tc:${c}"><i>${esc((p.username || '?').slice(0, 2).toUpperCase())}</i></span>`;
+    const img = p.avatar && /^assets\/avatars\/avatar-\d+\.webp$/.test(p.avatar) ? `<img src="${esc(p.avatar)}" alt="" loading="lazy">` : '';
+    return `<span class="ava ${cls}" style="--tc:${c}">${img}<i>${esc((p.username || '?').slice(0, 2).toUpperCase())}</i></span>`;
   }
   function relBtn(p) {
     const rel = F1.social.relation(p.id), l = F1.social.linkWith(p.id);
@@ -963,7 +966,7 @@
         <div class="pd-cards">${podiumCard(gp, 'quali', y)}${podiumCard(gp, 'race', y)}</div>`;
     } else h += '<div class="empty"><div class="ic">🏁</div>Aucun Grand Prix à pronostiquer pour le moment.</div>';
     const code = parts[1] === 'rejoindre' && parts[2] ? decodeURIComponent(parts[2]) : '';
-    h += '<div class="section-h" style="margin-top:28px"><h2>Classements entre amis</h2></div>';
+    h += '<div class="section-h" style="margin-top:28px"><h2>Vos ligues</h2><span class="muted" style="font-size:13px">Ouvrez le classement complet d\'une ligue avec son bouton dédié</span></div>';
     if (!so.enabled) return h + '<div class="notice">Les ligues utilisent la base de données du système d\'amis, qui n\'est pas encore activée sur ce site. Vos pronostics sont gardés sur cet appareil.</div>';
     if (so.error) return h + `<div class="notice red">⚠️ Connexion impossible : ${esc(so.error)} <button class="btn sm ghost" data-action="f-retry">Réessayer</button></div>`;
     if (!so.ready) return h + '<div class="skeleton"></div>';
@@ -976,32 +979,36 @@
         <select class="field" id="claimTeam" style="margin:6px 0 16px">${teamOptions('')}</select>
         <button class="btn block" data-action="f-claim">Créer mon profil joueur</button></div>`;
     }
-    return h + `<div class="lg-wrap"><aside class="lg-side"><div class="lg-list" id="lgList"><div class="skeleton" style="height:120px"></div></div>
-        <div class="card lg-form"><b>Créer une ligue</b><div class="row" style="gap:6px;flex-wrap:nowrap"><input class="field" id="lgName" maxlength="40" placeholder="Nom (ex. Les potes du lycée)"><button class="btn sm" data-action="lg-create">Créer</button></div><small class="muted">Un code d'invitation unique est généré (ex. PIT-K7Q2).</small></div>
-        <div class="card lg-form"><b>Rejoindre avec un code</b><div class="row" style="gap:6px;flex-wrap:nowrap"><input class="field" id="lgCode" maxlength="9" placeholder="PIT-XXXX" style="text-transform:uppercase" value="${esc(code)}"><button class="btn sm ${code ? '' : 'ghost'}" data-action="lg-join">Rejoindre</button></div></div></aside>
-      <section class="lg-main" id="lgBoard"><div class="skeleton" style="height:240px"></div></section></div>`;
+    return h + `<div class="lg-cards" id="lgList"><div class="skeleton" style="height:110px"></div></div>
+      <div class="lg-forms"><div class="card lg-form"><b>Créer une ligue</b><div class="row" style="gap:6px;flex-wrap:nowrap"><input class="field" id="lgName" maxlength="40" placeholder="Nom (ex. Les potes du lycée)"><button class="btn sm" data-action="lg-create">Créer</button></div><small class="muted">Un code d'invitation unique est généré (ex. PIT-K7Q2).</small></div>
+        <div class="card lg-form"><b>Rejoindre avec un code</b><div class="row" style="gap:6px;flex-wrap:nowrap"><input class="field" id="lgCode" maxlength="9" placeholder="PIT-XXXX" style="text-transform:uppercase" value="${esc(code)}"><button class="btn sm ${code ? '' : 'ghost'}" data-action="lg-join">Rejoindre</button></div></div></div>
+      <div class="card lg-how">${bareme()}</div>`;
   }
-  // Classement d'une ligue : points de la saison, du dernier GP, et comparaison des pronostics une fois verrouillés
+  // Liste des ligues : une carte par ligue, le classement complet s'ouvre dans une fenêtre dédiée
+  let lgCache = [];
   async function mountLeagues() {
     const so = SO(); if (!so.ready || !so.me) return;
-    const list = $('#lgList'), board = $('#lgBoard'); if (!list) return;
+    const list = $('#lgList'); if (!list) return;
     // pronostics enregistrés hors ligne : envoyés au serveur s'ils sont encore modifiables
     syncLocalPicks();
     let leagues = [], missing = false;
     try { leagues = await F1.social.myLeagues(); } catch (e) { if (e.missing) missing = true; else toast('⚠️', esc(e.message), 'err'); }
     if (!$('#lgList')) return;
-    const sel = leagues.find((l) => String(l.id) === String(S.lgSel)) || leagues[0] || null;
-    S.lgSel = sel ? sel.id : null;
+    lgCache = leagues;
+    const me = so.me.id;
     list.innerHTML = missing ? '<div class="notice" style="font-size:13px">Les ligues privées ne sont pas encore activées : le propriétaire du site doit exécuter <code>supabase/migration-bet-leagues.sql</code> puis <code>supabase/migration-podium.sql</code> dans Supabase.</div>'
-      : leagues.length ? leagues.map((l) => `<button class="lg-item ${sel && sel.id === l.id ? 'on' : ''}" data-action="lg-sel" data-id="${l.id}"><b>${esc(l.name)}</b><small>${l.members} membre${l.members > 1 ? 's' : ''} · ${esc(l.code)}</small></button>`).join('')
-        : '<div class="muted" style="font-size:13px;padding:6px 2px">Aucune ligue pour l\'instant : créez-en une et partagez le code, ou rejoignez celle d\'un ami.</div>';
-    if (!sel) { board.innerHTML = `<div class="card"><h3>Comment ça marche</h3><ol class="muted" style="line-height:1.8;margin:0;padding-left:18px"><li>Créez une ligue et partagez son code (PIT-XXXX) à vos amis.</li><li>Chaque week-end, pronostiquez le podium des qualifications et de la course, avant le départ de chaque session.</li><li>Les points tombent avec les résultats officiels ; les pronostics de chacun deviennent visibles au verrouillage.</li></ol>${bareme()}</div>`; return; }
-    try {
+      : leagues.length ? leagues.map((l) => `<div class="lg-card"><div class="lg-card-h"><span class="lg-ic">🏆</span><div style="min-width:0"><b>${esc(l.name)}</b><small>${l.members} membre${l.members > 1 ? 's' : ''}${l.owner === me ? ' · créée par vous' : ''}</small></div></div>
+          <div class="lg-card-code"><small>Code</small><b>${esc(l.code)}</b></div>
+          <button class="btn sm" data-action="lg-open" data-id="${l.id}">Voir le classement de la ligue</button></div>`).join('')
+        : '<div class="card lg-empty"><b>Aucune ligue pour l\'instant</b><span class="muted">Créez-en une et partagez son code (PIT-XXXX), ou rejoignez celle d\'un ami.</span></div>';
+  }
+  // Classement complet d'une ligue : points de la saison, du dernier GP, et comparaison des pronostics une fois verrouillés
+  async function leagueBoardHtml(sel) {
+    const so = SO();
       const f1 = S.f1 || S.season, y = f1.year, me = so.me.id;
       const members = await F1.social.leagueBoard(sel.id);
       let picks = [], podMissing = false;
       try { picks = await F1.social.podiumPicks(members.map((p) => p.id), y); } catch (e) { if (e.missing) podMissing = true; else throw e; }
-      if (!$('#lgBoard')) return;
       const lp = localPicks();
       const pickOf = (uid, round, k) => { const r = picks.find((x) => x.user_id === uid && x.round === round && x.session === k); if (r) return { p: [r.p1, r.p2, r.p3], o: [r.o1, r.o2, r.o3].map(Number), at: new Date(r.updated_at) }; if (uid === me && lp[pkKey(y, round, k)]) return { p: lp[pkKey(y, round, k)].p, o: lp[pkKey(y, round, k)].o, at: new Date(lp[pkKey(y, round, k)].t), local: true }; return null; };
       const done = f1.races.filter((r) => r.results);
@@ -1023,7 +1030,7 @@
         const pts = ptsOf(uid, race, k), top = actualTop(race, k);
         return `<td><span class="pd-mini">${pk.p.map((d, i) => drvTag(d, top ? (d === top[i] ? 'ok' : top.includes(d) ? 'mid' : 'ko') : '')).join('')}</span></td><td class="r num">${pts == null ? '' : `+${pts}`}</td>`;
       };
-      board.innerHTML = `<div class="card"><div class="lg-h"><div><h3>${esc(sel.name)}</h3><small class="muted">${members.length} membre${members.length > 1 ? 's' : ''}${sel.owner === me ? ' · vous êtes le créateur' : ''}${last ? ` · dernier GP : ${esc(last.nameFr)}` : ''}</small></div>
+      return `<div class="card"><div class="lg-h"><div><h3>${esc(sel.name)}</h3><small class="muted">${members.length} membre${members.length > 1 ? 's' : ''}${sel.owner === me ? ' · vous êtes le créateur' : ''}${last ? ` · dernier GP : ${esc(last.nameFr)}` : ''}</small></div>
           <div class="lg-code"><small>Code d'invitation</small><b>${esc(sel.code)}</b><button class="btn sm ghost" data-action="lg-copy" data-code="${esc(sel.code)}" data-link="${esc(link)}">Copier l'invitation</button></div></div>
         ${podMissing ? '<div class="notice" style="font-size:13px;margin-bottom:10px">Les pronostics partagés ne sont pas encore activés : le propriétaire du site doit exécuter <code>supabase/migration-podium.sql</code> dans Supabase. Vos pronostics sont gardés sur cet appareil.</div>' : ''}
         <div class="table-wrap"><table class="tbl lg-tbl"><thead><tr><th>#</th><th>Joueur</th><th class="r">Saison</th><th class="r">Dernier GP</th></tr></thead><tbody>${rows.map((x, i) => `<tr class="${x.p.id === me ? 'me-row' : ''}"><td class="pos">${i + 1}</td><td><span class="row" style="gap:8px;flex-wrap:nowrap">${uava(x.p, '')}<b>${esc(x.p.username)}</b>${x.p.id === me ? '<small class="muted">(vous)</small>' : ''}</span></td><td class="r num"><b>${x.total}</b> pts</td><td class="r num ${x.lastPts ? 'up' : ''}">${x.lastPts ? '+' + x.lastPts : '0'}</td></tr>`).join('')}</tbody></table></div></div>
@@ -1032,7 +1039,12 @@
           ${actualTop(cmp, 'quali') || actualTop(cmp, 'race') ? `<tr class="pd-real-row"><td><b>Résultat officiel</b></td><td>${actualTop(cmp, 'quali') ? `<span class="pd-mini">${actualTop(cmp, 'quali').map((d) => drvTag(d)).join('')}</span>` : '<span class="muted">à venir</span>'}</td><td></td><td>${actualTop(cmp, 'race') ? `<span class="pd-mini">${actualTop(cmp, 'race').map((d) => drvTag(d)).join('')}</span>` : '<span class="muted">à venir</span>'}</td><td></td></tr>` : ''}
           ${rows.map((x) => `<tr class="${x.p.id === me ? 'me-row' : ''}"><td><b>${esc(x.p.username)}</b></td>${cell(x.p.id, cmp, 'quali')}${cell(x.p.id, cmp, 'race')}</tr>`).join('')}</tbody></table></div></div>` : ''}
       <div class="card" style="margin-top:12px">${bareme()}<div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn sm ghost" data-action="lg-leave" data-id="${sel.id}">Quitter la ligue</button></div></div>`;
-    } catch (e) { if ($('#lgBoard')) board.innerHTML = `<div class="notice red">⚠️ ${esc(e.message)}</div>`; }
+  }
+  async function openLeague(id) {
+    const sel = lgCache.find((l) => String(l.id) === String(id)); if (!sel) return;
+    $('#modal').innerHTML = `<div class="modal" data-action="modal-bg"><div class="modal-box lg-modal"><button class="lg-x" data-action="close-modal" aria-label="Fermer">✕</button><div id="lgModalBody"><div class="skeleton" style="height:260px"></div></div></div></div>`;
+    try { const html = await leagueBoardHtml(sel); const el = $('#lgModalBody'); if (el) el.innerHTML = html; }
+    catch (e) { const el = $('#lgModalBody'); if (el) el.innerHTML = `<div class="notice red">⚠️ ${esc(e.message)}</div>`; }
   }
   const bareme = () => `<div class="pd-bareme"><b>Barème</b>${['race', 'quali'].map((k) => `<div><span>${PODIUM[k].label}</span><span>P1 exact +${PODIUM[k].exact[0]} · P2 exact +${PODIUM[k].exact[1]} · P3 exact +${PODIUM[k].exact[2]} · pilote sur le podium à une autre marche +${PODIUM[k].podium} · podium parfait dans l'ordre +${PODIUM[k].perfect}</span></div>`).join('')}<div><span>Prime de risque</span><span>chaque pilote bien placé rapporte ses points × un coefficient lié à sa cote podium au moment du pronostic : ×1 jusqu'à la cote 1,5, ×2 à la cote 6, ×3 au maximum (cote 13,5 et plus). Le bonus du podium parfait n'est pas multiplié.</span></div><small class="muted">Un pronostic modifié après le début de la session ne rapporte rien.</small></div>`;
   // Rafraîchit seulement les deux cartes de pronostics (pas toute la page)
@@ -1066,8 +1078,9 @@
     const car = ch ? MG().carStats(ch, m.ups, m.parts, tb) : null;
     const fc = MG().forecast(m.next.seed, race);
     const league = MG().leagueOf(m.lp);
-    const bots = MG().botField(mk, league, `${F1.store.dayKey()}-${race ? race.round : 0}`, m.driver && m.driver.id);
-    return { m, mk, race, w, drvM, ch, car, league, bots, tb, fc };
+    const mate = m.mate ? mk.byDriver.get(m.mate.id) || null : null;
+    const bots = MG().botField(mk, league, `${F1.store.dayKey()}-${race ? race.round : 0}`, m.driver && m.driver.id, mate && mate.id);
+    return { m, mk, race, w, drvM, ch, car, league, bots, tb, fc, mate };
   }
   const statBar = (label, val, base, color, icon = '') => `<div class="sbar"><div class="sbar-h"><span>${icon} ${label}</span><b class="num">${Math.round(val)}</b></div><div class="sbar-t"><i style="width:${Math.min(100, base)}%;background:${color}"></i><i class="up" style="width:${Math.max(0, Math.min(100, val) - Math.min(100, base))}%"></i></div></div>`;
   const leagueBadge = (L, cls = '') => `<span class="lbadge ${cls}" style="--lc:${L.color}">${L.icon} ${L.name}</span>`;
@@ -1112,14 +1125,14 @@
     };
     const log = (sp.log || []).slice(0, 6).map((x) => { const s = MG().SPONSOR_BY_ID.get(x.id); return s ? `<div class="sp-log ${x.status}">${spBadge(s)}<span>${x.status === 'win' ? 'Objectif atteint' : 'Objectif manqué'}</span><b class="${x.amount >= 0 ? 'up' : 'down'}">${x.amount >= 0 ? '+' : '−'}${fmtPC(Math.abs(x.amount))}</b></div>` : ''; }).join('');
     return `<div class="sp-top">
-        <div class="sp-car">${ch ? F1.visuals.car(ch.id, { view: 'side', shadow: false, sponsor: livery(m) }) : '<div class="muted">Achetez un châssis pour afficher votre livrée.</div>'}<small class="muted">Les sponsors sous contrat apparaissent sur votre monoplace : principal sur les pontons et le nez, secondaire sur l'aileron arrière.</small></div>
+        <div class="sp-car">${ch ? F1.visuals.car(ch.id, { view: 'side', shadow: false, sponsor: livery(m) }) : '<div class="muted">Choisissez une équipe pour afficher votre livrée.</div>'}<small class="muted">Les sponsors sous contrat apparaissent sur votre monoplace : principal sur les pontons et le nez, secondaire sur l'aileron arrière.</small></div>
         <div class="sp-slots">${slot('main', 'Sponsor principal', 'pontons et nez')}${slot('sub', 'Sponsor secondaire', 'aileron arrière · prime et pénalité ×0,6')}</div></div>
       <div class="muted" style="font-size:13px;margin:14px 0 4px">Un contrat se juge course après course. Objectif atteint avant l'échéance : la prime tombe tout de suite. Échéance sans objectif atteint : pénalité en PitCoins.</div>
       ${TIERS.map(([t, name, sub]) => `<div class="sp-tier"><div class="sp-tier-h"><b>${name}</b><small>${sub}</small></div><div class="sp-grid">${MG().SPONSORS.filter((s) => s.tier === t).map(card).join('')}</div></div>`).join('')}
       ${log ? `<div class="sp-tier"><div class="sp-tier-h"><b>Contrats terminés</b></div><div class="sp-logs">${log}</div></div>` : ''}`;
   }
   /* ---------- QG de l'écurie : coque (bandeau, rail de navigation) et tableau de bord ---------- */
-  const MRAIL = [['ecurie', '🏁', 'QG'], ['hebdo', '🌐', 'GP Hebdo'], ['pilotes', '👤', 'Pilotes'], ['chassis', '🔩', 'Châssis'], ['rd', '🔬', 'R&D'], ['muret', '🎧', 'Muret'], ['garage', '🧰', 'Garage'], ['sponsors', '💼', 'Sponsors'], ['ligues', '🏆', 'Ligues']];
+  const MRAIL = [['ecurie', '🏁', 'QG'], ['hebdo', '🌐', 'GP Hebdo'], ['pilotes', '👤', 'Pilotes'], ['chassis', '🏎️', 'Équipe'], ['transferts', '🤝', 'Transferts'], ['rd', '🔬', 'R&D'], ['muret', '🎧', 'Muret'], ['garage', '🧰', 'Garage'], ['sponsors', '💼', 'Sponsors'], ['ligues', '🏆', 'Ligues']];
   function pageManager(tab) {
     tab = tab || 'ecurie';
     const ctx = mgrCtx();
@@ -1133,6 +1146,7 @@
       <div class="hq-body"><nav class="hq-rail">${MRAIL.map(([k, ic, l]) => `<a class="${k === tab ? 'on' : ''}" href="#/manager/${k}"><span>${ic}</span>${l}</a>`).join('')}</nav><div class="hq-main">`;
     if (tab === 'pilotes') h += mgrDrivers(ctx);
     else if (tab === 'chassis') h += mgrChassis(ctx);
+    else if (tab === 'transferts') h += mgrTransfers(ctx);
     else if (tab === 'rd') { const tc = ctx.ch ? F1.teamColor(ctx.ch.id) : '#e10600'; h += `<div class="rd-team" style="--tc:${tc};--tc-ink:${inkOn(tc)}">${mgrRD(ctx)}</div>`; }
     else if (tab === 'muret') h += mgrStaff(ctx);
     else if (tab === 'garage') h += mgrGarage(ctx);
@@ -1190,10 +1204,10 @@
     if (!drvM || !ch) {
       const step = (ok, n, title, txt, href, cta) => `<div class="card mstep ${ok ? 'ok' : ''}"><div class="mnum">${ok ? '✓' : n}</div><h3>${title}</h3><div class="sub">${txt}</div>${ok ? '' : `<a class="btn sm" style="margin-top:14px" href="${href}">${cta}</a>`}</div>`;
       return `<div class="card mintro"><div style="font-size:42px">🏗️</div><h3 style="font-size:22px">Montez votre écurie</h3>
-        <p class="muted">Vous démarrez avec <b>${fmtPC(MG().START_PC)}</b> mais sans pilote ni voiture. Les meilleurs pilotes et châssis coûtent cher : à vous de trouver le bon compromis, puis de développer la voiture.</p>
+        <p class="muted">Vous démarrez avec <b>${fmtPC(MG().START_PC)}</b> mais sans pilote ni voiture. Les meilleurs pilotes et équipes coûtent cher : à vous de trouver le bon compromis, puis de développer la voiture.</p>
         <p class="muted" style="font-size:14px">💡 Les PitCoins se gagnent uniquement en <b>courant</b> en mode manager : chaque course rapporte, même en fond de grille. Un jeune pilote progresse vite si vous le faites rouler.</p></div>
         <div class="grid g3" style="margin-top:16px">${step(!!drvM, 1, 'Recruter un pilote', drvM ? drvM.name : 'Les vétérans sont bon marché, les jeunes coûtent plus cher : ils progressent.', '#/manager/pilotes', 'Voir le marché')}
-        ${step(!!ch, 2, 'Acheter un châssis', ch ? ch.name : 'De 25 PC (fond de grille) à 500 PC (top team).', '#/manager/chassis', 'Voir les châssis')}
+        ${step(!!ch, 2, 'Choisir son équipe', ch ? ch.name : 'De 25 PC (fond de grille) à 500 PC (top team).', '#/manager/chassis', 'Voir les équipes')}
         ${step(false, 3, 'Courir !', `${F1.store.racesPerDay()} courses gratuites toutes les 5 heures, sur le circuit du prochain Grand Prix. Ensuite, des courses supplémentaires en jetons.`, '#', '')}</div>`;
     }
     const left = F1.store.racesLeft();
@@ -1217,7 +1231,8 @@
       ${xpBlock(e)}<div style="display:grid;gap:6px;margin-top:12px">${dstat('Rythme', 'pace')}${dstat('Combativité', 'craft')}${dstat('Régularité', 'cons')}</div>`;
     // 03 — châssis
     const chassis = `<div class="row" style="justify-content:space-between"><div class="hq-name">${esc(ch.name)}</div><div class="rating-big sm">${MG().carRating(car)}</div></div>
-      <div style="display:grid;gap:6px;margin-top:10px">${MG().STATS.map((st) => statBar(st.short, car[st.k], ch[st.k], col, st.icon)).join('')}</div><div class="muted" style="font-size:12px;margin-top:8px">Barre pleine : châssis d'origine · partie claire : gains de R&D, du personnel et du garage.</div>`;
+      ${ctx.mate ? `<a class="hq-mate" href="#/manager/transferts" style="--tc:${col}"><small>Coéquipier</small><b>${esc(ctx.mate.name)}</b><span class="num">${ctx.mate.rating}</span></a>` : '<a class="hq-mate empty" href="#/manager/transferts"><small>Coéquipier</small><b>Aucun · recruter au marché des transferts</b></a>'}
+      <div style="display:grid;gap:6px;margin-top:10px">${MG().STATS.map((st) => statBar(st.short, car[st.k], ch[st.k], col, st.icon)).join('')}</div><div class="muted" style="font-size:12px;margin-top:8px">Barre pleine : monoplace d'origine · partie claire : gains de R&D, du personnel et du garage.</div>`;
     // 04 — développement
     const all = MG().RD_PARTS, lv = (x) => MG().partLevel(owned, x.id);
     const rd = MG().RD_CATS.map((c) => { const ps = all.filter((x) => x.cat === c.id), d = ps.reduce((a, x) => a + lv(x), 0), t = ps.length * MG().MAX_LV; return `<div class="rdl"><span>${c.icon} ${esc(c.name)}</span><div class="ptsbar"><i style="width:${(d / t) * 100}%;background:${c.color}"></i></div><b class="num">${d}<small class="muted">/${t}</small></b></div>`; }).join('')
@@ -1242,7 +1257,7 @@
     return `<div class="dash">
       ${pnl('01', 'Stand · télémétrie', stand, 'p-stand')}
       ${pnl('02', 'Pilote', pilot, 'p-pilot', pnlLink('#/manager/pilotes', 'Marché'))}
-      ${pnl('03', 'Châssis', chassis, 'p-chassis', pnlLink('#/manager/chassis', 'Changer'))}
+      ${pnl('03', 'Équipe', chassis, 'p-chassis', pnlLink('#/manager/chassis', 'Changer'))}
       ${pnl('04', 'Développement R&D', rd, 'p-rd', pnlLink('#/manager/rd', 'Bureau d\'études'))}
       ${pnl('05', 'Préparation du week-end', weekend, 'p-week')}
       ${pnl('06', 'Grille de départ', start, 'p-start')}
@@ -1272,19 +1287,56 @@
       }).join('')}</div>`;
   }
 
+  // Choix de l'équipe : statistiques de base, livrée, pilotes, et modificateurs du moment issus de Paddock Wire
   function mgrChassis(ctx) {
     const { m, mk, w } = ctx;
     const res = resaleC(ctx);
-    return `<div class="notice" style="margin-bottom:16px">🔩 Chaque écurie a son profil (vitesse, appui, fiabilité). Changer de châssis <b>remet la R&D à zéro</b>. ${m.chassis ? `Revente actuelle : ${fmtPC(res)} (70 % du châssis + 50 % de la R&D investie).` : ''}</div>
+    const NM = F1.news ? F1.news.teamMods() : {};
+    const lbl = { speed: 'Vitesse', df: 'Appui', rel: 'Fiabilité' };
+    return `<div class="notice" style="margin-bottom:16px">🏎️ Choisissez l'équipe que vous dirigez : sa monoplace (vitesse, appui, fiabilité), sa livrée et l'effet de l'actualité Paddock Wire sur ses performances. Changer d'équipe <b>remet la R&D à zéro</b>. ${m.chassis ? `Départ de l'équipe actuelle : ${fmtPC(res)} récupérés (70 % du prix + 50 % de la R&D investie).` : ''}</div>
       <div class="mgrid wide">${mk.chassis.map((c) => {
         const own = m.chassis && m.chassis.id === c.id;
         const net = c.price - (own ? 0 : res);
         const idx = MG().compat(c, w, MG().bestSetup(c, w));
-        return `<div class="mcard ${own ? 'own' : ''}" style="--tc:${F1.teamColor(c.id)}"><div class="row" style="justify-content:space-between"><div><div style="font-weight:900;font-style:italic;text-transform:uppercase;font-size:20px">${esc(c.name)}</div><div class="muted" style="font-size:12px">Indice au prochain GP : <b>${idx}</b></div></div>${own ? '<span class="chip green">Votre châssis</span>' : ''}</div>
+        const nm = NM[c.id];
+        const pw = nm ? Object.entries(lbl).filter(([k]) => nm[k]).map(([k, l]) => `<span class="tm-pw ${nm[k] > 0 ? 'up' : 'down'}">${nm[k] > 0 ? '▲' : '▼'} ${l} ${nm[k] > 0 ? '+' : ''}${fmt(nm[k], 1)}</span>`).join('') : '';
+        const duo = MG().GRID.filter((g) => g[3] === c.id).map((g) => esc(g[1])).join(' · ');
+        return `<div class="mcard tm-card ${own ? 'own' : ''}" style="--tc:${F1.teamColor(c.id)}"><div class="row" style="justify-content:space-between;align-items:start"><div><div class="tm-name">${esc(c.name)}</div><div class="muted" style="font-size:12px">Pilotes officiels : ${duo || '—'}</div><div class="muted" style="font-size:12px">Indice au prochain GP : <b>${idx}</b></div></div>${own ? '<span class="chip green">Votre équipe</span>' : ''}</div>
           <div style="margin:4px -6px">${F1.visuals.car(c.id, { view: '34', shadow: false, sponsor: own ? livery(m) : null })}</div>
-          <div style="display:grid;gap:6px;margin-bottom:12px">${MG().STATS.map((st) => statBar(st.short, c[st.k], c[st.k], F1.teamColor(c.id), st.icon)).join('')}</div>
-          <div class="row" style="justify-content:space-between"><b style="font-size:18px">${fmtPC(c.price)}</b>${own ? '' : `<button class="btn sm" data-action="m-buy-c" data-id="${esc(c.id)}" ${net > m.pc + 1e-9 ? 'disabled' : ''}>${m.chassis ? `Changer (${net >= 0 ? '−' : '+'}${Math.abs(net)})` : 'Acheter'}</button>`}</div></div>`;
+          <div style="display:grid;gap:6px;margin-bottom:10px">${MG().STATS.map((st) => statBar(st.short, c[st.k] + ((nm && nm[st.k]) || 0), c[st.k], F1.teamColor(c.id), st.icon)).join('')}</div>
+          <div class="tm-pws">${pw ? `<small>📰 Paddock Wire</small>${pw}` : '<small class="muted">📰 Aucune actualité ne pèse sur cette équipe en ce moment</small>'}</div>
+          <div class="row" style="justify-content:space-between;margin-top:10px"><b style="font-size:18px">${fmtPC(c.price)}</b>${own ? '' : `<button class="btn sm" data-action="m-buy-c" data-id="${esc(c.id)}" ${net > m.pc + 1e-9 ? 'disabled' : ''}>${m.chassis ? `Changer d'équipe (${net >= 0 ? '−' : '+'}${Math.abs(net)})` : 'Prendre la direction'}</button>`}</div></div>`;
       }).join('')}</div>`;
+  }
+
+  /* ---------- Marché des transferts : le coéquipier ----------
+     Prix et cote de performance suivent l'actualité Paddock Wire ; à chaque course, la position du coéquipier
+     rapporte une prime de PitCoins (moitié du barème de la ligue). */
+  const resaleM = (ctx) => (ctx.mate ? Math.round((MG().mateValue(MG().withExperience(ctx.mate, ctx.m.drvXp)) * MG().RESALE_K) / 5) * 5 : 0);
+  function mgrTransfers(ctx) {
+    const { m, mk, league } = ctx;
+    const res = resaleM(ctx);
+    const pcRow = [1, 2, 3, 5, 8, 10, 15].map((p) => `<span><small>P${p}</small><b>+${MG().matePC(p, false, league)}</b></span>`).join('');
+    const cur = ctx.mate ? (() => {
+      const d = MG().withExperience(ctx.mate, m.drvXp), nf = MG().newsForm(d), p = F1.visuals.portrait(d.id), last = (m.races || []).find((x) => x.mate);
+      return `<div class="tr-cur" style="--tc:${tcol(d.teamId)}"><div class="gphoto" style="width:72px;height:72px">${p ? `<img src="${esc(p.img)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<i>${esc(d.code)}</i></div>
+        <div style="flex:1;min-width:0"><small class="muted">Votre coéquipier</small><div class="tr-cur-n">${esc(d.name)}</div><div class="muted" style="font-size:12.5px">Cote de performance <b class="num">${d.rating + nf.perf}</b>${nf.perf ? ` <span class="${nf.perf > 0 ? 'up' : 'down'}">(${nf.perf > 0 ? '+' : ''}${nf.perf} actu)</span>` : ''} · ${m.stats.mateWins} victoire${m.stats.mateWins > 1 ? 's' : ''} · ${m.stats.matePodiums} podium${m.stats.matePodiums > 1 ? 's' : ''}${last ? ` · dernière course : ${last.mate.dnf ? 'abandon' : 'P' + last.mate.pos}` : ''}</div></div>
+        <div style="text-align:right"><small class="muted">Valeur de revente</small><div><b>${fmtPC(res)}</b></div><button class="btn sm ghost" data-action="mate-release" style="margin-top:6px">Libérer</button></div></div>`;
+    })() : `<div class="tr-cur empty"><div class="tr-slot">+</div><div><div class="tr-cur-n">Aucun coéquipier</div><div class="muted" style="font-size:13px">Recrutez un pilote ci-dessous : il court la seconde voiture de votre équipe et rapporte des PitCoins à chaque course.</div></div></div>`;
+    const list = mk.drivers.filter((d) => !(m.driver && m.driver.id === d.id)).map((d) => {
+      const x = MG().withExperience(d, m.drvXp), nf = MG().newsForm(x), price = MG().mateValue(x), own = m.mate && m.mate.id === d.id;
+      const base = Math.max(10, Math.round((MG().valueOfDriver(x) * MG().MATE_K) / 5) * 5), dp = price - base;
+      const net = price - (m.mate && !own ? res : 0), p = F1.visuals.portrait(d.id);
+      return `<div class="tr-row ${own ? 'own' : ''}" style="--tc:${tcol(d.teamId)}"><div class="gphoto" style="width:44px;height:44px">${p ? `<img src="${esc(p.img)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<i>${esc(d.code)}</i></div>
+        <div class="tr-who"><b>${esc(d.name)}</b><small>${esc(d.team || '')}${d.reserve ? ' · réserviste' : ''} · ${x.exp.age} ans</small></div>
+        <div class="tr-perf"><small>Cote</small><b class="num">${x.rating + nf.perf}</b>${nf.perf ? `<i class="${nf.perf > 0 ? 'up' : 'dn'}">${nf.perf > 0 ? '▲' : '▼'}${Math.abs(nf.perf)}</i>` : ''}</div>
+        <div class="tr-price"><small>Prix</small><b>${fmtPC(price)}</b>${dp ? `<i class="${dp > 0 ? 'up' : 'dn'}" title="Effet Paddock Wire sur la valeur">${dp > 0 ? '▲' : '▼'} ${Math.abs(dp)}</i>` : ''}</div>
+        <div class="tr-act">${own ? '<span class="chip green">Coéquipier</span>' : `<button class="btn sm" data-action="mate-buy" data-id="${esc(d.id)}" ${net > m.pc + 1e-9 ? 'disabled' : ''}>${m.mate ? `Transférer (${net >= 0 ? '−' : '+'}${Math.abs(net)})` : 'Recruter'}</button>`}</div></div>`;
+    }).join('');
+    return `${cur}
+      <div class="card tr-info"><div><b>Prime du coéquipier</b><small class="muted">PitCoins versés selon sa position d'arrivée (ligue ${esc(league.name)}), en plus de vos propres gains</small></div><div class="tr-pc">${pcRow}</div></div>
+      <div class="section-h" style="margin-top:18px"><h2>🤝 Marché des transferts</h2><span class="muted" style="font-size:13px">Prix et cotes suivent l'actualité Paddock Wire : ▲ bonne nouvelle, ▼ blessure, pénalité ou difficultés</span></div>
+      <div class="tr-list">${list}</div>`;
   }
 
   /* ---------- R&D pièce par pièce ---------- */
@@ -1327,7 +1379,7 @@
   const mechChips = (car) => { const e = Object.entries(car.mech || {}).filter(([, v]) => v > 0.01); return e.length ? `<div class="row" style="gap:6px;margin-top:12px">${e.map(([k, v]) => `<span class="chip">${FX_LBL[k]} ${fxVal(k, v)}</span>`).join('')}</div>` : ''; };
   function mgrRD(ctx) {
     const { m, ch, car, w, race, league, bots } = ctx;
-    if (!ch) return `<div class="empty"><div class="ic">🔬</div>Achetez d'abord un châssis pour lancer la R&D.<div style="margin-top:14px"><a class="btn" href="#/manager/chassis">Voir les châssis</a></div></div>`;
+    if (!ch) return `<div class="empty"><div class="ic">🔬</div>Choisissez d'abord une équipe pour lancer la R&D.<div style="margin-top:14px"><a class="btn" href="#/manager/chassis">Voir les châssis</a></div></div>`;
     const cats = MG().RD_CATS;
     const cat = cats.find((c) => c.id === S.rdCat) || cats[0];
     S.rdCat = cat.id;
@@ -1561,9 +1613,10 @@
     const table = `<table class="tbl" style="font-size:13px"><thead><tr><th>Position</th>${[1, 2, 3, 4, 5, 6, 8, 10, 15, 20].map((p) => `<th class="c">P${p}</th>`).join('')}<th class="c">AB</th></tr></thead><tbody>
       <tr><td>LP</td>${[1, 2, 3, 4, 5, 6, 8, 10, 15, 20].map((p) => { const v = MG().lpScale(league).t[p - 1]; return `<td class="c"><span class="gain ${v > 0 ? 'up' : v < 0 ? 'down' : ''}">${v > 0 ? '+' : ''}${v}</span></td>`; }).join('')}<td class="c">${(() => { const v = MG().lpScale(league).dnf; return `<span class="gain ${v < 0 ? 'down' : ''}">${v}</span>`; })()}</td></tr>
       <tr><td>PitCoins</td>${[1, 2, 3, 4, 5, 6, 8, 10, 15, 20].map((p) => `<td class="c num">${Math.round(MG().PC_TABLE[p - 1] * league.mult)}</td>`).join('')}<td class="c num">${Math.round(league.mult)}</td></tr></tbody></table>`;
-    return `<div class="grid g2"><div class="card"><h3>Échelle des ligues</h3><div class="sub">Vos points de ligue (LP) montent à chaque course. En Bronze, on ne perd jamais de points ; à partir de l'Argent, une mauvaise course en fait perdre. Passez un palier pour être promu : les gains augmentent, les adversaires aussi.</div><div class="ladder">${ladder}</div></div>
+    return `<section class="card mb-card"><div class="mb-h"><div><h3>Classement des managers</h3><small class="muted">Tous les joueurs · équipe, coéquipier et résultats de carrière en F1 Manager</small></div><div class="mb-legend"><span><i class="g"></i>Vous</span></div></div><div id="mgrBoard"><div class="skeleton" style="height:120px"></div></div></section>
+      <div class="grid g2" style="margin-top:12px"><div class="card"><h3>Échelle des ligues</h3><div class="sub">Vos points de ligue (LP) montent à chaque course. En Bronze, on ne perd jamais de points ; à partir de l'Argent, une mauvaise course en fait perdre. Passez un palier pour être promu : les gains augmentent, les adversaires aussi.</div><div class="ladder">${ladder}</div></div>
       <div class="grid" style="align-content:start"><div class="card"><h3>Barème (ligue ${esc(league.name)})</h3><div class="table-wrap" style="margin-top:8px">${table}</div><div class="muted" style="font-size:12px;margin-top:8px">Record personnel : ${fmt(m.best)} LP.</div></div>
-      <div class="card"><h3>🌍 Classement des managers</h3><div id="mgrBoard" class="plist"><div class="skeleton" style="height:60px"></div></div></div></div></div>`;
+      </div></div>`;
   }
   function mountManager(tab) {
     const pu = $('#pu3d');
@@ -1579,9 +1632,22 @@
       const me = F1.store.mgr();
       const local = () => `<div class="muted" style="font-size:13px">${F1.social.state.enabled ? 'Classement mondial indisponible pour le moment.' : 'Activez le système d\'amis (Supabase) pour voir le classement mondial.'}</div>`;
       if (!F1.social.state.ready || !F1.social.leaderboard) { board.innerHTML = local(); return; }
-      F1.social.leaderboard().then((rows) => {
-        if (!rows) { board.innerHTML = local() + '<div class="muted" style="font-size:12px;margin-top:6px">(Le propriétaire du site doit exécuter <code>supabase/migration-manager.sql</code>.)</div>'; return; }
-        board.innerHTML = rows.length ? rows.map((p, i) => { const L = MG().leagueOf(p.lp || 0); const isMe = F1.social.state.me && p.id === F1.social.state.me.id; return `<div class="prow ${isMe ? 'me' : ''}"><b class="num" style="width:26px">${i + 1}</b>${uava(p, '')}<div class="pinfo"><b>${esc(p.username)}${isMe ? ' (vous)' : ''}</b><small>${L.icon} ${L.name}</small></div><b class="num">${fmt(p.lp || 0)} LP</b></div>`; }).join('') : '<div class="muted">Aucun manager classé pour l\'instant.</div>';
+      F1.social.leaderboard().then((res) => {
+        if (!res) { board.innerHTML = local() + '<div class="muted" style="font-size:12px;margin-top:6px">(Le propriétaire du site doit exécuter <code>supabase/migration-manager.sql</code>.)</div>'; return; }
+        const rows = res.rows, MK = S.mk || MG().market(S.f1 || S.season), myId = F1.social.state.me && F1.social.state.me.id;
+        const dn = (id) => { const d = id && MK.byDriver.get(id); return d ? d.short || d.name : '—'; };
+        const tn = (id) => (id ? MG().TEAM_NAME[id] || id : '—');
+        if (!rows.length) { board.innerHTML = '<div class="muted">Aucun manager classé pour l\'instant.</div>'; return; }
+        board.innerHTML = `<div class="table-wrap"><table class="mb-tbl"><thead><tr><th>Pos</th><th>Manager</th><th>Équipe</th><th>Coéquipier</th><th class="r">Victoires</th><th class="r">Podiums</th><th class="r">Meilleure</th><th class="r">Courses</th><th class="r">Points</th><th>Ligue</th></tr></thead><tbody>
+          ${rows.map((p, i) => { const L = MG().leagueOf(p.lp || 0), isMe = p.id === myId, col = p.mgr_team ? F1.teamColor(p.mgr_team) : 'var(--line2)';
+            return `<tr class="${isMe ? 'me' : ''} ${i < 3 ? 'top' + (i + 1) : ''}" style="--tc:${col}"><td class="mb-pos"><b>${i + 1}</b></td>
+              <td><span class="mb-who">${uava(p, 'sm')}<b>${esc(p.username)}</b>${isMe ? '<small>vous</small>' : ''}</span></td>
+              <td><span class="mb-team"><i></i>${esc(tn(p.mgr_team))}</span><small class="mb-sub">${esc(dn(p.mgr_driver))}</small></td>
+              <td>${res.detailed ? esc(dn(p.mgr_mate)) : '<span class="muted">—</span>'}</td>
+              <td class="r num mb-w">${res.detailed ? p.mgr_wins || 0 : '—'}</td><td class="r num">${res.detailed ? p.mgr_podiums || 0 : '—'}</td>
+              <td class="r num">${res.detailed && p.mgr_best ? 'P' + p.mgr_best : '—'}</td><td class="r num muted">${res.detailed ? p.mgr_races || 0 : '—'}</td>
+              <td class="r num mb-pts">${res.detailed ? fmt(p.mgr_points || 0) : '—'}</td><td>${leagueBadge(L)} <small class="muted num">${p.lp || 0} LP</small></td></tr>`; }).join('')}</tbody></table></div>
+          ${res.detailed ? '' : '<div class="muted" style="font-size:12px;margin-top:8px">Victoires, podiums, meilleure position et points apparaîtront dès que le propriétaire du site aura exécuté <code>supabase/migration-profile-v2.sql</code>.</div>'}`;
       }).catch(() => { board.innerHTML = local(); });
       void me;
     }
@@ -1619,7 +1685,8 @@
     const player = { name: meName, driver: ctx.drvM, car: ctx.car, setup: ctx.m.setup, chassisId: ctx.ch.id };
     const seed = MG().hash(`${Date.now()}-${Math.random()}`);
     // la météo de la course est celle annoncée par le bulletin ; la course est décomptée dès le départ
-    const R = MG().createRace({ player, bots: ctx.bots, race: ctx.race, seed, wxSeed: ctx.m.next.seed, startTyre: ctx.m.next.tyre, plan: ctx.m.next.plan, manual: true, news: F1.news ? F1.news.teamMods() : null });
+    const mateE = MG().mateEntry(ctx.mate, ctx.car, ctx.ch.id, ctx.ch.name);
+    const R = MG().createRace({ player, bots: mateE ? [mateE, ...ctx.bots] : ctx.bots, race: ctx.race, seed, wxSeed: ctx.m.next.seed, startTyre: ctx.m.next.tyre, plan: ctx.m.next.plan, manual: true, news: F1.news ? F1.news.teamMods() : null });
     let bill; try { bill = F1.store.consumeRace(); } catch (err) { return toast('⚠️', esc(err.message), 'err'); }
     if (bill.paid) toast('🟡', `Course supplémentaire : −${jt(bill.paid)}`, 'win');
     showRace(R, ctx);
@@ -1629,7 +1696,7 @@
     const ROW = matchMedia('(min-width: 900px)').matches ? 22 : 30, LAPS = res.LAPS, leagueBefore = ctx.league;
     const meX = res.me;
     const colorOf = (x) => F1.teamColor(x.c.chassisId || (ctx.ch && ctx.ch.id));
-    const tower = res.field.map((x) => `<div class="trow ${x.c.me ? 'me' : ''}" data-i="${x.i}" style="transform:translateY(${(x.grid - 1) * ROW}px)"><b class="tp">${x.grid}</b><span class="tstripe" style="background:${colorOf(x)};height:16px"></span><span class="tn">${esc(x.name)}</span><span class="tc">${esc(x.driver.code)}</span><span class="tt">${tyreDot(x.tyre, 'sm')}</span><span class="tps" title="Arrêts aux stands"></span><span class="tg num">—</span></div>`).join('');
+    const tower = res.field.map((x) => `<div class="trow ${x.c.me ? 'me' : ''} ${x.c.mate ? 'mate' : ''}" data-i="${x.i}" style="transform:translateY(${(x.grid - 1) * ROW}px)"><b class="tp">${x.grid}</b><span class="tstripe" style="background:${colorOf(x)};height:16px"></span><span class="tn">${esc(x.name)}</span><span class="tc">${esc(x.driver.code)}</span><span class="tt">${tyreDot(x.tyre, 'sm')}</span><span class="tps" title="Arrêts aux stands"></span><span class="tg num">—</span></div>`).join('');
     const drvNum = (ctx.drvM && ctx.drvM.number) || (meX.driver && meX.driver.number) || '', meCol = colorOf(meX), meInk = inkOn(meCol);
     // en-tête radio : numéro du pilote aux couleurs de l'écurie + égaliseur
     const RHEAD = (title, extra = '') => `<div class="radio-h"><span class="rdo-plate" style="--tc:${meCol};--ti:${meInk}">${esc(String(drvNum || meX.driver.code))}</span><span class="radio-wave"><i></i><i></i><i></i><i></i><i></i></span><span class="rdo-title">${title}</span>${extra}</div>`;
@@ -1809,7 +1876,7 @@
       if (S.raceMap) { S.raceMap.dispose(); S.raceMap = null; }
       const w = F1.store.mgr().weeklyGP;
       const why = me.out ? `abandon (${esc(meX.out.why)})` : meX.pen ? 'règle des 2 composés secs non respectée' : '';
-      const rows = res.final.filter((r) => r.pos <= 10 || r.i === meX.i).map((r) => { const x = byI.get(r.i); return `<tr class="${x.c.me ? 'me-row' : ''}"><td class="pos">${r.out ? 'AB' : r.pos}</td><td><span class="tstripe" style="background:${colorOf(x)};display:inline-block;height:13px;margin-right:7px;vertical-align:-1px"></span>${esc(x.name)}${x.c.me ? ' <small class="muted">(vous)</small>' : x.c.team ? ` <small class="muted">${esc(x.c.team)}</small>` : ''}</td><td class="r num">${r.out ? 'Abandon' : r.pos === 1 ? 'Vainqueur' : '+' + r.gap.toFixed(1).replace('.', ',') + ' s'}</td></tr>`; }).join('');
+      const rows = res.final.filter((r) => r.pos <= 10 || r.i === meX.i).map((r) => { const x = byI.get(r.i); return `<tr class="${x.c.me ? 'me-row' : ''}"><td class="pos">${r.out ? 'AB' : r.pos}</td><td><span class="tstripe" style="background:${colorOf(x)};display:inline-block;height:13px;margin-right:7px;vertical-align:-1px"></span>${esc(x.name)}${x.c.me ? ' <small class="muted">(vous)</small>' : x.c.mate ? ' <small class="db-mate-tag">coéquipier</small>' : x.c.team ? ` <small class="muted">${esc(x.c.team)}</small>` : ''}</td><td class="r num">${r.out ? 'Abandon' : r.pos === 1 ? 'Vainqueur' : '+' + r.gap.toFixed(1).replace('.', ',') + ' s'}</td></tr>`; }).join('');
       $('.race-main').outerHTML = `<div class="debrief">
         <section class="db-card db-res"><header><span>Votre chrono</span><small>${esc(ev.race.nameFr)} · semaine ${ev.week} · ${LAPS} tours</small></header>
           <div class="wk-time ${dnf ? 'dnf' : ''}"><b>${dnf ? 'DNF / Non classé' : MG().fmtRaceTime(timeMs)}</b><small class="muted">${dnf ? why : `Arrivée P${me.pos} · ${esc(ctx.ch.name)} · ${esc(ctx.drvM.name)}`}${rec.improved ? ' · <b class="up">nouveau meilleur temps de la semaine !</b>' : ''}</small></div>
@@ -1835,7 +1902,10 @@
       rw.pc = Math.round(rw.pc * (1 + ctx.tb.pc));
       const m0 = F1.store.mgr(), drvId = m0.driver && m0.driver.id;
       const xpBefore = drvId ? MG().driverGrowth(drvId, JSON.parse(JSON.stringify(m0.drvXp || {}))) : null, pcBefore = m0.pc;
-      F1.store.recordRace({ pos: me.pos, dnf: me.out, grid: meX.grid, fastest: res.fastest.who === meX.i, rain: res.weather.some((x) => x.rain > 0.25), lp: rw.lp, pc: rw.pc, gp: ctx.race.nameFr.replace('Grand Prix', 'GP'), league: leagueBefore.name, driver: ctx.drvM.family, chassis: ctx.ch.name });
+      const mateX = res.field.find((x) => x.c.mate), mateR = mateX ? res.final.find((x) => x.i === mateX.i) : null;
+      const mateRes = mateX && mateR ? { id: mateX.driver.id, name: mateX.driver.name, pos: mateR.pos, dnf: !!mateR.out, pc: Math.round(MG().matePC(mateR.pos, mateR.out, leagueBefore) * (1 + ctx.tb.pc)) } : null;
+      const maxEng = Math.max(...res.tele.filter(Boolean).map((t) => t.tEng || 0));
+      F1.store.recordRace({ mate: mateRes, maxEng, pos: me.pos, dnf: me.out, grid: meX.grid, fastest: res.fastest.who === meX.i, rain: res.weather.some((x) => x.rain > 0.25), lp: rw.lp, pc: rw.pc, gp: ctx.race.nameFr.replace('Grand Prix', 'GP'), league: leagueBefore.name, driver: ctx.drvM.family, chassis: ctx.ch.name });
       F1.social.sync(true);
       if (silent || !$('#raceEnd')) { showAchievements(); return; }
       T = LAPS; paused = false; $('#radio').classList.remove('on'); render(LAPS); renderWall(LAPS); renderTele();
@@ -1850,7 +1920,7 @@
       const stratHtml = (x) => strat(x).map((t) => tyreDot(t, 'sm')).join('<i class="st-arrow"></i>');
       const winner = byI.get(res.final[0].i);
       const gapTxt = (r) => (r.out ? 'Abandon' : r.pos === 1 ? 'Vainqueur' : '+' + r.gap.toFixed(1).replace('.', ',') + ' s');
-      const rows = res.final.filter((r) => r.pos <= 10 || r.i === meX.i).map((r) => { const x = byI.get(r.i); return `<tr class="${x.c.me ? 'me-row' : ''}"><td class="pos">${r.out ? 'AB' : r.pos}</td><td><span class="tstripe" style="background:${colorOf(x)};display:inline-block;height:13px;margin-right:7px;vertical-align:-1px"></span>${esc(x.name)}${x.c.me ? ' <small class="muted">(vous)</small>' : x.c.team ? ` <small class="muted">${esc(x.c.team)}</small>` : ''}</td><td class="r num">${gapTxt(r)}</td><td><span class="st-seq">${stratHtml(x)}</span></td></tr>`; }).join('');
+      const rows = res.final.filter((r) => r.pos <= 10 || r.i === meX.i).map((r) => { const x = byI.get(r.i); return `<tr class="${x.c.me ? 'me-row' : ''}"><td class="pos">${r.out ? 'AB' : r.pos}</td><td><span class="tstripe" style="background:${colorOf(x)};display:inline-block;height:13px;margin-right:7px;vertical-align:-1px"></span>${esc(x.name)}${x.c.me ? ' <small class="muted">(vous)</small>' : x.c.mate ? ' <small class="db-mate-tag">coéquipier</small>' : x.c.team ? ` <small class="muted">${esc(x.c.team)}</small>` : ''}</td><td class="r num">${gapTxt(r)}</td><td><span class="st-seq">${stratHtml(x)}</span></td></tr>`; }).join('');
       // XP : barre du point en cours, de l'état d'avant à l'état d'après (un tour complet si un point est gagné)
       const XPP = MG().XP_PER_POINT, frac = (g) => (g.maxed ? 1 : (g.xp % XPP) / XPP);
       const statUp = xpBefore && xpAfter ? [['Rythme', 'pace'], ['Combativité', 'craft'], ['Régularité', 'cons']].map(([l, k]) => [l, xpAfter.bonus[k] - xpBefore.bonus[k]]).filter(([, d]) => d > 0.001) : [];
@@ -1865,6 +1935,7 @@
       $('.race-main').outerHTML = `<div class="debrief ${me.out ? 'dnf' : me.pos <= 3 ? 'podium' : ''}">
         <section class="db-card db-res"><header><span>Classement final</span><small>${esc(ctx.race.nameFr)} · ${LAPS} tours</small></header>
           <div class="db-pos"><b>${me.out ? 'Abandon' : 'P' + me.pos}</b><div><div>${me.out ? esc(meX.out.why) : me.pos === 1 ? 'Victoire !' : `à ${me.gap.toFixed(1).replace('.', ',')} s de ${esc(winner.name)}`}</div><small class="muted">Parti P${meX.grid} · ${meX.pits} arrêt${meX.pits > 1 ? 's' : ''} · stratégie <span class="st-seq">${stratHtml(meX)}</span>${meX.pen ? ` · <span class="down">+${meX.pen} s (un seul composé)</span>` : ''}${fl ? ` · meilleur tour : ${esc(fl.c.me ? 'vous' : fl.name)}` : ''}</small></div></div>
+          ${mateRes ? `<div class="db-mate" style="--tc:${colorOf(mateX)}"><span class="db-mate-k">Coéquipier</span><b>${esc(mateRes.name)}</b><span class="db-mate-p">${mateRes.dnf ? 'Abandon' : 'P' + mateRes.pos}</span><span class="db-mate-pc ${mateRes.pc ? 'up' : ''}">${mateRes.pc ? '+' + fmtPC(mateRes.pc) : 'aucune prime'}</span></div>` : ''}
           <div class="table-wrap"><table class="tbl db-tbl"><thead><tr><th>Pos</th><th>Pilote</th><th class="r">Écart</th><th>Pneus</th></tr></thead><tbody>${rows}</tbody></table></div></section>
         <div class="db-side">
           <section class="db-card"><header><span>Progression du pilote</span></header>${xpHtml || '<div class="muted">Aucun pilote sous contrat.</div>'}</section>
@@ -2129,7 +2200,7 @@
     try { F1.store.useWeeklyAttempt(ev.id); } catch (e) { return toast('⏳', esc(e.message), 'err'); }
     const meName = (F1.social.state.me && F1.social.state.me.username) || F1.store.get().name || 'Mon écurie';
     const player = { name: meName, driver: ctx.drvM, car: ctx.car, setup: ctx.m.setup, chassisId: ctx.ch.id };
-    const R = MG().createRace({ player, bots: MG().weeklyBots(ev.seed, ctx.drvM && ctx.drvM.id), race: ev.race, seed: ev.seed, wxSeed: ev.seed, startTyre: ctx.m.next.tyre, plan: ctx.m.next.plan, manual: true });
+    const R = MG().createRace({ player, bots: (() => { const me2 = MG().mateEntry(ctx.mate, ctx.car, ctx.ch.id, ctx.ch.name), b2 = MG().weeklyBots(ev.seed, ctx.drvM && ctx.drvM.id, ctx.mate && ctx.mate.id); return me2 ? [me2, ...b2] : b2; })(), race: ev.race, seed: ev.seed, wxSeed: ev.seed, startTyre: ctx.m.next.tyre, plan: ctx.m.next.plan, manual: true });
     R.weekly = ev;
     showRace(R, { ...ctx, race: ev.race });
   }
@@ -2142,11 +2213,11 @@
         <div class="fc-segs">${fl.segs.map((g) => `<span>${g.icon} ${esc(g.txt)}</span>`).join('')}</div></div>
       <div class="wk-b-r"><small>Clôture dimanche 23 h 59</small><b id="wkCount">${untilTxt(ev.endsAt - Date.now())}</b></div></div>`;
     const trophies = (m.trophies || []).slice(0, 8).map((t) => `<span class="wk-trophy" title="${esc(t.circuit)} · semaine ${esc(t.week)}">${t.rank === 1 ? '🥇' : t.rank === 2 ? '🥈' : t.rank === 3 ? '🥉' : '🏅'} <b>${t.rank}${t.rank === 1 ? 'er' : 'e'}</b><small>${esc(t.week.replace('-W', ' · S'))}</small></span>`).join('');
-    if (!drvM || !ch) return head + '<div class="notice">Recrutez un pilote et achetez un châssis dans votre campagne pour participer.</div>';
+    if (!drvM || !ch) return head + '<div class="notice">Recrutez un pilote et choisissez une équipe dans votre campagne pour participer.</div>';
     return head + `<div class="wk-grid">
       <section class="ol-card"><header><b>Votre engagement</b><a class="pnl-l" href="#/manager">Préparer dans le QG</a></header>
         <div class="ol-car">${F1.visuals.car(ch.id, { view: 'side', shadow: false, sponsor: livery(m) })}</div>
-        <div class="ol-specs"><div><small>Pilote</small><b>${esc(drvM.name)}</b><span class="muted">${drvM.rating}</span></div><div><small>Châssis</small><b>${esc(ch.name)}</b><span class="muted">note ${MG().carRating(car)}</span></div>
+        <div class="ol-specs"><div><small>Pilote</small><b>${esc(drvM.name)}</b><span class="muted">${drvM.rating}</span></div><div><small>Équipe</small><b>${esc(ch.name)}</b><span class="muted">note ${MG().carRating(car)}</span></div>
           <div><small>Départ</small><b>${tyreDot(m.next.tyre, 'sm')} ${esc(MG().TYRES[m.next.tyre].name)}</b></div><div><small>Arrêts prévus</small><b>${plan.length ? plan.map((x) => `tour ${x.lap} ${tyreDot(x.tyre, 'sm')}`).join(' · ') : 'aucun'}</b><span class="muted">sur ${ev.laps} tours</span></div></div>
         <small class="muted">La course se joue comme en campagne (muret, arrêts, dilemmes radio). Elle ne consomme pas vos courses gratuites, et vos contrats sponsors sont en pause : aucun objectif ni pénalité ici.</small>
         <div class="wk-att"><div><small>Tentatives</small><b>${left} / ${MG().WEEKLY_ATTEMPTS} restante${left > 1 ? 's' : ''}</b></div><div><small>Meilleur temps</small><b>${w.bestTime != null ? MG().fmtRaceTime(w.bestTime) : '—'}</b>${w.bestConfig ? `<small class="muted">P${w.bestPosition} · ${esc(w.bestConfig.chassis)} · ${esc(w.bestConfig.driver)}</small>` : ''}</div></div>
@@ -2211,7 +2282,7 @@
       <section class="section"><div class="section-h"><h2>Évolution du solde</h2></div><div class="card"><div id="bankroll"></div></div></section>
       <section class="section"><div class="section-h"><h2>Historique</h2><div class="seg"><button class="${tab === 'open' ? 'on' : ''}" data-action="betstab" data-t="open">En cours (${p.bets.filter((b) => b.status === 'open').length})</button><button class="${tab === 'done' ? 'on' : ''}" data-action="betstab" data-t="done">Réglés (${p.bets.filter((b) => b.status !== 'open').length})</button></div></div>
       ${list.length ? `<div class="grid g2">${list.slice(0, 60).map(betCard).join('')}</div>` : `<div class="empty"><div class="ic">🎟️</div>${tab === 'open' ? 'Aucun pari en cours.' : 'Aucun pari réglé pour l\'instant.'}<div style="margin-top:14px"><a class="btn" href="#/paris">Parier maintenant</a></div></div>`}</section>
-      <section class="section"><div class="section-h"><h2>Succès</h2><span class="muted">${Object.keys(p.ach).length} / ${F1.store.ACH.length}</span></div><div class="grid g3">${F1.store.ACH.map((a) => `<div class="ach ${p.ach[a.id] ? '' : 'locked'}"><div class="ic">${a.icon}</div><div><b>${esc(a.title)}</b><small>${esc(a.desc)}</small></div></div>`).join('')}</div></section>`;
+      <section class="section"><div class="card ach-cta"><div><b>🏆 Succès</b><span class="muted"> · ${Object.keys(p.ach).length} / ${F1.store.ACH.length} débloqués${F1.store.achClaimable().length ? ` · <b class="up">${F1.store.achClaimable().length} récompense${F1.store.achClaimable().length > 1 ? 's' : ''} à réclamer</b>` : ''}</span></div><a class="btn sm" href="#/succes">Voir les succès</a></div></section>`;
     return h;
   }
   function seasonByYear(y) {
@@ -2335,7 +2406,82 @@
     if (settled.length && /mes-paris|^#?\/?$/.test(location.hash || '/')) setTimeout(route, delay + 100);
   }
   function showAchievements() {
-    F1.store.popUnlocked().forEach((a, i) => setTimeout(() => { toast(a.icon, `Succès débloqué : <b>${esc(a.title)}</b>`, 'win', 5000); confetti(80); }, i * 900));
+    const list = F1.store.popUnlocked().filter(Boolean);
+    if (list.length > 2) { toast('🏆', `<b>${list.length} succès débloqués</b> · <a href="#/succes" style="text-decoration:underline">réclamez vos jetons</a>`, 'win', 6000); confetti(120); }
+    else list.forEach((a, i) => setTimeout(() => { toast(a.icon, `Succès débloqué : <b>${esc(a.title)}</b> · <a href="#/succes" style="text-decoration:underline">+${a.reward} jetons à réclamer</a>`, 'win', 5500); confetti(80); }, i * 900));
+    achBadge();
+  }
+
+  /* =================== Succès =================== */
+  const ACH_CAT = [['all', 'Tous'], ['paris', 'Paris'], ['paddock', 'Paddock Wire'], ['ligues', 'Ligues'], ['manager', 'F1 Manager'], ['profil', 'Profil']];
+  function achBadge() {
+    const n = F1.store.achClaimable().length;
+    $$('[data-r="succes"]').forEach((a) => { let b = a.querySelector('.nav-badge'); if (!n) { if (b) b.remove(); return; } if (!b) { b = document.createElement('i'); b.className = 'nav-badge'; a.appendChild(b); } b.textContent = n; });
+  }
+  function pageAch() {
+    const p = F1.store.get(), all = F1.store.ACH, cat = S.achCat || 'all';
+    const done = all.filter((a) => p.ach[a.id]).length, claim = F1.store.achClaimable();
+    const pending = claim.reduce((t, a) => t + a.reward, 0), earned = all.filter((a) => (p.achClaimed || {})[a.id]).reduce((t, a) => t + a.reward, 0);
+    const list = all.filter((a) => cat === 'all' || a.cat === cat).map((a) => ({ a, pr: F1.store.achProgress(a), claimed: !!(p.achClaimed || {})[a.id] }))
+      .sort((x, y) => (y.pr.done && !y.claimed) - (x.pr.done && !x.claimed) || (y.pr.v / y.pr.max) - (x.pr.v / x.pr.max));
+    const card = ({ a, pr, claimed }) => {
+      const pct = Math.round((pr.v / pr.max) * 100), st = claimed ? 'claimed' : pr.done ? 'ready' : 'locked';
+      return `<div class="achv ${st}" data-cat="${a.cat}"><div class="achv-badge"><span>${a.icon}</span>${st === 'locked' ? '<i class="achv-lock">🔒</i>' : ''}</div>
+        <div class="achv-body"><b>${esc(a.title)}</b><small>${esc(a.desc)}</small>
+          <div class="achv-bar"><i style="width:${pct}%"></i></div><div class="achv-meta"><span class="num">${pr.max > 1 ? `${fmt(pr.v)} / ${fmt(pr.max)}` : pr.done ? 'Accompli' : 'À accomplir'}</span><span class="achv-rw">${jt(a.reward)}</span></div></div>
+        <div class="achv-act">${st === 'ready' ? `<button class="btn sm gold achv-claim" data-action="ach-claim" data-id="${a.id}">Réclamer</button>` : st === 'claimed' ? '<span class="chip green">✓ Réclamé</span>' : `<span class="muted num">${pct} %</span>`}</div></div>`;
+    };
+    return `<section class="ach-page"><div class="ach-hero"><div><h1>Succès</h1><p class="muted">Débloquez des succès sur tout le site, des paris au F1 Manager, et réclamez des jetons.</p></div>
+        <div class="ach-kpis"><div><small>Débloqués</small><b class="num">${done}<em>/${all.length}</em></b><div class="achv-bar big"><i style="width:${(done / all.length) * 100}%"></i></div></div>
+          <div><small>À réclamer</small><b>${jt(pending)}</b>${claim.length > 1 ? '<button class="btn sm gold" data-action="ach-claim-all" style="margin-top:6px">Tout réclamer</button>' : ''}</div><div><small>Déjà gagnés</small><b>${jt(earned)}</b></div></div></div>
+      <div class="pdw-chips">${ACH_CAT.map(([k, l]) => `<button class="pdw-chip ${cat === k ? 'on' : ''}" data-action="ach-cat" data-c="${k}">${l} <span class="num">${k === 'all' ? all.length : all.filter((a) => a.cat === k).length}</span></button>`).join('')}</div>
+      <div class="achv-grid">${list.map(card).join('')}</div></section>`;
+  }
+  // Animation de réclamation : badge qui éclate, jetons qui volent vers le portefeuille
+  function achFly(btn, n) {
+    const r = btn.getBoundingClientRect(), w = $('#wallet').getBoundingClientRect();
+    for (let i = 0; i < Math.min(10, 3 + Math.round(n / 60)); i++) {
+      const c = document.createElement('span'); c.className = 'coin-fly'; c.innerHTML = COIN_J;
+      c.style.left = r.left + r.width / 2 + 'px'; c.style.top = r.top + r.height / 2 + 'px'; document.body.appendChild(c);
+      const dx = w.left + 16 - (r.left + r.width / 2), dy = w.top + 16 - (r.top + r.height / 2);
+      c.animate([{ transform: 'translate(-50%,-50%) scale(.6)', opacity: 0 }, { transform: `translate(calc(-50% + ${(Math.random() - 0.5) * 80}px), calc(-50% - ${40 + Math.random() * 40}px)) scale(1)`, opacity: 1, offset: 0.3 }, { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(.5)`, opacity: 0.2 }], { duration: 900 + i * 60, easing: 'cubic-bezier(.5,0,.3,1)', delay: i * 45 }).onfinish = () => c.remove();
+    }
+    const card = btn.closest('.achv'); if (card) { card.classList.add('burst'); }
+  }
+
+  /* =================== Profil & tableau de bord =================== */
+  const AVATARS = [1, 2, 3, 4, 5, 6].map((i) => `assets/avatars/avatar-${i}.webp`);
+  function pageProfile() {
+    const p = F1.store.get(), st = F1.store.stats(), m = p.manager || {}, ms = m.stats || {}, so = SO();
+    const name = (so.me && so.me.username) || p.name || 'Joueur';
+    const mgrLoss = Math.max(0, (ms.races || 0) - (ms.wins || 0));
+    const betsLost = st.done - st.won;
+    const winrate = (w, n) => (n ? Math.round((w / n) * 100) : 0);
+    const kpi = (lab, val, sub = '', cls = '') => `<div class="pf-kpi ${cls}"><small>${lab}</small><b>${val}</b>${sub ? `<span>${sub}</span>` : ''}</div>`;
+    const ring = (pct, col, lab) => `<div class="pf-ring" style="--p:${pct};--c:${col}"><b class="num">${pct}%</b><small>${lab}</small></div>`;
+    // historique récent : courses du manager et paris réglés, mélangés par date
+    const races = (m.races || []).slice(0, 8).map((r) => ({ t: r.t, html: `<span class="pf-tag mgr">Manager</span><b>${r.dnf ? 'Abandon' : 'P' + r.pos}</b><span class="muted">${esc(r.gp || '')}${r.mate ? ` · coéquipier ${r.mate.dnf ? 'AB' : 'P' + r.mate.pos}` : ''}</span><span class="${r.pc > 0 ? 'up' : ''}">+${fmtPC(r.pc)}</span>` }));
+    const bets = p.bets.filter((b) => b.status === 'won' || b.status === 'lost').slice(-8).map((b) => ({ t: b.settledAt || b.placedAt, html: `<span class="pf-tag bet">Pari</span><b class="${b.status === 'won' ? 'up' : 'down'}">${b.status === 'won' ? 'Gagné' : 'Perdu'}</b><span class="muted">${esc(b.legs.length > 1 ? `Combiné × ${b.legs.length}` : b.legs[0].label + ' · ' + b.legs[0].mtitle)}</span><span class="${b.status === 'won' ? 'up' : 'down'}">${b.status === 'won' ? '+' + jt(b.payout - b.stake) : '−' + jt(b.stake)}</span>` }));
+    const hist = [...races, ...bets].sort((a, b) => b.t - a.t).slice(0, 10);
+    const best = F1.store.ACH.filter((a) => p.ach[a.id]).sort((a, b) => b.reward - a.reward).slice(0, 6);
+    const L = MG().leagueOf(m.lp || 0);
+    return `<section class="pf-page">
+      <div class="pf-hero"><button class="pf-ava" data-action="pf-ava" title="Changer de photo">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : `<span>${esc(name.slice(0, 1).toUpperCase())}</span>`}<i>Changer</i></button>
+        <div class="pf-id"><small class="muted">Profil joueur</small><h1>${esc(name)}</h1><div class="row" style="gap:6px;flex-wrap:wrap">${leagueBadge(L)}<span class="chip">${Object.keys(p.ach).length} succès</span>${so.me ? '<span class="chip green">Profil en ligne</span>' : '<span class="chip">Profil local</span>'}</div></div>
+        <div class="pf-wallets"><div><small>Jetons</small><b>${jt(p.balance)}</b></div><div><small>PitCoins</small><b>${fmtPC(m.pc || 0)}</b></div><button class="btn sm ghost" data-action="profile">⚙ Pseudo & sauvegarde</button></div></div>
+      <div class="pf-gallery ${S.pfAva ? 'open' : ''}" id="pfGallery"><div class="pf-gh"><b>Choisissez votre photo de profil</b><button class="btn sm ghost" data-action="pf-ava">Fermer</button></div>
+        <div class="pf-avs">${AVATARS.map((src) => `<button class="pf-av ${p.avatar === src ? 'on' : ''}" data-action="pf-ava-set" data-src="${src}"><img src="${src}" alt="" loading="lazy"></button>`).join('')}<button class="pf-av none ${!p.avatar ? 'on' : ''}" data-action="pf-ava-set" data-src=""><span>${esc(name.slice(0, 1).toUpperCase())}</span><small>Initiale</small></button></div></div>
+      <div class="pf-grid">
+        <div class="card pf-block"><div class="pf-bh"><h3>F1 Manager</h3>${ring(winrate(ms.wins || 0, ms.races || 0), 'var(--red2)', 'victoires')}</div>
+          <div class="pf-kpis">${kpi('Victoires', fmt(ms.wins || 0), '', 'up')}${kpi('Défaites', fmt(mgrLoss), 'courses non gagnées')}${kpi('Podiums', fmt(ms.podiums || 0))}${kpi('Meilleure position', ms.best && ms.best < 99 ? 'P' + ms.best : '—')}${kpi('Points', fmt(ms.points || 0), 'barème F1')}${kpi('PitCoins gagnés', fmtPC(ms.pcEarned || 0))}</div>
+          <div class="muted" style="font-size:12.5px;margin-top:8px">${m.chassis ? `Équipe <b>${esc(m.chassis.name)}</b>` : 'Pas encore d\'équipe'}${m.driver ? ` · pilote <b>${esc((S.mk || MG().market(S.f1 || S.season)).byDriver.get(m.driver.id)?.name || m.driver.name)}</b>` : ''}${m.mate ? ` · coéquipier <b>${esc(m.mate.name)}</b>` : ''} · ${ms.races || 0} course${(ms.races || 0) > 1 ? 's' : ''}</div></div>
+        <div class="card pf-block"><div class="pf-bh"><h3>Paris</h3>${ring(winrate(st.won, st.done), 'var(--gold)', 'réussite')}</div>
+          <div class="pf-kpis">${kpi('Paris gagnés', fmt(st.won), '', 'up')}${kpi('Paris perdus', fmt(betsLost), '', 'down')}${kpi('Bénéfice net', `${st.profit >= 0 ? '+' : '−'}${jt(Math.abs(st.profit))}`, '', st.profit >= 0 ? 'up' : 'down')}${kpi('Meilleure cote', st.bestOdds ? fmtOdds(st.bestOdds) : '—')}${kpi('Jetons gagnés', jt((p.stats || {}).tokensEarned || 0), 'paris + succès')}${kpi('Grâce à l\'actu', fmt((p.stats || {}).newsWins || 0), 'paris Paddock Wire')}</div></div>
+      </div>
+      <div class="pf-grid">
+        <div class="card"><div class="pf-bh"><h3>Activité récente</h3></div>${hist.length ? `<div class="pf-hist">${hist.map((x) => `<div class="pf-h">${x.html}</div>`).join('')}</div>` : '<div class="muted">Aucune course ni pari réglé pour l\'instant.</div>'}</div>
+        <div class="card"><div class="pf-bh"><h3>Succès à la une</h3><a class="link" href="#/succes">Tous les succès</a></div>${best.length ? `<div class="pf-ach">${best.map((a) => `<div class="pf-a"><span>${a.icon}</span><b>${esc(a.title)}</b><small>${esc(a.desc)}</small></div>`).join('')}</div>` : '<div class="muted">Aucun succès débloqué pour l\'instant.</div>'}</div>
+      </div></section>`;
   }
 
   /* =================== Portefeuille / profil =================== */
@@ -2344,7 +2490,10 @@
     const p = F1.store.get();
     const el = $('#balance');
     const target = p.balance;
-    $('#avatar').textContent = (p.name || '?').slice(0, 1).toUpperCase();
+    const av = $('#avatar');
+    if (p.avatar) { if (!av.querySelector('img') || av.querySelector('img').getAttribute('src') !== p.avatar) av.innerHTML = `<img src="${esc(p.avatar)}" alt="">`; }
+    else av.textContent = (p.name || '?').slice(0, 1).toUpperCase();
+    achBadge();
     if ($('#pcBal')) $('#pcBal').textContent = fmt(Math.round(p.manager ? p.manager.pc : 0));
     if (shownBal === null) { shownBal = target; el.textContent = fmtJ(target); return; }
     if (Math.abs(shownBal - target) < 0.005) return;
@@ -2452,10 +2601,17 @@
       case 'claim-season': { const g = F1.store.claimSeason(S.season); if (g) { toast('🎆', `+${jt(g)} pour la saison ${S.season.year} !`, 'win'); confetti(160); route(); } break; }
       case 'rescue': { const g = F1.store.rescue(S.season, S.season.next); if (g) { toast('⛽', `Ravitaillement : +${jt(g)}`, 'win'); route(); } break; }
       case 'profile': profile(); break;
+      case 'pf-ava': { S.pfAva = !S.pfAva; const gal = $('#pfGallery'); if (gal) gal.classList.toggle('open', !!S.pfAva); break; }
+      case 'pf-ava-set': { F1.store.setAvatar(a.dataset.src || null); S.pfAva = false; F1.social.sync(true); showAchievements(); route(); toast('🪪', 'Photo de profil mise à jour', 'win'); break; }
+      case 'ach-cat': S.achCat = a.dataset.c; route(); break;
+      case 'ach-claim': { try { const n = F1.store.claimAch(a.dataset.id); achFly(a, n); toast('🏆', `+${jt(n)} crédités`, 'win'); setTimeout(route, 900); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
+      case 'ach-claim-all': { let t = 0; F1.store.achClaimable().forEach((x) => { t += F1.store.claimAch(x.id); }); achFly(a, t); confetti(140); toast('🏆', `+${jt(t)} crédités`, 'win'); setTimeout(route, 900); break; }
       case 'credits': credits(); break;
       case 'm-buy-d': { const ctx = mgrCtx(); const d0 = ctx.mk.byDriver.get(a.dataset.id); const d = { ...d0, price: MG().valueOfDriver(MG().withExperience(d0, ctx.m.drvXp)) }; try { F1.store.buyDriver(d, resaleD(ctx)); toast('🤝', `<b>${esc(d.name)}</b> rejoint votre écurie !`, 'win'); confetti(80); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
+      case 'mate-buy': { const ctx = mgrCtx(); const d0 = ctx.mk.byDriver.get(a.dataset.id); const x = MG().withExperience(d0, ctx.m.drvXp); try { F1.store.buyMate(d0, MG().mateValue(x), resaleM(ctx)); toast('🤝', `<b>${esc(d0.name)}</b> devient votre coéquipier !`, 'win'); confetti(70); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
+      case 'mate-release': { const ctx = mgrCtx(); if (!confirm(`Libérer ${ctx.m.mate.name} ? Vous récupérez ${resaleM(ctx)} PitCoins.`)) break; const g = F1.store.releaseMate(resaleM(ctx)); toast('🤝', `Coéquipier libéré : +${fmtPC(g)}`, 'win'); F1.social.sync(); route(); break; }
       case 'sp-sign': { try { const t = F1.store.signSponsor(a.dataset.id, a.dataset.slot); const sp = MG().SPONSOR_BY_ID.get(a.dataset.id); toast('💼', `Contrat signé avec <b>${esc(sp.name)}</b> : +${t.sign} PitCoins de prime de signature`, 'win'); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
-      case 'm-buy-c': { const ctx = mgrCtx(); const c = ctx.mk.byChassis.get(a.dataset.id); if (ctx.m.chassis && ctx.m.rdSpent > 0 && !confirm('Changer de châssis remet votre R&D à zéro. Continuer ?')) break; try { F1.store.buyChassis(c, resaleC(ctx)); toast('🔩', `Châssis <b>${esc(c.name)}</b> livré au garage !`, 'win'); confetti(80); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
+      case 'm-buy-c': { const ctx = mgrCtx(); const c = ctx.mk.byChassis.get(a.dataset.id); if (ctx.m.chassis && ctx.m.rdSpent > 0 && !confirm('Changer d\'équipe remet votre R&D à zéro. Continuer ?')) break; try { F1.store.buyChassis(c, resaleC(ctx)); toast('🏎️', `Vous prenez la direction de <b>${esc(c.name)}</b> !`, 'win'); confetti(80); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'rd-cat': { const was = $('#pu3d') ? 'pu' : 'car'; S.rdCat = a.dataset.c; S.rdSel = null; S.rdView = null; if ((a.dataset.c === 'pu' ? 'pu' : 'car') !== was) route(); else rdRefresh(); break; }
       case 'series': setSeries(a.dataset.s); break;
       case 'rd-view': S.rdView = a.dataset.v; route(); break;
@@ -2495,6 +2651,7 @@
       case 'f-retry': F1.social.init().then(route); break;
       case 'f-refresh': socialAct(() => F1.social.refresh()); break;
       case 'lg-sel': S.lgSel = a.dataset.id; mountLeagues(); break;
+      case 'lg-open': openLeague(a.dataset.id); break;
       case 'wk-go': closeModal(); setTimeout(startWeekly, 50); break;
       case 'wk-back': closeModal(); if (location.hash !== '#/manager/hebdo') location.hash = '#/manager/hebdo'; else route(); break;
       case 'wk-board': S.wkBoard = a.dataset.v; mountWeekly(); break;
@@ -2505,16 +2662,16 @@
         if (picks.filter(Boolean).length !== 3) break;
         if (!st || Date.now() >= st.getTime()) { toast('🔒', 'Session commencée : pronostics verrouillés', 'err'); route(); break; }
         const OD = podOdds(), odds = picks.map((id) => { const o = OD.get(id); return o ? Math.round(Math.min(50, o.odds) * 100) / 100 : null; });
-        setLocalPick(y, gp.round, k, picks, odds);
+        setLocalPick(y, gp.round, k, picks, odds); F1.store.noteStat('podiumPicks'); showAchievements();
         const so = SO();
         if (so.ready && so.me) F1.social.savePodium(y, gp.round, k, picks, st, odds).then(() => toast('✅', `Pronostic ${PODIUM[k].label.toLowerCase()} enregistré pour toutes vos ligues`, 'win')).catch((e) => toast('💾', e.missing ? 'Pronostic gardé sur cet appareil (pronostics partagés pas encore activés sur ce site)' : esc(e.message), e.missing ? 'win' : 'err'));
         else toast('💾', 'Pronostic enregistré sur cet appareil', 'win');
         pdRefresh(); break;
       }
-      case 'lg-create': { const n = ($('#lgName') || {}).value; (async () => { try { const l = await F1.social.createLeague(n); S.lgSel = l.id; toast('🏆', `Ligue <b>${esc(l.name)}</b> créée. Code à partager : <b>${esc(l.code)}</b>`, 'win'); route(); } catch (e) { toast('⚠️', esc(e.missing ? 'Ligues privées pas encore activées sur ce site (migration Supabase à exécuter).' : e.message), 'err'); } })(); break; }
-      case 'lg-join': { const c = ($('#lgCode') || {}).value; (async () => { try { const l = await F1.social.joinLeague(c); S.lgSel = l.id; toast('🤝', `Vous avez rejoint <b>${esc(l.name)}</b>`, 'win'); route(); } catch (e) { toast('⚠️', esc(e.missing ? 'Ligues privées pas encore activées sur ce site (migration Supabase à exécuter).' : e.message), 'err'); } })(); break; }
+      case 'lg-create': { const n = ($('#lgName') || {}).value; (async () => { try { const l = await F1.social.createLeague(n); S.lgSel = l.id; F1.store.noteStat('leagueJoined', true); showAchievements(); toast('🏆', `Ligue <b>${esc(l.name)}</b> créée. Code à partager : <b>${esc(l.code)}</b>`, 'win'); route(); } catch (e) { toast('⚠️', esc(e.missing ? 'Ligues privées pas encore activées sur ce site (migration Supabase à exécuter).' : e.message), 'err'); } })(); break; }
+      case 'lg-join': { const c = ($('#lgCode') || {}).value; (async () => { try { const l = await F1.social.joinLeague(c); S.lgSel = l.id; F1.store.noteStat('leagueJoined', true); showAchievements(); toast('🤝', `Vous avez rejoint <b>${esc(l.name)}</b>`, 'win'); route(); } catch (e) { toast('⚠️', esc(e.missing ? 'Ligues privées pas encore activées sur ce site (migration Supabase à exécuter).' : e.message), 'err'); } })(); break; }
       case 'lg-copy': { const txt = `Rejoins ma ligue de pronostics F1 sur PITWALL avec le code ${a.dataset.code} : ${a.dataset.link}`; (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast('📋', 'Invitation copiée : collez-la à vos amis', 'win')).catch(() => toast('📋', `Code : <b>${esc(a.dataset.code)}</b>`, 'win')); break; }
-      case 'lg-leave': { if (!confirm('Quitter cette ligue ?')) break; (async () => { try { await F1.social.leaveLeague(a.dataset.id); S.lgSel = 'off'; toast('👋', 'Vous avez quitté la ligue', 'win'); route(); } catch (e) { toast('⚠️', esc(e.message), 'err'); } })(); break; }
+      case 'lg-leave': { if (!confirm('Quitter cette ligue ?')) break; (async () => { try { await F1.social.leaveLeague(a.dataset.id); S.lgSel = 'off'; closeModal(); toast('👋', 'Vous avez quitté la ligue', 'win'); route(); } catch (e) { toast('⚠️', esc(e.message), 'err'); } })(); break; }
       case 'f-claim': { const n = $('#claimName').value.trim(), t = $('#claimTeam').value; socialAct(async () => { await F1.social.claim(n, t); if (!F1.store.get().name) F1.store.setName(n); }, `Profil créé : bienvenue ${esc(n)} !`); break; }
       case 'f-edit': { const me = SO().me; modal(`<h2>Profil joueur</h2><label class="muted" style="font-size:13px;font-weight:700">Pseudo public</label><input class="field" id="claimName" maxlength="24" value="${esc(me.username)}" style="margin:6px 0 12px"><label class="muted" style="font-size:13px;font-weight:700">Écurie favorite</label><select class="field" id="claimTeam" style="margin:6px 0 16px">${teamOptions(me.team)}</select><div class="row"><button class="btn sm ghost" data-action="close-modal">Annuler</button><span class="sp"></span><button class="btn sm" data-action="f-save">Enregistrer</button></div>`); break; }
       case 'f-save': { const n = $('#claimName').value.trim(), t = $('#claimTeam').value; closeModal(); socialAct(() => F1.social.claim(n, t), 'Profil mis à jour'); break; }
