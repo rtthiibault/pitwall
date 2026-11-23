@@ -972,3 +972,17 @@ html.low .mtl-btn.on i { animation: none; }
 .grid-box .au-opt small { font-size: 10.5px; }
 @media (min-width: 900px) { .grid-box { width: min(760px, 100%) !important; } .grid-box .au-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .race-full .radio.grid-on { position: fixed; inset: 0; z-index: 60; }
+
+/* Radio : encart carré, au milieu du bord droit de la carte (le circuit reste entièrement visible) */
+.race-full .tr-radio, .race-full .race-stage.mt-open .tr-radio { left: auto; right: 12px; top: 50%; bottom: auto; width: 214px; transform: translate(12px, -50%); }
+.race-full .tr-radio.on { transform: translate(0, -50%); }
+.race-full .trr { flex-direction: column; border-left-width: 1px; border-top: 4px solid var(--tc); }
+.race-full .trr-num { width: auto; height: 44px; font-size: 26px; }
+.race-full .trr-body { padding: 8px 10px 10px; }
+.race-full .trr-h { flex-wrap: wrap; row-gap: 2px; }
+.race-full .trr-h b { flex: 1 1 100%; order: 2; white-space: normal; }
+.race-full .trr-h .trr-eq { order: 1; }
+.race-full .trr-h small { order: 1; margin-left: auto; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.race-full .trr p { font-size: 13px; line-height: 1.4; margin-top: 6px; min-height: 54px; }
+@media (max-width: 899px) { .race-full .tr-radio, .race-full .race-stage.mt-open .tr-radio { width: 176px; right: 8px; } .race-full .trr-num { height: 36px; font-size: 20px; } .race-full .trr p { font-size: 12px; min-height: 0; } }
+.race-full .race-stage .tr-radio { right: 16px !important; }
