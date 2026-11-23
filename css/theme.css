@@ -851,3 +851,8 @@ html.low .trr-eq.talking i { animation: none; height: 9px; }
 .pd-k.mid { color: var(--gold); } .pd-k.hi { color: #ff9b4a; }
 .pd-max { color: var(--gold); }
 .pd-risk { display: block; margin-top: 8px; font-size: 12px; color: var(--muted); line-height: 1.45; }
+/* radio des autres pilotes : liseré et code aux couleurs de leur écurie */
+.ev.tr.other { border-left-color: var(--tc); color: #d9dee4; }
+.ev.tr.other .tr-who { color: var(--tc); filter: brightness(1.25); font-weight: 800; }
+.trr.other { border-left-color: var(--tc); }
+.race-full .race-flag { top: 92px !important; }

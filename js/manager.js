@@ -656,19 +656,42 @@
   }
   // Sauvegarde / restauration de l'état avant un tour (pour le recalculer après un ordre du muret)
   function snapshot(R) {
-    return { rs: R.st.rs, lap: R.lap, nEv: R.events.length, fastest: { ...R.fastest }, prevOrder: R.prevOrder.slice(), asked: R.asked.slice(), box: R.ctl.box, ctlTyre: R.ctl.tyre,
+    return { rs: R.st.rs, lap: R.lap, nEv: R.events.length, lastOther: R.lastOther, fastest: { ...R.fastest }, prevOrder: R.prevOrder.slice(), asked: R.asked.slice(), box: R.ctl.box, ctlTyre: R.ctl.tyre,
       cars: R.field.map((x) => ({ ...x, used: x.used.slice(), pitLaps: x.pitLaps.slice(), tyreLog: x.tyreLog.slice(), pitLoss: { ...x.pitLoss }, tr: { ...x.tr }, out: x.out ? { ...x.out } : null })) };
   }
   // Recalcule le dernier tour avec les commandes actuelles du muret (même aléa : seul l'effet des ordres change)
   function redoLap(R) {
     const s0 = R.snap; if (!s0 || s0.lap !== R.lap - 1 || R.lap >= R.LAPS + 1) return false;
     const keep = { box: R.ctl.box, tyre: R.ctl.tyre };
-    R.st.rs = s0.rs; R.lap = s0.lap; R.events.length = s0.nEv; R.fastest = { ...s0.fastest }; R.prevOrder = s0.prevOrder.slice(); R.asked = s0.asked.slice();
+    R.st.rs = s0.rs; R.lap = s0.lap; R.events.length = s0.nEv; R.lastOther = s0.lastOther; R.fastest = { ...s0.fastest }; R.prevOrder = s0.prevOrder.slice(); R.asked = s0.asked.slice();
     R.field.forEach((x, k) => Object.assign(x, s0.cars[k], { used: s0.cars[k].used.slice(), pitLaps: s0.cars[k].pitLaps.slice(), tyreLog: s0.cars[k].tyreLog.slice(), pitLoss: { ...s0.cars[k].pitLoss }, tr: { ...s0.cars[k].tr }, out: s0.cars[k].out ? { ...s0.cars[k].out } : null }));
     R.laps.length = s0.lap; if (R.tele) R.tele.length = s0.lap + 1; R.field.forEach((x) => { R.gapArr[x.i].length = s0.lap + 1; R.tArr[x.i].length = s0.lap + 1; });
     R.final = null; R.ctl.box = keep.box; R.ctl.tyre = keep.tyre;
     stepLap(R);
     return true;
+  }
+  /* Radio des autres pilotes : quand un incident les touche (arrêt raté, accident, casse, faute), leur message s'affiche
+     comme le vôtre. Au plus un message toutes les ~2,5 tours « de 20 » pour ne pas noyer l'écran ; les abandons passent toujours. */
+  const OTHER_TR = {
+    pit: ['Le cric avant s\'est bloqué, on a perdu une éternité au stand !', 'Problème d\'écrou sur l\'arrière gauche, arrêt raté !', 'Qu\'est-ce qui s\'est passé au stand ? On a perdu des secondes précieuses !', 'Le pistolet n\'a pas serré la roue, il a fallu recommencer !'],
+    crash: ['Je suis dans le mur… Désolé les gars.', 'J\'ai perdu la voiture, c\'est fini pour nous.', 'Le train avant est cassé, j\'abandonne.', 'Accident… Je suis OK, mais la voiture est détruite.'],
+    mech: ['Je perds la puissance… la voiture s\'arrête !', 'Plus de boîte de vitesses, je dois ranger la voiture.', 'De la fumée à l\'arrière, on rentre.', 'Les freins ont lâché, je m\'arrête.'],
+    eng: ['Le moteur a lâché, il faisait beaucoup trop chaud.', 'Moteur cassé ! Les températures étaient dans le rouge depuis des tours.'],
+    fuel: ['Panne sèche ! Je n\'ai plus une goutte d\'essence !'],
+    spin: ['J\'ai perdu l\'arrière, tête-à-queue !', 'Erreur de ma part, je suis parti en tête-à-queue.', 'Tête-à-queue ! Je repars, je repars.'],
+    lock: ['J\'ai bloqué l\'avant, gros plat sur le pneu.', 'Raté mon point de freinage, je suis parti large.', 'Blocage de roue, j\'ai tiré tout droit.'],
+    touch: ['On m\'a percuté au premier virage, je repars de loin !', 'Contact au départ, l\'aileron est abîmé.'],
+    puncture: ['Crevaison ! J\'ai roulé sur un débris, je rentre au stand.'],
+    power: ['Perte de puissance… attends, ça revient !', 'Souci électrique, la voiture coupe dans les virages !'],
+  };
+  const OTHER_DNF = { crash: 1, mech: 1, eng: 1, fuel: 1, pit: 1 };   // toujours diffusés (abandons et arrêts ratés)
+  function otherRadio(R, x, kind, lap) {
+    if (!x || x.c.me || x.c.human) return;
+    const gap = Math.max(2, Math.round(2.5 * (R.K || 1)));
+    if (!OTHER_DNF[kind] && R.lastOther != null && lap - R.lastOther < gap) return;
+    R.lastOther = lap;
+    const list = OTHER_TR[kind] || OTHER_TR.spin;
+    R.events.push({ lap, type: 'tr', who: x.i, kind, other: true, txt: list[(lap * 7 + x.i * 3) % list.length] });
   }
   function pitStop(R, x, lap, tyre, sc, why) {
     const r = R.r, crew = x.M('pit');
@@ -677,6 +700,7 @@
     if (botched) still += 3 + r() * 5;
     x.tyre = tyre; x.wear = 0; x.wrong = 0; x.pits++; x.pitLaps.push(lap); x.fresh = true; x.tTyre = 80;
     if (!x.used.includes(tyre)) x.used.push(tyre);
+    if (botched && !x.c.me && !x.c.human) { R.events.push({ lap, type: 'spin', who: x.i, txt: `rate son arrêt au stand (${still.toFixed(1).replace('.', ',')} s)` }); otherRadio(R, x, 'pit', lap); }
     if (x.c.me || x.c.human) R.events.push({ lap, type: botched ? 'loss' : 'pit', who: x.i, txt: `${botched ? 'arrêt au stand raté' : 'arrêt au stand'} (${still.toFixed(1).replace('.', ',')} s) → ${TYRES[tyre].name.toLowerCase()}${why ? ' · ' + why : ''}` });
     x.pitLoss[lap] = (sc ? 9 : 19) + still;
     return x.pitLoss[lap];
@@ -705,8 +729,8 @@
       const slickWet = isSlick(x.tyre) && wet > 0.35;
       const pCrash = ((0.035 * (1 - d.cons / 100) * (0.5 + d.craft / 100)) / LAPS) * (1 + 5 * wet) * (slickWet ? 3 : 1) * (sc ? 0.3 : 1);
       const u = r();
-      if (u < pMech) { x.out = { lap, why: ['Moteur', 'Boîte de vitesses', 'Hydraulique', 'Surchauffe', 'Freins'][Math.floor(r() * 5)] }; events.push({ lap, type: 'dnf', who: x.i, txt: `abandonne (${x.out.why.toLowerCase()})` }); continue; }
-      if (u < pMech + pCrash) { x.out = { lap, why: 'Accident' }; events.push({ lap, type: 'dnf', who: x.i, txt: wet > 0.35 ? 'part en aquaplaning et tape le mur : abandon' : 'part dans le mur : abandon' }); continue; }
+      if (u < pMech) { x.out = { lap, why: ['Moteur', 'Boîte de vitesses', 'Hydraulique', 'Surchauffe', 'Freins'][Math.floor(r() * 5)] }; events.push({ lap, type: 'dnf', who: x.i, txt: `abandonne (${x.out.why.toLowerCase()})` }); otherRadio(R, x, 'mech', lap); continue; }
+      if (u < pMech + pCrash) { x.out = { lap, why: 'Accident' }; events.push({ lap, type: 'dnf', who: x.i, txt: wet > 0.35 ? 'part en aquaplaning et tape le mur : abandon' : 'part dans le mur : abandon' }); otherRadio(R, x, 'crash', lap); continue; }
       const ty = x.M('tyre');
       let t = 90 - x.perf * 0.036 + gauss(r) * 0.95 * R.sqK * (1.5 - d.cons / 100) * (1 - 0.12 * ty);
       x.hold = false;
@@ -714,9 +738,9 @@
       if (!sc && lap > 1) {
         const v = r(), rare = r() < 1 / K;   // débris et pannes passagères : même nombre par course, quelle que soit sa longueur
         if (v < 0.05 * (d.pace / 88)) { t -= 0.7 + r() * 0.7; if (x.c.me || x.c.human) events.push({ lap, type: 'gain', who: x.i, txt: 'signe un tour canon' }); }
-        else if (v < 0.05 * (d.pace / 88) + 0.07 * (1.6 - d.cons / 100)) { t += 1 + r() * 1.8; if (x.c.me || x.c.human) events.push({ lap, type: 'loss', who: x.i, txt: 'bloque une roue et élargit la trajectoire' }); }
-        else if (v > 0.986 && rare) { t += (3 + r() * 4) * K; if (x.c.me || x.c.human) events.push({ lap, type: 'loss', who: x.i, txt: 'perd de la puissance pendant quelques virages (souci électrique)' }); }
-        else if (v > 0.981 && left >= 2 && rare) { t += 6; x.wear = 1; events.push({ lap, type: x.c.me || x.c.human ? 'loss' : 'spin', who: x.i, txt: 'roule sur un débris : crevaison lente, il faut rentrer au stand' }); }
+        else if (v < 0.05 * (d.pace / 88) + 0.07 * (1.6 - d.cons / 100)) { t += 1 + r() * 1.8; if (x.c.me || x.c.human) events.push({ lap, type: 'loss', who: x.i, txt: 'bloque une roue et élargit la trajectoire' }); else if ((lap + x.i) % 3 === 0) otherRadio(R, x, 'lock', lap); }
+        else if (v > 0.986 && rare) { t += (3 + r() * 4) * K; if (x.c.me || x.c.human) events.push({ lap, type: 'loss', who: x.i, txt: 'perd de la puissance pendant quelques virages (souci électrique)' }); else { events.push({ lap, type: 'spin', who: x.i, txt: 'perd de la puissance (souci électrique)' }); otherRadio(R, x, 'power', lap); } }
+        else if (v > 0.981 && left >= 2 && rare) { t += 6; x.wear = 1; otherRadio(R, x, 'puncture', lap); events.push({ lap, type: x.c.me || x.c.human ? 'loss' : 'spin', who: x.i, txt: 'roule sur un débris : crevaison lente, il faut rentrer au stand' }); }
       }
       // piste mouillée : tout le monde ralentit, les pilotes combatifs s'en sortent mieux
       t += 7 * wet - (d.craft - 82) * 0.06 * wet;
@@ -777,21 +801,21 @@
       t = 90 + (t - 90) / K;
       if (lap === 1) {
         const c1 = r();
-        if (c1 < 0.012) { x.out = { lap, why: 'Accident' }; events.push({ lap, type: 'dnf', who: x.i, txt: 'est pris dans un accrochage au premier virage : abandon' }); continue; }
-        if (c1 < 0.06) { t += 5 + r() * 5; events.push({ lap, type: x.c.me || x.c.human ? 'loss' : 'spin', who: x.i, txt: 'est touché au premier virage et repart loin' }); }
+        if (c1 < 0.012) { x.out = { lap, why: 'Accident' }; events.push({ lap, type: 'dnf', who: x.i, txt: 'est pris dans un accrochage au premier virage : abandon' }); otherRadio(R, x, 'crash', lap); continue; }
+        if (c1 < 0.06) { t += 5 + r() * 5; events.push({ lap, type: x.c.me || x.c.human ? 'loss' : 'spin', who: x.i, txt: 'est touché au premier virage et repart loin' }); otherRadio(R, x, 'touch', lap); }
       }
       if (lap === 1) { const g = gauss(r) * 1.7 - 0.9 * x.M('launch'); t += g; if ((x.c.me || x.c.human) && x.M('launch') > 0.5 && g < -1.2) events.push({ lap, type: 'gain', who: x.i, txt: 'envol parfait au départ !' }); }
       if (lap > LAPS - 5 * K) t -= (0.2 * x.M('push')) / K;
       // réservoir vide : mode dégradé, puis panne sèche
       if (limp) {
         t += 14;
-        if (x.fuel <= -1) { x.out = { lap, why: 'Panne sèche' }; events.push({ lap, type: 'dnf', who: x.i, txt: 'tombe en panne sèche : abandon' }); continue; }
+        if (x.fuel <= -1) { x.out = { lap, why: 'Panne sèche' }; events.push({ lap, type: 'dnf', who: x.i, txt: 'tombe en panne sèche : abandon' }); otherRadio(R, x, 'fuel', lap); continue; }
       }
       // moteur trop chaud trop longtemps : la casse menace (fiabilité de la voiture comprise)
       if (x.tEng > ENG_CRIT && x.hot > 0.5 && r() < (0.03 * x.hot * ((x.tEng - ENG_CRIT) / 8) * (1.3 - x.c.car.rel / 100)) / K) {
-        x.out = { lap, why: 'Moteur (surchauffe)' }; events.push({ lap, type: 'dnf', who: x.i, txt: 'casse son moteur en surchauffe : abandon' }); continue;
+        x.out = { lap, why: 'Moteur (surchauffe)' }; events.push({ lap, type: 'dnf', who: x.i, txt: 'casse son moteur en surchauffe : abandon' }); otherRadio(R, x, 'eng', lap); continue;
       }
-      if (!sc && r() < (0.035 * (1 - d.cons / 100) * 3 * (1 - 0.2 * ty) * (1 + x.wear)) / K) { t += 4 + r() * 4; x.spins++; events.push({ lap, type: 'spin', who: x.i, txt: 'part en tête-à-queue et perd du temps' }); }
+      if (!sc && r() < (0.035 * (1 - d.cons / 100) * 3 * (1 - 0.2 * ty) * (1 + x.wear)) / K) { t += 4 + r() * 4; x.spins++; otherRadio(R, x, 'spin', lap); events.push({ lap, type: 'spin', who: x.i, txt: 'part en tête-à-queue et perd du temps' }); }
       // usure du train de pneus sur ce tour
       x.wear = Math.min(1, x.wear + TYRES[x.tyre].wear * R.abr * (1 - 0.1 * ty) * (!isSlick(x.tyre) && wet < 0.12 ? 2.6 : 1) * (sc ? 0.4 : 1) * mode.wear * (x.tTyre > TYRE_HI ? 1 + (x.tTyre - TYRE_HI) * 0.07 : 1) * (1 + gauss(r) * 0.06));
       // décision d'arrêt en fin de tour : consigne radio, météo, usure, voiture de sécurité, crevaison

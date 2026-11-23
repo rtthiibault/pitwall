@@ -1750,8 +1750,13 @@
         const e = evs[evI];
         const who = e.who != null ? byI.get(e.who) : null;
         if (e.type === 'sc') showFlag('🚨 VOITURE DE SÉCURITÉ', 'sc', 4500);
-        if (e.type !== 'sc' && e.type !== 'wx' && who && !who.c.me && e.type !== 'dnf') continue; // n'affiche que les faits marquants
-        if (e.type === 'tr') { trSay(e.txt); feed.insertAdjacentHTML('afterbegin', `<div class="ev tr mine"><span class="muted">T${e.lap}</span> 📻 <b class="me-t">${esc(meX.driver.code)}</b> « ${esc(e.txt)} »</div>`); continue; }
+        if (e.type !== 'sc' && e.type !== 'wx' && who && !who.c.me && e.type !== 'dnf' && e.type !== 'tr' && !/arrêt au stand|puissance/.test(e.txt)) continue; // n'affiche que les faits marquants
+        if (e.type === 'tr') {
+          const w = who || meX, mine = !!w.c.me;
+          trSay(e.txt, w);
+          feed.insertAdjacentHTML('afterbegin', `<div class="ev tr ${mine ? 'mine' : 'other'}" style="--tc:${colorOf(w)}"><span class="muted">T${e.lap}</span> 📻 <b class="${mine ? 'me-t' : 'tr-who'}">${esc(radioId(w).code)}</b>${mine ? '' : ` <small class="muted">${esc(w.name)}</small>`} « ${esc(e.txt)} »</div>`);
+          continue;
+        }
         const nm = who ? (who.c.me ? '<b class="me-t">Votre voiture</b>' : `<b>${esc(who.name)}</b>`) : '';
         feed.insertAdjacentHTML('afterbegin', `<div class="ev ${e.type} ${who && who.c.me ? 'mine' : ''}"><span class="muted">T${e.lap}</span> ${e.type === 'sc' ? '🚨 ' + esc(e.txt) : e.type === 'wx' || e.type === 'radio' ? esc(e.txt) : nm + ' ' + esc(e.txt)}</div>`);
       }
@@ -1975,12 +1980,23 @@
 
     /* ---------- Radio du pilote : encart flottant (numéro, couleurs de l'écurie, égaliseur pendant le message) ---------- */
     const trQ = []; let trBusy = false;
-    function trSay(txt) { trQ.push(txt); if (!trBusy) trNext(); }
+    // identité radio d'une voiture : numéro et nom réels du pilote quand il existe dans la saison, sinon son code
+    const radioId = (x) => {
+      const sd = (S.f1 || S.season).drivers.get(x.driver.id) || {};
+      if (x.c.me) return { num: String(drvNum || x.driver.code), name: x.driver.name || x.driver.code, code: x.driver.code };
+      return { num: String(sd.number || x.driver.code || '?'), name: sd.family ? `${sd.given ? sd.given[0] + '. ' : ''}${sd.family}` : x.driver.code, code: x.driver.code || (sd.code || '?') };
+    };
+    function trSay(txt, x = meX) {
+      // file d'attente courte : on ne garde pas plus de deux messages des autres pilotes en attente
+      if (!x.c.me && trQ.filter((q) => !q.x.c.me).length >= 2) return;
+      trQ.push({ txt, x }); if (!trBusy) trNext();
+    }
     function trNext() {
       const el = $('#trRadio'); if (!el) { trQ.length = 0; trBusy = false; return; }
-      const txt = trQ.shift(); if (!txt) { trBusy = false; return; }
+      const q = trQ.shift(); if (!q) { trBusy = false; return; }
+      const txt = q.txt, x = q.x, col = colorOf(x), ink = inkOn(col), id = radioId(x);
       trBusy = true;
-      el.innerHTML = `<div class="trr" style="--tc:${meCol};--ti:${meInk}"><span class="trr-num">${esc(String(drvNum || meX.driver.code))}</span><div class="trr-body"><div class="trr-h"><b>${esc(meX.driver.name || meX.driver.code)}</b><span class="trr-eq talking"><i></i><i></i><i></i><i></i><i></i><i></i></span><small>RADIO</small></div><p>« <span class="trr-t"></span> »</p></div></div>`;
+      el.innerHTML = `<div class="trr ${x.c.me ? 'mine' : 'other'}" style="--tc:${col};--ti:${ink}"><span class="trr-num">${esc(id.num)}</span><div class="trr-body"><div class="trr-h"><b>${esc(id.name)}</b><span class="trr-eq talking"><i></i><i></i><i></i><i></i><i></i><i></i></span><small>${x.c.me ? 'RADIO' : esc(x.name)}</small></div><p>« <span class="trr-t"></span> »</p></div></div>`;
       el.classList.add('on');
       const out = el.querySelector('.trr-t'), eq = el.querySelector('.trr-eq'); let n = 0;
       const typ = setInterval(() => { n += 2; out.textContent = txt.slice(0, n); if (n >= txt.length) { clearInterval(typ); eq.classList.remove('talking'); setTimeout(() => { el.classList.remove('on'); setTimeout(trNext, 350); }, 3600); } }, 28);
