@@ -6,17 +6,18 @@
   const CLOUD = 'M7.5 19.5h9.5a3.8 3.8 0 0 0 .4-7.6 5.3 5.3 0 0 0-10.2 1.3 3.2 3.2 0 0 0 .3 6.3z';
   const CLOUD_UP = 'M7.5 16h9.5a3.8 3.8 0 0 0 .4-7.6 5.3 5.3 0 0 0-10.2 1.3 3.2 3.2 0 0 0 .3 6.3z';
   const F = (d) => `<path d="${d}" fill="currentColor" stroke="none"/>`;
+  const FA = (d) => `<path d="${d}" fill="var(--pi-a, currentColor)" stroke="none"/>`;
   const medal = (n) => `<path d="M8 2.8 11 9M16 2.8 13 9"/><circle cx="12" cy="15" r="5.6" fill="var(--pi-m)" stroke="currentColor"/>${n ? `<text x="12" y="17.6" text-anchor="middle" font-size="7.2" font-weight="800" fill="#14171c" stroke="none" font-family="Archivo, sans-serif">${n}</text>` : '<path d="m12 12.4.9 1.8 2 .3-1.45 1.4.35 2L12 17l-1.8.9.35-2-1.45-1.4 2-.3z" fill="#14171c" stroke="none"/>'}`;
   const COIN_P = '<path d="M23 12 17.5 21.5h-11L1 12l5.5-9.5h11Z" fill="#1fc9b0" stroke="#0a7565" stroke-width="1"/><path d="M6.5 2.5h11L23 12h-4.4L15 6.2H9L6.5 2.5Z" fill="#7ff3e1" opacity=".55" stroke="none"/><circle cx="12" cy="12" r="5.6" fill="#0c4a42" stroke="none"/><circle cx="12" cy="12" r="3.6" fill="none" stroke="#5ee8d3" stroke-width="1.2" stroke-dasharray="2.2 1.3"/><circle cx="12" cy="12" r="1.5" fill="#5ee8d3" stroke="none"/>';
   const COIN_J = '<circle cx="12" cy="12" r="11.2" fill="#e8b63a" stroke="none"/><g fill="#8a5d0c" stroke="none">' + [0, 60, 120, 180, 240, 300].map((a) => `<rect x="10.5" y=".8" width="3" height="3.6" rx=".7" transform="rotate(${a} 12 12)"/>`).join('') + '</g><circle cx="12" cy="12" r="10.4" fill="none" stroke="#a87414" stroke-width=".9"/><circle cx="12" cy="12" r="6.6" fill="#f7d877" stroke="#9a6810" stroke-width="1.1"/><path d="M8.9 8.9h3.1V12H8.9zM12 12h3.1v3.1H12z" fill="#5c3c05" stroke="none"/><path d="M12 8.9h3.1V12H12zM8.9 12H12v3.1H8.9z" fill="#fff3c4" stroke="none"/>';
 
   const I = {
     // course
-    flag: '<path d="M5 21.5V3.5"/><path d="M5 4h14v9H5"/>' + F('M5 4h3.5v3H5zM12 4h3.5v3H12zM8.5 7H12v3H8.5zM15.5 7H19v3h-3.5zM5 10h3.5v3H5zM12 10h3.5v3H12z'),
+    flag: '<path d="M5 21.5V3.5" stroke="var(--pi-a, currentColor)"/><path d="M5 4h14v9H5"/>' + F('M5 4h3.5v3H5zM12 4h3.5v3H12zM8.5 7H12v3H8.5zM15.5 7H19v3h-3.5zM5 10h3.5v3H5zM12 10h3.5v3H12z'),
     lights: '<rect x="2.5" y="7" width="19" height="10" rx="2.5"/><path d="M12 3.5V7M12 17v3.5"/><g fill="var(--red, #d7261e)" stroke="none"><circle cx="7" cy="12" r="2.1"/><circle cx="12" cy="12" r="2.1"/><circle cx="17" cy="12" r="2.1"/></g>',
     car: '<path d="M2.5 15.5h19l-1.4-2.3-6-1.1-1.9-2.6h-3.1L7.6 12l-3.9.6z"/><path d="M2.5 8h3.6v4.4"/>' + F('M4.2 16.6a2.3 2.3 0 1 0 4.6 0 2.3 2.3 0 1 0-4.6 0M15.4 16.6a2.3 2.3 0 1 0 4.6 0 2.3 2.3 0 1 0-4.6 0'),
-    helmet: '<path d="M3.5 14.5a8.5 8.5 0 0 1 17-1.2V17.5h-10l-2.6 2.5H3.5z"/><path d="M10.5 13h10"/><path d="M12 9.3h8"/>',
-    tyre: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="' + sunRays(12, 12, 6.2, 8.2, 8, Math.PI / 8) + '"/>',
+    helmet: '<path d="M3.5 14.5a8.5 8.5 0 0 1 17-1.2V17.5h-10l-2.6 2.5H3.5z"/><path d="M10.5 13h10" stroke="var(--pi-a, currentColor)" stroke-width="2.2"/><path d="M12 9.3h8"/>',
+    tyre: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4" stroke="var(--pi-a, currentColor)"/><path d="' + sunRays(12, 12, 6.2, 8.2, 8, Math.PI / 8) + '"/>',
     fuel: '<path d="M5 20.5V5A1.5 1.5 0 0 1 6.5 3.5h6A1.5 1.5 0 0 1 14 5v15.5M3.5 20.5h12"/><path d="M7.5 7h4v3.5h-4z"/><path d="M14 9h2.3l2 2v6.3a1.3 1.3 0 0 0 2.6 0V9l-2-2"/>',
     wrench: '<path d="M14.6 4.3a4.6 4.6 0 0 0-5.8 6L3.7 15.4a1.9 1.9 0 0 0 2.7 2.7l5.1-5.1a4.6 4.6 0 0 0 6-5.8l-2.6 2.6-2.5-.6-.6-2.5z"/>',
     driver: '<path d="M14 3.5 20.5 10l-3 3L11 6.5z"/><path d="M12.6 11.4 4 20"/>',
@@ -60,7 +61,7 @@
     gem: '<path d="M6.5 4h11l3.5 5L12 20.5 3 9z"/><path d="M3 9h18M9.5 4 8 9l4 11.5L16 9l-1.5-5"/>',
     medal0: medal(0), medal1: medal('1'), medal2: medal('2'), medal3: medal('3'),
     target: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.6"/>' + F('M10.8 12a1.2 1.2 0 1 0 2.4 0 1.2 1.2 0 1 0-2.4 0'),
-    gift: '<rect x="3.5" y="8.5" width="17" height="4" rx="1"/><path d="M5 12.5v8h14v-8M12 8.5v12"/><path d="M12 8.5C10.6 5 7 4.6 7 6.8s3 1.7 5 1.7c2 0 5 .4 5-1.7S13.4 5 12 8.5z"/>',
+    gift: '<rect x="3.5" y="8.5" width="17" height="4" rx="1"/><path d="M5 12.5v8h14v-8"/><path d="M12 8.5v12" stroke="var(--pi-a, currentColor)"/><path stroke="var(--pi-a, currentColor)" d="M12 8.5C10.6 5 7 4.6 7 6.8s3 1.7 5 1.7c2 0 5 .4 5-1.7S13.4 5 12 8.5z"/>',
     firework: '<path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4M5.3 5.3l2.8 2.8M15.9 15.9l2.8 2.8M5.3 18.7l2.8-2.8M15.9 8.1l2.8-2.8"/>' + F('M10.4 12a1.6 1.6 0 1 0 3.2 0 1.6 1.6 0 1 0-3.2 0'),
     champagne: '<path d="M9.5 21h4V11.5l-1-2V4h-2v5.5l-1 2z"/><path d="M15 6.5l2.5-1.5M15.5 9H18M14.5 4l.8-1.5"/>',
     spark: '<path d="M11 3c.6 4.2 1.8 5.4 6 6-4.2.6-5.4 1.8-6 6-.6-4.2-1.8-5.4-6-6 4.2-.6 5.4-1.8 6-6z"/><path d="M18.5 14.5c.3 1.6.9 2.2 2.5 2.5-1.6.3-2.2.9-2.5 2.5-.3-1.6-.9-2.2-2.5-2.5 1.6-.3 2.2-.9 2.5-2.5z"/>',
@@ -68,7 +69,7 @@
     slow: '<path d="M3.8 17.5a8.2 8.2 0 1 1 16.4 0"/><path d="M12 17.5 7.4 14"/>' + F('M11 17.5a1 1 0 1 0 2 0 1 1 0 1 0-2 0'),
     up: '<path d="M12 20V5M6 11l6-6 6 6"/>',
     // jeu / paris
-    dice: '<rect x="4" y="4" width="16" height="16" rx="3"/>' + F('M7.1 8.1a1.1 1.1 0 1 0 2.2 0 1.1 1.1 0 1 0-2.2 0M14.7 8.1a1.1 1.1 0 1 0 2.2 0 1.1 1.1 0 1 0-2.2 0M10.9 12a1.1 1.1 0 1 0 2.2 0 1.1 1.1 0 1 0-2.2 0M7.1 15.9a1.1 1.1 0 1 0 2.2 0 1.1 1.1 0 1 0-2.2 0M14.7 15.9a1.1 1.1 0 1 0 2.2 0 1.1 1.1 0 1 0-2.2 0'),
+    dice: '<rect x="4" y="4" width="16" height="16" rx="3"/>' + FA('M7.1 8.1a1.1 1.1 0 1 0 2.2 0 1.1 1.1 0 1 0-2.2 0M14.7 8.1a1.1 1.1 0 1 0 2.2 0 1.1 1.1 0 1 0-2.2 0M10.9 12a1.1 1.1 0 1 0 2.2 0 1.1 1.1 0 1 0-2.2 0M7.1 15.9a1.1 1.1 0 1 0 2.2 0 1.1 1.1 0 1 0-2.2 0M14.7 15.9a1.1 1.1 0 1 0 2.2 0 1.1 1.1 0 1 0-2.2 0'),
     ticket: '<path d="M3 7.5h18v3a1.5 1.5 0 0 0 0 3v3H3v-3a1.5 1.5 0 0 0 0-3z"/><path d="M15 7.5v9" stroke-dasharray="1.6 1.8"/>',
     radar: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.4"/><path d="M12 12l6-6"/>' + F('M14.6 15.2a1 1 0 1 0 2 0 1 1 0 1 0-2 0'),
     news: '<path d="M4 4.5h13v15H5.5A1.5 1.5 0 0 1 4 18z"/><path d="M17 8h3v10a1.5 1.5 0 0 1-3 0"/><path d="M7 8h7M7 11h7M7 14h4"/>',

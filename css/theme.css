@@ -795,3 +795,44 @@ html.low .trr-eq.talking i { animation: none; height: 9px; }
 .btn .pi, .chip .pi, .tab .pi { vertical-align: -.22em; }
 .empty .ic .pi { width: 44px; height: 44px; color: var(--muted); }
 .toast .pi { width: 22px; height: 22px; }
+
+/* Pictogrammes en couleur : une teinte par domaine, prise dans la palette du site, et un léger fond bicolore */
+:root { --ic-red: #ef4b43; --ic-amber: #ffa51f; --ic-gold: #e9be3e; --ic-cyan: #2ed3bf; --ic-blue: #5ab0ff; --ic-sky: #8ecbff; --ic-green: #3fcf78; --ic-violet: #ab86ff; --ic-steel: #a9b8c8; --ic-pink: #ff7aa8; }
+/* course */
+.pi-flag { color: #f1f3f5; --pi-a: var(--ic-red); }
+.pi-car, .pi-swords, .pi-target, .pi-toolbox { color: var(--ic-red); }
+.pi-helmet { color: var(--ic-amber); --pi-a: var(--ic-sky); }
+.pi-tyre { color: #d5dae0; --pi-a: var(--ic-gold); }
+.pi-fuel, .pi-pawn, .pi-crane, .pi-slow, .pi-hourglass, .pi-stopwatch, .pi-news { color: var(--ic-amber); }
+.pi-wrench, .pi-driver, .pi-nut, .pi-gear, .pi-jack, .pi-gun, .pi-factory { color: var(--ic-steel); }
+.pi-weave { color: #c3cad3; }
+/* énergie, aéro, communication */
+.pi-aero, .pi-truck, .pi-shield, .pi-ruler, .pi-link, .pi-mail { color: var(--ic-blue); }
+.pi-wind, .pi-user, .pi-userplus, .pi-idcard { color: var(--ic-sky); }
+.pi-antenna, .pi-headset, .pi-radio, .pi-monitor, .pi-radar, .pi-globe, .pi-refresh, .pi-shuffle, .pi-save { color: var(--ic-cyan); }
+/* R&D, jeu */
+.pi-lab, .pi-dna, .pi-sim { color: var(--ic-violet); }
+.pi-chart, .pi-boost, .pi-up { color: var(--ic-green); }
+.pi-box { color: #d9a35b; }
+.pi-brief, .pi-contract, .pi-ticket, .pi-firework, .pi-champagne, .pi-spark, .pi-pencil { color: var(--ic-gold); }
+.pi-gift { color: var(--ic-red); --pi-a: var(--ic-gold); }
+.pi-dice { color: #eef1f4; --pi-a: var(--ic-red); }
+.pi-calendar { color: var(--ic-pink); }
+.pi-lock { color: #b6bdc7; }
+.pi-cloud, .pi-rain, .pi-storm { color: #c9d1da; }
+.pi-search, .pi-inbox, .pi-clipboard { color: #c9d1da; }
+/* fond bicolore : la forme principale reçoit un voile de sa couleur */
+.pi-trophy > :first-child, .pi-shield > :first-child, .pi-helmet > :first-child, .pi-car > :first-child, .pi-flame > :first-child, .pi-drop > :first-child,
+.pi-gem > :first-child, .pi-crown > :first-child, .pi-brief > :first-child, .pi-contract > :first-child, .pi-box > :first-child, .pi-ticket > :first-child,
+.pi-lock > :first-child, .pi-monitor > :first-child, .pi-news > :first-child, .pi-gift > :first-child, .pi-idcard > :first-child, .pi-lab > :first-child,
+.pi-toolbox > :first-child, .pi-calendar > :first-child, .pi-battery > :first-child, .pi-clipboard > :first-child, .pi-mail > :first-child, .pi-dice > :first-child,
+.pi-tyre > :first-child, .pi-target > :first-child, .pi-ok > :first-child, .pi-no > :first-child, .pi-warn > :first-child, .pi-fuel > :first-child,
+.pi-bolt > :first-child, .pi-nut > :first-child, .pi-gear > :nth-child(2), .pi-bulb > :nth-child(2), .pi-beacon > :first-child, .pi-sim > :first-child,
+.pi-cloud > :first-child, .pi-rain > :first-child, .pi-storm > :first-child, .pi-user > :first-child, .pi-userplus > :first-child, .pi-factory > :first-child,
+.pi-truck > :first-child, .pi-aero > :first-child, .pi-flame > :first-child, .pi-trophy > :nth-child(1) { fill: currentColor; fill-opacity: .16; }
+/* dans un bouton plein ou une pastille active, l'icône reprend la couleur du texte pour rester lisible */
+.btn:not(.ghost) .pi:not(.pi-pitcoin):not(.pi-jeton), .tl-act.on .pi, .pdw-chip.on .pi, .seg button.on .pi:not(.pt-warn) { color: currentColor; --pi-a: currentColor; }
+/* menu latéral F1 Manager : icônes en couleur (plus de désaturation), un peu plus grandes */
+.hq-rail a span { filter: none !important; }
+.hq-rail a span .pi { width: 22px; height: 22px; }
+.hq-rail a:not(.on):not(.active) span .pi { opacity: .82; }
