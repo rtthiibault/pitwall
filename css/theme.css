@@ -856,3 +856,119 @@ html.low .trr-eq.talking i { animation: none; height: 9px; }
 .ev.tr.other .tr-who { color: var(--tc); filter: brightness(1.25); font-weight: 800; }
 .trr.other { border-left-color: var(--tc); }
 .race-full .race-flag { top: 92px !important; }
+
+/* =================== Course : poste de pilotage façon volant F1 / écran de mur des stands ===================
+   Fond carbone discret, jauges à segments LED, chiffres larges à chasse fixe, étiquettes courtes en capitales,
+   touches de volant à témoin lumineux. Couleurs : vert = dans la cible, ambre = attention, rouge = critique. */
+:root { --dash: #0a0c10; --dash2: #12161c; --key: #171c23; --key-hi: #1f252e; --led-g: #3fdc7e; --led-r: #ff4b3e; --led-b: #4aa8ff; --led-a: #ffb020; }
+.rtele, .race-full .pitwall {
+  background:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.018) 0 2px, transparent 2px 4px),
+    repeating-linear-gradient(-45deg, rgba(0,0,0,.25) 0 2px, transparent 2px 4px),
+    linear-gradient(180deg, #141920, #0c0f13) !important;
+  border: 1px solid #262d37 !important; border-radius: 10px !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 8px 24px -12px #000;
+}
+/* rampe de LED (régime) en haut du panneau */
+.rev { display: grid; grid-template-columns: repeat(15, 1fr); gap: 4px; padding: 0 18%; margin: -2px 0 2px; }
+.rev i, .mt-rev i { height: 6px; border-radius: 3px; background: #1c222a; box-shadow: inset 0 1px 1px rgba(0,0,0,.6); transition: background .08s, box-shadow .08s; }
+.rev i.on.g, .mt-rev i.on.g { background: var(--led-g); box-shadow: 0 0 8px var(--led-g); }
+.rev i.on.r, .mt-rev i.on.r { background: var(--led-r); box-shadow: 0 0 8px var(--led-r); }
+.rev i.on.b, .mt-rev i.on.b { background: var(--led-b); box-shadow: 0 0 8px var(--led-b); }
+/* jauges : afficheur noir, chiffres larges, barre à segments LED */
+.tl-gauges { gap: 8px; }
+.tg-g { background: var(--dash); border: 1px solid #1f262f; border-radius: 6px; padding: 6px 8px 7px; box-shadow: inset 0 2px 6px rgba(0,0,0,.6); }
+.tg-h small { font-size: 9px; letter-spacing: .14em; color: #7f8a97; }
+.tg-h b { font-size: 17px; font-weight: 800; font-variation-settings: 'wdth' 112; letter-spacing: -.01em; color: #f3f5f7; }
+.tg-bar { height: 8px; background: #161b21; border-radius: 1px;
+  -webkit-mask: repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 7px); mask: repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 7px); }
+.tg-bar i { background: var(--led-g); box-shadow: 0 0 10px rgba(63,220,126,.6); border-radius: 0; }
+.tg-g.warn .tg-bar i { background: var(--led-a); box-shadow: 0 0 10px rgba(255,176,32,.6); }
+.tg-g.crit .tg-bar i { background: var(--led-r); box-shadow: 0 0 10px rgba(255,75,62,.7); }
+.tg-g[data-g="tyre"] .tg-bar i, .tg-g[data-g="eng"] .tg-bar i { background: linear-gradient(90deg, #2a3a4a, var(--led-g)); border-right: 0; }
+.tg-g[data-g="tyre"].warn .tg-bar i, .tg-g[data-g="eng"].warn .tg-bar i { background: linear-gradient(90deg, #2a3a4a, var(--led-a)); }
+.tg-g[data-g="tyre"].crit .tg-bar i, .tg-g[data-g="eng"].crit .tg-bar i { background: linear-gradient(90deg, #3a2a2a, var(--led-r)); }
+.tg-g[data-g="tyre"].cold .tg-bar i { background: linear-gradient(90deg, #1d2c3c, var(--led-b)); }
+/* sélecteurs : touches de volant avec témoin lumineux */
+.tl-c > small, .race-full .pw-cell > small { font-size: 9px; letter-spacing: .16em; color: #7f8a97; display: flex; align-items: center; gap: 6px; }
+.tl-seg { gap: 4px; background: transparent !important; border: 0 !important; padding: 0 !important; }
+.tl-seg button, .race-full .pw-mode button { position: relative; flex: 1; padding: 7px 4px 6px 14px !important; border-radius: 5px !important; border: 1px solid #262e38 !important;
+  background: linear-gradient(180deg, var(--key-hi), var(--key)) !important; color: #aab4c0 !important; font-size: 11px !important; font-weight: 700; letter-spacing: .02em; text-transform: uppercase;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 2px 0 #07090c; }
+.tl-seg button .led { position: absolute; left: 6px; top: 50%; width: 5px; height: 5px; margin-top: -2.5px; border-radius: 50%; background: #2a313b; }
+.tl-seg button.on, .race-full .pw-mode button.on { color: #fff !important; border-color: #3a4552 !important; background: linear-gradient(180deg, #232a34, #1a2028) !important; }
+.tl-seg button.on .led { background: var(--led-g); box-shadow: 0 0 6px var(--led-g); }
+.tl-seg .tl-rich.on .led, .tl-seg .tl-hotlap.on .led { background: var(--led-r); box-shadow: 0 0 6px var(--led-r); }
+.tl-seg .tl-ot.on .led { background: var(--led-a); box-shadow: 0 0 6px var(--led-a); }
+.tl-seg .tl-eco.on .led, .tl-seg .tl-rech.on .led { background: var(--led-b); box-shadow: 0 0 6px var(--led-b); }
+.tl-seg .tl-rich.on, .tl-seg .tl-hotlap.on, .tl-seg .tl-ot.on, .tl-seg .tl-eco.on, .tl-seg .tl-rech.on { background: linear-gradient(180deg, #232a34, #1a2028) !important; color: #fff !important; }
+.is-auto button.on { outline: 1px dashed rgba(74,168,255,.6); outline-offset: 1px; }
+.auto-tag { font-style: normal; font-size: 8.5px; font-weight: 800; letter-spacing: .1em; color: #0a0c10; background: var(--led-b); border-radius: 2px; padding: 1px 4px; }
+/* consignes : gros boutons de volant (OT rouge, défense bleue, refroidissement cyan) */
+.tl-act { border-radius: 18px !important; padding: 8px 10px !important; font-size: 11px !important; text-transform: uppercase; letter-spacing: .04em; font-weight: 800 !important;
+  background: radial-gradient(120% 140% at 50% 0%, #252c36, #12161b) !important; border: 1.5px solid #2a323c !important; color: #aab4c0 !important; box-shadow: 0 2px 0 #06080a, inset 0 1px 0 rgba(255,255,255,.06); }
+.tl-act.atk.ready { border-color: var(--led-r) !important; color: #fff !important; box-shadow: 0 0 0 2px rgba(255,75,62,.15), 0 2px 0 #06080a; }
+.tl-act.def.ready { border-color: var(--led-b) !important; color: #fff !important; box-shadow: 0 0 0 2px rgba(74,168,255,.15), 0 2px 0 #06080a; }
+.tl-act.on { color: #0a0c10 !important; background: var(--led-a) !important; border-color: var(--led-a) !important; }
+.tl-act.cool.on { background: #5fd0ff !important; border-color: #5fd0ff !important; }
+/* muret : BOX façon bouton de limiteur des stands */
+.race-full .pw-box { border-radius: 8px !important; background: linear-gradient(180deg, #e0332b, #a81c16) !important; color: #fff !important; border: 1px solid #ff5a50 !important;
+  box-shadow: 0 3px 0 #5e0f0b, 0 0 18px rgba(224,51,43,.25) !important; letter-spacing: .12em; font-weight: 900; }
+.race-full .pw-box.on { background: linear-gradient(180deg, #ffb020, #d98a00) !important; color: #111 !important; border-color: #ffc552 !important; box-shadow: 0 3px 0 #6b4400, 0 0 18px rgba(255,176,32,.35) !important; }
+
+/* =================== Carte : télémétrie live, météo =================== */
+.mtl-btn { position: absolute; left: 12px; top: 12px; z-index: 5; display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px; border-radius: 6px;
+  background: rgba(8,10,14,.82); border: 1px solid rgba(255,255,255,.14); color: #dfe4ea; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; backdrop-filter: blur(4px); }
+.mtl-btn i { width: 8px; height: 8px; border-radius: 50%; background: #3a424d; }
+.mtl-btn.on i { background: var(--led-g); box-shadow: 0 0 8px var(--led-g); animation: pdwPulse 2s infinite; }
+.mtele { position: absolute; left: 12px; top: 48px; z-index: 4; width: 230px; padding: 9px 10px 8px; border-radius: 8px;
+  background: linear-gradient(180deg, rgba(14,17,22,.94), rgba(8,10,13,.94)); border: 1px solid rgba(255,255,255,.1); box-shadow: 0 14px 30px -12px #000; backdrop-filter: blur(6px); }
+.mt-h { display: flex; align-items: center; gap: 7px; }
+.mt-num { display: grid; place-items: center; min-width: 24px; height: 18px; padding: 0 4px; border-radius: 2px; background: var(--tc); color: var(--ti); font-size: 11px; font-weight: 800; font-style: italic; }
+.mt-h b { font-size: 12px; letter-spacing: .06em; } .mt-h small { margin-left: auto; font-size: 8.5px; letter-spacing: .14em; color: #7f8a97; text-transform: uppercase; }
+.mt-rev { display: grid; grid-template-columns: repeat(15, 1fr); gap: 2px; margin: 8px 0 6px; }
+.mt-rev i { height: 5px; }
+.mt-main { display: grid; grid-template-columns: 1fr auto auto; align-items: end; gap: 10px; }
+.mt-spd b { display: block; font-size: 40px; line-height: .9; font-weight: 800; font-variation-settings: 'wdth' 118; letter-spacing: -.02em; color: #fff; font-variant-numeric: tabular-nums; }
+.mt-spd small, .mt-gear small, .mt-pd small { font-size: 8.5px; letter-spacing: .14em; color: #7f8a97; text-transform: uppercase; }
+.mt-gear { text-align: center; } .mt-gear b { display: grid; place-items: center; width: 34px; height: 38px; border-radius: 5px; background: #0a0c10; border: 1px solid #262e38; font-size: 26px; font-weight: 800; color: var(--led-a); }
+.mt-pd { display: grid; grid-template-columns: 9px 9px; gap: 3px; align-items: end; } .mt-pd small { grid-column: 1 / -1; font-size: 7px; letter-spacing: .08em; }
+.mt-pd span { position: relative; height: 38px; background: #161b21; border-radius: 2px; overflow: hidden; }
+.mt-pd span i { position: absolute; left: 0; right: 0; bottom: 0; background: var(--led-g); transition: height .07s linear; }
+.mt-pd span.brk i { background: var(--led-r); }
+.mt-tags { display: flex; gap: 4px; margin: 7px 0 5px; flex-wrap: wrap; }
+.mt-tags span { font-size: 8.5px; font-weight: 800; letter-spacing: .1em; padding: 2px 5px; border-radius: 2px; background: #1a2027; color: #7f8a97; }
+.mt-tags span.dep { background: var(--led-a); color: #111; } .mt-tags span.harv { background: var(--led-b); color: #071423; } .mt-tags span.pit { background: #8ecbff; color: #071423; }
+.mt-tags [data-m="drs"].on { background: var(--led-g); color: #062012; }
+.mt-tags [data-m="rpm"] { margin-left: auto; background: transparent; color: #aab4c0; letter-spacing: .02em; }
+.mt-tr { display: block; width: 100%; height: 42px; border-radius: 4px; background: #0a0c10; }
+.race-stage.mt-open .tr-radio { left: 254px; width: min(400px, calc(100% - 266px)); }
+@media (max-width: 899px) { .race-stage.mt-open .tr-radio { left: 8px; top: auto; bottom: 46px; width: calc(100% - 16px); } .mtele { width: 200px; } .mt-spd b { font-size: 32px; } }
+/* bandeau d'état de la piste : en bas à gauche ; températures et vent : en bas à droite */
+.race-full .race-fc { top: auto !important; bottom: 10px; left: 12px; }
+.map-wx { position: absolute; right: 12px; bottom: 10px; z-index: 3; display: flex; gap: 2px; border-radius: 6px; overflow: hidden; background: rgba(8,10,14,.82); border: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(4px); }
+.map-wx span { display: flex; align-items: baseline; gap: 5px; padding: 5px 9px; }
+.map-wx span + span { border-left: 1px solid rgba(255,255,255,.08); }
+.map-wx small { font-size: 8.5px; font-weight: 800; letter-spacing: .14em; color: #7f8a97; }
+.map-wx b { font-size: 14px; font-weight: 800; color: #f3f5f7; }
+.map-wx em { font-style: normal; font-size: 10px; color: #7f8a97; }
+.map-wx i { font-style: normal; font-size: 9px; color: #7f8a97; } .map-wx i.up { color: var(--led-r); } .map-wx i.dn { color: var(--led-b); }
+.wind-ar { width: 12px; height: 12px; color: #8ecbff; align-self: center; }
+@media (max-width: 620px) { .map-wx { left: 8px; right: 8px; bottom: 44px; justify-content: space-between; } .race-full .race-fc { display: none; } }
+/* grille : gestion automatique */
+.au-h { margin: 14px 0 6px; } .au-h b { display: block; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; } .au-h small { font-size: 12px; color: var(--muted); }
+.au-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px; }
+.au-opt { display: flex; gap: 9px; align-items: flex-start; text-align: left; padding: 8px 9px; border-radius: 6px; border: 1px solid #262e38; background: #11151b; color: var(--text); cursor: pointer; }
+.au-opt b { display: block; font-size: 12.5px; } .au-opt small { display: block; font-size: 11px; color: var(--muted); line-height: 1.35; margin-top: 2px; }
+.au-sw { flex: none; position: relative; width: 28px; height: 16px; border-radius: 8px; background: #2a313b; margin-top: 1px; transition: background .15s; }
+.au-sw i { position: absolute; left: 2px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: #9aa3ae; transition: transform .15s, background .15s; }
+.au-opt.on { border-color: rgba(74,168,255,.6); background: rgba(74,168,255,.08); }
+.au-opt.on .au-sw { background: rgba(74,168,255,.45); } .au-opt.on .au-sw i { transform: translateX(12px); background: #fff; }
+html.low .mtl-btn.on i { animation: none; }
+/* grille : la fenêtre défile si l'écran est bas, options plus compactes */
+.race-full .radio { overflow-y: auto; align-items: start; padding: 10px; }
+.race-full .radio .radio-box { margin: auto; }
+.grid-box > p { font-size: 12.5px; margin: 6px 0 8px; }
+.grid-box .fl-opt { padding: 8px 10px; } .grid-box .fl-opt small { font-size: 11.5px; }
+.grid-box .au-opt small { font-size: 10.5px; }
+@media (min-width: 900px) { .grid-box { width: min(760px, 100%) !important; } .grid-box .au-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.race-full .radio.grid-on { position: fixed; inset: 0; z-index: 60; }

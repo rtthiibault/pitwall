@@ -506,10 +506,24 @@
     } else if (u < rainProb + 0.12 * Math.min(1, rainProb * 4)) { const a = sc(4 + Math.floor(r() * (LAPS - 8))), n = Math.max(3, sc(3)); for (let l = 0; l < n; l++) rain[a + l] = [0.22, 0.3, 0.15][Math.floor((l / n) * 3)]; } // averse passagère
     const out = []; let wet = rain[0] > 0.3 ? 0.75 : 0;
     const look = [1, 2, 3].map((d) => Math.max(1, Math.round(d * K)));
+    // ciel vivant (tirages séparés : la pluie reste identique) : dérive des températures pendant la course,
+    // nuages de passage qui font de l'ombre à la piste, vent
+    const r2 = rng(Math.floor(r() * 4294967296));
+    const airDrift = (r2() - 0.5) * 4, trackDrift = airDrift * 1.6 + (r2() - 0.35) * 4;
+    const pass = new Array(laps + 1).fill(0);
+    const nPass = 1 + Math.floor(r2() * 4);
+    for (let i = 0; i < nPass; i++) {
+      const a = Math.floor(r2() * laps), len = Math.max(2, sc(1 + r2() * 3)), amp = 0.15 + r2() * 0.35;
+      for (let l = a; l <= Math.min(laps, a + len); l++) pass[l] = Math.max(pass[l], amp * Math.sin(Math.PI * (l - a) / len));
+    }
+    const wind0 = 6 + r2() * 18, gust = r2() * 8;
     for (let l = 0; l <= laps; l++) {
       if (l) wet = clamp(wet + (rain[l] * 0.5 - 0.11 * (1 - rain[l])) / K, 0, 1);
-      const cloud = clamp(Math.max(rain[l] * 1.4, ...look.map((d, j) => (rain[l + d] || 0) * (1.1 - (j + 1) * 0.25)), rainProb * 0.6), 0, 1);
-      out.push({ rain: Math.round(rain[l] * 100) / 100, wet: Math.round(wet * 100) / 100, cloud: Math.round(cloud * 100) / 100, air: Math.round(temp - 5 * cloud), track: Math.round(temp + 12 - 14 * cloud - 6 * wet) });
+      const cloud = clamp(Math.max(rain[l] * 1.4, ...look.map((d, j) => (rain[l + d] || 0) * (1.1 - (j + 1) * 0.25)), rainProb * 0.6) + pass[l], 0, 1);
+      const k = l / Math.max(1, laps);
+      out.push({ rain: Math.round(rain[l] * 100) / 100, wet: Math.round(wet * 100) / 100, cloud: Math.round(cloud * 100) / 100,
+        air: Math.round((temp + airDrift * k - 5 * cloud) * 10) / 10, track: Math.round((temp + 12 + trackDrift * k - 14 * cloud - 6 * wet) * 10) / 10,
+        wind: Math.round(wind0 + gust * Math.sin(l * 0.7) + rain[l] * 12) });
     }
     return out;
   }
@@ -774,13 +788,21 @@
       // pneus : composé, adéquation à la piste, usure
       t += tyreDelta(x.tyre, wet, x.wear);
       if (x.fresh) { t += 0.5; x.fresh = false; }               // tour de sortie des stands : pneus froids
-      const mode = MODES[x.c.me ? R.ctl.mode : 'std'] || MODES.std; // rythme choisi au muret
+      if (x.c.me) R.modeNow = R.ctl.auto && R.ctl.auto.tyre ? (x.tTyre > 104 ? 'save' : x.tTyre < 86 && x.wear < 0.6 ? 'push' : 'std') : R.ctl.mode;
+      const mode = MODES[x.c.me ? R.modeNow : 'std'] || MODES.std; // rythme choisi au muret (ou par l'ingénieur)
       t += mode.dt;
       // ---- Carburant, ERS, températures ----
       const isMe = !!x.c.me, ga = gapA.get(x.i) ?? 99, dirty = ga < 1.0 && !sc && lap > 1;
       if (x.fuel == null) x.fuel = LAPS * (FUEL_LOAD[isMe ? R.ctl.fuelLoad : 'std'] || FUEL_LOAD.std).k;
       let mixK, ersK, cool;
-      if (isMe) { mixK = R.ctl.mix; ersK = R.ctl.ers; cool = !!R.ctl.cool; }
+      const AU = (isMe && R.ctl.auto) || {};
+      if (isMe) {
+        mixK = R.ctl.mix; ersK = R.ctl.ers; cool = !!R.ctl.cool;
+        // l'ingénieur pilote ce que le joueur lui a confié avant le départ
+        if (AU.mix) { const lefts = LAPS - lap + 1; mixK = fuelDelta(x.fuel, 1, lefts) < 0.35 ? 'eco' : fuelDelta(x.fuel, MIX.rich.burn, lefts) > 1.2 ? 'rich' : 'std'; }
+        if (AU.ers) ersK = ga < 1.0 && x.bat > 40 ? 'ot' : x.bat < 25 ? 'rech' : 'bal';
+        if (AU.cool) cool = x.tEng > 112 || (cool && x.tEng > 106);
+      }
       else {   // IA : économise si le carburant manque, déploie dans la seconde de la voiture devant, refroidit au-delà de 113 °C
         const fd = fuelDelta(x.fuel, 1, LAPS - lap + 1);
         mixK = fd < 0.3 ? 'eco' : left < LAPS * 0.25 && fd > 1 ? 'rich' : 'std';
@@ -788,7 +810,7 @@
         cool = x.tEng > 113;
       }
       const MX = MIX[mixK] || MIX.std, EX = ERS[ersK] || ERS.bal;
-      x.mixNow = mixK; x.ersNow = ersK;
+      x.mixNow = mixK; x.ersNow = ersK; x.coolNow = cool;
       // action demandée par le joueur pour ce tour (attaque / défense), seulement si elle a un sens
       let act = isMe && R.ctl.act && R.ctl.act.lap === lap && !sc && lap > 1 ? R.ctl.act.k : null;
       x.act = null; x.actRes = null;
@@ -818,7 +840,7 @@
       const air = wx.air != null ? wx.air : 22, trk = wx.track != null ? wx.track : 35;
       const engT = 98 + MX.eng + EX.eng * (EX.d < 0 ? deploy : 1) + (dirty ? 6 : 0) + (cool ? -12 : 0) + (air - 22) * 0.35 + (sc ? -8 : 0);
       x.tEng += (engT - x.tEng) * al;
-      const tyT = (isSlick(x.tyre) ? 95 : 90) + ({ push: 6, std: 0, save: -6 }[isMe ? R.ctl.mode : 'std'] || 0) + EX.tyre + (dirty ? 4 : 0) + x.wear * 8
+      const tyT = (isSlick(x.tyre) ? 95 : 90) + ({ push: 6, std: 0, save: -6 }[isMe ? R.modeNow : 'std'] || 0) + EX.tyre + (dirty ? 4 : 0) + x.wear * 8
         + (trk - 35) * 0.3 + (cool ? -3 : 0) - 10 * wet * (isSlick(x.tyre) ? 1 : 0.3) + (sc ? -12 : 0);
       x.tTyre += (tyT - x.tTyre) * al;
       if (x.tEng > ENG_CRIT) { t += (x.tEng - ENG_CRIT) * 0.08; x.hot += 1 / K; } else if (x.tEng < 110) x.hot = Math.max(0, x.hot - 0.5 / K);
@@ -852,7 +874,7 @@
       const delay = Math.max(1, Math.round(3.4 - x.M('wx') + (x.i * 7 % 3) * 0.5));
       const dry = dryFor(left, R.abr, x);
       let pit = null, why = '';
-      if (x.c.me && R.manual) {
+      if (x.c.me && R.manual && !(R.ctl.auto && R.ctl.auto.pits && !R.ctl.box)) {
         // le joueur décide : appel au stand, consigne radio acceptée, arrêt prévu au plan (s'il le suit toujours)
         const ps = R.ctl.plan ? R.plan.stops[x.pits] : null;
         if (R.ctl.skip === lap) { /* arrêt de ce tour annulé au muret */ }
@@ -867,7 +889,7 @@
       else if (x.noPit > 0) x.noPit--;
       else if (mismatch && x.wrong >= delay && left >= 2) { pit = need === 'dry' ? dry : need; why = 'changement de météo'; }
       else if (x.wear > x.thr && left >= 3) { pit = need === 'dry' ? dry : need; why = 'pneus usés'; }
-      else if (scIn && !x.c.me && (x.c.human ? x.c.sc === 'box' && left >= 4 : x.wear > 0.4 && left >= 4 && r() < 0.65)) { pit = need === 'dry' ? dry : need; why = 'sous voiture de sécurité'; }
+      else if (scIn && (!x.c.me || (R.ctl.auto && R.ctl.auto.pits)) && (x.c.human ? x.c.sc === 'box' && left >= 4 : x.wear > 0.4 && left >= 4 && r() < 0.65)) { pit = need === 'dry' ? dry : need; why = 'sous voiture de sécurité'; }
       else if (need === 'dry' && !ruleOk(x) && left >= 1 && left <= 2 + (x.i % 3)) { pit = dry; why = 'règle des 2 composés'; }
       if (pit) t += pitStop(R, x, lap, pit, sc || x.vsc, why);
       x.vsc = false;
@@ -884,7 +906,7 @@
         const atk = b.act === 'attack', def = a.act === 'defend', caught = b.time < a.time;
         // sans rattrapage, pas de duel ; une attaque ordonnée force la manœuvre si la voiture est encore dans la seconde
         if (!caught && !(atk && b.time - a.time < 1.3)) { if (atk) b.actRes = { k: 'attack', ok: false, lost: true }; continue; }
-        let p = 0.36 + (b.driver.craft - a.driver.craft) / 70 + (a.wear - b.wear) * 0.6 + (b.c.me && R.ctl.mode === 'push' ? 0.1 : 0) - (a.c.me && R.ctl.mode === 'push' ? 0.06 : 0)
+        let p = 0.36 + (b.driver.craft - a.driver.craft) / 70 + (a.wear - b.wear) * 0.6 + (b.c.me && R.modeNow === 'push' ? 0.1 : 0) - (a.c.me && R.modeNow === 'push' ? 0.06 : 0)
           + (w.speed - 0.35) * 0.7 + (caught ? (a.time - b.time) * 0.06 : -0.08);
         if (b.ersOn && b.bat > 5) p += 0.12;          // déploiement en ligne droite
         if (a.ersOn && a.bat > 5) p -= 0.06;
@@ -949,7 +971,7 @@
         else if (ar.ok) say('act', `Porte fermée, ${ar.by} ne passe pas.`, 0);
         else say('act', me.prep < 0.6 ? `Il est passé, je n'avais plus assez de batterie pour défendre.` : `${ar.by} est passé malgré la défense.`, 0);
       }
-      const fd = fuelDelta(me.fuel, (MIX[R.ctl.mix] || MIX.std).burn, LAPS - lap);
+      const fd = fuelDelta(me.fuel, (MIX[me.mixNow] || MIX.std).burn, LAPS - lap);
       if (me.fuel <= 0) say('fuel0', 'Je n\'ai plus d\'essence ! La voiture n\'avance plus !', 2);
       else if (fd < -0.4 && LAPS - lap > 1) say('fuel', `On est court en carburant (${fd.toFixed(1).replace('.', ',')} tour), je passe en économie ?`);
       if (me.tEng > ENG_CRIT + 1) say('eng', me.hot > 1.5 ? 'Je sens le moteur perdre de la puissance, il est en train de cuire !' : 'Température moteur critique, il faut que je sorte de l\'aspiration.');
@@ -957,7 +979,7 @@
       else if (me.tTyre < 82 && !sc && lap > 1) say('cold', 'Les pneus sont froids, aucune adhérence pour l\'instant.');
       if (me.bat < 6 && (ERS[R.ctl.ers] || ERS.bal).d < 0) say('bat', 'Plus de déploiement disponible, je dois recharger sur ce tour.');
     }
-    if (me && R.tele) R.tele[lap] = { fuel: me.fuel, bat: me.bat, tEng: me.tEng, tTyre: me.tTyre, wear: me.wear, burn: (MIX[R.ctl.mix] || MIX.std).burn, out: !!me.out };
+    if (me && R.tele) R.tele[lap] = { fuel: me.fuel, bat: me.bat, tEng: me.tEng, tTyre: me.tTyre, wear: me.wear, burn: (MIX[me.mixNow] || MIX.std).burn, out: !!me.out, mix: me.mixNow, ers: me.ersNow, cool: !!me.coolNow, mode: R.modeNow };
     const leadT = order[0].time;
     R.laps.push(order.map((x) => ({ i: x.i, gap: x.out ? null : x.time - leadT, out: !!x.out, ty: x.tyre, wear: x.wear })));
     field.forEach((x) => { const a = R.gapArr[x.i]; a.push(x.out ? a[a.length - 1] : x.time - leadT); const b = R.tArr[x.i]; b.push(x.out ? b[b.length - 1] : x.time); });

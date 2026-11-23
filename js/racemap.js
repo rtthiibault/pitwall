@@ -47,15 +47,37 @@
       const a = raw[j % raw.length], b = raw[(j + 1) % raw.length], k = (d - len[j]) / Math.max(1e-6, len[j + 1] - len[j]);
       P.push([lerp(a[0], b[0], k), lerp(a[1], b[1], k)]);
     }
-    return { P, N };
+    return { P, N, speed: speedProfile(P, N) };
   }
+  /* Profil de vitesse le long du tracé : la courbure donne une vitesse de passage (330 km/h en ligne droite,
+     ~75 km/h dans une épingle), puis les zones de freinage (avant) et d'accélération (après) sont lissées. */
+  function speedProfile(P, N) {
+    const head = P.map((p, i) => { const q = P[(i + 1) % N]; return Math.atan2(q[1] - p[1], q[0] - p[0]); });
+    const W = 6, vt = new Array(N);
+    for (let i = 0; i < N; i++) {
+      let d = head[(i + W) % N] - head[(i - W + N) % N];
+      while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+      vt[i] = 330 - 255 * Math.pow(Math.min(1, Math.abs(d) / 0.55), 0.75);
+    }
+    const v = vt.slice();
+    for (let pass = 0; pass < 2; pass++) {
+      for (let i = N - 1; i >= 0; i--) v[i] = Math.min(v[i], v[(i + 1) % N] + 5.5);   // freinage : ~5,5 km/h par échantillon
+      for (let i = 0; i < N; i++) v[i] = Math.min(v[i], v[(i - 1 + N) % N] + 2.6);     // accélération plus lente que le freinage
+    }
+    return v;
+  }
+  const NIGHT = ['vegas', 'marina_bay', 'losail', 'yas_marina', 'jeddah', 'bahrain'];
 
   function mount(el, { res, seedStr, colorOf, getT, onIncident, style = 'anim', low = false }) {
     const cv = document.createElement('canvas'); cv.className = 'race-map-cv';
     el.innerHTML = ''; el.appendChild(cv);
     const ctx = cv.getContext('2d');
     const LAPS = res.LAPS || res.laps.length;
-    const { P, N } = makeTrack(seedStr, res.w);
+    const { P, N, speed: VP } = makeTrack(seedStr, res.w);
+    const night = NIGHT.includes(seedStr);
+    const wr = rng(hash('wind-' + seedStr + LAPS)), windA = wr() * Math.PI * 2;   // direction du vent (fixe pour la course)
+    const clouds = Array.from({ length: 7 }, (_, i) => ({ x: wr(), y: 0.08 + wr() * 0.84, s: 0.7 + wr() * 0.9, k: i }));
+    const tele = { v: 0, gear: 1, rpm: 0, thr: 0, brk: 0, straight: false, u: 0, pit: false, out: false };
     const opt = { style, low };
     let W = 0, H = 0, S = [], NRM = [], inSide = 1, laneW = 15;
     const fit = () => {
@@ -118,7 +140,7 @@
 
     const rr = rng(hash('inc-' + seedStr + res.field.length));
     const cars = res.field.map((x) => ({ x, col: colorOf(x), me: !!x.c.me, k: 0.2 + rr() * 0.65, told: false, stopAt: 0 }));
-    const drops = Array.from({ length: 70 }, () => [Math.random(), Math.random(), 0.6 + Math.random() * 0.8]);
+    const drops = Array.from({ length: 140 }, () => [Math.random(), Math.random(), 0.6 + Math.random() * 0.8]);
     const FLAT = () => opt.style === 'flat';
 
     let alive = true, raf = 0, prev = performance.now(), lastDraw = 0;
@@ -140,6 +162,36 @@
         const g = ctx.createLinearGradient(0, 0, 0, H);
         g.addColorStop(0, `rgb(${Math.round(lerp(16, 12, rain))},${Math.round(lerp(19, 20, rain))},${Math.round(lerp(26, 38, rain))})`); g.addColorStop(1, '#0a0c11');
         ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      }
+      const cloud = lerp(A.cloud || 0, B.cloud || 0, kk), wind = lerp(A.wind || 10, B.wind || 10, kk);
+      // soleil (ou lune la nuit) : halo chaud dans le coin, rayons qui tournent lentement ; il s'efface derrière les nuages
+      const sunA = clamp((1 - cloud * 1.15) * (1 - rain * 2), 0, 1);
+      if (sunA > 0.04) {
+        const sx = W - 46, sy = 40;
+        const g = ctx.createRadialGradient(sx, sy, 4, sx, sy, Math.max(W, H) * (night ? 0.35 : 0.55));
+        if (night) { g.addColorStop(0, `rgba(170,195,255,${0.22 * sunA})`); g.addColorStop(1, 'rgba(170,195,255,0)'); }
+        else { g.addColorStop(0, `rgba(255,196,92,${0.32 * sunA})`); g.addColorStop(0.35, `rgba(255,170,60,${0.08 * sunA})`); g.addColorStop(1, 'rgba(255,170,60,0)'); }
+        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+        ctx.globalAlpha = sunA;
+        if (night) {
+          ctx.beginPath(); ctx.arc(sx, sy, 11, 0, 6.3); ctx.fillStyle = '#e9eef8'; ctx.fill();
+          ctx.beginPath(); ctx.arc(sx + 5, sy - 3, 9.5, 0, 6.3); ctx.fillStyle = flat ? '#13171c' : '#11151d'; ctx.fill();
+        } else {
+          if (!flat && !opt.low) { ctx.strokeStyle = 'rgba(255,214,110,.55)'; ctx.lineWidth = 1.6; ctx.beginPath(); const rot = now / 6000; for (let i = 0; i < 12; i++) { const a = rot + (i * Math.PI) / 6; ctx.moveTo(sx + Math.cos(a) * 17, sy + Math.sin(a) * 17); ctx.lineTo(sx + Math.cos(a) * (i % 2 ? 23 : 27), sy + Math.sin(a) * (i % 2 ? 23 : 27)); } ctx.stroke(); }
+          ctx.beginPath(); ctx.arc(sx, sy, 12, 0, 6.3); ctx.fillStyle = '#ffd36a'; ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
+      // nuages : ils défilent avec le vent ; leur ombre passe sur la piste
+      const nCl = cloud > 0.08 ? Math.min(clouds.length, 1 + Math.round(cloud * 6)) : 0;
+      const wdx = Math.cos(windA), wdy = Math.sin(windA) * 0.35;
+      if (nCl) for (let i = 0; i < nCl; i++) {
+        const c = clouds[i];
+        if (!opt.low) { c.x += dt * (0.008 + wind * 0.0009) * wdx * (0.8 + c.s * 0.3); c.y += dt * 0.004 * wdy; }
+        c.x = ((c.x % 1.4) + 1.4) % 1.4; c.y = ((c.y % 1) + 1) % 1;
+        const cx = c.x * W * 1.4 / 1.4 * 1.25 - W * 0.12, cy = c.y * H, R0 = Math.min(W, H) * 0.13 * c.s;
+        ctx.fillStyle = `rgba(0,0,0,${(flat ? 0.1 : 0.16) * Math.min(1, cloud * 1.6)})`;
+        ctx.beginPath(); ctx.ellipse(cx + 18, cy + 22, R0 * 1.25, R0 * 0.62, 0, 0, 6.3); ctx.fill();
       }
       // piste
       ctx.lineJoin = ctx.lineCap = 'round';
@@ -177,6 +229,25 @@
         if (fade > 0) dots.push({ c, p: at(pl.u, off), state, fade, prog: pl.u, box: pl.box });
       }
       dots.sort((a, b) => (a.c.me ? 1 : 0) - (b.c.me ? 1 : 0));
+      // télémétrie de ma voiture : vitesse tirée du profil du tracé, rapport, régime, accélérateur / frein
+      const md = dots.find((d) => d.c.me);
+      if (md) {
+        const u = ((md.prog % 1) + 1) % 1, f = u * N, j = Math.floor(f) % N, j2 = (j + 1) % N, fr = f - Math.floor(f);
+        const ctl = res.ctl || {}, tl = (res.tele && res.tele[Math.min(L + 1, res.tele.length - 1)]) || {};
+        const bonus = (tl.ers === 'ot' ? 8 : tl.ers === 'hotlap' ? 13 : tl.ers === 'rech' ? -6 : 0) + (tl.mix === 'rich' ? 4 : tl.mix === 'eco' ? -5 : 0) + (tl.cool ? -7 : 0);
+        let v = lerp(VP[j], VP[j2], fr) * (1 - 0.2 * wet) + bonus * (VP[j] > 280 ? 1 : 0.3);
+        const ahead = VP[(j + 8) % N], before = VP[(j - 3 + N) % N];
+        if (md.state === 'pit') v = md.box ? 0 : 80; else if (md.state !== 'run' || rawT < 0) v = 0;
+        tele.v = v; tele.out = md.state === 'crash' || md.state === 'mech'; tele.pit = md.state === 'pit'; tele.u = u;
+        tele.brk = v > 0 && ahead < v - 12 && md.state === 'run' ? clamp((v - ahead) / 60, 0.25, 1) : 0;
+        tele.thr = tele.brk ? 0 : v <= 0 ? 0 : clamp(v >= before - 1 ? 1 : 0.55, 0, 1);
+        const G = [0, 85, 120, 155, 190, 225, 260, 295];
+        let g = 1; while (g < 8 && v >= G[g]) g++;
+        tele.gear = v <= 1 ? (tele.pit ? 1 : 0) : g;
+        const lo = G[g - 1] || 0, hi = g < 8 ? G[g] : 345;
+        tele.rpm = v <= 1 ? 4000 : 10400 + 2100 * clamp((v - lo) / (hi - lo), 0, 1);
+        tele.straight = VP[j] > 300 && VP[(j + 20) % N] > 280;
+      }
       const first = dots.filter((d) => d.state === 'run' || d.state === 'pit').sort((a, b) => b.prog - a.prog)[0];
       for (const d of dots) {
         const [x, y] = d.p, R = d.c.me ? 7.5 : 5.5;
@@ -205,13 +276,26 @@
         ctx.beginPath(); ctx.arc(p[0], p[1], 6, 0, 6.3); ctx.fillStyle = flat || Math.sin(now / 110) > 0 ? '#ff8a00' : '#fff'; ctx.fill(); ctx.strokeStyle = '#111'; ctx.lineWidth = 1.5; ctx.stroke();
         ctx.font = '700 10px Archivo, sans-serif'; ctx.fillStyle = '#ff8a00'; ctx.textAlign = 'center'; ctx.fillText('SC', p[0], p[1] - 10);
       }
+      // nuages au-dessus du circuit (voile léger, ils laissent voir les voitures)
+      if (nCl) for (let i = 0; i < nCl; i++) {
+        const c = clouds[i], cx = c.x * W * 1.25 - W * 0.12, cy = c.y * H, R0 = Math.min(W, H) * 0.13 * c.s;
+        const a = (flat ? 0.16 : 0.42) * Math.min(1, cloud * 1.4) + rain * 0.06;
+        if (flat) { ctx.fillStyle = `rgba(200,210,222,${a})`; ctx.beginPath(); ctx.ellipse(cx, cy, R0 * 1.3, R0 * 0.6, 0, 0, 6.3); ctx.fill(); continue; }
+        [[0, 0, 1], [-0.75, 0.15, 0.7], [0.75, 0.18, 0.75], [0.3, -0.35, 0.65]].forEach(([dx, dy, rs]) => {
+          const x = cx + dx * R0, y = cy + dy * R0, rr2 = R0 * rs;
+          const g = ctx.createRadialGradient(x, y, rr2 * 0.1, x, y, rr2);
+          g.addColorStop(0, `rgba(${rain > 0.2 ? '150,160,175' : '228,234,242'},${a})`); g.addColorStop(0.55, `rgba(${rain > 0.2 ? '150,160,175' : '228,234,242'},${a * 0.6})`); g.addColorStop(1, 'rgba(228,234,242,0)');
+          ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rr2, 0, 6.3); ctx.fill();
+        });
+      }
       // pluie : traits animés (style animé, hors config basse) ou simple voile bleuté
       if (rain > 0.04) {
         if (flat || opt.low) { ctx.fillStyle = `rgba(80,130,200,${clamp(rain * 0.12, 0.03, 0.12)})`; ctx.fillRect(0, 0, W, H); }
         else {
           ctx.strokeStyle = `rgba(190,215,245,${clamp(rain * 0.5, 0.08, 0.4)})`; ctx.lineWidth = 1; ctx.beginPath();
           const n = Math.round(drops.length * clamp(rain * 1.3, 0.15, 1));
-          for (let i = 0; i < n; i++) { const d = drops[i]; d[1] += dt * d[2] * 1.4; if (d[1] > 1) { d[1] -= 1; d[0] = Math.random(); } const x = d[0] * W, y = d[1] * H; ctx.moveTo(x, y); ctx.lineTo(x - 3, y + 9); }
+          const slant = clamp(Math.cos(windA) * wind / 6, -6, 6);
+          for (let i = 0; i < n; i++) { const d = drops[i]; d[1] += dt * d[2] * 1.4; d[0] += dt * slant * 0.01; if (d[1] > 1) { d[1] -= 1; d[0] = Math.random(); } const x = (((d[0] % 1) + 1) % 1) * W, y = d[1] * H; ctx.moveTo(x, y); ctx.lineTo(x + slant, y + 9); }
           ctx.stroke();
         }
       }
@@ -219,6 +303,8 @@
     loop();
     return {
       setStyle(s) { opt.style = s; },
+      tele() { return { ...tele }; },
+      windDeg() { return (windA * 180) / Math.PI; },
       setLow(v) { opt.low = !!v; fit(); },
       dispose() { alive = false; cancelAnimationFrame(raf); if (ro) ro.disconnect(); el.innerHTML = ''; },
     };

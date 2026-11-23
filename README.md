@@ -308,3 +308,10 @@ Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectoriel
 ## F1 Manager : plateau fictif de 22 voitures
 
 11 écuries aux noms dérivés (Red Bul Racing, Scuderia Ferari, MacLaren, Mercedez, Astin Martin, Alpinne, Wiliams, Audii, Haass, Racing Buls, Cadilac) et 22 pilotes aux noms dérivés (`GRID` dans `js/manager.js`). Chaque pilote garde le talent, l'âge et la forme de son modèle réel. En course : le joueur + 21 pilotes IA (celui que le joueur emploie n'est pas dupliqué) ; la note des pilotes IA est ramenée à la fourchette de la ligue, hiérarchie conservée. Deux réservistes (Yuki Tsunodda, Rafael Camarra) restent au marché pour les anciennes sauvegardes. Les photos des pilotes sont conservées.
+
+## F1 Manager : poste de pilotage, télémétrie live, météo vivante
+
+- Panneau de gestion façon volant F1 : rampe de LED (régime), jauges à segments, touches à témoin, bouton BOX façon limiteur.
+- Télémétrie live (bouton « Télémétrie » en haut à gauche de la carte) : vitesse tirée du profil de courbure du tracé (freinage / accélération lissés), rapport, régime, accélérateur / frein, état ERS, DRS, trace de vitesse.
+- Gestion automatique choisie sur la grille (ERS, mélange, refroidissement, rythme pneus, arrêts) ; toucher une commande rend la main.
+- Météo : température de l'air et de la piste qui dérivent pendant la course, nuages de passage (ombre sur la piste, la piste refroidit), vent ; ils agissent sur les températures moteur et pneus. Sur la carte : soleil (lune pour les courses de nuit), nuages qui défilent avec le vent, pluie inclinée par le vent.
