@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-23T16:06:40.426Z",
+ "updated": "2026-11-23T16:36:43.989Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-23T16:36:40.426Z",
+ "next": "2026-11-23T17:06:43.989Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -37,6 +37,18 @@
    "url": "https://fr.motorsport.com/f1/news/gp-qatar-2026-dates-horaires-infos-programme/10877189/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
    "impact": null,
    "firstSeen": "2026-11-23T16:06:40.426Z"
+  },
+  {
+   "id": "news_1opp6su",
+   "timestamp": "2026-11-23T15:41:00.000Z",
+   "category": "PADDOCK",
+   "title": "Stella donne le crédit du double podium de McLaren F1 aux pilotes",
+   "summary": "McLaren F1 a signé un double podium construit au fil de la course à Las Vegas, avec un début d'épreuve particulièrement difficile, mais des progrès de compréhension de la stratégie de gestion d'énergie et une meilleure aisance au fil de l'épreuve ont permis à…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/stella-donne-le-credit-du-double-podium-de-mclaren-f1-aux-pilotes,213650.html",
+   "impact": null,
+   "firstSeen": "2026-11-23T16:36:43.989Z"
   },
   {
    "id": "news_vt47of",
@@ -121,7 +133,7 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "impact": null,
-   "firstSeen": "2026-11-23T16:06:40.426Z"
+   "firstSeen": "2026-11-23T16:36:43.989Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -769,31 +781,6 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-humilie-russell-il-est-tellement-loin-de-mon-niveau,213649.html",
    "impact": null,
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_1ylvjw1",
-   "timestamp": "2026-11-22T07:23:26.000Z",
-   "category": "RÈGLEMENT",
-   "title": "\"Mon erreur a été de lever le pied\" : l'étrange dernier tour d'Antonelli à Las Vegas",
-   "summary": "Kimi Antonelli a expliqué l'étrange \"erreur\" qui lui a coûté une chance de remporter le Grand Prix de Las Vegas de Formule 1. Auteur du meilleur temps en qualifications, Antonelli s'était élancé de la sixième place en raison d'une pénalité pour un changement…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/kimi-antonelli-erreur-lever-pied-dernier-tour-las-vegas/10876776/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "impact": {
-    "targetType": "driver",
-    "targetIds": [
-     "antonelli"
-    ],
-    "managerModifiers": {
-     "powerUnit": 0,
-     "aero": 0,
-     "reliability": 0
-    },
-    "bettingOddsMultiplier": 1.06,
-    "impactLabel": "Cotes +6%",
-    "teamId": "mercedes"
-   },
    "firstSeen": "2026-11-23T10:59:50.658Z"
   }
  ]
