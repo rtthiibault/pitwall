@@ -515,8 +515,8 @@ html.race-lock, html.race-lock body { overflow: hidden !important; overscroll-be
 
 /* Bouton d'accès (en-tête), même gabarit que F1 Manager, bordure en pointillés télémétrie */
 .top-right .pw-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px 6px 9px; border-radius: var(--radius-s); white-space: nowrap; font-size: 14px; color: var(--text);
-  border: 1px dashed var(--pw-line); background: linear-gradient(90deg, var(--pw-dim), transparent 70%); }
-.top-right .pw-btn:hover, .top-right .pw-btn.active { border-style: solid; border-color: var(--pw); background: linear-gradient(90deg, rgba(255, 165, 31, .22), var(--raised) 75%); }
+  border: 1px solid var(--pw-line); background: linear-gradient(90deg, var(--pw-dim), transparent 70%); }
+.top-right .pw-btn:hover, .top-right .pw-btn.active { border-color: var(--pw); background: linear-gradient(90deg, rgba(255, 165, 31, .22), var(--raised) 75%); }
 .top-right .pw-btn .pdw-word { font-size: 13.5px; }
 .top-right .pw-btn i { font-style: normal; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #111; background: var(--pw); border-radius: 2px; padding: 0 4px; display: inline-flex; align-items: center; gap: 4px; }
 .top-right .pw-btn i::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #111; animation: pdwBlink 1.6s steps(2, start) infinite; }
@@ -605,7 +605,7 @@ html.race-lock, html.race-lock body { overflow: hidden !important; overscroll-be
 .odd { position: relative; }
 .pdw-odd { position: absolute; top: 2px; right: 3px; font-size: 8px; line-height: 1; color: var(--pw); }
 /* QG F1 Manager */
-.pdw-strip { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; padding: 8px 12px; margin-bottom: 10px; border: 1px dashed var(--pw-line); border-radius: var(--radius-s); background: var(--pw-dim); color: var(--text); font-size: 13.5px; text-decoration: none; }
+.pdw-strip { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; padding: 8px 12px; margin-bottom: 10px; border: 1px solid var(--pw-line); border-radius: var(--radius-s); background: var(--pw-dim); color: var(--text); font-size: 13.5px; text-decoration: none; }
 .pdw-strip .pdw-ico { width: 24px; height: 15px; }
 .pdw-strip.neg b.num { color: #ff9b94; } .pdw-strip.pos b.num { color: var(--win); }
 .pdw-go { margin-left: auto; color: var(--pw); font-size: 12.5px; }
