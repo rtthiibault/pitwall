@@ -685,7 +685,7 @@
       const ts = [...s.teams.values()].filter((t) => s.entrants.some((id) => drv(id).teamId === t.id) || t.points > 0).sort((a, b) => b.points - a.points);
       const max = ts[0] ? ts[0].points || 1 : 1;
       const champ = S.seasonSim ? new Map(S.seasonSim.teams.map((x) => [x.id, x.p])) : new Map();
-      table = `<table class="tbl"><thead><tr><th>Pos</th><th>Écurie</th><th>Pilotes</th><th class="c">Victoires</th><th>Points</th><th class="r">Écart</th><th class="r">Titre</th></tr></thead><tbody>
+      table = `<table class="tbl"><thead><tr><th>Pos</th><th>Pilote</th><th>Pilotes</th><th class="c">Victoires</th><th>Points</th><th class="r">Écart</th><th class="r">Titre</th></tr></thead><tbody>
         ${ts.map((t, i) => { const dl = s.entrants.filter((id) => drv(id).teamId === t.id).map((id) => drv(id).code).join(' · '); const wins = Object.entries(st).filter(([id]) => drv(id) && drv(id).teamId === t.id).reduce((a, [, o]) => a + o.wins, 0);
           return `<tr><td class="pos">${i + 1}</td><td>${teamCell(t.id)}</td><td class="muted">${esc(dl)}</td><td class="c num">${t.wins || wins}</td><td style="min-width:180px"><div class="row" style="flex-wrap:nowrap"><div class="ptsbar" style="flex:1"><i style="width:${(t.points / max) * 100}%;background:${t.color}"></i></div><b class="num">${fmt(t.points)}</b></div></td><td class="r num muted">${i ? '−' + fmt(max - t.points) : '—'}</td><td class="r">${champ.get(t.id) > 0 && !s.finished ? `<span class="chip ${champ.get(t.id) > 0.3 ? 'gold' : ''}">${pct(champ.get(t.id))}</span>` : '<span class="muted">—</span>'}</td></tr>`; }).join('')}</tbody></table>`;
     }
@@ -1066,7 +1066,7 @@
     const car = ch ? MG().carStats(ch, m.ups, m.parts, tb) : null;
     const fc = MG().forecast(m.next.seed, race);
     const league = MG().leagueOf(m.lp);
-    const bots = MG().botField(mk, league, `${F1.store.dayKey()}-${race ? race.round : 0}`);
+    const bots = MG().botField(mk, league, `${F1.store.dayKey()}-${race ? race.round : 0}`, m.driver && m.driver.id);
     return { m, mk, race, w, drvM, ch, car, league, bots, tb, fc };
   }
   const statBar = (label, val, base, color, icon = '') => `<div class="sbar"><div class="sbar-h"><span>${icon} ${label}</span><b class="num">${Math.round(val)}</b></div><div class="sbar-t"><i style="width:${Math.min(100, base)}%;background:${color}"></i><i class="up" style="width:${Math.max(0, Math.min(100, val) - Math.min(100, base))}%"></i></div></div>`;
@@ -1198,7 +1198,7 @@
     }
     const left = F1.store.racesLeft();
     const prog = nl ? ((m.lp - league.min) / (nl.min - league.min)) * 100 : 100;
-    const p = F1.visuals.portrait(drvM.id);
+    const p = null; // F1 Manager : pilotes fictifs, pas de photo réelle
     const col = F1.teamColor(ch.id);
     const setupLbl = (v) => (v <= -0.35 ? 'Faible appui (vitesse)' : v >= 0.35 ? 'Fort appui (virages)' : 'Réglage médian');
     const botAvg = (k) => bots.reduce((a, b) => a + b.car[k], 0) / bots.length;
@@ -1207,13 +1207,13 @@
     const tele = MG().STATS.map((st) => { const v = car[st.k], o = botAvg(st.k), mx = Math.max(v, o, 1) * 1.08; return `<div class="tl"><small>${st.icon} ${st.short}</small><div class="tl-bars"><i class="me" style="width:${(v / mx) * 100}%"></i><i class="ia" style="width:${(o / mx) * 100}%"></i></div><b class="num">${Math.round(v)}</b><span class="muted num">IA ${Math.round(o)}</span></div>`; }).join('');
     const nwm = F1.news && F1.news.teamMods()[ch.id];
     const nwTxt = nwm ? [['speed', 'Vitesse'], ['df', 'Appui'], ['rel', 'Fiabilité']].filter(([k]) => nwm[k]).map(([k, l]) => `${l} ${nwm[k] > 0 ? '+' : ''}${nwm[k]}`).join(' · ') : '';
-    const pwStrip = nwm ? `<a class="pdw-strip ${nwm.speed + nwm.df + nwm.rel < 0 ? 'neg' : 'pos'}" href="#/paddock">${PW_ICON}<span><b>Paddock Wire</b> · l'actualité ${esc(F1.teamShort(ch.id))} pèse sur votre châssis en course : <b class="num">${nwTxt}</b></span><span class="pdw-go">Voir les dépêches →</span></a>` : '';
+    const pwStrip = nwm ? `<a class="pdw-strip ${nwm.speed + nwm.df + nwm.rel < 0 ? 'neg' : 'pos'}" href="#/paddock">${PW_ICON}<span><b>Paddock Wire</b> · l'actualité ${esc(ch.name)} pèse sur votre châssis en course : <b class="num">${nwTxt}</b></span><span class="pdw-go">Voir les dépêches →</span></a>` : '';
     const stand = pwStrip + `<div class="hq-car">${F1.visuals.car(ch.id, { live: true, number: drvM.number, sponsor: livery(m) })}</div><div class="tele-grid">${tele}</div>${mechChips(car)}`;
     // 02 — pilote
     const e = drvM.exp;
     const dstat = (l, k) => statBar(l, drvM[k], drvM.base[k], 'var(--gold)');
     const pilot = `<div class="row" style="flex-wrap:nowrap"><div class="gphoto" style="--tc:${tcol(drvM.teamId)};width:70px;height:70px">${p ? `<img src="${esc(p.img)}" alt="" onerror="this.remove()">` : ''}<i>${esc(drvM.code)}</i></div>
-        <div style="min-width:0"><div class="muted upper" style="font-size:10px;font-weight:700">${flag(drvM.iso, 'sm')} ${esc(team(drvM.teamId).short)}</div><div class="hq-name">${esc(drvM.family)}</div></div><div class="sp"></div><div class="rating-big">${drvM.rating}</div></div>
+        <div style="min-width:0"><div class="muted upper" style="font-size:10px;font-weight:700">${flag(drvM.iso, 'sm')} ${esc(drvM.team || MG().TEAM_NAME[drvM.teamId] || '')}</div><div class="hq-name">${esc(drvM.family)}</div></div><div class="sp"></div><div class="rating-big">${drvM.rating}</div></div>
       ${xpBlock(e)}<div style="display:grid;gap:6px;margin-top:12px">${dstat('Rythme', 'pace')}${dstat('Combativité', 'craft')}${dstat('Régularité', 'cons')}</div>`;
     // 03 — châssis
     const chassis = `<div class="row" style="justify-content:space-between"><div class="hq-name">${esc(ch.name)}</div><div class="rating-big sm">${MG().carRating(car)}</div></div>
@@ -1225,7 +1225,7 @@
     // 05 — week-end
     const weekend = weekendBody(ctx);
     // 06 — grille de départ
-    const start = `<div class="row" style="justify-content:space-between">${leagueBadge(league, 'lg')}<span class="muted" style="font-size:12px">Gains ×${league.mult} · ${MG().FIELD - 1} managers IA</span></div>
+    const start = `<div class="row" style="justify-content:space-between">${leagueBadge(league, 'lg')}<span class="muted" style="font-size:12px">Gains ×${league.mult} · ${MG().FIELD - 1} piloters IA</span></div>
       <div style="margin-top:12px"><div class="row" style="justify-content:space-between;font-size:12px"><span>${fmt(m.lp)} LP</span><span class="muted">${nl ? `${nl.icon} ${nl.name} à ${nl.min} LP` : 'Sommet atteint !'}</span></div><div class="ptsbar" style="height:9px;margin-top:5px"><i style="width:${prog}%;background:linear-gradient(90deg,${league.color},#fff)"></i></div></div>
       <div class="hq-kpi"><div><small>Courses gratuites</small><b>${left} / ${F1.store.racesPerDay()}</b></div><div><small>Victoire</small><b>${fmtPC(MG().PC_TABLE[0] * league.mult * (1 + ctx.tb.pc))}</b></div><div><small>Dernière place</small><b>${fmtPC(MG().PC_TABLE[19] * league.mult * (1 + ctx.tb.pc))}</b></div></div>
       ${raceButton('btn block hq-go')}`;
@@ -1258,12 +1258,12 @@
     return `<div class="notice" style="margin-bottom:16px">💰 Prix = valeur marchande : surtout la note actuelle (chaque point au-dessus de 80 coûte cher), un peu la marge de progression selon l'âge. 📈 Un pilote gagne de l'expérience à chaque course terminée avec vous : les jeunes progressent vite et loin, les vétérans presque plus. La progression acquise est conservée si vous le reprenez plus tard. ${m.driver ? `Revendre <b>${esc(m.driver.name)}</b> vous rapporte ${fmtPC(res)} (78 % de sa valeur marchande actuelle : formez un jeune et revendez-le au sommet).` : ''}</div>
       <div class="mgrid">${mk.drivers.map((d) => {
         const own = m.driver && m.driver.id === d.id;
-        const p = F1.visuals.portrait(d.id);
+        const p = null; // F1 Manager : pilotes fictifs, pas de photo réelle
         const x = MG().withExperience(d, m.drvXp), e = x.exp;
         const val = MG().valueOfDriver(x), net = val - (own ? 0 : res);
         return `<div class="mcard ${own ? 'own' : ''}" style="--tc:${tcol(d.teamId)}"><div class="row" style="flex-wrap:nowrap;align-items:start">
           <div class="gphoto" style="width:64px;height:64px">${p ? `<img src="${esc(p.img)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<i>${esc(d.code)}</i></div>
-          <div style="min-width:0;flex:1"><div class="muted" style="font-size:12px">${flag(d.iso, 'sm')} ${esc(team(d.teamId).short)} · ${e.age} ans</div><div style="font-weight:900;font-style:italic;text-transform:uppercase;font-size:17px;line-height:1.1">${esc(d.family)}</div>
+          <div style="min-width:0;flex:1"><div class="muted" style="font-size:12px">${flag(d.iso, 'sm')} ${esc(d.team || MG().TEAM_NAME[d.teamId] || '')}${d.reserve ? ' · réserviste' : ''} · ${e.age} ans</div><div style="font-weight:900;font-style:italic;text-transform:uppercase;font-size:17px;line-height:1.1">${esc(d.family)}</div>
           <div class="row" style="gap:4px;margin-top:4px"><span class="chip ${e.mult >= 1.6 ? 'gold' : ''}" title="Vitesse d'apprentissage : XP ×${e.mult} · progression maximale +${e.cap}">📈 ${esc(e.label)}</span>${own ? '<span class="chip green">Votre pilote</span>' : ''}</div></div>
           <div class="rating-big sm">${x.rating}</div></div>
           <div style="display:grid;gap:6px;margin:12px 0">${statBar('Rythme', x.pace, d.pace, tcol(d.teamId))}${statBar('Combativité', x.craft, d.craft, tcol(d.teamId))}${statBar('Régularité', x.cons, d.cons, tcol(d.teamId))}</div>
@@ -1754,7 +1754,7 @@
         if (e.type === 'tr') {
           const w = who || meX, mine = !!w.c.me;
           trSay(e.txt, w);
-          feed.insertAdjacentHTML('afterbegin', `<div class="ev tr ${mine ? 'mine' : 'other'}" style="--tc:${colorOf(w)}"><span class="muted">T${e.lap}</span> 📻 <b class="${mine ? 'me-t' : 'tr-who'}">${esc(radioId(w).code)}</b>${mine ? '' : ` <small class="muted">${esc(w.name)}</small>`} « ${esc(e.txt)} »</div>`);
+          feed.insertAdjacentHTML('afterbegin', `<div class="ev tr ${mine ? 'mine' : 'other'}" style="--tc:${colorOf(w)}"><span class="muted">T${e.lap}</span> 📻 <b class="${mine ? 'me-t' : 'tr-who'}">${esc(radioId(w).code)}</b>${mine ? '' : ` <small class="muted">${esc(w.c.team || '')}</small>`} « ${esc(e.txt)} »</div>`);
           continue;
         }
         const nm = who ? (who.c.me ? '<b class="me-t">Votre voiture</b>' : `<b>${esc(who.name)}</b>`) : '';
@@ -1806,11 +1806,11 @@
       if (S.raceMap) { S.raceMap.dispose(); S.raceMap = null; }
       const w = F1.store.mgr().weeklyGP;
       const why = me.out ? `abandon (${esc(meX.out.why)})` : meX.pen ? 'règle des 2 composés secs non respectée' : '';
-      const rows = res.final.filter((r) => r.pos <= 10 || r.i === meX.i).map((r) => { const x = byI.get(r.i); return `<tr class="${x.c.me ? 'me-row' : ''}"><td class="pos">${r.out ? 'AB' : r.pos}</td><td><span class="tstripe" style="background:${colorOf(x)};display:inline-block;height:13px;margin-right:7px;vertical-align:-1px"></span>${esc(x.name)}${x.c.me ? ' <small class="muted">(vous)</small>' : ''}</td><td class="r num">${r.out ? 'Abandon' : r.pos === 1 ? 'Vainqueur' : '+' + r.gap.toFixed(1).replace('.', ',') + ' s'}</td></tr>`; }).join('');
+      const rows = res.final.filter((r) => r.pos <= 10 || r.i === meX.i).map((r) => { const x = byI.get(r.i); return `<tr class="${x.c.me ? 'me-row' : ''}"><td class="pos">${r.out ? 'AB' : r.pos}</td><td><span class="tstripe" style="background:${colorOf(x)};display:inline-block;height:13px;margin-right:7px;vertical-align:-1px"></span>${esc(x.name)}${x.c.me ? ' <small class="muted">(vous)</small>' : x.c.team ? ` <small class="muted">${esc(x.c.team)}</small>` : ''}</td><td class="r num">${r.out ? 'Abandon' : r.pos === 1 ? 'Vainqueur' : '+' + r.gap.toFixed(1).replace('.', ',') + ' s'}</td></tr>`; }).join('');
       $('.race-main').outerHTML = `<div class="debrief">
         <section class="db-card db-res"><header><span>Votre chrono</span><small>${esc(ev.race.nameFr)} · semaine ${ev.week} · ${LAPS} tours</small></header>
           <div class="wk-time ${dnf ? 'dnf' : ''}"><b>${dnf ? 'DNF / Non classé' : MG().fmtRaceTime(timeMs)}</b><small class="muted">${dnf ? why : `Arrivée P${me.pos} · ${esc(ctx.ch.name)} · ${esc(ctx.drvM.name)}`}${rec.improved ? ' · <b class="up">nouveau meilleur temps de la semaine !</b>' : ''}</small></div>
-          <div class="table-wrap"><table class="tbl db-tbl"><thead><tr><th>Pos</th><th>Écurie</th><th class="r">Écart</th></tr></thead><tbody>${rows}</tbody></table></div></section>
+          <div class="table-wrap"><table class="tbl db-tbl"><thead><tr><th>Pos</th><th>Pilote</th><th class="r">Écart</th></tr></thead><tbody>${rows}</tbody></table></div></section>
         <div class="db-side"><section class="db-card"><header><span>Grand Prix Hebdomadaire</span></header>
           <div class="db-money"><div><small>Meilleur temps</small><b>${w && w.bestTime != null ? MG().fmtRaceTime(w.bestTime) : '—'}</b></div><div><small>Tentatives restantes</small><b>${rec.left} / ${MG().WEEKLY_ATTEMPTS}</b></div><div><small>Classement général</small><b id="wkRank">…</b></div></div>
           <div class="db-stats">${rec.prime ? `<span class="chip gold">+${fmtPC(rec.prime)} : premier chrono de la semaine</span>` : ''}${rec.xp ? `<span class="chip green">+${rec.xp} XP de participation</span>` : ''}<span class="chip">Sponsors et ligue en pause pendant le Grand Prix Hebdomadaire</span></div>
@@ -1847,7 +1847,7 @@
       const stratHtml = (x) => strat(x).map((t) => tyreDot(t, 'sm')).join('<i class="st-arrow"></i>');
       const winner = byI.get(res.final[0].i);
       const gapTxt = (r) => (r.out ? 'Abandon' : r.pos === 1 ? 'Vainqueur' : '+' + r.gap.toFixed(1).replace('.', ',') + ' s');
-      const rows = res.final.filter((r) => r.pos <= 10 || r.i === meX.i).map((r) => { const x = byI.get(r.i); return `<tr class="${x.c.me ? 'me-row' : ''}"><td class="pos">${r.out ? 'AB' : r.pos}</td><td><span class="tstripe" style="background:${colorOf(x)};display:inline-block;height:13px;margin-right:7px;vertical-align:-1px"></span>${esc(x.name)}${x.c.me ? ' <small class="muted">(vous)</small>' : ''}</td><td class="r num">${gapTxt(r)}</td><td><span class="st-seq">${stratHtml(x)}</span></td></tr>`; }).join('');
+      const rows = res.final.filter((r) => r.pos <= 10 || r.i === meX.i).map((r) => { const x = byI.get(r.i); return `<tr class="${x.c.me ? 'me-row' : ''}"><td class="pos">${r.out ? 'AB' : r.pos}</td><td><span class="tstripe" style="background:${colorOf(x)};display:inline-block;height:13px;margin-right:7px;vertical-align:-1px"></span>${esc(x.name)}${x.c.me ? ' <small class="muted">(vous)</small>' : x.c.team ? ` <small class="muted">${esc(x.c.team)}</small>` : ''}</td><td class="r num">${gapTxt(r)}</td><td><span class="st-seq">${stratHtml(x)}</span></td></tr>`; }).join('');
       // XP : barre du point en cours, de l'état d'avant à l'état d'après (un tour complet si un point est gagné)
       const XPP = MG().XP_PER_POINT, frac = (g) => (g.maxed ? 1 : (g.xp % XPP) / XPP);
       const statUp = xpBefore && xpAfter ? [['Rythme', 'pace'], ['Combativité', 'craft'], ['Régularité', 'cons']].map(([l, k]) => [l, xpAfter.bonus[k] - xpBefore.bonus[k]]).filter(([, d]) => d > 0.001) : [];
@@ -1862,7 +1862,7 @@
       $('.race-main').outerHTML = `<div class="debrief ${me.out ? 'dnf' : me.pos <= 3 ? 'podium' : ''}">
         <section class="db-card db-res"><header><span>Classement final</span><small>${esc(ctx.race.nameFr)} · ${LAPS} tours</small></header>
           <div class="db-pos"><b>${me.out ? 'Abandon' : 'P' + me.pos}</b><div><div>${me.out ? esc(meX.out.why) : me.pos === 1 ? 'Victoire !' : `à ${me.gap.toFixed(1).replace('.', ',')} s de ${esc(winner.name)}`}</div><small class="muted">Parti P${meX.grid} · ${meX.pits} arrêt${meX.pits > 1 ? 's' : ''} · stratégie <span class="st-seq">${stratHtml(meX)}</span>${meX.pen ? ` · <span class="down">+${meX.pen} s (un seul composé)</span>` : ''}${fl ? ` · meilleur tour : ${esc(fl.c.me ? 'vous' : fl.name)}` : ''}</small></div></div>
-          <div class="table-wrap"><table class="tbl db-tbl"><thead><tr><th>Pos</th><th>Écurie</th><th class="r">Écart</th><th>Pneus</th></tr></thead><tbody>${rows}</tbody></table></div></section>
+          <div class="table-wrap"><table class="tbl db-tbl"><thead><tr><th>Pos</th><th>Pilote</th><th class="r">Écart</th><th>Pneus</th></tr></thead><tbody>${rows}</tbody></table></div></section>
         <div class="db-side">
           <section class="db-card"><header><span>Progression du pilote</span></header>${xpHtml || '<div class="muted">Aucun pilote sous contrat.</div>'}</section>
           <section class="db-card"><header><span>Bilan financier et ligue</span></header>
@@ -1982,9 +1982,9 @@
     const trQ = []; let trBusy = false;
     // identité radio d'une voiture : numéro et nom réels du pilote quand il existe dans la saison, sinon son code
     const radioId = (x) => {
-      const sd = (S.f1 || S.season).drivers.get(x.driver.id) || {};
+      const md = {};
       if (x.c.me) return { num: String(drvNum || x.driver.code), name: x.driver.name || x.driver.code, code: x.driver.code };
-      return { num: String(sd.number || x.driver.code || '?'), name: sd.family ? `${sd.given ? sd.given[0] + '. ' : ''}${sd.family}` : x.driver.code, code: x.driver.code || (sd.code || '?') };
+      return { num: String(x.driver.number || md.number || x.driver.code || '?'), name: x.driver.short || x.name, code: x.driver.code || '?' };
     };
     function trSay(txt, x = meX) {
       // file d'attente courte : on ne garde pas plus de deux messages des autres pilotes en attente
@@ -1996,7 +1996,7 @@
       const q = trQ.shift(); if (!q) { trBusy = false; return; }
       const txt = q.txt, x = q.x, col = colorOf(x), ink = inkOn(col), id = radioId(x);
       trBusy = true;
-      el.innerHTML = `<div class="trr ${x.c.me ? 'mine' : 'other'}" style="--tc:${col};--ti:${ink}"><span class="trr-num">${esc(id.num)}</span><div class="trr-body"><div class="trr-h"><b>${esc(id.name)}</b><span class="trr-eq talking"><i></i><i></i><i></i><i></i><i></i><i></i></span><small>${x.c.me ? 'RADIO' : esc(x.name)}</small></div><p>« <span class="trr-t"></span> »</p></div></div>`;
+      el.innerHTML = `<div class="trr ${x.c.me ? 'mine' : 'other'}" style="--tc:${col};--ti:${ink}"><span class="trr-num">${esc(id.num)}</span><div class="trr-body"><div class="trr-h"><b>${esc(id.name)}</b><span class="trr-eq talking"><i></i><i></i><i></i><i></i><i></i><i></i></span><small>${x.c.me ? 'RADIO' : esc(x.c.team || '')}</small></div><p>« <span class="trr-t"></span> »</p></div></div>`;
       el.classList.add('on');
       const out = el.querySelector('.trr-t'), eq = el.querySelector('.trr-eq'); let n = 0;
       const typ = setInterval(() => { n += 2; out.textContent = txt.slice(0, n); if (n >= txt.length) { clearInterval(typ); eq.classList.remove('talking'); setTimeout(() => { el.classList.remove('on'); setTimeout(trNext, 350); }, 3600); } }, 28);
@@ -2066,7 +2066,7 @@
     try { F1.store.useWeeklyAttempt(ev.id); } catch (e) { return toast('⏳', esc(e.message), 'err'); }
     const meName = (F1.social.state.me && F1.social.state.me.username) || F1.store.get().name || 'Mon écurie';
     const player = { name: meName, driver: ctx.drvM, car: ctx.car, setup: ctx.m.setup, chassisId: ctx.ch.id };
-    const R = MG().createRace({ player, bots: MG().weeklyBots(ev.seed), race: ev.race, seed: ev.seed, wxSeed: ev.seed, startTyre: ctx.m.next.tyre, plan: ctx.m.next.plan, manual: true });
+    const R = MG().createRace({ player, bots: MG().weeklyBots(ev.seed, ctx.drvM && ctx.drvM.id), race: ev.race, seed: ev.seed, wxSeed: ev.seed, startTyre: ctx.m.next.tyre, plan: ctx.m.next.plan, manual: true });
     R.weekly = ev;
     showRace(R, { ...ctx, race: ev.race });
   }
@@ -2075,7 +2075,7 @@
     const fl = MG().forecastLaps(ev.seed, ev.race), plan = MG().planFor(m.next.plan, ev.laps).stops;
     const left = MG().WEEKLY_ATTEMPTS - w.attemptsUsed;
     const head = `<div class="wk-banner"><div class="wk-b-l"><small>Grand Prix Hebdomadaire · semaine ${ev.week}</small><h2>${flag(ev.race.iso, 'lg')} ${esc(ev.race.nameFr)}</h2>
-        <div class="muted" style="font-size:13px">${ev.laps} tours · mêmes conditions pour tous les joueurs : circuit, météo tour par tour, managers IA</div>
+        <div class="muted" style="font-size:13px">${ev.laps} tours · mêmes conditions pour tous les joueurs : circuit, météo tour par tour, pilotes IA</div>
         <div class="fc-segs">${fl.segs.map((g) => `<span>${g.icon} ${esc(g.txt)}</span>`).join('')}</div></div>
       <div class="wk-b-r"><small>Clôture dimanche 23 h 59</small><b id="wkCount">${untilTxt(ev.endsAt - Date.now())}</b></div></div>`;
     const trophies = (m.trophies || []).slice(0, 8).map((t) => `<span class="wk-trophy" title="${esc(t.circuit)} · semaine ${esc(t.week)}">${t.rank === 1 ? '🥇' : t.rank === 2 ? '🥈' : t.rank === 3 ? '🥉' : '🏅'} <b>${t.rank}${t.rank === 1 ? 'er' : 'e'}</b><small>${esc(t.week.replace('-W', ' · S'))}</small></span>`).join('');

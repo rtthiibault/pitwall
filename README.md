@@ -304,3 +304,7 @@ Page `#/paddock`, accessible par le bouton « Paddock Wire » de l'en-tête et p
 ## Pictogrammes
 
 Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectorielles originales (`js/icons.js` : trait 1,7 px sur une grille de 24, couleur héritée du texte, teintes sémantiques pour alerte, validation, médailles, météo…). Dans le code, les emojis servent de noms lisibles ; un `MutationObserver` les convertit partout (pages, fenêtres, messages, fil de course). `F1.icon(nom)` renvoie directement une icône.
+
+## F1 Manager : plateau fictif de 22 voitures
+
+11 écuries fictives (Red Storm Racing, Scuderia Rossa, Papaya GP, Silver Arrows GP, British Green Racing, Bleu France GP, Grove Heritage, Ingolstadt Works, Apex USA, Faenza Junior, Detroit Motors) et 22 pilotes aux noms dérivés (`GRID` dans `js/manager.js`). Chaque pilote garde le talent, l'âge et la forme de son modèle réel. En course : le joueur + 21 pilotes IA (celui que le joueur emploie n'est pas dupliqué) ; la note des pilotes IA est ramenée à la fourchette de la ligue, hiérarchie conservée. Deux réservistes (TSU, CAM) restent au marché pour les anciennes sauvegardes. Pas de photo réelle dans le F1 Manager.

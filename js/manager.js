@@ -4,7 +4,7 @@
   const START_PC = 300;
   const RACES_PER_DAY = 3;          // courses gratuites par fenêtre de recharge
   const REFILL_H = 5;               // durée d'une fenêtre : 3 courses toutes les 5 heures
-  const FIELD = 20; // 1 joueur + 19 managers IA
+  const FIELD = 22; // 22 voitures : le joueur + 21 pilotes IA
   const LAPS = 20;                  // course de référence : l'équilibrage d'origine a été réglé sur 20 tours
   /* Nombre de tours officiel de chaque Grand Prix */
   const RACE_LAPS = {
@@ -25,6 +25,30 @@
     stroll: [77, -1, 0, -3], colapinto: [77, 0, 1, -3], arvid_lindblad: [76, 1, 1, -5], rafael_camara: [75, 1, 0, -5],
   };
   const ROOKIES = ['arvid_lindblad', 'rafael_camara'];
+  /* ---------- Plateau F1 Manager : 11 écuries fictives, 22 pilotes aux noms dérivés ----------
+     [id du pilote réel (talent, âge, forme), nom, code, écurie]. Les deux réservistes restent recrutables
+     au marché (anciennes sauvegardes) mais ne font pas partie du plateau IA. */
+  const TEAM_NAME = {
+    red_bull: 'Red Storm Racing', ferrari: 'Scuderia Rossa', mclaren: 'Papaya GP', mercedes: 'Silver Arrows GP', aston_martin: 'British Green Racing',
+    alpine: 'Bleu France GP', williams: 'Grove Heritage', audi: 'Ingolstadt Works', sauber: 'Ingolstadt Works', haas: 'Apex USA', rb: 'Faenza Junior',
+    racing_bulls: 'Faenza Junior', cadillac: 'Detroit Motors',
+  };
+  const GRID = [
+    ['max_verstappen', 'Max Van Der Berg', 'VDB', 'red_bull'], ['hadjar', 'Isack Hajar', 'HAJ', 'red_bull'],
+    ['leclerc', 'Charles Leclair', 'LEC', 'ferrari'], ['hamilton', 'Lewis Harrington', 'HAR', 'ferrari'],
+    ['norris', 'Lando Morris', 'MOR', 'mclaren'], ['piastri', 'Oscar Pastori', 'PAS', 'mclaren'],
+    ['russell', 'George Rosswell', 'ROS', 'mercedes'], ['antonelli', 'Kimi Antonini', 'ANT', 'mercedes'],
+    ['alonso', 'Fernando Alcaraz', 'ALC', 'aston_martin'], ['stroll', 'Lance Storm', 'STO', 'aston_martin'],
+    ['gasly', 'Pierre Gaspard', 'GAS', 'alpine'], ['colapinto', 'Franco Costapinto', 'COS', 'alpine'],
+    ['sainz', 'Carlos Sanchez', 'SAN', 'williams'], ['albon', 'Alex Albion', 'ALB', 'williams'],
+    ['hulkenberg', 'Nico Heidenberg', 'HEI', 'audi'], ['bortoleto', 'Gabriel Bartoletti', 'BAR', 'audi'],
+    ['ocon', 'Esteban Orson', 'ORS', 'haas'], ['bearman', 'Oliver Bowman', 'BOW', 'haas'],
+    ['lawson', 'Liam Dawson', 'DAW', 'rb'], ['arvid_lindblad', 'Arvid Lindstrom', 'LIN', 'rb'],
+    ['perez', 'Sergio Peralta', 'PER', 'cadillac'], ['bottas', 'Valtteri Koskinen', 'KOS', 'cadillac'],
+  ];
+  const RESERVES = [['tsunoda', 'Yuki Tsuneda', 'TSU', 'rb'], ['rafael_camara', 'Rafael Camaro', 'CAM', 'haas']];
+  const GRID_BY = new Map([...GRID, ...RESERVES].map((g) => [g[0], { id: g[0], name: g[1], code: g[2], teamId: g[3], reserve: RESERVES.includes(g) }]));
+  const shortName = (n) => { const w = n.split(' '); return w.length > 1 ? `${w[0][0]}. ${w.slice(1).join(' ')}` : n; };
   /* ---------- Âge et expérience des pilotes ----------
      Année de naissance réelle. Un pilote gagne de l'XP à chaque course terminée avec l'écurie du joueur ;
      les jeunes apprennent vite et ont une grande marge de progression, les vétérans presque plus. */
@@ -150,16 +174,17 @@
   // valeur d'un pilote tel qu'il est aujourd'hui (objet renvoyé par withExperience)
   const valueOfDriver = (x) => (x.exp ? driverValue((x.base ? x.base.rating : x.rating) + x.exp.pts, x.exp.cap - x.exp.pts, x.exp.age) : x.price);
   function market(season) {
-    const ents = season.entrants.length ? season.entrants : [...season.drivers.keys()];
+    const ents = [...GRID_BY.keys()];
     const drivers = season.drivers;
+    const dOf = (id) => drivers.get(id) || { points: 0, number: '', iso: '' };
     // forme réelle : points par course disputée
     const starts = {};
     season.races.forEach((r) => (r.results || []).forEach((x) => { starts[x.driverId] = (starts[x.driverId] || 0) + 1; }));
-    const ppr = (id) => (starts[id] ? (drivers.get(id).points || 0) / starts[id] : 0);
+    const ppr = (id) => (starts[id] ? (dOf(id).points || 0) / starts[id] : 0);
     const maxPpr = Math.max(1, ...ents.map(ppr));
     const done = season.doneCount;
     const out = ents.map((id) => {
-      const d = drivers.get(id);
+      const d = dOf(id), g = GRID_BY.get(id);
       const t = TALENT[id] || [78, 0, 0, 0];
       const form = 65 + 33 * Math.pow(ppr(id) / maxPpr, 0.7);
       const wForm = done >= 3 ? 0.3 : 0.1;
@@ -170,11 +195,11 @@
       const pace = clamp(rating + off(1), 50, 99), craft = clamp(rating + off(2), 50, 99), cons = clamp(rating + off(3) - (rookie ? 2 : 0), 50, 99);
       const age = ageOf(id, season.year), agef = AGE_W(age);
       const price = driverValue(rating, growth(age).cap, age);   // valeur marchande sans progression acquise
-      return { id, name: `${d.given} ${d.family}`, family: d.family, code: d.code, number: d.number, iso: d.iso, teamId: d.teamId, rating, pace, craft, cons, price, rookie, age, agef };
+      return { id, name: g.name, family: g.name.split(' ').slice(1).join(' '), short: shortName(g.name), code: g.code, number: d.number, iso: d.iso, teamId: g.teamId, team: TEAM_NAME[g.teamId] || g.teamId, reserve: g.reserve, rating, pace, craft, cons, price, rookie, age, agef };
     }).sort((a, b) => b.rating - a.rating || b.price - a.price);
 
-    const teams = [...new Set(ents.map((id) => drivers.get(id).teamId))].map((tid) => {
-      const t = season.teams.get(tid);
+    const teams = [...new Set(GRID.map((g) => g[3]))].map((tid) => {
+      const t = season.teams.get(tid) || (tid === 'rb' && season.teams.get('racing_bulls')) || { points: 0 };
       const prior = (season.priors && season.priors[tid]) ?? F1.ref.TEAM_PRIOR[tid] ?? 4;
       const real = done ? (t.points || 0) / (2 * done) : prior;
       return { id: tid, raw: done >= 3 ? 0.65 * real + 0.35 * prior : prior };
@@ -186,7 +211,7 @@
       const p = TEAM_PROFILE[t.id] || [0, 0, 0];
       const tt = season.teams.get(t.id);
       return {
-        id: t.id, name: tt ? tt.short : t.id, strength: st,
+        id: t.id, name: TEAM_NAME[t.id] || (tt ? tt.short : t.id), strength: st,
         speed: Math.round(clamp(base + p[0], 30, 90)), df: Math.round(clamp(base + p[1], 30, 90)), rel: Math.round(clamp(base + 4 + p[2], 30, 95)),
         price: Math.round((25 + 475 * Math.pow(st, 2.2)) / 5) * 5,   // de 25 PC (fond de grille) à 500 PC (meilleure écurie)
       };
@@ -439,26 +464,28 @@
   const BOT_EXTRA = [10, 18, 31, 46, 64, 84]; // développement moyen des managers IA selon la ligue
   const BOT_NAMES = ['Apex Racing', 'Scuderia Lumière', 'Vortex GP', 'Nordic Speed', 'Team Kerb', 'Blue Comet', 'Atlas Motorsport', 'Riviera F1', 'Phoenix Racing', 'Iron Horse GP',
     'Sakura Speed', 'Andes Racing', 'Celtic Motorsport', 'Orbit Team', 'Velocity Works', 'Gaucho Racing', 'Alpine Wolf', 'Tidewater GP', 'Crimson Arrow', 'Zenith Racing', 'Boreal F1', 'Midnight Motorsport'];
-  function botField(mk, league, dayKey) {
+  // Ramène la note d'un pilote dans la fourchette de la ligue (la hiérarchie entre pilotes est conservée)
+  function leagueDriver(d, league) {
+    const lo = 76, hi = 97, [a, b] = league.drv;
+    const k = (Math.max(lo, Math.min(hi, d.rating)) - lo) / (hi - lo), target = Math.round(a + k * (b - a)), dd = target - d.rating;
+    const c = (v) => clamp(v + dd, 50, 99);
+    return { ...d, rating: target, pace: c(d.pace), craft: c(d.craft), cons: c(d.cons) };
+  }
+  function botField(mk, league, dayKey, meDriverId) {
     const r = rng(hash(`bots-${league.id}-${dayKey}`));
-    const names = [...BOT_NAMES].sort(() => r() - 0.5).slice(0, FIELD - 1);
-    const pool = mk.drivers.filter((d) => d.rating >= league.drv[0] - 2 && d.rating <= league.drv[1] + 2);
-    const drvPool = pool.length >= 6 ? pool : mk.drivers;
-    return names.map((name) => {
-      const d = drvPool[Math.floor(r() * drvPool.length)];
-      // plus la ligue est haute, plus les managers IA roulent sur de bons châssis
-      const li = LEAGUES.indexOf(league);
-      const n = mk.chassis.length; // châssis triés du plus cher au moins cher
-      const ranges = [[0, n], [0, n], [0, n], [0, 8], [0, 6], [0, 4]];
-      const [a, b] = ranges[li].map((x) => Math.max(0, Math.min(n, x)));
-      const c = mk.chassis[a + Math.floor(r() * Math.max(1, b - a))];
+    const li = LEAGUES.indexOf(league);
+    let grid = GRID.filter((g) => g[0] !== meDriverId && mk.byDriver.has(g[0]));
+    if (grid.length > FIELD - 1) grid = [...grid].sort((x, y) => mk.byDriver.get(y[0]).rating - mk.byDriver.get(x[0]).rating).slice(0, FIELD - 1);
+    return grid.map(([id, , , tid]) => {
+      const d = leagueDriver(mk.byDriver.get(id), league);
+      const c = mk.byChassis.get(tid) || mk.chassis[mk.chassis.length - 1];
       const lv = () => Math.round(league.bot[0] + r() * (league.bot[1] - league.bot[0]));
       const ups = { speed: lv(), df: lv(), rel: lv() };
       const car = carStats(c, ups), ex = BOT_EXTRA[li];
       car.speed += ex; car.df += ex; car.rel = Math.min(97, car.rel + ex * 0.5);
       const bm = li * 0.3;
       car.mech = { launch: bm * r() * 1.4, tyre: bm, push: bm * r() * 1.4, pit: bm, sc: bm * r(), drv: 0, wx: 0.4 + li * 0.35 + r() * 0.8 };
-      return { bot: true, name, driver: d, chassisId: c.id, car, setup: Math.round((r() * 1.6 - 0.8) * 10) / 10 };
+      return { bot: true, name: d.short, team: d.team, driver: d, chassisId: tid, car, setup: Math.round((r() * 1.6 - 0.8) * 10) / 10 };
     });
   }
 
@@ -1102,22 +1129,23 @@
     return { ...w, seed, race, laps: lapsOf(race) };
   }
   // Managers IA de la semaine : pilotes et châssis tirés de tables fixes (identiques pour tous les joueurs), niveau « Argent »
-  const WEEKLY_TEAM = { mercedes: 1, mclaren: 0.95, ferrari: 0.85, red_bull: 0.8, williams: 0.45, racing_bulls: 0.4, aston_martin: 0.35, haas: 0.3, alpine: 0.25, audi: 0.2, cadillac: 0.05 };
-  function weeklyBots(seed) {
+  const WEEKLY_TEAM = { mercedes: 1, mclaren: 0.95, ferrari: 0.85, red_bull: 0.8, williams: 0.45, racing_bulls: 0.4, rb: 0.4, aston_martin: 0.35, haas: 0.3, alpine: 0.25, audi: 0.2, cadillac: 0.05 };
+  function weeklyBots(seed, meDriverId) {
     const r = rng(seed ^ 0x9e3779b9), L = LEAGUES[1];
-    const names = [...BOT_NAMES].sort().map((n) => [r(), n]).sort((a, b) => a[0] - b[0]).map((x) => x[1]).slice(0, FIELD - 1);
-    const ids = Object.keys(TALENT).sort(), teams = Object.keys(WEEKLY_TEAM).sort();
-    return names.map((name) => {
-      const id = ids[Math.floor(r() * ids.length)], t = TALENT[id];
+    let grid = GRID.filter((g) => g[0] !== meDriverId);
+    if (grid.length > FIELD - 1) grid.splice(seed % grid.length, 1);
+    return grid.map(([id, name, code, tid]) => {
+      const t = TALENT[id] || [78, 0, 0, 0];
       const rating = t[0] - 2 + Math.round(r() * 3);
-      const driver = { id, code: id.slice(0, 3).toUpperCase(), rating, pace: clamp(rating + t[1], 50, 99), craft: clamp(rating + t[2], 50, 99), cons: clamp(rating + t[3], 50, 99) };
-      const tid = teams[Math.floor(r() * teams.length)], st = WEEKLY_TEAM[tid], pr = TEAM_PROFILE[tid] || [0, 0, 0], base = 45 + 30 * st;
+      const d0 = { id, name, code, short: shortName(name), team: TEAM_NAME[tid], teamId: tid, rating, pace: clamp(rating + t[1], 50, 99), craft: clamp(rating + t[2], 50, 99), cons: clamp(rating + t[3], 50, 99) };
+      const driver = leagueDriver(d0, L);
+      const st = WEEKLY_TEAM[tid] != null ? WEEKLY_TEAM[tid] : WEEKLY_TEAM.racing_bulls, pr = TEAM_PROFILE[tid] || [0, 0, 0], base = 45 + 30 * st;
       const chassis = { id: tid, speed: Math.round(base + pr[0]), df: Math.round(base + pr[1]), rel: Math.round(base + 4 + pr[2]) };
       const lv = () => Math.round(L.bot[0] + r() * (L.bot[1] - L.bot[0]));
       const car = carStats(chassis, { speed: lv(), df: lv(), rel: lv() }), ex = BOT_EXTRA[1];
       car.speed += ex; car.df += ex; car.rel = Math.min(97, car.rel + ex * 0.5);
       car.mech = { launch: 0.3 * r() * 1.4, tyre: 0.3, push: 0.3 * r() * 1.4, pit: 0.3, sc: 0.3 * r(), drv: 0, wx: 0.75 + r() * 0.8 };
-      return { bot: true, name, driver, chassisId: tid, car, setup: Math.round((r() * 1.6 - 0.8) * 10) / 10 };
+      return { bot: true, name: driver.short, team: driver.team, driver, chassisId: tid, car, setup: Math.round((r() * 1.6 - 0.8) * 10) / 10 };
     });
   }
   // Temps total de course : 1 h 25 m 14,382 s
@@ -1181,7 +1209,7 @@
     CLIMATE, climateOf, trackState, forecast, TYRES, isSlick, tyreDelta, DILEMMA_LAPS, dilemmaLaps, lapsOf, RACE_LAPS, planFor, REFILL_H, createRace, stepLap, dilemmaFor, applyChoice, RADIO,
     WEEKLY_ATTEMPTS, WEEKLY_FIRST_PRIME, isoWeek, weeklyEvent, weeklyBots, fmtRaceTime, fmtGap, weeklyPrize, CIRCUIT_NAME,
     SPONSORS, SPONSOR_BY_ID, goalText, sponsorTerms, sponsorAfterRace, SUB_K,
-    START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, lpScale, AGE_PRICE, driverValue, valueOfDriver, RESALE_K, XP_DIV, PC_TABLE,
+    TEAM_NAME, GRID, GRID_BY, shortName, START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, lpScale, AGE_PRICE, driverValue, valueOfDriver, RESALE_K, XP_DIV, PC_TABLE,
     RD_CATS, RD_PARTS, RD_BY_ID, rdBranches, partState, partsBonus,
     market, carStats, withSetup, carScore, bestSetup, compat, circuitProfile, botField, simulate, rewards, hash, TALENT,
   };
