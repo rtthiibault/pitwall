@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-23T17:36:51.009Z",
+ "updated": "2026-11-23T18:06:54.493Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-23T18:06:51.009Z",
+ "next": "2026-11-23T18:36:54.493Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,43 @@
   }
  ],
  "items": [
+  {
+   "id": "news_rfsuzx",
+   "timestamp": "2026-11-23T18:00:00.000Z",
+   "category": "PADDOCK",
+   "title": "La victoire de Verstappen à Las Vegas à la Une du N°2589 d’AUTOhebdo",
+   "summary": "À la Une d’AUTOhebdo cette semaine : The post La victoire de Verstappen à Las Vegas à la Une du N°2589 d’AUTOhebdo appeared first on AutoHebdo .",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/magazine/la-victoire-de-verstappen-a-la-une-du-n2589-dautohebdo.html",
+   "impact": {
+    "targetType": "driver",
+    "targetIds": [
+     "max_verstappen"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 0.95,
+    "impactLabel": "Cotes -5%",
+    "teamId": "red_bull"
+   },
+   "firstSeen": "2026-11-23T18:06:54.493Z"
+  },
+  {
+   "id": "news_13jh7jv",
+   "timestamp": "2026-11-23T17:54:13.000Z",
+   "category": "PADDOCK",
+   "title": "Max Verstappen envisage les 24 Heures de Daytona dès 2027",
+   "summary": "En amont du Grand Prix de Las Vegas de Formule 1, Max Verstappen a d'abord fait un détour par Daytona. Le Néerlandais a expliqué qu'il s'y était principalement rendu pour tourner du contenu avec Red Bull, mais cette visite soulève également la question d'une…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/max-verstappen-envisage-24h-daytona-des-2027/10877165/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "impact": null,
+   "firstSeen": "2026-11-23T18:06:54.493Z"
+  },
   {
    "id": "news_rnblpl",
    "timestamp": "2026-11-23T17:00:00.000Z",
@@ -157,7 +194,7 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "impact": null,
-   "firstSeen": "2026-11-23T17:36:51.009Z"
+   "firstSeen": "2026-11-23T18:06:54.493Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -756,30 +793,6 @@
    "source": "Nextgen-Auto",
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/gasly-regrette-un-podium-manque-mais-il-a-pris-du-plaisir-a-las-vegas,213625.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_12mullu",
-   "timestamp": "2026-11-22T07:50:00.000Z",
-   "category": "PADDOCK",
-   "title": "Photos - GP de Las Vegas de F1 2026 - Course",
-   "summary": "",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/photos/photos-gp-de-las-vegas-de-f1-2026-course,213632.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_1tynbl8",
-   "timestamp": "2026-11-22T07:49:00.000Z",
-   "category": "PADDOCK",
-   "title": "Photos - GP de Las Vegas de F1 2026 - Avant-course",
-   "summary": "",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/photos/photos-gp-de-las-vegas-de-f1-2026-avant-course,213619.html",
    "impact": null,
    "firstSeen": "2026-11-23T10:59:50.658Z"
   }
