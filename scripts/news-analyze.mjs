@@ -80,8 +80,11 @@ export function analyze(item, drivers = []) {
   const tone = pos > neg ? 1 : neg > pos ? -1 : 0;
   const mag = has('strong') ? 2 : 1;
 
+  // sujet technique : il doit figurer dans le titre (un mot technique isolé dans le résumé ne suffit pas)
+  const hasT = (k) => RX[k].test(tt);
+  const supT = findSuppliers(tt);
+  const tech = hasT('engine') || hasT('aero') || hasT('reliab') || hasT('upgrade') || supT.length > 0;
   // catégorie
-  const tech = has('engine') || has('aero') || has('reliab') || has('upgrade');
   let category = 'PADDOCK';
   if (has('weather') && !tech) category = 'MÉTÉO';
   else if (has('rules') && !(tech && tone)) category = 'RÈGLEMENT';
@@ -105,10 +108,10 @@ export function analyze(item, drivers = []) {
     if (impact.targetType) { impact.teamId = d.teamId; if (category === 'TECHNIQUE') category = 'PADDOCK'; }
   }
   // 2) sujet technique sur 1 à 3 écuries (au-delà : article de synthèse, pas d'impact)
-  if (!impact.targetType && tech && tone && !RX.contract.test(tt) && mainTeams.length >= 1 && mainTeams.length <= 3) {
-    const eng = has('engine'), aero = has('aero') || has('upgrade'), rel = has('reliab');
+  if (!impact.targetType && tech && tone && !RX.contract.test(tt) && !RX.gridpen.test(tt) && (mainTeams.length >= 1 || supT.length) && mainTeams.length <= 3) {
+    const eng = hasT('engine') || supT.length > 0, aero = hasT('aero') || hasT('upgrade'), rel = hasT('reliab');
     if (eng) M.powerUnit = tone * (mag === 2 ? 4 : 2);
-    if (aero && !(eng && !RX.aero.test(t))) M.aero = tone * (mag === 2 ? 3 : 2);
+    if (aero) M.aero = tone * (mag === 2 ? 3 : 2);
     if (rel) M.reliability = tone < 0 ? -(mag === 2 ? 3 : 2) : 1;
     if (eng && tone < 0 && !rel && /\b(fiabilite|casse|panne)\b/.test(t)) M.reliability = -1;
     if (!M.powerUnit && !M.aero && !M.reliability) M.aero = tone;
@@ -119,7 +122,7 @@ export function analyze(item, drivers = []) {
       impact.targetIds = [...new Set([...SUPPLIERS[makers[0]], ...mainTeams])];
     } else {
       impact.targetType = 'team';
-      impact.targetIds = mainTeams;
+      impact.targetIds = mainTeams.length ? mainTeams : [...new Set(supT.flatMap((x) => SUPPLIERS[x]))];
     }
   }
   // 3) forme générale d'une écurie (victoire, crise...) sans détail technique

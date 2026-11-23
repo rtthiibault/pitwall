@@ -76,7 +76,7 @@
   {
    "id": "news_1q9kiv0",
    "timestamp": "2026-11-23T07:38:00.000Z",
-   "category": "TECHNIQUE",
+   "category": "PADDOCK",
    "title": "Mercedes pourrait devoir sacrifier deux équipes en F1",
    "summary": "Mercedes F1 pourrait se retrouver face à un choix particulièrement délicat à l'horizon 2030, alors que la Formule 1 envisage de limiter le nombre d'écuries pouvant être motorisées par un même constructeur. Avec le retour annoncé des moteurs V8, une proposition…",
    "source": "Nextgen-Auto",
@@ -112,7 +112,7 @@
   {
    "id": "news_1plm0ta",
    "timestamp": "2026-11-23T06:10:00.000Z",
-   "category": "TECHNIQUE",
+   "category": "PADDOCK",
    "title": "Norris raconte un GP passé à 'appuyer sur neuf boutons par tour'",
    "summary": "C'est une 2e place inattendue qu'a pu signer hier Lando Norris pour McLaren F1 : le champion du monde s'attendait à souffrir en lignes droites à Las Vegas, mais son rythme de course aura été supérieur aux attentes. En toute fin d'épreuve, il a aussi, bien sûr…",
    "source": "Nextgen-Auto",
@@ -268,7 +268,7 @@
   {
    "id": "news_kj636i",
    "timestamp": "2026-11-22T13:10:00.000Z",
-   "category": "TECHNIQUE",
+   "category": "PADDOCK",
    "title": "Las Vegas, une opportunité ratée qui « fait mal » pour Lindblad",
    "summary": "Sous régime de Voiture de sécurité, après l’accrochage entre Sergio Pérez et Rafael Câmara, Arvid Lindblad est soudainement parti en tête-à-queue en essayant de faire chauffer ses pneus, provoquant son abandon. Un instant suspendu, un mauvais passage de…",
    "source": "AutoHebdo",
@@ -424,7 +424,7 @@
   {
    "id": "news_13if8uh",
    "timestamp": "2026-11-22T09:21:00.000Z",
-   "category": "TECHNIQUE",
+   "category": "PADDOCK",
    "title": "Williams F1 : Sainz arrache la 8e place, la FW48 d'Albon prend feu",
    "summary": "Williams F1 a connu un Grand Prix de Las Vegas aux deux visages. Carlos Sainz a décroché une précieuse huitième place au terme d'une course qu'il estime avoir parfaitement exécutée, notamment grâce à une gestion intelligente de son énergie électrique qui lui a…",
    "source": "Nextgen-Auto",
@@ -484,25 +484,13 @@
   {
    "id": "news_x80v7w",
    "timestamp": "2026-11-22T08:09:32.000Z",
-   "category": "TECHNIQUE",
+   "category": "RÈGLEMENT",
    "title": "Pérez accuse Câmara de ne pas l'avoir vu, la FIA lui met 5 places pour le Qatar",
    "summary": "Cadillac a vécu un Grand Prix de Las Vegas contrasté, entre l'arrivée de Valtteri Bottas à la 18e place et l'abandon prématuré de Sergio Pérez après un accrochage avec Rafael Câmara. Si le Finlandais a pu accumuler de précieux kilomètres au terme d'une course…",
    "source": "Nextgen-Auto",
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/perez-accuse-camara-de-ne-pas-l-avoir-vu-la-fia-lui-met-5-places-pour-le-qatar,213621.html",
-   "impact": {
-    "targetType": "team",
-    "targetIds": [
-     "cadillac"
-    ],
-    "managerModifiers": {
-     "powerUnit": -2,
-     "aero": 0,
-     "reliability": -2
-    },
-    "bettingOddsMultiplier": 1.12,
-    "impactLabel": "Moteur -2 pts | Fiabilité -2 pts | Cotes +12%"
-   },
+   "impact": null,
    "firstSeen": "2026-11-23T10:59:50.658Z"
   },
   {
@@ -520,25 +508,13 @@
   {
    "id": "news_7i9aw3",
    "timestamp": "2026-11-22T07:53:00.000Z",
-   "category": "TECHNIQUE",
+   "category": "PADDOCK",
    "title": "Gasly regrette un podium manqué mais il a 'pris du plaisir' à Las Vegas",
    "summary": "Alpine F1 a signé un excellent résultat à Las Vegas, après une série de six courses durant lesquelles l'équipe n'avait marqué qu'un point. Pierre Gasly a roulé dans le groupe de tête en course jusqu'à connaître une surchauffe, mais les erreurs d'autres pilotes…",
    "source": "Nextgen-Auto",
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/gasly-regrette-un-podium-manque-mais-il-a-pris-du-plaisir-a-las-vegas,213625.html",
-   "impact": {
-    "targetType": "team",
-    "targetIds": [
-     "alpine"
-    ],
-    "managerModifiers": {
-     "powerUnit": 0,
-     "aero": 0,
-     "reliability": -2
-    },
-    "bettingOddsMultiplier": 1.04,
-    "impactLabel": "Fiabilité -2 pts | Cotes +4%"
-   },
+   "impact": null,
    "firstSeen": "2026-11-23T10:59:50.658Z"
   },
   {
@@ -617,24 +593,25 @@
   {
    "id": "news_dna60q",
    "timestamp": "2026-11-22T07:16:10.000Z",
-   "category": "TECHNIQUE",
+   "category": "PADDOCK",
    "title": "'J'ai montré que j'étais là' : Hadjar reste positif après la déception de Las Vegas",
    "summary": "Isack Hadjar nourrissait quelques regrets après la course du Grand Prix de Las Vegas, puisqu'une casse d'aileron l'a renvoyé en fond de classement, avec une 15e place finale à la suite d'un arrêt au stand inattendu. Mais le pilote Red Bull n'a pas de…",
    "source": "Nextgen-Auto",
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/j-ai-montre-que-j-etais-la-hadjar-reste-positif-apres-la-deception-de-las-vegas,213628.html",
    "impact": {
-    "targetType": "team",
+    "targetType": "driver",
     "targetIds": [
-     "red_bull"
+     "hadjar"
     ],
     "managerModifiers": {
      "powerUnit": 0,
-     "aero": -2,
-     "reliability": -2
+     "aero": 0,
+     "reliability": 0
     },
-    "bettingOddsMultiplier": 1.12,
-    "impactLabel": "Aéro -2 pts | Fiabilité -2 pts | Cotes +12%"
+    "bettingOddsMultiplier": 1.06,
+    "impactLabel": "Cotes +6%",
+    "teamId": "red_bull"
    },
    "firstSeen": "2026-11-23T10:59:50.658Z"
   },
@@ -787,13 +764,26 @@
   {
    "id": "news_1m0pc8",
    "timestamp": "2026-11-22T05:40:19.000Z",
-   "category": "TECHNIQUE",
+   "category": "RÈGLEMENT",
    "title": "Verstappen remporte un Grand Prix de Las Vegas au suspense total !",
    "summary": "Kimi Antonelli, auteur du meilleur temps des qualifications, ayant écopé d'une pénalité de cinq places sur la grille pour dépassement de son quota d'unités de puissance, Max Verstappen a hérité de la pole position et conservé la tête au départ devant George…",
    "source": "Motorsport.com",
    "lang": "fr",
    "url": "https://fr.motorsport.com/f1/news/grand-prix-las-vegas-verstappen-vainqueur-suspense-total/10876685/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "impact": null,
+   "impact": {
+    "targetType": "driver",
+    "targetIds": [
+     "max_verstappen"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 0.95,
+    "impactLabel": "Cotes -5%",
+    "teamId": "red_bull"
+   },
    "firstSeen": "2026-11-23T10:59:50.658Z"
   },
   {
