@@ -483,7 +483,9 @@
     const nextSess = nx.sessions.find((x) => x.date.getTime() > now);
     const w = S.weather;
     const wIcon = w ? (w.rain >= 50 ? '🌧️' : w.rain >= 25 ? '🌦️' : w.code <= 1 ? '☀️' : '⛅') : '';
-    return `<section class="hero"><div class="hero-bg">${streaks()}<div class="grid-floor"></div><div class="big-round">R${nx.round}</div><div class="kerb"></div></div>
+    const favW = S.markets.find((m) => m.kind === 'win'), favD = favW && favW.selections[0] && drv(favW.selections[0].driverId);
+    const heroTc = favD ? team(favD.teamId).color : 'var(--red)';
+    return `<section class="hero hero-dark" style="--tc:${heroTc}"><div class="hero-bg">${streaks()}<div class="grid-floor"></div><div class="big-round">R${nx.round}</div><div class="kerb"></div></div>
       <div class="hero-main"><div class="hero-top">${flag(nx.iso, 'lg')}<span class="chip red live">Prochain Grand Prix</span><span class="chip">Manche ${nx.round} / ${s.races.length}</span>${nx.sprint ? '<span class="chip gold">Week-end sprint</span>' : ''}${nx.street ? '<span class="chip">Circuit urbain</span>' : ''}${nx.round === 1 ? `<span class="chip green">🚦 Ouverture de la saison ${s.year}</span>` : ''}${nx.tbc ? '<span class="chip">À confirmer</span>' : ''}</div>
       <h1><span class="accent">${esc(nx.countryFr)}</span>${esc(nx.nameFr)}</h1>
       <div class="hero-meta"><span>${esc(nx.circuit)}, ${esc(nx.locality)}</span><span>${DAYL.format(nx.date)} à ${HM.format(nx.date)}</span>
@@ -1445,44 +1447,30 @@
     else c = `<text x="${w / 2}" y="${h / 2 + 8}" text-anchor="middle" font-size="24" font-weight="900" font-style="italic" fill="#2ee59d" class="scr-blink">2.1 s</text>${[[10, 10], [w - 22, 10], [10, h - 20], [w - 22, h - 20]].map(([a, b], i) => `<rect class="scr-blink" style="animation-delay:${i * 0.2}s" x="${a}" y="${b}" width="12" height="10" rx="2" fill="#2ee59d"/>`).join('')}`;
     return g(frame + `<g class="scr-on">${c}</g>`);
   }
-  // personne assise vue de dos, casque audio sur les oreilles
-  function wallPerson(cx, col, hair, on) {
-    if (!on) return `<g opacity=".5"><rect x="${cx - 24}" y="318" width="48" height="10" rx="4" fill="#2a2e37"/><rect x="${cx - 4}" y="328" width="8" height="52" fill="#2a2e37"/><circle cx="${cx}" cy="268" r="22" fill="none" stroke="#8b93a1" stroke-width="2" stroke-dasharray="5 5"/><text x="${cx}" y="276" text-anchor="middle" font-size="26" fill="#8b93a1">+</text></g>`;
-    return `<g class="wall-person"><rect x="${cx - 26}" y="322" width="52" height="10" rx="4" fill="#1b1e25"/><rect x="${cx - 4}" y="332" width="8" height="48" fill="#1b1e25"/>
-      <path d="M${cx - 46} 326 C${cx - 48} 268 ${cx - 30} 246 ${cx} 246 C${cx + 30} 246 ${cx + 48} 268 ${cx + 46} 326 Z" fill="${col}"/><path d="M${cx - 46} 300 H${cx + 46}" stroke="rgba(0,0,0,.35)" stroke-width="7"/><path d="M${cx - 14} 250 H${cx + 14} V262 H${cx - 14}Z" fill="rgba(255,255,255,.85)"/>
-      <rect x="${cx - 8}" y="232" width="16" height="18" fill="#d9a77e"/><circle cx="${cx}" cy="214" r="22" fill="#d9a77e"/><path d="M${cx - 22} 214 A22 22 0 0 1 ${cx + 22} 214 L${cx + 20} 222 C${cx + 8} 204 ${cx - 8} 204 ${cx - 20} 222Z" fill="${hair}"/>
-      <path d="M${cx - 25} 216 A25 26 0 0 1 ${cx + 25} 216" fill="none" stroke="#0c0d10" stroke-width="5"/><rect x="${cx - 31}" y="206" width="10" height="22" rx="4" fill="#0c0d10"/><rect x="${cx + 21}" y="206" width="10" height="22" rx="4" fill="#0c0d10"/><path d="M${cx + 26} 226 q10 16 -8 20" fill="none" stroke="#0c0d10" stroke-width="2.5"/></g>`;
-  }
   function mgrStaff(ctx) {
     const { m, ch, tb } = ctx;
     const col = ch ? F1.teamColor(ch.id) : '#e10600';
     const roles = MG().STAFF_ROLES;
     const role = roles.find((r) => r.id === S.staffRole) || roles[0];
-    const HAIR = ['#3b2a1e', '#6b4a2a', '#111', '#b98a4a', '#7a7d84'];
-    const bays = roles.map((r, i) => {
-      const x = 60 + i * 220, cur = MG().staffOf(m, r.id), on = !!cur;
-      return `<g class="bay ${r.id === role.id ? 'sel' : ''}" data-action="staff-sel" data-r="${r.id}" style="cursor:pointer">
-        <rect x="${x - 6}" y="78" width="212" height="322" rx="10" fill="rgba(255,255,255,.001)" class="bay-hit"/>
-        ${wallScreen(r.id, x, 92, 96, 62, on)}${wallScreen(r.id === 'tp' ? 're' : r.id === 'cm' ? 'st' : 'tp', x + 104, 92, 96, 62, on)}
-        <rect x="${x + 40}" y="154" width="6" height="26" fill="#23262d"/><rect x="${x + 154}" y="154" width="6" height="26" fill="#23262d"/>
-        ${wallPerson(x + 100, col, HAIR[(i + (cur ? cur.tier : 0)) % 5], on)}
-        <text x="${x + 100}" y="408" text-anchor="middle" font-size="13" font-weight="900" font-style="italic" fill="#fff" style="text-transform:uppercase">${r.icon} ${esc(r.name)}</text>
-        <text x="${x + 100}" y="426" text-anchor="middle" font-size="12" fill="${on ? '#cfd2dc' : '#8b93a1'}">${on ? esc(cur.name) : 'Poste vacant'}</text></g>`;
+    // Muret des stands : cinq postes (écrans de télémétrie + pictogramme du rôle) et la monoplace en 3D au pied du muret
+    const ROLE_ICO = {
+      tp: '<path d="M4 8h16v11H4z"/><path d="M9 8V5.5h6V8"/><path d="M4 12.5h16"/>',
+      td: '<circle cx="12" cy="12" r="7.5"/><path d="M12 4.5v3M12 16.5v3M4.5 12h3M16.5 12h3"/><path d="m10 14 1.2-3.8L15 9l-1.2 3.8Z"/>',
+      re: '<path d="M5 14v-2a7 7 0 0 1 14 0v2"/><rect x="3.5" y="13" width="4" height="6" rx="1.2"/><rect x="16.5" y="13" width="4" height="6" rx="1.2"/><path d="M18.5 19c0 1.5-2 2.5-5 2.5"/>',
+      st: '<path d="M4 19h16"/><path d="M6 16l4-5 3 3 5-7"/><circle cx="18" cy="7" r="1.4"/>',
+      cm: '<path d="M14.5 5.5a4 4 0 0 0-5 5L4 16l2.2 2.2 5.5-5.5a4 4 0 0 0 5-5l-2.4 2.4-2.1-.6-.6-2.1Z"/>',
+    };
+    const ico = (id) => `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">${ROLE_ICO[id] || ROLE_ICO.tp}</svg>`;
+    const bays = roles.map((r) => {
+      const cur = MG().staffOf(m, r.id), on = !!cur;
+      return `<button class="wbay ${r.id === role.id ? 'sel' : ''} ${on ? 'on' : 'off'}" data-action="staff-sel" data-r="${r.id}">
+        <svg class="wbay-scr" viewBox="0 0 200 62" aria-hidden="true">${wallScreen(r.id, 0, 0, 96, 62, on)}${wallScreen(r.id === 'tp' ? 're' : r.id === 'cm' ? 'st' : 'tp', 104, 0, 96, 62, on)}</svg>
+        <span class="wbay-desk"><span class="wbay-ico">${ico(r.id)}</span><span class="wbay-txt"><b>${esc(r.name)}</b><small>${on ? esc(cur.name) : 'Poste vacant'}</small>${on ? stars(cur.tier) : '<span class="wbay-plus">+ Recruter</span>'}</span></span></button>`;
     }).join('');
-    const scene = `<div class="wall-scene" style="--tc:${col}"><div class="scene-in"><svg viewBox="0 0 1200 440" role="img" aria-label="Muret des stands">
-      <defs><linearGradient id="wsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#101622"/><stop offset=".5" stop-color="#1b2433"/><stop offset="1" stop-color="#0b0d12"/></linearGradient>
-      <pattern id="wkerb" width="60" height="10" patternUnits="userSpaceOnUse"><rect width="30" height="10" fill="#e10600"/><rect x="30" width="30" height="10" fill="#f2f2f2"/></pattern>
-      <pattern id="wfence" width="14" height="14" patternUnits="userSpaceOnUse"><path d="M0 0 L14 14 M14 0 L0 14" stroke="rgba(255,255,255,.07)" stroke-width="1"/></pattern></defs>
-      <rect width="1200" height="440" fill="url(#wsky)"/>
-      <g opacity=".8">${Array.from({ length: 40 }, (_, i) => `<circle cx="${20 + i * 30}" cy="${26 + (i % 3) * 9}" r="2" fill="#ffe9b0"/>`).join('')}<rect y="44" width="1200" height="34" fill="#141a26"/>${Array.from({ length: 150 }, (_, i) => `<rect x="${(i * 53) % 1200}" y="${48 + (i * 7) % 26}" width="4" height="4" fill="${['#e33', '#fff', '#fc3', '#39f'][i % 4]}" opacity=".5"/>`).join('')}</g>
-      <rect y="196" width="1200" height="52" fill="#2a2d34"/><rect y="188" width="1200" height="8" fill="url(#wkerb)"/><path d="M0 222 H1200" stroke="#fff" stroke-width="2" stroke-dasharray="40 30" opacity=".5"/>
-      <g class="wall-car"><rect x="0" y="206" width="90" height="16" rx="6" fill="${col}"/><rect x="8" y="198" width="14" height="30" rx="3" fill="#0c0c0e"/><rect x="66" y="198" width="14" height="30" rx="3" fill="#0c0c0e"/></g>
-      <rect y="78" width="1200" height="120" fill="url(#wfence)"/>
-      <rect x="30" y="58" width="1140" height="22" rx="4" fill="${col}"/><rect x="30" y="74" width="1140" height="6" fill="rgba(0,0,0,.35)"/><text x="600" y="75" text-anchor="middle" font-size="15" font-weight="900" font-style="italic" fill="#fff" letter-spacing="6">PITWALL</text>
-      ${[40, 260, 480, 700, 920, 1150].map((x) => `<rect x="${x}" y="78" width="8" height="180" fill="#23262d"/>`).join('')}
-      <rect x="30" y="178" width="1140" height="14" rx="3" fill="#2f333c"/>
-      <rect y="380" width="1200" height="60" fill="#0b0c10"/><rect y="378" width="1200" height="4" fill="#3a3f4a"/>
-      ${bays}</svg></div></div>`;
+    const scene = `<div class="wall2" style="--tc:${col}">
+      <div class="wall2-gantry"><b>PITWALL</b><span>${ch ? esc(ch.name) : 'Votre écurie'}</span></div>
+      <div class="wall2-bays">${bays}</div>
+      <div class="wall2-track"><i class="wall2-kerb"></i>${ch ? `<div class="wall2-car">${F1.visuals.car(ch.id, { view: 'side', number: ctx.drvM ? ctx.drvM.number : '', sponsor: livery(m) })}</div>` : ''}</div></div>`;
     const cur = MG().staffOf(m, role.id);
     const cards = MG().STAFF[role.id].map((x) => {
       const own = cur && cur.id === x.id, refund = cur ? Math.round(cur.price * 0.5) : 0, net = x.price - refund;

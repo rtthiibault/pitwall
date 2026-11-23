@@ -736,3 +736,44 @@ html.low .trr-eq.talking i { animation: none; height: 9px; }
 .fl-opt small { font-size: 12px; color: var(--muted); line-height: 1.35; } .fl-opt em { font-style: normal; font-size: 11.5px; color: var(--dim); }
 .fl-opt.on { border-color: var(--pw, #ffa51f); background: rgba(255, 165, 31, .1); }
 @media (max-width: 620px) { .fl-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* =================== Muret des stands (sans personnages : postes, écrans, monoplace 3D) =================== */
+.wall2 { position: relative; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line);
+  background: radial-gradient(70% 90% at 50% 110%, color-mix(in srgb, var(--tc) 22%, transparent), transparent 70%), linear-gradient(180deg, #0c0f14, #090b0f); }
+.wall2-gantry { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 16px; background: var(--tc); color: #fff; }
+.wall2-gantry b { font-style: italic; font-weight: 800; letter-spacing: .35em; font-size: 13px; text-shadow: 0 1px 0 rgba(0,0,0,.3); }
+.wall2-gantry span { font-size: 12px; font-weight: 650; opacity: .9; text-shadow: 0 1px 0 rgba(0,0,0,.3); }
+.wall2-bays { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; padding: 12px 12px 0; }
+.wbay { display: flex; flex-direction: column; gap: 8px; padding: 8px; border-radius: var(--radius-s); border: 1px solid #222a33; background: linear-gradient(180deg, #12161c, #0e1115); color: var(--text); text-align: left; cursor: pointer; transition: border-color .15s, background .15s; }
+.wbay:hover { border-color: var(--line2); }
+.wbay.sel { border-color: var(--tc); background: linear-gradient(180deg, color-mix(in srgb, var(--tc) 14%, #12161c), #0e1115); box-shadow: inset 0 -2px 0 var(--tc); }
+.wbay-scr { width: 100%; height: auto; display: block; }
+.wbay-desk { display: flex; align-items: flex-start; gap: 8px; }
+.wbay-ico { flex: none; width: 30px; height: 30px; display: grid; place-items: center; border-radius: var(--radius-s); background: color-mix(in srgb, var(--tc) 22%, #151a21); color: #fff; }
+.wbay.off .wbay-ico { background: #171c23; color: var(--dim); }
+.wbay-ico svg { width: 19px; height: 19px; }
+.wbay-txt { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.wbay-txt b { font-size: 12px; text-transform: uppercase; letter-spacing: .03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wbay-txt small { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wbay-plus { font-size: 11.5px; color: var(--tc); font-weight: 650; margin-top: 2px; filter: brightness(1.3); }
+.wbay .stars { font-size: 11px; }
+.wall2-track { position: relative; height: 170px; margin-top: 12px; background: linear-gradient(180deg, #16191e 0, #1c2026 55%, #121418 100%); border-top: 1px solid #2a3038; }
+.wall2-kerb { position: absolute; left: 0; right: 0; top: 0; height: 6px; background: repeating-linear-gradient(90deg, var(--red) 0 34px, #f2f2f2 34px 68px); opacity: .9; }
+.wall2-track::after { content: ''; position: absolute; left: 0; right: 0; top: 58%; height: 2px; background: repeating-linear-gradient(90deg, rgba(255,255,255,.35) 0 40px, transparent 40px 80px); }
+.wall2-car { position: absolute; left: 50%; bottom: 4px; width: min(560px, 70%); transform: translateX(-50%); z-index: 1; }
+.wall2-car .car3d { height: 150px; }
+@media (max-width: 1100px) { .wall2-bays { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .wall2-bays { grid-template-columns: repeat(2, minmax(0, 1fr)); } .wall2-track { height: 130px; } .wall2-car { width: 92%; } .wall2-car .car3d { height: 115px; } }
+
+/* =================== Accueil : carte du Grand Prix sombre, éclairée aux couleurs du favori =================== */
+.hero.hero-dark { border-color: #1d232b !important;
+  background: radial-gradient(40% 55% at 76% 45%, color-mix(in srgb, var(--tc) 14%, transparent), transparent 72%),
+    linear-gradient(115deg, #0d1014 0%, #0b0e12 55%, #090b0e 100%) !important; }
+.hero-dark .hero-stage { isolation: isolate; }
+/* sol de studio : ellipse sombre sous la voiture, liseré aux couleurs de l'écurie */
+.hero-dark .hero-stage::before { content: ''; position: absolute; left: 4%; right: 4%; bottom: 12%; height: 30%; border-radius: 50%; z-index: -1;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, .7), transparent); }
+.hero-dark .stage-glow { opacity: .3; bottom: 30%; height: 34%; left: 14%; right: 14%; background: radial-gradient(closest-side, color-mix(in srgb, var(--tc) 60%, transparent), transparent) !important; }
+.hero-dark .stage-glow::after { display: none !important; }
+.hero-dark .stage-cap { background: rgba(6, 8, 11, .82); border-color: color-mix(in srgb, var(--tc) 35%, #1d232b); }
+.hero-dark .sess, .hero-dark .cd-box { background: rgba(255, 255, 255, .02); }
