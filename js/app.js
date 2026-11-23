@@ -1198,7 +1198,7 @@
     }
     const left = F1.store.racesLeft();
     const prog = nl ? ((m.lp - league.min) / (nl.min - league.min)) * 100 : 100;
-    const p = null; // F1 Manager : pilotes fictifs, pas de photo réelle
+    const p = F1.visuals.portrait(drvM.id);
     const col = F1.teamColor(ch.id);
     const setupLbl = (v) => (v <= -0.35 ? 'Faible appui (vitesse)' : v >= 0.35 ? 'Fort appui (virages)' : 'Réglage médian');
     const botAvg = (k) => bots.reduce((a, b) => a + b.car[k], 0) / bots.length;
@@ -1258,7 +1258,7 @@
     return `<div class="notice" style="margin-bottom:16px">💰 Prix = valeur marchande : surtout la note actuelle (chaque point au-dessus de 80 coûte cher), un peu la marge de progression selon l'âge. 📈 Un pilote gagne de l'expérience à chaque course terminée avec vous : les jeunes progressent vite et loin, les vétérans presque plus. La progression acquise est conservée si vous le reprenez plus tard. ${m.driver ? `Revendre <b>${esc(m.driver.name)}</b> vous rapporte ${fmtPC(res)} (78 % de sa valeur marchande actuelle : formez un jeune et revendez-le au sommet).` : ''}</div>
       <div class="mgrid">${mk.drivers.map((d) => {
         const own = m.driver && m.driver.id === d.id;
-        const p = null; // F1 Manager : pilotes fictifs, pas de photo réelle
+        const p = F1.visuals.portrait(d.id);
         const x = MG().withExperience(d, m.drvXp), e = x.exp;
         const val = MG().valueOfDriver(x), net = val - (own ? 0 : res);
         return `<div class="mcard ${own ? 'own' : ''}" style="--tc:${tcol(d.teamId)}"><div class="row" style="flex-wrap:nowrap;align-items:start">
