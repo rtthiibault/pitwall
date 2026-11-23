@@ -29,24 +29,24 @@
      [id du pilote réel (talent, âge, forme), nom, code, écurie]. Les deux réservistes restent recrutables
      au marché (anciennes sauvegardes) mais ne font pas partie du plateau IA. */
   const TEAM_NAME = {
-    red_bull: 'Red Storm Racing', ferrari: 'Scuderia Rossa', mclaren: 'Papaya GP', mercedes: 'Silver Arrows GP', aston_martin: 'British Green Racing',
-    alpine: 'Bleu France GP', williams: 'Grove Heritage', audi: 'Ingolstadt Works', sauber: 'Ingolstadt Works', haas: 'Apex USA', rb: 'Faenza Junior',
-    racing_bulls: 'Faenza Junior', cadillac: 'Detroit Motors',
+    red_bull: 'Red Bul Racing', ferrari: 'Scuderia Ferari', mclaren: 'MacLaren', mercedes: 'Mercedez', aston_martin: 'Astin Martin',
+    alpine: 'Alpinne', williams: 'Wiliams', audi: 'Audii', sauber: 'Audii', haas: 'Haass', rb: 'Racing Buls', racing_bulls: 'Racing Buls', cadillac: 'Cadilac',
   };
+  const TEAM_CODE = { red_bull: 'RBR', ferrari: 'FER', mclaren: 'MCL', mercedes: 'MER', aston_martin: 'AST', alpine: 'ALP', williams: 'WIL', audi: 'AUD', sauber: 'AUD', haas: 'HAA', rb: 'VRB', racing_bulls: 'VRB', cadillac: 'CAD' };
   const GRID = [
-    ['max_verstappen', 'Max Van Der Berg', 'VDB', 'red_bull'], ['hadjar', 'Isack Hajar', 'HAJ', 'red_bull'],
-    ['leclerc', 'Charles Leclair', 'LEC', 'ferrari'], ['hamilton', 'Lewis Harrington', 'HAR', 'ferrari'],
-    ['norris', 'Lando Morris', 'MOR', 'mclaren'], ['piastri', 'Oscar Pastori', 'PAS', 'mclaren'],
-    ['russell', 'George Rosswell', 'ROS', 'mercedes'], ['antonelli', 'Kimi Antonini', 'ANT', 'mercedes'],
-    ['alonso', 'Fernando Alcaraz', 'ALC', 'aston_martin'], ['stroll', 'Lance Storm', 'STO', 'aston_martin'],
-    ['gasly', 'Pierre Gaspard', 'GAS', 'alpine'], ['colapinto', 'Franco Costapinto', 'COS', 'alpine'],
-    ['sainz', 'Carlos Sanchez', 'SAN', 'williams'], ['albon', 'Alex Albion', 'ALB', 'williams'],
-    ['hulkenberg', 'Nico Heidenberg', 'HEI', 'audi'], ['bortoleto', 'Gabriel Bartoletti', 'BAR', 'audi'],
-    ['ocon', 'Esteban Orson', 'ORS', 'haas'], ['bearman', 'Oliver Bowman', 'BOW', 'haas'],
-    ['lawson', 'Liam Dawson', 'DAW', 'rb'], ['arvid_lindblad', 'Arvid Lindstrom', 'LIN', 'rb'],
-    ['perez', 'Sergio Peralta', 'PER', 'cadillac'], ['bottas', 'Valtteri Koskinen', 'KOS', 'cadillac'],
+    ['max_verstappen', 'Max Verstapen', 'VER', 'red_bull'], ['hadjar', 'Isack Hadgar', 'HAD', 'red_bull'],
+    ['leclerc', 'Charles Leclere', 'LEC', 'ferrari'], ['hamilton', 'Lewis Hamiltan', 'HAM', 'ferrari'],
+    ['norris', 'Lando Noris', 'NOR', 'mclaren'], ['piastri', 'Oscar Piastrie', 'PIA', 'mclaren'],
+    ['russell', 'George Russel', 'RUS', 'mercedes'], ['antonelli', 'Kimi Antoneli', 'ANT', 'mercedes'],
+    ['alonso', 'Fernando Alonzo', 'ALO', 'aston_martin'], ['stroll', 'Lance Strol', 'STR', 'aston_martin'],
+    ['gasly', 'Pierre Gasli', 'GAS', 'alpine'], ['colapinto', 'Franco Colapintto', 'COL', 'alpine'],
+    ['sainz', 'Carlos Saynz', 'SAI', 'williams'], ['albon', 'Alex Alben', 'ALB', 'williams'],
+    ['hulkenberg', 'Nico Hulkenburg', 'HUL', 'audi'], ['bortoleto', 'Gabriel Bortoletto', 'BOR', 'audi'],
+    ['ocon', 'Esteban Okon', 'OCO', 'haas'], ['bearman', 'Oliver Beerman', 'BEA', 'haas'],
+    ['lawson', 'Liam Lawsen', 'LAW', 'rb'], ['arvid_lindblad', 'Arvid Lindblat', 'LIN', 'rb'],
+    ['perez', 'Sergio Peres', 'PER', 'cadillac'], ['bottas', 'Valteri Botas', 'BOT', 'cadillac'],
   ];
-  const RESERVES = [['tsunoda', 'Yuki Tsuneda', 'TSU', 'rb'], ['rafael_camara', 'Rafael Camaro', 'CAM', 'haas']];
+  const RESERVES = [['tsunoda', 'Yuki Tsunodda', 'TSU', 'rb'], ['rafael_camara', 'Rafael Camarra', 'CAM', 'haas']];
   const GRID_BY = new Map([...GRID, ...RESERVES].map((g) => [g[0], { id: g[0], name: g[1], code: g[2], teamId: g[3], reserve: RESERVES.includes(g) }]));
   const shortName = (n) => { const w = n.split(' '); return w.length > 1 ? `${w[0][0]}. ${w.slice(1).join(' ')}` : n; };
   /* ---------- Âge et expérience des pilotes ----------
@@ -1209,7 +1209,7 @@
     CLIMATE, climateOf, trackState, forecast, TYRES, isSlick, tyreDelta, DILEMMA_LAPS, dilemmaLaps, lapsOf, RACE_LAPS, planFor, REFILL_H, createRace, stepLap, dilemmaFor, applyChoice, RADIO,
     WEEKLY_ATTEMPTS, WEEKLY_FIRST_PRIME, isoWeek, weeklyEvent, weeklyBots, fmtRaceTime, fmtGap, weeklyPrize, CIRCUIT_NAME,
     SPONSORS, SPONSOR_BY_ID, goalText, sponsorTerms, sponsorAfterRace, SUB_K,
-    TEAM_NAME, GRID, GRID_BY, shortName, START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, lpScale, AGE_PRICE, driverValue, valueOfDriver, RESALE_K, XP_DIV, PC_TABLE,
+    TEAM_NAME, TEAM_CODE, GRID, GRID_BY, shortName, START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, lpScale, AGE_PRICE, driverValue, valueOfDriver, RESALE_K, XP_DIV, PC_TABLE,
     RD_CATS, RD_PARTS, RD_BY_ID, rdBranches, partState, partsBonus,
     market, carStats, withSetup, carScore, bestSetup, compat, circuitProfile, botField, simulate, rewards, hash, TALENT,
   };
