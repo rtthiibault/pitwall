@@ -1308,3 +1308,31 @@ html.low .achv.ready .achv-badge, html.low .achv-claim { animation: none; }
 .lv-car .car3d, .lv-car .car3d.ok { width: 112%; max-width: none; margin: 0 -6%; }
 .lv-car .car3d img, .lv-car .car3d svg { width: 100% !important; height: auto !important; max-width: none !important; }
 .lv-car .car3d img { transform: scale(1.55); }
+
+/* ===== Accueil : fond légèrement rouge, les bandes obliques restent visibles par-dessus ===== */
+body.on-home::before { background: radial-gradient(120% 70% at 50% -10%, rgba(215,38,30,.24), transparent 70%), linear-gradient(180deg, color-mix(in srgb, var(--red) 14%, var(--bg)) 0, color-mix(in srgb, var(--red) 6%, var(--bg)) 900px, var(--bg) 1600px) !important; }
+body.on-home::after { mix-blend-mode: screen; }
+
+/* ===== F1 Manager : bandeau de départ du QG ===== */
+.go-strip { --tc: var(--red); display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(260px, auto); align-items: center; gap: 22px; margin: 0 0 16px; padding: 18px 22px; border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--tc) 70%, var(--line)); background: radial-gradient(90% 180% at 100% 50%, color-mix(in srgb, var(--tc) 30%, transparent), transparent 60%), linear-gradient(100deg, color-mix(in srgb, var(--tc) 10%, var(--card)), var(--card) 55%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--tc) 25%, transparent), 0 12px 32px rgba(0,0,0,.35); }
+.go-l { min-width: 0; display: grid; gap: 4px; }
+.go-l small { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--tc); filter: brightness(1.25); }
+.go-l h2 { margin: 0; font-size: clamp(20px, 2.4vw, 28px); font-weight: 900; font-style: italic; text-transform: uppercase; display: flex; align-items: center; gap: 10px; min-width: 0; }
+.go-l .muted { font-size: 13px; }
+.go-m { display: grid; justify-items: center; gap: 6px; }
+.go-m small { font-size: 12px; color: var(--muted); } .go-m b { color: var(--text); font-size: 14px; }
+.go-lights { display: flex; gap: 8px; padding: 7px 10px; border-radius: 10px; background: #08090c; border: 1px solid #262a31; }
+.go-lights i { width: 20px; height: 20px; border-radius: 50%; background: #2a1414; box-shadow: inset 0 2px 4px rgba(0,0,0,.6); }
+.go-lights i.on { background: radial-gradient(circle at 35% 30%, #ff8a80, #e10600 60%); box-shadow: 0 0 12px rgba(225,6,0,.8); }
+.go-r { display: grid; }
+.go-big { min-height: 58px; padding: 0 28px !important; font-size: 18px !important; font-weight: 900 !important; text-transform: uppercase; letter-spacing: .02em;
+  background: linear-gradient(90deg, #e10600, #ff3b30) !important; color: #fff !important; border: 0 !important; border-radius: 10px !important;
+  box-shadow: 0 8px 26px rgba(225,6,0,.45); animation: goPulse 2.2s ease-in-out infinite; }
+.go-big:hover:not([disabled]) { transform: translateY(-1px); filter: brightness(1.08); }
+.go-big[disabled] { animation: none; opacity: .55; }
+.go-strip.empty .go-big { background: linear-gradient(90deg, #b8891a, var(--gold)) !important; color: #1c1500 !important; box-shadow: 0 8px 22px rgba(233,190,62,.3); }
+@keyframes goPulse { 0%, 100% { box-shadow: 0 8px 26px rgba(225,6,0,.45), 0 0 0 0 rgba(225,6,0,.5); } 50% { box-shadow: 0 8px 26px rgba(225,6,0,.45), 0 0 0 10px rgba(225,6,0,0); } }
+@media (max-width: 900px) { .go-strip { grid-template-columns: 1fr; gap: 14px; } .go-m { justify-items: start; } }
+@media (max-width: 600px) { .go-big { font-size: 15px !important; min-height: 52px; padding: 0 14px !important; white-space: nowrap; } .go-strip { padding: 16px; } }

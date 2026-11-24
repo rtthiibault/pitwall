@@ -1272,7 +1272,14 @@
       <div class="row" style="justify-content:space-between;margin-top:6px"><span class="muted num" style="font-size:12px">${o.val} / ${o.goal}</span>${o.claimed ? '<span class="chip green">✓ Récupéré</span>' : o.done ? `<button class="btn sm gold" data-action="obj-claim" data-id="${o.id}">Récupérer</button>` : ''}</div></div>`).join('');
     const log = m.races.length ? `<div class="table-wrap"><table class="tbl" style="font-size:13px"><thead><tr><th>Date</th><th>Circuit</th><th class="c">Départ</th><th class="c">Arrivée</th><th class="r">LP</th><th class="r">PitCoins</th><th class="r">XP pilote</th></tr></thead><tbody>
         ${m.races.slice(0, 8).map((r) => `<tr><td class="muted">${DTF.format(new Date(r.t))}</td><td>${esc(r.gp || '')}</td><td class="c num">P${r.grid || '—'}</td><td class="c"><b>${r.dnf ? 'AB' : 'P' + r.pos}</b></td><td class="r"><span class="gain ${r.lp >= 0 ? 'up' : 'down'}">${r.lp >= 0 ? '+' : ''}${r.lp}</span></td><td class="r num">+${r.pc}</td><td class="r num">${r.xp != null ? '+' + r.xp : '—'}</td></tr>`).join('')}</tbody></table></div>` : '<div class="muted" style="font-size:13px">Aucune course disputée pour l\'instant.</div>';
-    return `<div class="dash">
+    // bandeau de départ : la course à lancer, bien visible dès l'arrivée sur le QG
+    const per = F1.store.racesPerDay();
+    const lights = Array.from({ length: per }, (_, i) => `<i class="${i < left ? 'on' : ''}"></i>`).join('');
+    const goStrip = `<section class="go-strip ${left ? '' : 'empty'}" style="--tc:${col};--tc-ink:${inkOn(col)}">
+      <div class="go-l"><small>Prochaine course · ${MG().lapsOf(race)} tours</small><h2>${flag(race.iso, 'lg')} ${esc(race.nameFr)}</h2><span class="muted">${esc(w.kind || '')} · ${esc(ch.name)} · ${esc(drvM.name)}</span></div>
+      <div class="go-m"><div class="go-lights">${lights}</div><small>${left ? `<b>${left}</b> course${left > 1 ? 's' : ''} gratuite${left > 1 ? 's' : ''} sur ${per}` : 'Courses gratuites épuisées'}</small></div>
+      <div class="go-r">${raceButton('btn go-big')}</div></section>`;
+    return goStrip + `<div class="dash">
       ${pnl('01', 'Stand · télémétrie', stand, 'p-stand')}
       ${pnl('02', 'Pilote', pilot, 'p-pilot', pnlLink('#/manager/pilotes', 'Marché'))}
       ${pnl('03', 'Équipe', chassis, 'p-chassis', pnlLink('#/manager/chassis', 'Changer'))}
