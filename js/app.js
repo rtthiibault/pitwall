@@ -258,6 +258,7 @@
 
   function afterRender(r, parts) {
     if (r === 'classements') mountChart();
+    if (r === 'paddock') pwApply();
     if (r === 'gp' && S.gpTab === 'quali') {
       const race = S.season.races.find((x) => x.round === +parts[1]);
       if (race && !race.qualifying) F1.data.loadQualifying(S.season, race).then((q) => { if (q) route(); });
@@ -391,36 +392,125 @@
       <h3>${esc(x.title)}</h3>${x.summary ? `<p>${esc(x.summary)}</p>` : ''}${pwImpact(x)}
       <a class="pdw-src" href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">Lire sur ${esc(x.source)} ↗</a></article>`;
   }
+  /* ---------- Paddock Wire : dépêches, alerte « breaking », fil en direct ---------- */
+  // pilotes et écuries cités dans une dépêche (ciblés par l'impact, ou reconnus dans le titre et le résumé)
+  const PW_TEAM_RE = [['ferrari', /ferrari|scuderia/i], ['mclaren', /mclaren/i], ['red_bull', /red ?bull(?! ?(?:racing )?bulls)/i], ['mercedes', /mercedes/i], ['aston_martin', /aston ?martin/i],
+    ['alpine', /alpine/i], ['williams', /williams/i], ['haas', /\bhaas\b/i], ['rb', /racing bulls|\bvcarb\b|\brb\b/i], ['audi', /\baudi\b|sauber/i], ['cadillac', /cadillac/i]];
+  const pwTagCache = new Map();
+  function pwTags(x) {
+    if (pwTagCache.has(x.id)) return pwTagCache.get(x.id);
+    const txt = `${x.title} ${x.summary || ''}`, teams = [], drivers = [];
+    const tg = (x.impact && x.impact.targetIds) || [];
+    const ds = S.f1 ? [...S.f1.drivers.values()] : [];
+    tg.forEach((id) => { if (S.f1 && S.f1.teams.get(id)) teams.push(id); else if (ds.some((d) => d.id === id)) drivers.push(id); });
+    ds.forEach((d) => { if (!drivers.includes(d.id) && d.family && d.family.length > 2 && new RegExp(`\\b${d.family.normalize('NFD').replace(/[̀-ͯ]/g, '')}\\b`, 'i').test(txt.normalize('NFD').replace(/[̀-ͯ]/g, ''))) drivers.push(d.id); });
+    PW_TEAM_RE.forEach(([id, re]) => { if (!teams.includes(id) && re.test(txt) && S.f1 && (S.f1.teams.get(id) || (id === 'rb' && S.f1.teams.get('racing_bulls')))) teams.push(id); });
+    drivers.forEach((id) => { const d = drv(id); if (d && d.teamId && !teams.includes(d.teamId) && teams.length < 1) teams.push(d.teamId); });
+    const r = { teams: teams.slice(0, 3), drivers: drivers.slice(0, 3) };
+    pwTagCache.set(x.id, r); return r;
+  }
+  const PW_HOT = /officiel|annonc|quitte|départ|signe|signature|remplac|limog|retraite|pénalit|disqualif|accident|bless|champion|transfert|contrat|prolong|rejoint|renvoi|sanction|exclu|abandon|crash|victoire|pole|record|choc|séisme|bombe/i;
+  // importance d'une dépêche : impact sur le jeu, mots-clés forts, fraîcheur
+  function pwScore(x) {
+    const age = (Date.now() - Date.parse(x.timestamp)) / 36e5;
+    return (x.impact ? 2 + 4 * F1.news.weight(x) : 0) + (PW_HOT.test(x.title) ? 3 : 0) + (age < 6 ? 2 : age < 24 ? 1 : age < 48 ? 0 : -3) + Math.min(2, pwTags(x).drivers.length);
+  }
+  const pwTeamCol = (x) => { const t = pwTags(x); const id = t.teams[0] || (t.drivers[0] && (drv(t.drivers[0]) || {}).teamId); return id ? F1.teamColor(id) : '#d7261e'; };
+  // visuel d'une dépêche : photo de l'article, sinon portrait du pilote cité, sinon monoplace de l'écurie
+  function pwVisual(x, cls = '') {
+    const t = pwTags(x);
+    if (x.image && /^https:\/\//.test(x.image)) return `<img class="pw-img ${cls}" src="${esc(x.image)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.classList.add('ko')">`;
+    const d = t.drivers[0], pt = d && F1.visuals.portrait(d);
+    if (pt) return `<img class="pw-img portrait ${cls}" src="${esc(pt.img)}" alt="" loading="lazy" onerror="this.classList.add('ko')">`;
+    if (t.teams[0]) return `<div class="pw-car ${cls}">${F1.visuals.car(t.teams[0], { view: 'side', shadow: false })}</div>`;
+    return '';
+  }
+  const pwTagChips = (x) => { const t = pwTags(x); return [...t.drivers.map((id) => { const d = drv(id); return d ? `<span class="pw-tag" style="--tc:${tcol(d.teamId)}">${d.number ? dnum(d.number, d.teamId, 'in') : ''}${esc(d.family)}</span>` : ''; }), ...t.teams.map((id) => `<span class="pw-tag team" style="--tc:${F1.teamColor(id)}">${esc(pwName(id))}</span>`)].join(''); };
+  let pwSeenPrev = null;
+  const pwIsNew = (x) => pwSeenPrev != null && Date.parse(x.firstSeen || x.timestamp) > pwSeenPrev;
+  function pwBreaking(x) {
+    const t = pwTags(x), col = pwTeamCol(x), d = t.drivers[0] && drv(t.drivers[0]);
+    const [cc, cl] = PW_CAT[x.category] || PW_CAT.PADDOCK;
+    return `<article class="pwb" style="--tc:${col};--ti:${inkOn(col)}">
+      <div class="pwb-bg"></div><div class="pwb-vis">${pwVisual(x)}</div>
+      ${d && d.number ? `<div class="pwb-num">${F1.num.html(d.number, d.teamId, { color: 'currentColor' })}</div>` : ''}
+      <div class="pwb-top"><span class="pwb-alert"><i></i>Alerte paddock</span><b class="pwb-word">Breaking</b></div>
+      <div class="pwb-body"><div class="pwb-meta"><span class="pdw-cat ${cc}">${cl}</span><span>${esc(x.source)}</span><time datetime="${esc(x.timestamp)}">${pwAgo(Date.parse(x.timestamp))}</time>${pwIsNew(x) ? '<span class="pw-new">Nouveau</span>' : ''}</div>
+        <h2 class="pwb-head">${esc(x.title)}</h2>${x.summary ? `<p class="pwb-sub">${esc(x.summary)}</p>` : ''}
+        <div class="pwb-foot"><div class="pw-tags">${pwTagChips(x)}</div>${pwImpact(x)}<a class="pwb-cta" href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">Lire la dépêche ↗</a></div></div></article>`;
+  }
+  function pwTop(x) {
+    const col = pwTeamCol(x), [cc, cl] = PW_CAT[x.category] || PW_CAT.PADDOCK;
+    return `<a class="pwt" href="${esc(x.url)}" target="_blank" rel="noopener noreferrer" style="--tc:${col}"><div class="pwt-vis">${pwVisual(x)}<span class="pdw-cat ${cc}">${cl}</span></div>
+      <div class="pwt-b"><div class="pwt-meta"><span>${esc(x.source)}</span><time>${pwAgo(Date.parse(x.timestamp))}</time>${pwIsNew(x) ? '<span class="pw-new">Nouveau</span>' : ''}</div><h3>${esc(x.title)}</h3><div class="pw-tags">${pwTagChips(x)}</div>${x.impact ? `<span class="pwt-imp">⚡ ${esc(x.impact.impactLabel || 'Impact actif')}</span>` : ''}</div></a>`;
+  }
+  function pwRow(x) {
+    const [cc, cl] = PW_CAT[x.category] || PW_CAT.PADDOCK, ts = Date.parse(x.timestamp), t = pwTags(x);
+    const q = `${x.title} ${x.summary || ''} ${x.source} ${t.drivers.map((id) => (drv(id) || {}).family || '').join(' ')} ${t.teams.map(pwName).join(' ')}`.toLowerCase();
+    return `<article class="pwr ${x.impact ? 'has-imp' : ''} ${pwIsNew(x) ? 'new' : ''}" data-cat="${cc}" data-teams="${esc(t.teams.join(' '))}" data-q="${esc(q)}" style="--tc:${pwTeamCol(x)}">
+      <div class="pwr-time"><b>${new Date(ts).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</b><small>${pwAgo(ts)}</small></div><i class="pwr-dot"></i>
+      <div class="pwr-card"><div class="pwr-main"><header class="pdw-meta"><span class="pdw-cat ${cc}">${cl}</span><span>${esc(x.source)}</span>${pwIsNew(x) ? '<span class="pw-new">Nouveau</span>' : ''}</header>
+        <h3>${esc(x.title)}</h3>${x.summary ? `<p>${esc(x.summary)}</p>` : ''}<div class="pw-tags">${pwTagChips(x)}</div>${pwImpact(x)}
+        <a class="pdw-src" href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">Lire sur ${esc(x.source)} ↗</a></div>
+        ${x.image ? `<div class="pwr-vis">${pwVisual(x)}</div>` : ''}</div></article>`;
+  }
+  // filtres du fil (catégorie, écurie, recherche) appliqués sans recharger la page
+  function pwApply() {
+    const q = (($('#pwQ') || {}).value || '').trim().toLowerCase(), f = S.pwFilter || 'all', tm = S.pwTeam || '';
+    let n = 0;
+    $$('.pwr').forEach((el) => {
+      const ok = (f === 'all' || (f === 'imp' ? el.classList.contains('has-imp') : f === 'new' ? el.classList.contains('new') : el.dataset.cat === f)) && (!tm || el.dataset.teams.split(' ').includes(tm)) && (!q || el.dataset.q.includes(q));
+      el.hidden = !ok; if (ok) n++;
+    });
+    $$('.pw-day').forEach((g) => { g.hidden = ![...g.querySelectorAll('.pwr')].some((el) => !el.hidden); });
+    const e = $('#pwEmpty'); if (e) e.hidden = n > 0;
+    const c = $('#pwCount'); if (c) c.textContent = n;
+  }
   function pagePaddock() {
     if (!F1.news) return '<div class="empty">Module indisponible.</div>';
     const d = F1.news.data, items = F1.news.items(), nx = F1.news.nextAt();
-    const f = S.pwFilter || 'all';
-    const list = items.filter((x) => (f === 'all' ? true : f === 'imp' ? x.impact && F1.news.weight(x) > 0 : (PW_CAT[x.category] || [])[0] === f));
+    // « nouveau » : dépêches arrivées depuis la visite précédente
+    if (pwSeenPrev == null) { let v = 0; try { v = +localStorage.getItem('pitwall:pwSeen') || 0; } catch (e) { /* */ } pwSeenPrev = v || Date.now(); try { localStorage.setItem('pitwall:pwSeen', String(Date.now())); } catch (e) { /* */ } }
     const b = F1.news.board();
     const srcOk = d && d.sources ? d.sources.filter((x) => x.ok && !/\(EN\)/.test(x.name)).map((x) => x.name) : [];
     const late = nx && Date.now() > nx;
     const status = `<div class="pdw-status"><span class="pdw-live"><i></i>${d && d.updated ? 'Liaison paddock' : 'En attente'}</span>
       <div class="pdw-st"><small>Dernier relevé</small><b>${d && d.updated ? esc(pwTime(Date.parse(d.updated))) : '—'}</b></div>
-      <div class="pdw-st"><small>${late ? 'Relevé en cours' : 'Prochaine mise à jour dans'}</small>${nx && !late ? `<b class="num pdw-cd" data-cd="${nx}"><span data-u="1">--</span>:<span data-u="2">--</span>:<span data-u="3">--</span></b>` : `<b>${late ? 'quelques minutes…' : '—'}</b>`}</div>
+      <div class="pdw-st"><small>${late ? 'Relevé en cours' : 'Prochaine mise à jour dans'}</small>${nx && !late ? `<b class="num pdw-cd" data-cd="${nx}"><span data-u="1">--</span>:<span data-u="2">--</span>:<span data-u="3">--</span></b>` : '<b>…</b>'}</div>
       <div class="pdw-st"><small>Sources</small><b>${srcOk.length ? esc(srcOk.join(' · ')) : '—'}</b></div>
       <button class="btn sm pdw-sync" data-action="pw-sync">↻ Forcer la synchro</button></div>`;
-    const chips = [['all', 'Tout', items.length], ['imp', 'Impact actif', items.filter((x) => x.impact && F1.news.weight(x) > 0).length], ['tech', 'Technique'], ['pad', 'Paddock'], ['reg', 'Règlement'], ['wx', 'Météo']]
-      .map(([k, l, n]) => `<button class="pdw-chip ${f === k ? 'on' : ''}" data-action="pw-filter" data-f="${k}">${l}${n != null ? ` <span class="num">${n}</span>` : ''}</button>`).join('');
+    const tick = items.slice(0, 14).map((x) => `<a href="${esc(x.url)}" target="_blank" rel="noopener noreferrer"><time>${new Date(Date.parse(x.timestamp)).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</time>${esc(x.title)}</a>`).join('<span class="pw-sep">◆</span>');
+    const ticker = items.length ? `<div class="pw-ticker"><span class="pw-onair"><i></i>En direct</span><div class="pw-tk"><div class="pw-tk-in">${tick}<span class="pw-sep">◆</span>${tick}</div></div></div>` : '';
+    const recent = items.filter((x) => Date.now() - Date.parse(x.timestamp) < 72 * 36e5);
+    const ranked = [...(recent.length ? recent : items)].sort((a, b2) => pwScore(b2) - pwScore(a));
+    const brk = ranked[0], tops = ranked.slice(1, 4);
+    const f = S.pwFilter || 'all';
+    const chips = [['all', 'Tout', items.length], ['new', 'Nouveau', items.filter(pwIsNew).length], ['imp', 'Impact actif', items.filter((x) => x.impact && F1.news.weight(x) > 0).length], ['tech', 'Technique'], ['pad', 'Paddock'], ['reg', 'Règlement'], ['wx', 'Météo']]
+      .filter(([k, , n]) => k !== 'new' || n).map(([k, l, n]) => `<button class="pdw-chip ${f === k ? 'on' : ''}" data-action="pw-filter" data-f="${k}">${l}${n != null ? ` <span class="num">${n}</span>` : ''}</button>`).join('');
+    const teamIds = [...new Set(items.flatMap((x) => pwTags(x).teams))];
+    const teamSel = `<div class="pw-teams">${teamIds.map((id) => `<button class="pw-tbtn ${S.pwTeam === id ? 'on' : ''}" data-action="pw-team" data-t="${id}" style="--tc:${F1.teamColor(id)}" title="${esc(pwName(id))}"><i></i>${esc(pwName(id))}</button>`).join('')}</div>`;
+    // fil groupé par jour
+    const dayKey = (t) => { const x = new Date(t), td = new Date(); const diff = Math.round((new Date(td.toDateString()) - new Date(x.toDateString())) / 864e5); return diff === 0 ? "Aujourd'hui" : diff === 1 ? 'Hier' : x.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }); };
+    const groups = []; items.forEach((x) => { const k = dayKey(Date.parse(x.timestamp)); const g = groups[groups.length - 1]; if (g && g.k === k) g.items.push(x); else groups.push({ k, items: [x] }); });
+    const feed = items.length ? groups.map((g) => `<section class="pw-day"><h4 class="pw-day-h">${esc(g.k)}<span>${g.items.length} dépêche${g.items.length > 1 ? 's' : ''}</span></h4>${g.items.map(pwRow).join('')}</section>`).join('') + '<div class="empty" id="pwEmpty" hidden>Aucune dépêche ne correspond à ces filtres.</div>'
+      : '<div class="empty">Premier relevé du paddock en attente.</div>';
     const stat = (v) => (v ? `<b class="num ${v > 0 ? 'pos' : 'neg'}">${pwSign(v)}</b>` : '<span class="dim">·</span>');
     const multTxt = (m) => `<b class="num ${m > 1 ? 'neg' : 'pos'}">${m > 1 ? '+' : ''}${Math.round((m - 1) * 100)} %</b>`;
     const teamsRows = b.teams.map((t) => `<tr><td><span class="pdw-tgt" style="--tc:${F1.teamColor(t.id)}">${esc(pwName(t.id))}</span></td><td>${stat(t.mods.speed)}</td><td>${stat(t.mods.df)}</td><td>${stat(t.mods.rel)}</td><td>${multTxt(t.mult)}</td></tr>`).join('');
     const drvRows = b.drivers.map((x) => `<li><span class="pdw-tgt" style="--tc:${F1.teamColor((drv(x.id) || {}).teamId)}">${esc(pwName(x.id))}</span>${multTxt(x.mult)}</li>`).join('');
-    const side = `<aside class="pdw-side"><div class="card pdw-board"><div class="pdw-bh"><h3>Impact en direct</h3><span class="muted">${b.teams.length + b.drivers.length ? 'cumul des dépêches actives' : ''}</span></div>
-      ${b.teams.length ? `<table class="pdw-tab"><thead><tr><th>Écurie</th><th title="Vitesse de pointe (moteur)">Vit.</th><th title="Appui (aéro)">Appui</th><th title="Fiabilité">Fiab.</th><th>Cotes</th></tr></thead><tbody>${teamsRows}</tbody></table>` : '<p class="muted" style="font-size:14px">Aucune écurie touchée en ce moment : les dernières dépêches ne portent pas sur la performance.</p>'}
+    const side = `<aside class="pdw-side"><div class="card pdw-board"><div class="pdw-bh"><h3>Impact en direct</h3><span class="muted">${b.teams.length + b.drivers.length ? 'cumul des dépêches actives' : 'aucun effet en cours'}</span></div>
+      ${b.teams.length ? `<table class="pdw-tab"><thead><tr><th>Écurie</th><th title="Vitesse de pointe (moteur)">Vit.</th><th title="Appui (aéro)">Appui</th><th title="Fiabilité">Fiab.</th><th>Cotes</th></tr></thead><tbody>${teamsRows}</tbody></table>` : ''}
       ${b.drivers.length ? `<h4>Pilotes</h4><ul class="pdw-drv">${drvRows}</ul>` : ''}</div>
-      <div class="card pdw-how"><h4>Comment l'actualité agit</h4><ul>
+      <details class="card pdw-how"><summary>Comment l'actualité agit sur le jeu</summary><ul>
         <li><b>F1 Manager</b> : moteur → vitesse de pointe, aéro → appui, fiabilité → risque de casse, pour l'écurie concernée (IA et votre châssis) en course de campagne.</li>
         <li><b>Paris</b> : les cotes des pilotes et écuries visés sont multipliées (▲ cote plus haute, ▼ plus basse). Les paris déjà placés gardent leur cote.</li>
         <li><b>Durée</b> : plein effet 48 h, puis effet dégressif jusqu'à 7 jours.</li>
-        <li><b>GP Hebdomadaire</b> : non concerné, pour que tout le monde court à armes égales.</li></ul></div></aside>`;
-    const feed = list.length ? list.map(pwCard).join('') : `<div class="empty">${items.length ? 'Aucune dépêche dans cette catégorie.' : 'Premier relevé du paddock en attente.'}</div>`;
+        <li><b>GP Hebdomadaire</b> : non concerné, pour que tout le monde court à armes égales.</li></ul></details></aside>`;
     return `<section class="pdw-page"><div class="pdw-hero"><div class="pdw-title">${PW_ICON}<h1 class="pdw-word">Paddock Wire</h1></div><p class="muted">Dépêches F1 relevées toutes les 30 minutes. Chaque information analysée agit sur les monoplaces de F1 Manager et sur les cotes.</p></div>
-      ${status}<div class="pdw-chips">${chips}</div><div class="pdw-grid"><div class="pdw-feed">${feed}</div>${side}</div></section>`;
+      ${ticker}${status}
+      ${brk ? pwBreaking(brk) : ''}
+      ${tops.length ? `<div class="pwt-row">${tops.map(pwTop).join('')}</div>` : ''}
+      <div class="pdw-grid"><div class="pdw-feed"><div class="pw-tools"><div class="pw-search"><input class="field" id="pwQ" type="search" placeholder="Rechercher un pilote, une écurie, un sujet…" autocomplete="off" value="${esc(S.pwQ || '')}"><span class="muted"><b id="pwCount">${items.length}</b> dépêches</span></div><div class="pdw-chips">${chips}</div>${teamSel}</div>${feed}</div>${side}</div></section>`;
   }
   // Accueil : les dernières dépêches
   function pwHome() {
@@ -2944,6 +3034,7 @@
   document.addEventListener('mouseover', (e) => { const el = e.target.closest && e.target.closest('[data-tip]'); if (el && el.dataset.tip) { if (el !== tipOn) tipShow(el); } else if (tipOn) { tipOn = null; tipEl.classList.remove('on'); } });
   document.addEventListener('focusin', (e) => { const el = e.target.closest && e.target.closest('[data-tip]'); if (el && el.dataset.tip) tipShow(el); });
   window.addEventListener('scroll', () => { if (tipOn) { tipOn = null; tipEl.classList.remove('on'); } }, { passive: true });
+  document.addEventListener('input', (e) => { if (e.target && e.target.id === 'pwQ') { S.pwQ = e.target.value; pwApply(); } });
   document.addEventListener('change', (e) => { if (e.target && e.target.id === 'pfUpload') importPhoto(e.target.files && e.target.files[0]); });
   document.addEventListener('click', (e) => {
     const odd = e.target.closest('[data-sid]:not([data-action])');
@@ -3080,7 +3171,8 @@
       case 'modal-bg': if (e.target === a && F1.store.get().name) closeModal(); break;
       case 'reload': F1.data.clearCache(); location.reload(); break;
       case 'pw-sync': pwSync(a); break;
-      case 'pw-filter': S.pwFilter = a.dataset.f; route(); break;
+      case 'pw-filter': S.pwFilter = a.dataset.f; $$('.pdw-chip').forEach((c) => c.classList.toggle('on', c.dataset.f === S.pwFilter)); pwApply(); break;
+      case 'pw-team': S.pwTeam = S.pwTeam === a.dataset.t ? '' : a.dataset.t; $$('.pw-tbtn').forEach((c) => c.classList.toggle('on', c.dataset.t === S.pwTeam)); pwApply(); break;
       default:
     }
   });

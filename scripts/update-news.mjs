@@ -20,6 +20,15 @@ const FEEDS = [
 const ENT = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', rsquo: '’', lsquo: '‘', ldquo: '“', rdquo: '”', hellip: '…', eacute: 'é', egrave: 'è', agrave: 'à', ccedil: 'ç', ecirc: 'ê', ocirc: 'ô', icirc: 'î', ndash: '–', mdash: '—', laquo: '«', raquo: '»' };
 const decode = (s) => s.replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n)).replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16))).replace(/&([a-z]+);/gi, (m, n) => ENT[n.toLowerCase()] ?? m);
 const text = (s) => decode(String(s || '').replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+// image d'illustration d'un article : <enclosure>, <media:content>/<media:thumbnail>, sinon première <img> du contenu
+function imageOf(b) {
+  const at = (re) => { const m = re.exec(b); return m ? decode(m[1]).trim() : ''; };
+  let u = at(/<enclosure[^>]*url="([^"]+)"[^>]*type="image/i) || at(/<enclosure[^>]*type="image[^"]*"[^>]*url="([^"]+)"/i)
+    || at(/<media:content[^>]*url="([^"]+)"/i) || at(/<media:thumbnail[^>]*url="([^"]+)"/i)
+    || at(/<img[^>]*src="([^"]+)"/i) || at(/&lt;img[^&]*src=&quot;([^&]+)&quot;/i);
+  if (!u && /<enclosure[^>]*url="([^"]+\.(?:jpe?g|png|webp)[^"]*)"/i.test(b)) u = at(/<enclosure[^>]*url="([^"]+)"/i);
+  return /^https:\/\/[^\s"'<>]+$/i.test(u) ? u : '';
+}
 const tag = (x, n) => { const m = new RegExp(`<${n}(?:\\s[^>]*)?>([\\s\\S]*?)</${n}>`, 'i').exec(x); return m ? m[1] : ''; };
 const hash = (s) => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return (h >>> 0).toString(36); };
 const cut = (s, n) => (s.length <= n ? s : s.slice(0, s.lastIndexOf(' ', n)).replace(/[,;:.\s]+$/, '') + '…');
@@ -34,7 +43,7 @@ async function fetchFeed(f) {
     return blocks.map((b) => {
       const link = text(tag(b, 'link')) || ((/<link[^>]*href="([^"]+)"/i.exec(b) || [])[1] || '');
       const date = text(tag(b, 'pubDate')) || text(tag(b, 'published')) || text(tag(b, 'updated')) || text(tag(b, 'dc:date'));
-      return { title: text(tag(b, 'title')), link, date: date ? new Date(date) : null, summary: text(tag(b, 'description')) || text(tag(b, 'summary')) };
+      return { title: text(tag(b, 'title')), link, date: date ? new Date(date) : null, summary: text(tag(b, 'description')) || text(tag(b, 'summary')), image: imageOf(b) };
     }).filter((x) => x.title && x.link && x.date && !isNaN(x.date));
   } finally { clearTimeout(t); }
 }
@@ -66,7 +75,7 @@ async function main() {
         if (seen.has(key)) continue; seen.add(key);
         const summary = cut(x.summary.replace(/^(.{0,20}\s)?(lire la suite|read more).*/i, ''), 260);
         const a = analyze({ title: x.title, summary }, drivers);
-        fresh.push({ id: 'news_' + hash(x.link), timestamp: x.date.toISOString(), category: a.category, title: x.title, summary, source: f.name, lang: f.lang, url: x.link, impact: a.impact });
+        fresh.push({ id: 'news_' + hash(x.link), timestamp: x.date.toISOString(), category: a.category, title: x.title, summary, source: f.name, lang: f.lang, url: x.link, image: x.image || '', impact: a.impact });
       }
       console.log(`${f.name} : ${list.length} articles`);
     } catch (e) { sources.push({ name: f.name, ok: false, err: e.message }); console.warn(`${f.name} : ${e.message}`); }
@@ -76,7 +85,7 @@ async function main() {
   const byId = new Map((prev.items || []).filter((x) => now - Date.parse(x.timestamp) < KEEP_DAYS * 864e5)
     .filter((x) => isF1(x, drivers, /AutoHebdo|F1i|Nextgen/.test(x.source)) && !(x.lang === 'fr' && isEnglish(x)))
     .map((x) => { const a = analyze({ title: x.title, summary: x.summary }, drivers); return [x.id, { ...x, category: a.category, impact: a.impact }]; }));
-  for (const x of fresh) if (!byId.has(x.id)) byId.set(x.id, { ...x, firstSeen: new Date(now).toISOString() });
+  for (const x of fresh) if (!byId.has(x.id)) byId.set(x.id, { ...x, firstSeen: new Date(now).toISOString() }); else if (x.image && !byId.get(x.id).image) byId.get(x.id).image = x.image;
   const items = [...byId.values()].sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp)).slice(0, MAX_ITEMS);
   if (!sources.some((s) => s.ok) && prev.items && prev.items.length) console.warn('Aucune source joignable : dépêches précédentes conservées');
   const out = { updated: new Date(now).toISOString(), periodHours: 0.5, periodMinutes: 30, next: new Date(now + PERIOD).toISOString(), sources, items };

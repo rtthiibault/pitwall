@@ -400,3 +400,15 @@ Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectoriel
 
 - Dans le profil, la tuile « Ma photo » ouvre le sélecteur de fichier. L'image est recadrée en carré au centre et compressée en JPEG dans le navigateur : 256 px pour l'affichage, environ 25 Ko, gardée sur l'appareil ; 128 px pour le serveur, environ 8 Ko.
 - Pour que les autres joueurs la voient (classements, ligues), exécuter `supabase/migration-avatar-upload.sql`. Sans la migration, la photo reste locale et la synchronisation continue normalement.
+
+## Paddock Wire : refonte
+
+- **Bandeau du haut** conservé, avec en dessous un fil « En direct » qui défile (les 14 dernières dépêches ; il s'arrête au survol).
+- **Alerte « Breaking »** pleine largeur pour la dépêche la plus importante des dernières 72 h (`pwScore`). Le score tient compte de l'impact sur le jeu, des mots-clés forts (transfert, sanction, départ, contrat…), de la fraîcheur et des pilotes cités. Visuel : couleur de l'écurie, découpe en diagonale, photo de l'article ou portrait du pilote, numéro du pilote en filigrane.
+- **« À la une »** : les 3 dépêches suivantes, en cartes illustrées.
+- **Fil chronologique** groupé par jour :
+  - recherche plein texte ;
+  - filtres par catégorie et par écurie ;
+  - badge « Nouveau » pour les dépêches arrivées depuis la visite précédente ;
+  - étiquettes pilotes (avec leur numéro) et écuries détectées.
+- `scripts/update-news.mjs` relève maintenant l'image de chaque article (`<enclosure>`, `<media:content>` ou première `<img>`), dans le champ `image`.
