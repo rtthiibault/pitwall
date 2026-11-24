@@ -1118,7 +1118,8 @@
   // ligue requise pour signer un pilote (titulaire ou coéquipier) ; null si accessible
   const lockOf = (ctx, id) => { const req = MG().driverLeagueReq(ctx.mk, id), cur = MG().LEAGUES.findIndex((l) => l.id === ctx.league.id); return req > cur ? MG().LEAGUES[req] : null; };
   // revente : 70 % du prix (le plus bas entre le prix payé et le prix actuel, pour éviter tout bénéfice quand les prix montent) + 50 % de la R&D investie
-  const resaleC = (ctx) => (ctx.m.chassis ? Math.round((Math.min(ctx.m.chassis.price || Infinity, ctx.ch ? ctx.ch.price : Infinity) * 0.7 + (ctx.m.rdSpent || 0) * 0.5) / 5) * 5 : 0);
+  // départ d'une écurie : 70 % de son prix (la R&D, elle, suit le manager à 50 %)
+  const resaleC = (ctx) => (ctx.m.chassis ? Math.round((Math.min(ctx.m.chassis.price || Infinity, ctx.ch ? ctx.ch.price : Infinity) * 0.7) / 5) * 5 : 0);
 
   /* ---------- Sponsors ---------- */
   // Livrée de la voiture du joueur : sponsors sous contrat (principal et secondaire)
@@ -1275,7 +1276,7 @@
     const dstat = (l, k) => statBar(l, drvM[k], drvM.base[k], 'var(--gold)');
     const pilot = `<div class="row" style="flex-wrap:nowrap"><div class="gphoto" style="--tc:${tcol(drvM.teamId)};width:70px;height:70px">${p ? `<img src="${esc(p.img)}" alt="" onerror="this.remove()">` : ''}<i>${esc(drvM.code)}</i>${dnum(drvM.number, ch ? ch.id : drvM.teamId, 'gnum', '#fff')}</div>
         <div style="min-width:0"><div class="muted upper" style="font-size:10px;font-weight:700">${flag(drvM.iso, 'sm')} ${esc(drvM.team || MG().TEAM_NAME[drvM.teamId] || '')}</div><div class="hq-name">${esc(drvM.family)}</div></div><div class="sp"></div><div class="rating-big">${drvM.rating}</div></div>
-      ${xpBlock(e)}<div style="display:grid;gap:6px;margin-top:12px">${dstat('Rythme', 'pace')}${dstat('Combativité', 'craft')}${dstat('Régularité', 'cons')}</div>`;
+      ${xpBlock(e)}<div style="display:grid;gap:6px;margin-top:12px">${dstat('Rythme', 'pace')}${dstat('Combativité', 'craft')}${dstat('Régularité', 'cons')}</div>${driverTip(ctx)}`;
     // 03 — châssis
     const chassis = `<div class="row" style="justify-content:space-between"><div class="hq-name">${esc(ch.name)}</div><div class="rating-big sm">${MG().carRating(car)}</div></div>
       ${ctx.mate ? `<a class="hq-mate" href="#/manager/transferts" style="--tc:${col}"><small>Coéquipier</small><b>${esc(ctx.mate.name)}</b><span class="num">${ctx.mate.rating}</span></a>` : '<a class="hq-mate empty" href="#/manager/transferts"><small>Coéquipier</small><b>Aucun · recruter au marché des transferts</b></a>'}
@@ -1287,7 +1288,7 @@
     // 05 — week-end
     const weekend = weekendBody(ctx);
     // 06 — grille de départ
-    const start = `<div class="row" style="justify-content:space-between">${leagueBadge(league, 'lg')}<span class="muted" style="font-size:12px">Gains ×${league.mult} · ${MG().FIELD - 1} piloters IA</span></div>
+    const start = seasonBox(ctx) + `<div class="row" style="justify-content:space-between">${leagueBadge(league, 'lg')}<span class="muted" style="font-size:12px">Gains ×${league.mult} · ${MG().FIELD - 1} piloters IA</span></div>
       <div style="margin-top:12px"><div class="row" style="justify-content:space-between;font-size:12px"><span>${fmt(m.lp)} LP</span><span class="muted">${nl ? `${nl.icon} ${nl.name} à ${nl.min} LP` : 'Sommet atteint !'}</span></div><div class="ptsbar" style="height:9px;margin-top:5px"><i style="width:${prog}%;background:linear-gradient(90deg,${league.color},#fff)"></i></div></div>
       <div class="hq-kpi"><div><small>Courses gratuites</small><b>${left} / ${F1.store.racesPerDay()}</b></div><div><small>Victoire</small><b>${fmtPC(MG().PC_TABLE[0] * league.mult * (1 + ctx.tb.pc))}</b></div><div><small>Dernière place</small><b>${fmtPC(MG().PC_TABLE[19] * league.mult * (1 + ctx.tb.pc))}</b></div></div>
 `;
@@ -1389,7 +1390,7 @@
     const res = resaleC(ctx);
     const NM = F1.news ? F1.news.teamMods() : {};
     const lbl = { speed: 'Vitesse', df: 'Appui', rel: 'Fiabilité' };
-    return `${myNumberBar(ctx)}<div class="notice" style="margin-bottom:16px">🏎️ Choisissez l'équipe que vous dirigez : sa monoplace (vitesse, appui, fiabilité), sa livrée et l'effet de l'actualité Paddock Wire sur ses performances. Changer d'équipe <b>remet la R&D à zéro</b>. ${m.chassis ? `Départ de l'équipe actuelle : ${fmtPC(res)} récupérés (70 % du prix + 50 % de la R&D investie).` : ''}</div>
+    return `${myNumberBar(ctx)}<div class="notice" style="margin-bottom:16px">🏎️ Choisissez l'équipe que vous dirigez : sa monoplace (vitesse, appui, fiabilité), sa livrée et l'effet de l'actualité Paddock Wire sur ses performances. Changer d'équipe <b>conserve la moitié de vos niveaux de R&D</b> (chaque pièce garde la moitié de ses niveaux). ${m.chassis ? `Départ de l'équipe actuelle : ${fmtPC(res)} récupérés (70 % de son prix).` : ''}</div>
       <div class="mgrid wide">${mk.chassis.map((c) => {
         const own = m.chassis && m.chassis.id === c.id;
         const net = c.price - (own ? 0 : res);
@@ -1750,7 +1751,7 @@
         <div><small>Jetons de tentative</small><b>🎟️ ${P.tokens || 0}</b><span class="muted">Une 3ᵉ tentative au GP Hebdo (une par semaine)</span></div>
         <div><small>Livrées spéciales</small><b>🎨 ${livOwned} / ${M.PASS_LIVERIES.length}</b><a class="link" href="#/manager/garage">Choisir dans le Garage</a></div>
         <div><small>Saisons complétées</small><b>${(P.done || []).length}</b>${done ? `<span class="ps-seasons">${done}</span>` : '<span class="muted">Le badge apparaît sur votre profil</span>'}</div>
-        ${complete ? `<button class="btn ps-next" data-action="ps-next">Commencer la saison ${P.season + 1} →</button>` : ready.length ? `<button class="btn" data-action="ps-all">Tout réclamer (${ready.length})</button>` : ''}</div>
+        ${complete ? (F1.store.passNextOpen() ? `<button class="btn ps-next" data-action="ps-next">Commencer la saison ${P.season + 1} →</button>` : `<div class="ps-wait"><small>Pass terminé</small><b>Saison ${P.season + 1} le ${nextMonthTxt()}</b><span class="muted">Un nouveau Pass ouvre chaque mois.</span></div>`) : ready.length ? `<button class="btn" data-action="ps-all">Tout réclamer (${ready.length})</button>` : ''}</div>
       <div class="ps-grid">${cells}</div>`;
   }
   // Garage : choix de la livrée (le logo du sponsor reste par-dessus)
@@ -1886,18 +1887,65 @@
       <div class="rd-tabs" style="margin-bottom:16px">${tabs}</div><div class="mgrid">${cards}</div>`;
   }
 
+  /* ---------- Progression : suggestion de pilote, saison mensuelle ---------- */
+  const MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+  const monthTxt = (key) => { const [y, mo] = key.split('-').map(Number); return `${MONTHS[mo - 1]} ${y}`; };
+  const deMonth = (key) => { const t = monthTxt(key); return (/^[aeiouy]/i.test(t) ? "d'" : 'de ') + t; };
+  const nextMonthTxt = () => { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + 1); return `1er ${MONTHS[d.getMonth()]}`; };
+  const monthEnd = () => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime(); };
+  // « Il vous manque 120 PC pour Russell (+7 de note) » : le meilleur pilote accessible à viser
+  function driverTip(ctx) {
+    const { m, mk, drvM } = ctx; if (!drvM) return '';
+    const cur = drvM.rating, res = resaleD(ctx);
+    const all = mk.drivers.filter((d) => d.id !== drvM.id && !d.reserve && !(m.mate && m.mate.id === d.id) && d.rating >= cur + 2);
+    if (!all.length) return '<div class="dtip ok">🏆 Vous avez déjà l\'un des meilleurs pilotes du plateau.</div>';
+    const open = all.filter((d) => !lockOf(ctx, d.id)).map((d) => { const price = MG().driverPrice(MG().withExperience(d, m.drvXp)); return { d, price, net: price - res }; });
+    const can = open.filter((x) => x.net <= m.pc).sort((a, b) => b.d.rating - a.d.rating)[0];
+    const next = open.filter((x) => x.net > m.pc).sort((a, b) => a.net - b.net)[0];
+    const locked = all.filter((d) => lockOf(ctx, d.id)).sort((a, b) => b.rating - a.rating)[0];
+    const plus = (d) => `+${d.rating - cur} de note`;
+    let h = '';
+    if (can) h += `<a class="dtip ok" href="#/manager/pilotes">✅ Vous pouvez recruter <b>${esc(can.d.name)}</b> (${plus(can.d)}) dès maintenant${can.net > 0 ? ` : ${fmtPC(can.net)} après la revente de ${esc(drvM.family || drvM.name)}` : ''}.</a>`;
+    if (next) h += `<a class="dtip" href="#/manager/pilotes">🎯 Il vous manque <b>${fmtPC(next.net - m.pc)}</b> pour <b>${esc(next.d.name)}</b> (${plus(next.d)}).</a>`;
+    if (locked && !can && !next) { const L = lockOf(ctx, locked.id); h += `<div class="dtip">🔒 <b>${esc(locked.name)}</b> (${plus(locked)}) se débloque en ligue ${L.icon} ${esc(L.name)}.</div>`; }
+    return h;
+  }
+  // saison du mois : prime selon la ligue de fin de mois, puis LP ramenés à 60 %
+  function seasonBox(ctx) {
+    const { m, league } = ctx;
+    const li = MG().LEAGUES.indexOf(league), prize = MG().SEASON_PRIZE[li] || 0, nxt = MG().LEAGUES[li + 1];
+    const left = monthEnd() - Date.now(), days = Math.max(0, Math.ceil(left / 864e5));
+    const key = (m.mseason && m.mseason.key) || F1.store.curMonth();
+    return `<div class="ssn"><div class="ssn-h"><small>Saison ${esc(deMonth(key))}</small><b>${days > 1 ? `Fin dans ${days} jours` : 'Dernier jour'}</b></div>
+      <div class="ssn-r"><span>Prime actuelle <b>${fmtPC(prize)}</b> (ligue ${league.icon} ${esc(league.name)})</span>${nxt ? `<span class="muted">${nxt.icon} ${esc(nxt.name)} : ${fmtPC(MG().SEASON_PRIZE[li + 1])} à ${nxt.min} LP</span>` : ''}</div>
+      <small class="muted">Le 1er du mois : prime versée selon votre ligue, puis vos LP repartent à ${Math.round(MG().SEASON_KEEP * 100)} % (${fmt(m.lp)} → ${fmt(Math.round(m.lp * MG().SEASON_KEEP))}).</small></div>`;
+  }
+  function seasonSummary() {
+    const m = F1.store.mgr(), r = m.seasonNews; if (!r) return;
+    m.seasonNews = null; F1.store.save();
+    const L = MG().LEAGUES.find((l) => l.id === r.league) || MG().LEAGUES[0], La = MG().leagueOf(r.lpAfter);
+    modal(`<div class="ssn-end"><small>Fin de la saison ${esc(deMonth(r.key))}</small><h3>${L.icon} Ligue ${esc(L.name)}</h3>
+      <div class="ssn-kpi"><div><small>LP en fin de mois</small><b>${fmt(r.lp)}</b></div><div><small>Meilleur total</small><b>${fmt(r.peak)}</b></div><div><small>Prime de saison</small><b class="up">+${fmtPC(r.prize)}</b></div></div>
+      <p class="muted">Nouvelle saison : vos LP repartent à ${fmt(r.lpAfter)} (ligue ${La.icon} ${esc(La.name)}). Remontez avant la fin du mois pour une prime plus grosse.</p>
+      <div class="row" style="justify-content:flex-end"><button class="btn" data-action="close-modal">C'est parti</button></div></div>`);
+    confetti(120);
+  }
   function mgrLeagues(ctx, nl) {
     const { m, league } = ctx;
     const ladder = MG().LEAGUES.map((L) => `<div class="lrow ${L === league ? 'cur' : ''} ${m.lp >= L.min ? 'reached' : ''}" style="--lc:${L.color}"><span class="lic">${L.icon}</span><div style="flex:1"><b>${L.name}</b><small>dès ${L.min} LP · gains ×${L.mult} · adversaires ${['débutants', 'confirmés', 'solides', 'experts', 'élite', 'légendaires'][MG().LEAGUES.indexOf(L)]}</small></div>${L === league ? '<span class="chip">Vous êtes ici</span>' : ''}</div>`).reverse().join('');
     const table = `<table class="tbl" style="font-size:13px"><thead><tr><th>Position</th>${[1, 2, 3, 4, 5, 6, 8, 10, 15, 20].map((p) => `<th class="c">P${p}</th>`).join('')}<th class="c">AB</th></tr></thead><tbody>
       <tr><td>LP</td>${[1, 2, 3, 4, 5, 6, 8, 10, 15, 20].map((p) => { const v = MG().lpScale(league).t[p - 1]; return `<td class="c"><span class="gain ${v > 0 ? 'up' : v < 0 ? 'down' : ''}">${v > 0 ? '+' : ''}${v}</span></td>`; }).join('')}<td class="c">${(() => { const v = MG().lpScale(league).dnf; return `<span class="gain ${v < 0 ? 'down' : ''}">${v}</span>`; })()}</td></tr>
       <tr><td>PitCoins</td>${[1, 2, 3, 4, 5, 6, 8, 10, 15, 20].map((p) => `<td class="c num">${Math.round(MG().PC_TABLE[p - 1] * league.mult)}</td>`).join('')}<td class="c num">${Math.round(league.mult)}</td></tr></tbody></table>`;
-    return `<section class="card mb-card"><div class="mb-h"><div><h3>Classement des managers</h3><small class="muted">Tous les joueurs · équipe, coéquipier et résultats de carrière en F1 Manager</small></div><div class="mb-legend"><span><i class="g"></i>Vous</span></div></div><div id="mgrBoard"><div class="skeleton" style="height:120px"></div></div></section>
+    const hist = (m.seasons || []).slice(0, 6).map((r) => { const L = MG().LEAGUES.find((l) => l.id === r.league) || MG().LEAGUES[0]; return `<div class="ssn-row"><span>${esc(monthTxt(r.key))}</span><span>${L.icon} ${esc(L.name)}</span><span class="num">${fmt(r.lp)} LP</span><b class="up">+${fmtPC(r.prize)}</b></div>`; }).join('');
+    return `<section class="card" style="margin-bottom:14px">${seasonBox(ctx)}${hist ? `<div class="ssn-hist"><small class="muted">Saisons passées</small>${hist}</div>` : ''}</section><section class="card mb-card"><div class="mb-h"><div><h3>Classement des managers</h3><small class="muted">Tous les joueurs · équipe, coéquipier et résultats de carrière en F1 Manager</small></div><div class="mb-legend"><span><i class="g"></i>Vous</span></div></div><div id="mgrBoard"><div class="skeleton" style="height:120px"></div></div></section>
       <div class="grid g2" style="margin-top:12px"><div class="card"><h3>Échelle des ligues</h3><div class="sub">Vos points de ligue (LP) montent à chaque course. En Bronze, on ne perd jamais de points ; à partir de l'Argent, une mauvaise course en fait perdre. Passez un palier pour être promu : les gains augmentent, les adversaires aussi.</div><div class="ladder">${ladder}</div></div>
       <div class="grid" style="align-content:start"><div class="card"><h3>Barème (ligue ${esc(league.name)})</h3><div class="table-wrap" style="margin-top:8px">${table}</div><div class="muted" style="font-size:12px;margin-top:8px">Record personnel : ${fmt(m.best)} LP.</div></div>
       </div></div>`;
   }
   function mountManager(tab) {
+    // nouveau mois : fin de saison (prime, LP ramenés à 60 %), la page est redessinée puis le bilan s'affiche
+    if (F1.store.seasonRoll()) { route(); return; }
+    if (F1.store.mgr().seasonNews) setTimeout(seasonSummary, 400);
     const pu = $('#pu3d');
     if (pu) {
       const go = () => { if (!pu.isConnected || pu.__pu || !F1.car3d || !F1.car3d.supported) return; try { pu.__pu = F1.car3d.mountPU(pu, { part: pu.dataset.part || null }); pu.classList.add('ok'); } catch (e) { console.warn(e); } };
@@ -2908,7 +2956,7 @@
       case 'mate-buy': { const ctx = mgrCtx(); const d0 = ctx.mk.byDriver.get(a.dataset.id); const lk = lockOf(ctx, d0.id); if (lk) { toast('🔒', `${esc(d0.name)} ne signe qu'à partir de la ligue ${lk.icon} ${esc(lk.name)}`, 'err'); break; } try { F1.store.buyMate(d0, MG().mateValue(d0), resaleM(ctx)); toast('🤝', `<b>${esc(d0.name)}</b> devient votre coéquipier !`, 'win'); confetti(70); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'mate-release': { const ctx = mgrCtx(); if (!confirm(`Libérer ${ctx.m.mate.name} ? Vous récupérez ${resaleM(ctx)} PitCoins (un seul changement de coéquipier par jour).`)) break; let g; try { g = F1.store.releaseMate(resaleM(ctx)); } catch (err) { toast('⚠️', esc(err.message), 'err'); break; } toast('🤝', `Coéquipier libéré : +${fmtPC(g)}`, 'win'); F1.social.sync(); route(); break; }
       case 'sp-sign': { try { const t = F1.store.signSponsor(a.dataset.id, a.dataset.slot); const sp = MG().SPONSOR_BY_ID.get(a.dataset.id); toast('💼', `Contrat signé avec <b>${esc(sp.name)}</b> : +${t.sign} PitCoins de prime de signature`, 'win'); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
-      case 'm-buy-c': { const ctx = mgrCtx(); const c = ctx.mk.byChassis.get(a.dataset.id); if (ctx.m.chassis && ctx.m.rdSpent > 0 && !confirm('Changer d\'équipe remet votre R&D à zéro. Continuer ?')) break; try { F1.store.buyChassis(c, resaleC(ctx)); toast('🏎️', `Vous prenez la direction de <b>${esc(c.name)}</b> !`, 'win'); confetti(80); showAchievements(); F1.social.sync(); route(); setTimeout(() => openNumberPicker(true), 350); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
+      case 'm-buy-c': { const ctx = mgrCtx(); const c = ctx.mk.byChassis.get(a.dataset.id); if (ctx.m.chassis && ctx.m.rdSpent > 0 && !confirm('Changer d\'équipe : chaque pièce de R&D garde la moitié de ses niveaux. Continuer ?')) break; try { F1.store.buyChassis(c, resaleC(ctx)); toast('🏎️', `Vous prenez la direction de <b>${esc(c.name)}</b> !`, 'win'); confetti(80); showAchievements(); F1.social.sync(); route(); setTimeout(() => openNumberPicker(true), 350); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'rd-cat': { const was = $('#pu3d') ? 'pu' : 'car'; S.rdCat = a.dataset.c; S.rdSel = null; S.rdView = null; if ((a.dataset.c === 'pu' ? 'pu' : 'car') !== was) route(); else rdRefresh(); break; }
       case 'series': setSeries(a.dataset.s); break;
       case 'rd-view': S.rdView = a.dataset.v; route(); break;

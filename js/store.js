@@ -68,7 +68,8 @@
     return { v: 1, name: '', created: Date.now(), balance: START, bets: [], claimed: {}, rescues: {}, ach: {}, achClaimed: {}, stats: { tokensEarned: 0, newsWins: 0, leagueJoined: false, pwVisits: 0, podiumPicks: 0 }, avatar: null, history: [{ t: Date.now(), b: START }], manager: blankManager() };
   }
   const blankManager = () => ({ ecoV: 2, pc: (F1.manager && F1.manager.START_PC) || 300, driver: null, chassis: null, ups: { speed: 0, df: 0, rel: 0 }, parts: {}, rdSpent: 0, setup: 0, lp: 0, best: 0, races: [], day: { key: 0, n: 0, paid: 0 }, log: [], staff: {}, garage: {}, fails: {}, daily: { key: '' }, drvXp: {}, next: { seed: (Math.random() * 4294967296) >>> 0, tyre: 'M', plan: { stops: [{ lap: 9, tyre: 'H' }] } } });
-  const blankPass = (season = 1, done = [], liveries = [], tokens = 0, skin = null) => ({ season, xp: 0, claimed: {}, tokens, liveries, skin, done });
+  const curMonth = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; };
+  const blankPass = (season = 1, done = [], liveries = [], tokens = 0, skin = null) => ({ season, xp: 0, claimed: {}, tokens, liveries, skin, done, month: curMonth() });
   function load() {
     try { state = JSON.parse(localStorage.getItem(KEY)); } catch (e) { state = null; }
     if (!state || state.v !== 1) state = blank();
@@ -93,6 +94,9 @@
     if (m.sponsors.seen == null) m.sponsors.seen = Date.now();
     if (!m.tunnel) m.tunnel = { slots: 1, jobs: [] };
     if (!m.pass) m.pass = blankPass();
+    if (!m.pass.month) m.pass.month = curMonth();
+    if (!m.mseason) m.mseason = { key: curMonth(), peak: m.lp || 0 };
+    if (!m.seasons) m.seasons = [];
     // statistiques de carrière du manager (reconstituées depuis l'historique des anciennes sauvegardes)
     if (!m.stats) {
       const rs = m.races || [], P = (F1.manager && F1.manager.F1_POINTS) || [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
@@ -299,7 +303,10 @@
     if (resale) addPC(resale, `Revente du châssis ${m.chassis.name}`);
     spendPC(c.price, `Achat du châssis ${c.name}`);
     m.chassis = { id: c.id, name: c.name, price: c.price, at: Date.now() };
-    m.ups = { speed: 0, df: 0, rel: 0 }; m.parts = {}; m.rdSpent = 0; m.setup = 0;
+    // la R&D suit le manager à 50 % : chaque pièce garde la moitié de ses niveaux (arrondi inférieur)
+    const half = {}; for (const k in m.parts) { const l = Math.floor(m.parts[k] / 2); if (l > 0) half[k] = l; }
+    m.parts = half; m.ups = { speed: Math.floor((m.ups.speed || 0) / 2), df: Math.floor((m.ups.df || 0) / 2), rel: Math.floor((m.ups.rel || 0) / 2) };
+    m.rdSpent = Math.round((m.rdSpent || 0) / 2); m.setup = 0;
     if (m.driver) unlock('mgr_team');
     save();
   }
@@ -429,8 +436,11 @@
     return r;
   }
   const passComplete = () => { const p = pass(); return Array.from({ length: F1.manager.PASS_TIERS }, (_, i) => i + 1).every((t) => p.claimed[t]); };
+  // le Pass suivant ouvre le mois d'après : on ne peut pas enchaîner les saisons
+  const passNextOpen = () => passComplete() && pass().month !== curMonth();
   function nextSeason() {
     if (!passComplete()) throw new Error('Réclamez d\'abord les 24 paliers');
+    if (pass().month === curMonth()) throw new Error('Le prochain Pass ouvre le mois prochain');
     const m = mgr(), p = pass();
     m.pass = blankPass(p.season + 1, [...(p.done || []), { season: p.season, at: Date.now() }], p.liveries, p.tokens, p.skin);
     save();
@@ -444,6 +454,23 @@
     if (who && !(m.driver && m.driver.id === who)) throw new Error('Ce numéro est déjà porté par un pilote de la grille');
     m.number = String(+c); save();
     return m.number;
+  }
+  /* Fin de saison mensuelle (appelée à l'ouverture du F1 Manager) : prime selon la ligue de fin de mois,
+     LP ramenés à 60 %, résumé à afficher une fois. Renvoie le résumé s'il y a eu un changement de mois. */
+  function seasonRoll() {
+    const m = mgr(), MG = F1.manager; if (!MG) return null;
+    if (!m.mseason) m.mseason = { key: curMonth(), peak: m.lp || 0 };
+    if (m.mseason.key === curMonth()) return null;
+    const L = MG.leagueOf(m.lp), li = MG.LEAGUES.indexOf(L), prize = MG.SEASON_PRIZE[li] || 0;
+    const lpAfter = Math.round(m.lp * MG.SEASON_KEEP);
+    const rec = { key: m.mseason.key, lp: m.lp, peak: Math.max(m.mseason.peak || 0, m.lp), league: L.id, prize, lpAfter, races: (m.stats && m.stats.races) || 0, t: Date.now() };
+    if (prize) addPC(prize, `Fin de saison ${m.mseason.key} : ligue ${L.name}`);
+    m.lp = lpAfter;
+    m.seasons.unshift(rec); if (m.seasons.length > 24) m.seasons.pop();
+    m.mseason = { key: curMonth(), peak: m.lp };
+    m.seasonNews = rec;
+    save();
+    return rec;
   }
   function setSkin(id) {
     const p = pass();
@@ -546,6 +573,7 @@
     if (r.pos === 1 && !r.dnf) unlock('mgr_win');
     if (r.pos === 1 && !r.dnf && r.rain) unlock('mgr_rain');
     if (F1.manager && m.lp >= F1.manager.LEAGUES[2].min) unlock('mgr_or');
+    if (m.mseason) m.mseason.peak = Math.max(m.mseason.peak || 0, m.lp);
     save();
   }
 
@@ -649,5 +677,5 @@
   function reset() { const n = get().name; state = blank(); state.name = n; save(); }
   const popUnlocked = () => unlocked.splice(0);
 
-  F1.store = { betWait, mateLocked, setNumber, installPart, rushJob, unlockSlot2, jobOf, tunnel, pass, claimPass, passComplete, nextSeason, setSkin, weeklyMax, sponsorCooldown, achProgress, claimAch, achClaimable, noteStat, setAvatar, ACH_BY, buyMate, releaseMate, weeklyGP, useWeeklyAttempt, recordWeekly, claimWeeklyGP, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
+  F1.store = { seasonRoll, passNextOpen, curMonth, betWait, mateLocked, setNumber, installPart, rushJob, unlockSlot2, jobOf, tunnel, pass, claimPass, passComplete, nextSeason, setSkin, weeklyMax, sponsorCooldown, achProgress, claimAch, achClaimable, noteStat, setAvatar, ACH_BY, buyMate, releaseMate, weeklyGP, useWeeklyAttempt, recordWeekly, claimWeeklyGP, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
 })(globalThis.F1 = globalThis.F1 || {});

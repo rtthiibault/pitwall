@@ -381,3 +381,16 @@ Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectoriel
   2. numéro redessiné dans l'écurie où il court (pilote transféré en F1 Manager, pilote du joueur, coéquipier) ;
   3. numéro composé chiffre à chiffre (numéro choisi par le joueur) ;
   4. police de remplacement (chiffre 9, ou Ferrari, Red Bull, Mercedes et Audi pour un numéro hors grille).
+
+## F1 Manager : rééquilibrage de la progression
+
+- **Gains de course +50 %** (`PC_TABLE`).
+- **Coffres du Pass** réduits : Standard 8–22, Avancé 22–48, Prestige 55–105 PC.
+- **Un Pass par mois** : une fois les 24 paliers réclamés, le suivant ouvre le 1er du mois suivant.
+- **Sponsors** : primes de signature et d'objectif divisées par 2, pénalités ×0,6.
+- **Changement d'écurie** : chaque pièce de R&D garde la moitié de ses niveaux (arrondi inférieur). Le départ rapporte 70 % du prix de l'écurie.
+- **QG** : suggestion de pilote dans le panneau « Pilote » (« Il vous manque X PC pour Y (+N de note) », pilote recrutable tout de suite, ou ligue requise).
+- **Saison mensuelle** (`seasonRoll`) :
+  - au changement de mois, prime selon la ligue de fin de mois (`SEASON_PRIZE`, 150 à 2 200 PC) ;
+  - puis les LP repartent à 60 % ;
+  - un bilan s'affiche une fois ; l'historique est dans l'onglet Ligues.

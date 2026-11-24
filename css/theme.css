@@ -1453,3 +1453,25 @@ body.on-home::after { mix-blend-mode: screen; }
 .dn.pre { height: .95em; margin-right: .35em; vertical-align: -.1em; } .dn.pre .dnum { height: .95em; }
 .odd .lbl .dn.in { height: .95em; margin-left: .35em; } .odd .lbl .dn.in .dnum { height: .95em; }
 .pod-step .who .dn.in, .tslot .nn .dn.in, .market .side .n .dn.in { height: .9em; }
+
+/* ===== Progression : suggestion de pilote, saison mensuelle, Pass mensuel ===== */
+.dtip { display: block; margin-top: 10px; padding: 8px 11px; border-radius: 8px; border: 1px dashed var(--line2); font-size: 12.5px; color: var(--text); text-decoration: none; line-height: 1.4; }
+.dtip.ok { border-style: solid; border-color: color-mix(in srgb, var(--win) 55%, var(--line)); background: rgba(60,191,110,.07); }
+a.dtip:hover { border-color: var(--gold); }
+.ssn { display: grid; gap: 6px; padding: 10px 12px; margin-bottom: 12px; border-radius: 8px; border: 1px solid color-mix(in srgb, var(--gold) 40%, var(--line)); background: linear-gradient(100deg, rgba(233,190,62,.08), transparent 70%); }
+.ssn-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.ssn-h small { font-size: 10.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); }
+.ssn-h b { font-size: 13px; }
+.ssn-r { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12.5px; }
+.ssn > small { font-size: 11.5px; line-height: 1.35; }
+.ssn-hist { display: grid; gap: 4px; margin-top: 4px; }
+.ssn-row { display: grid; grid-template-columns: 1.3fr 1fr 1fr auto; gap: 10px; font-size: 12.5px; padding: 5px 0; border-top: 1px solid rgba(255,255,255,.05); }
+.ssn-end { display: grid; gap: 12px; min-width: min(460px, 86vw); }
+.ssn-end small { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); }
+.ssn-end h3 { margin: 0; font-size: 26px; font-weight: 900; }
+.ssn-kpi { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.ssn-kpi > div { padding: 10px; border-radius: 8px; background: var(--bg2); border: 1px solid var(--line); display: grid; gap: 2px; }
+.ssn-kpi small { font-size: 10.5px !important; color: var(--muted) !important; letter-spacing: .06em !important; }
+.ssn-kpi b { font-size: 20px; }
+.ps-wait { display: grid; gap: 2px; align-self: center; padding: 8px 14px; border-radius: var(--radius); border: 1px dashed var(--gold); font-size: 12px; }
+.ps-wait small { font-size: 10.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); } .ps-wait b { font-size: 14px; }

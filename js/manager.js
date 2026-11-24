@@ -134,14 +134,20 @@
     { id: 'diamant', name: 'Diamant', min: 700, mult: 3, color: '#8ab4ff', icon: '💎', bot: [7, 9], drv: [86, 94] },
     { id: 'legende', name: 'Légende', min: 1000, mult: 4, color: '#ff4d6d', icon: '👑', bot: [9, 10], drv: [89, 97] },
   ];
+  /* Saison mensuelle du manager : à chaque nouveau mois, prime selon la ligue atteinte (LP de fin de mois),
+     puis redescente partielle (on garde 60 % des LP) pour relancer la course aux points. */
+  const SEASON_PRIZE = [150, 300, 550, 900, 1400, 2200];   // PitCoins : Bronze, Argent, Or, Platine, Diamant, Légende
+  const SEASON_KEEP = 0.6;
+  const monthKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
   const leagueOf = (lp) => [...LEAGUES].reverse().find((l) => lp >= l.min) || LEAGUES[0];
   const nextLeague = (lp) => LEAGUES.find((l) => l.min > lp) || null;
   // Points de ligue (LP) et PitCoins selon la position finale
   const LP_TABLE = [30, 22, 16, 12, 8, 5, 3, 1, 0, -2, -3, -4, -5, -6, -7, -8, -8, -9, -9, -10];
   // les PitCoins ne viennent plus que des courses : même le fond de grille rapporte de quoi progresser
   // 3 courses toutes les 5 h (jusqu'à ~9 par jour) : gains par course revenus au barème d'origine (ils avaient été doublés pour 2 courses/jour)
-  const PC_TABLE = [40, 32, 26, 22, 19, 16, 14, 12, 11, 10, 9, 8, 8, 7, 7, 6, 6, 5, 5, 5];
-  const DNF_LP = -8, DNF_PC = 3;
+  // gains de course relevés de 50 % : la course redevient la première source de PitCoins
+  const PC_TABLE = [60, 48, 39, 33, 28, 24, 21, 18, 16, 15, 14, 12, 12, 11, 10, 9, 9, 8, 8, 7];
+  const DNF_LP = -8, DNF_PC = 5;
   // Barème par ligue : Bronze ne fait jamais perdre de points ; Argent et Or réintroduisent les pertes peu à peu ;
   // à partir de Platine, le barème complet s'applique
   const LP_BY_LEAGUE = [
@@ -1249,20 +1255,20 @@
   // Contrats rééquilibrés : la prime par course disputée grimpe avec la difficulté de l'objectif, et chaque palier
   // compte assez de partenaires pour faire tourner deux emplacements malgré le délai de 9 courses avant une nouvelle signature.
   const SPONSORS = [
-    { id: 'voltrush', name: 'VoltRush', kind: 'Boisson énergisante', tier: 1, league: 0, color: '#c6ff00', ink: '#10140a', goal: { top: 12, count: 2, races: 5 }, sign: 15, reward: 90, penalty: 30 },
-    { id: 'pixelforge', name: 'PixelForge', kind: 'Accessoires gaming', tier: 1, league: 0, color: '#8b5cf6', ink: '#ffffff', goal: { top: 10, count: 2, races: 6 }, sign: 20, reward: 115, penalty: 40 },
-    { id: 'dumas', name: 'Garage Dumas', kind: 'Pièces auto, marque locale', tier: 1, league: 0, color: '#1f6feb', ink: '#ffffff', goal: { top: 15, count: 4, races: 6 }, sign: 10, reward: 75, penalty: 25 },
-    { id: 'lumen', name: 'Brûlerie Lumen', kind: 'Torréfacteur de café', tier: 1, league: 0, color: '#6b3f1d', ink: '#ffe7c2', goal: { top: 12, count: 1, races: 4 }, sign: 8, reward: 55, penalty: 20 },
-    { id: 'rivio', name: 'Rivio', kind: 'Vélos électriques', tier: 1, league: 0, color: '#14b8a6', ink: '#03201c', goal: { top: 14, count: 3, races: 6 }, sign: 12, reward: 85, penalty: 30 },
-    { id: 'nexa', name: 'Nexa Telecom', kind: 'Télécoms et tech', tier: 2, league: 1, color: '#00b3a4', ink: '#ffffff', goal: { top: 8, count: 3, races: 8 }, sign: 40, reward: 250, penalty: 90 },
-    { id: 'blockvault', name: 'Blockvault', kind: 'Crypto-actifs', tier: 2, league: 1, color: '#f7931a', ink: '#1a1000', goal: { top: 5, count: 1, races: 5 }, sign: 55, reward: 280, penalty: 140 },
-    { id: 'torq', name: 'TORQ Parts', kind: 'Pièces auto internationales', tier: 2, league: 1, color: '#e11d48', ink: '#ffffff', goal: { top: 10, count: 4, races: 8 }, sign: 35, reward: 220, penalty: 80 },
-    { id: 'aeris', name: 'Aeris Airways', kind: 'Compagnie aérienne', tier: 2, league: 1, color: '#0ea5e9', ink: '#ffffff', goal: { top: 6, count: 2, races: 8 }, sign: 50, reward: 270, penalty: 110 },
-    { id: 'stratos', name: 'Stratos Énergie', kind: 'Énergies renouvelables', tier: 2, league: 1, color: '#facc15', ink: '#1c1600', goal: { top: 7, count: 2, races: 6 }, sign: 45, reward: 260, penalty: 100 },
-    { id: 'valcourt', name: 'Valcourt Genève', kind: 'Haute horlogerie', tier: 3, league: 2, color: '#0f3d2e', ink: '#e8d9a8', goal: { top: 3, count: 2, races: 10 }, sign: 100, reward: 650, penalty: 250 },
-    { id: 'meridian', name: 'Meridian Bank', kind: 'Banque privée', tier: 3, league: 2, color: '#1e293b', ink: '#fbbf24', goal: { top: 4, count: 4, races: 10 }, sign: 110, reward: 720, penalty: 280 },
-    { id: 'orbital', name: 'Orbital Dynamics', kind: 'Aérospatiale', tier: 3, league: 2, color: '#e5e7eb', ink: '#0b0d10', goal: { top: 3, count: 3, races: 10 }, sign: 140, reward: 900, penalty: 320 },
-    { id: 'synapse', name: 'Synapse AI', kind: 'Intelligence artificielle mondiale', tier: 3, league: 2, color: '#111827', ink: '#7dd3fc', goal: { top: 1, count: 1, races: 8 }, sign: 160, reward: 1000, penalty: 400 },
+    { id: 'voltrush', name: 'VoltRush', kind: 'Boisson énergisante', tier: 1, league: 0, color: '#c6ff00', ink: '#10140a', goal: { top: 12, count: 2, races: 5 }, sign: 10, reward: 45, penalty: 20 },
+    { id: 'pixelforge', name: 'PixelForge', kind: 'Accessoires gaming', tier: 1, league: 0, color: '#8b5cf6', ink: '#ffffff', goal: { top: 10, count: 2, races: 6 }, sign: 10, reward: 60, penalty: 25 },
+    { id: 'dumas', name: 'Garage Dumas', kind: 'Pièces auto, marque locale', tier: 1, league: 0, color: '#1f6feb', ink: '#ffffff', goal: { top: 15, count: 4, races: 6 }, sign: 5, reward: 40, penalty: 15 },
+    { id: 'lumen', name: 'Brûlerie Lumen', kind: 'Torréfacteur de café', tier: 1, league: 0, color: '#6b3f1d', ink: '#ffe7c2', goal: { top: 12, count: 1, races: 4 }, sign: 5, reward: 30, penalty: 10 },
+    { id: 'rivio', name: 'Rivio', kind: 'Vélos électriques', tier: 1, league: 0, color: '#14b8a6', ink: '#03201c', goal: { top: 14, count: 3, races: 6 }, sign: 5, reward: 40, penalty: 20 },
+    { id: 'nexa', name: 'Nexa Telecom', kind: 'Télécoms et tech', tier: 2, league: 1, color: '#00b3a4', ink: '#ffffff', goal: { top: 8, count: 3, races: 8 }, sign: 20, reward: 125, penalty: 55 },
+    { id: 'blockvault', name: 'Blockvault', kind: 'Crypto-actifs', tier: 2, league: 1, color: '#f7931a', ink: '#1a1000', goal: { top: 5, count: 1, races: 5 }, sign: 30, reward: 140, penalty: 85 },
+    { id: 'torq', name: 'TORQ Parts', kind: 'Pièces auto internationales', tier: 2, league: 1, color: '#e11d48', ink: '#ffffff', goal: { top: 10, count: 4, races: 8 }, sign: 20, reward: 110, penalty: 50 },
+    { id: 'aeris', name: 'Aeris Airways', kind: 'Compagnie aérienne', tier: 2, league: 1, color: '#0ea5e9', ink: '#ffffff', goal: { top: 6, count: 2, races: 8 }, sign: 25, reward: 135, penalty: 65 },
+    { id: 'stratos', name: 'Stratos Énergie', kind: 'Énergies renouvelables', tier: 2, league: 1, color: '#facc15', ink: '#1c1600', goal: { top: 7, count: 2, races: 6 }, sign: 20, reward: 130, penalty: 60 },
+    { id: 'valcourt', name: 'Valcourt Genève', kind: 'Haute horlogerie', tier: 3, league: 2, color: '#0f3d2e', ink: '#e8d9a8', goal: { top: 3, count: 2, races: 10 }, sign: 50, reward: 325, penalty: 150 },
+    { id: 'meridian', name: 'Meridian Bank', kind: 'Banque privée', tier: 3, league: 2, color: '#1e293b', ink: '#fbbf24', goal: { top: 4, count: 4, races: 10 }, sign: 55, reward: 360, penalty: 170 },
+    { id: 'orbital', name: 'Orbital Dynamics', kind: 'Aérospatiale', tier: 3, league: 2, color: '#e5e7eb', ink: '#0b0d10', goal: { top: 3, count: 3, races: 10 }, sign: 70, reward: 450, penalty: 190 },
+    { id: 'synapse', name: 'Synapse AI', kind: 'Intelligence artificielle mondiale', tier: 3, league: 2, color: '#111827', ink: '#7dd3fc', goal: { top: 1, count: 1, races: 8 }, sign: 80, reward: 500, penalty: 240 },
   ];
   const SPONSOR_COOLDOWN = 9; // courses à attendre, une fois le contrat terminé, avant de pouvoir re-signer le même sponsor
   const SPONSOR_BY_ID = new Map(SPONSORS.map((s) => [s.id, s]));
@@ -1296,7 +1302,7 @@
      +100 XP par course de campagne, +150 XP par tentative au GP Hebdomadaire, 125 XP par palier (≈ un palier toutes les 1 à 1,5 courses). */
   const PASS_TIERS = 24, PASS_XP_TIER = 125, PASS_XP_RACE = 100, PASS_XP_WEEKLY = 150;
   // coffres mystères : contenu tiré au hasard à l'ouverture (fourchette de PitCoins selon le coffre)
-  const PASS_CHEST = { s: { name: 'Coffre Standard', pc: 25, min: 15, max: 40 }, m: { name: 'Coffre Avancé', pc: 65, min: 40, max: 90 }, l: { name: 'Coffre Prestige', pc: 155, min: 110, max: 200 } };
+  const PASS_CHEST = { s: { name: 'Coffre Standard', pc: 15, min: 8, max: 22 }, m: { name: 'Coffre Avancé', pc: 35, min: 22, max: 48 }, l: { name: 'Coffre Prestige', pc: 80, min: 55, max: 105 } };
   const PASS_LIVERIES = [
     { id: 'carbon', tier: 8, name: 'Carbone Nu', desc: 'Fibre de carbone brute, finition mate, filet argent', c: ['#141518', '#c9ccd2'] },
     { id: 'neon', tier: 16, name: 'Nuit / Néon', desc: 'Bleu nuit profond, néons magenta et cyan', c: ['#0b0b1e', '#ff2bd6', '#22f0ff'] },
@@ -1338,7 +1344,7 @@
     forecastLaps, trend, ruleOk, RULE_PENALTY, tyreStatus, MODES, redoLap, dryFor, FUEL_LOAD, MIX, ERS, ENG_CRIT, TYRE_LO, TYRE_HI, fuelDelta, KG,
     CLIMATE, climateOf, trackState, forecast, TYRES, isSlick, tyreDelta, DILEMMA_LAPS, dilemmaLaps, lapsOf, RACE_LAPS, planFor, REFILL_H, createRace, stepLap, dilemmaFor, applyChoice, RADIO,
     WEEKLY_ATTEMPTS, WEEKLY_FIRST_PRIME, isoWeek, weeklyEvent, weeklyBots, fmtRaceTime, fmtGap, weeklyPrize, CIRCUIT_NAME,
-    TUNNEL_BET_CD, aiLineup, driverPrice, driverLeagueReq, driverValueV1, valueOfDriverV1, PRICE_PTS, SPONSOR_COOLDOWN, rdBuildMs, rushCost, TUNNEL_SLOT2_PC, PASS_TIERS, PASS_XP_TIER, PASS_XP_RACE, PASS_XP_WEEKLY, PASS_CHEST, PASS_LIVERIES, PASS_LIVERY_BY, passReward, passTier,
+    SEASON_PRIZE, SEASON_KEEP, monthKey, TUNNEL_BET_CD, aiLineup, driverPrice, driverLeagueReq, driverValueV1, valueOfDriverV1, PRICE_PTS, SPONSOR_COOLDOWN, rdBuildMs, rushCost, TUNNEL_SLOT2_PC, PASS_TIERS, PASS_XP_TIER, PASS_XP_RACE, PASS_XP_WEEKLY, PASS_CHEST, PASS_LIVERIES, PASS_LIVERY_BY, passReward, passTier,
     SPONSORS, SPONSOR_BY_ID, goalText, sponsorTerms, sponsorAfterRace, SUB_K,
     TEAM_NAME, TEAM_CODE, GRID, GRID_BY, shortName, newsForm, mateValue, MATE_K, matePC, MATE_PC_K, F1_POINTS, mateEntry, START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, lpScale, AGE_PRICE, driverValue, valueOfDriver, RESALE_K, XP_DIV, PC_TABLE,
     RD_CATS, RD_PARTS, RD_BY_ID, rdBranches, partState, partsBonus,
