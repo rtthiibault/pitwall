@@ -107,7 +107,7 @@
       <!-- prise d'air + caméra TV -->
       <path d="M284 47 L290 50 L290 63 L284 61 Z" fill="${dark}"/>
       <rect x="262" y="39" width="17" height="6" rx="2" fill="${cam}"/>
-      ${num ? `<text x="250" y="105" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="800" font-size="17" fill="${numColor}" opacity=".95">${num}</text>` : ''}
+      ${num ? (F1.num ? `<g opacity=".95">${F1.num.inSvg(num, opts.numTeam || teamId, 250, 106, 17, numColor)}</g>` : `<text x="250" y="105" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="800" font-size="17" fill="${numColor}" opacity=".95">${num}</text>`) : ''}
 
       <!-- pilote, halo, rétroviseur -->
       <circle cx="313" cy="67" r="11" fill="${L.helmet}"/>

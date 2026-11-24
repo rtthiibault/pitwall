@@ -418,6 +418,15 @@
     save();
     return m.pass;
   }
+  // Numéro de course du joueur (1 à 99), libre s'il n'est pas déjà porté par un autre pilote de la grille
+  function setNumber(n) {
+    const m = mgr(), c = F1.num ? F1.num.clean(n) : String(n);
+    if (!c || +c < 1 || +c > 99) throw new Error('Choisissez un numéro entre 1 et 99');
+    const who = F1.num && F1.num.takenBy(c);
+    if (who && !(m.driver && m.driver.id === who)) throw new Error('Ce numéro est déjà porté par un pilote de la grille');
+    m.number = String(+c); save();
+    return m.number;
+  }
   function setSkin(id) {
     const p = pass();
     if (id && !p.liveries.includes(id)) throw new Error('Livrée pas encore débloquée');
@@ -622,5 +631,5 @@
   function reset() { const n = get().name; state = blank(); state.name = n; save(); }
   const popUnlocked = () => unlocked.splice(0);
 
-  F1.store = { installPart, rushJob, unlockSlot2, jobOf, tunnel, pass, claimPass, passComplete, nextSeason, setSkin, weeklyMax, sponsorCooldown, achProgress, claimAch, achClaimable, noteStat, setAvatar, ACH_BY, buyMate, releaseMate, weeklyGP, useWeeklyAttempt, recordWeekly, claimWeeklyGP, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
+  F1.store = { setNumber, installPart, rushJob, unlockSlot2, jobOf, tunnel, pass, claimPass, passComplete, nextSeason, setSkin, weeklyMax, sponsorCooldown, achProgress, claimAch, achClaimable, noteStat, setAvatar, ACH_BY, buyMate, releaseMate, weeklyGP, useWeeklyAttempt, recordWeekly, claimWeeklyGP, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
 })(globalThis.F1 = globalThis.F1 || {});

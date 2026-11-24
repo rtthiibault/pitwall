@@ -214,7 +214,7 @@
       const pace = clamp(rating + off(1), 50, 99), craft = clamp(rating + off(2), 50, 99), cons = clamp(rating + off(3) - (rookie ? 2 : 0), 50, 99);
       const age = ageOf(id, season.year), agef = AGE_W(age);
       const price = driverValue(rating, growth(age).cap, age);   // valeur marchande sans progression acquise
-      return { id, name: g.name, family: g.name.split(' ').slice(1).join(' '), short: shortName(g.name), code: g.code, number: d.number, iso: d.iso, teamId: g.teamId, team: TEAM_NAME[g.teamId] || g.teamId, reserve: g.reserve, rating, pace, craft, cons, price, rookie, age, agef };
+      return { id, name: g.name, family: g.name.split(' ').slice(1).join(' '), short: shortName(g.name), code: g.code, number: d.number || (F1.num && F1.num.ofDriver(id)) || '', iso: d.iso, teamId: g.teamId, team: TEAM_NAME[g.teamId] || g.teamId, reserve: g.reserve, rating, pace, craft, cons, price, rookie, age, agef };
     }).sort((a, b) => b.rating - a.rating || b.price - a.price);
 
     const teams = [...new Set(GRID.map((g) => g[3]))].map((tid) => {

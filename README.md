@@ -339,3 +339,11 @@ Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectoriel
   
   Les livrées s'équipent dans le Garage, et les logos des sponsors restent par-dessus. Une fois les 24 paliers réclamés, « Commencer la saison suivante » ajoute un badge « Saison N complétée » au profil.
 - **Sponsors** : un contrat terminé (réussi ou raté) bloque ce sponsor pendant 9 courses, en principal comme en secondaire. Pour que la rotation reste possible, le catalogue passe de 10 à 14 partenaires (Brûlerie Lumen, Rivio, Stratos Énergie, Meridian Bank). Les objectifs et les primes de Garage Dumas, Valcourt, Orbital, Synapse et TORQ ont été rééquilibrés.
+
+## Numéros des pilotes dans le dessin de chaque écurie
+
+- `js/numbers.js` contient les tracés vectoriels des 22 numéros officiels 2026 (fichiers fournis). Ils sont coloriés à la volée.
+- Ils sont affichés dans les classements, les marchés de paris, les cartes favoris de l'accueil, la voiture vue de profil, les photos du F1 Manager (pilotes, transferts, QG), la tour de classement et la radio en course.
+- Numéro du joueur (F1 Manager) : en rejoignant une écurie, on choisit son numéro de 1 à 99. Il n'est pas possible de prendre le numéro d'un autre pilote de la grille. On peut le changer depuis l'onglet Équipe.
+  - Aperçu en direct dans la typographie de l'écurie : un numéro quelconque n'a pas de dessin officiel, donc il est composé avec une police Google Fonts proche du style de chaque écurie (chargée à la demande).
+  - Le numéro choisi est peint sur la monoplace, affiché en course (tour, radio) et sur le profil.
