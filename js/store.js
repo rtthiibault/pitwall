@@ -67,7 +67,7 @@
   function blank() {
     return { v: 1, name: '', created: Date.now(), balance: START, bets: [], claimed: {}, rescues: {}, ach: {}, achClaimed: {}, stats: { tokensEarned: 0, newsWins: 0, leagueJoined: false, pwVisits: 0, podiumPicks: 0 }, avatar: null, history: [{ t: Date.now(), b: START }], manager: blankManager() };
   }
-  const blankManager = () => ({ pc: (F1.manager && F1.manager.START_PC) || 300, driver: null, chassis: null, ups: { speed: 0, df: 0, rel: 0 }, parts: {}, rdSpent: 0, setup: 0, lp: 0, best: 0, races: [], day: { key: 0, n: 0, paid: 0 }, log: [], staff: {}, garage: {}, fails: {}, daily: { key: '' }, drvXp: {}, next: { seed: (Math.random() * 4294967296) >>> 0, tyre: 'M', plan: { stops: [{ lap: 9, tyre: 'H' }] } } });
+  const blankManager = () => ({ ecoV: 2, pc: (F1.manager && F1.manager.START_PC) || 300, driver: null, chassis: null, ups: { speed: 0, df: 0, rel: 0 }, parts: {}, rdSpent: 0, setup: 0, lp: 0, best: 0, races: [], day: { key: 0, n: 0, paid: 0 }, log: [], staff: {}, garage: {}, fails: {}, daily: { key: '' }, drvXp: {}, next: { seed: (Math.random() * 4294967296) >>> 0, tyre: 'M', plan: { stops: [{ lap: 9, tyre: 'H' }] } } });
   const blankPass = (season = 1, done = [], liveries = [], tokens = 0, skin = null) => ({ season, xp: 0, claimed: {}, tokens, liveries, skin, done });
   function load() {
     try { state = JSON.parse(localStorage.getItem(KEY)); } catch (e) { state = null; }
@@ -90,6 +90,7 @@
     if (!m.sponsors) m.sponsors = { main: null, sub: null, log: [] };
     if (m.mate === undefined) m.mate = null;
     if (!m.sponsors.cool) m.sponsors.cool = {};
+    if (m.sponsors.seen == null) m.sponsors.seen = Date.now();
     if (!m.tunnel) m.tunnel = { slots: 1, jobs: [] };
     if (!m.pass) m.pass = blankPass();
     // statistiques de carrière du manager (reconstituées depuis l'historique des anciennes sauvegardes)
@@ -403,7 +404,13 @@
     if (MG.passTier(p.xp) < tier) throw new Error('Palier pas encore atteint');
     if (p.claimed[tier]) throw new Error('Récompense déjà réclamée');
     const r = MG.passReward(tier);
-    if (r.kind === 'chest') addPC(r.pc, `Passe de saison ${p.season} : ${r.name} (palier ${tier})`);
+    if (r.kind === 'chest') {
+      // coffre mystère : contenu tiré à l'ouverture
+      r.pc = r.min + Math.round(Math.random() * (r.max - r.min));
+      if (!p.got) p.got = {};
+      p.got[tier] = r.pc;
+      addPC(r.pc, `Passe de saison ${p.season} : ${r.name} (palier ${tier})`);
+    }
     else if (r.kind === 'token') p.tokens = (p.tokens || 0) + 1;
     else if (r.kind === 'livery' && !p.liveries.includes(r.id)) p.liveries.push(r.id);
     p.claimed[tier] = Date.now();

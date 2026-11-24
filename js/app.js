@@ -1097,13 +1097,19 @@
     const fc = MG().forecast(m.next.seed, race);
     const league = MG().leagueOf(m.lp);
     const mate = m.mate ? mk.byDriver.get(m.mate.id) || null : null;
-    const bots = MG().botField(mk, league, `${F1.store.dayKey()}-${race ? race.round : 0}`, m.driver && m.driver.id, mate && mate.id);
+    // sauvegardes d'avant la hausse des prix : la revente des pilotes déjà achetés reste calée sur l'ancien barème
+    if (m.ecoV !== 2) {
+      if (m.driver && drvM) { const nv = MG().valueOfDriver(drvM); m.driver.k = nv ? Math.min(1, MG().valueOfDriverV1(drvM) / nv) : 1; }
+      if (m.mate && mate) m.mate.k = mate.price ? Math.min(1, MG().valueOfDriverV1(MG().withExperience(mate, {})) / mate.price) : 1;
+      m.ecoV = 2; F1.store.save();
+    }
+    const bots = MG().botField(mk, league, `${F1.store.dayKey()}-${race ? race.round : 0}`, m.driver && m.driver.id, mate && mate.id, ch && ch.id);
     return { m, mk, race, w, drvM, ch, car, league, bots, tb, fc, mate };
   }
   const statBar = (label, val, base, color, icon = '') => `<div class="sbar"><div class="sbar-h"><span>${icon} ${label}</span><b class="num">${Math.round(val)}</b></div><div class="sbar-t"><i style="width:${Math.min(100, base)}%;background:${color}"></i><i class="up" style="width:${Math.max(0, Math.min(100, val) - Math.min(100, base))}%"></i></div></div>`;
   const leagueBadge = (L, cls = '') => `<span class="lbadge ${cls}" style="--lc:${L.color}">${L.icon} ${L.name}</span>`;
   // revente d'un pilote : 78 % de sa valeur marchande actuelle (note du moment, progression acquise comprise)
-  const resaleD = (ctx) => (ctx.m.driver && ctx.drvM ? Math.round((MG().valueOfDriver(ctx.drvM) * MG().RESALE_K) / 5) * 5 : 0);
+  const resaleD = (ctx) => (ctx.m.driver && ctx.drvM ? Math.round((MG().valueOfDriver(ctx.drvM) * MG().RESALE_K * (ctx.m.driver.k || 1)) / 5) * 5 : 0);
   // revente : 70 % du prix (le plus bas entre le prix payé et le prix actuel, pour éviter tout bénéfice quand les prix montent) + 50 % de la R&D investie
   const resaleC = (ctx) => (ctx.m.chassis ? Math.round((Math.min(ctx.m.chassis.price || Infinity, ctx.ch ? ctx.ch.price : Infinity) * 0.7 + (ctx.m.rdSpent || 0) * 0.5) / 5) * 5 : 0);
 
@@ -1151,10 +1157,13 @@
       ${log ? `<div class="sp-tier"><div class="sp-tier-h"><b>Contrats terminés</b></div><div class="sp-logs">${log}</div></div>` : ''}`;
   }
   /* ---------- QG de l'écurie : coque (bandeau, rail de navigation) et tableau de bord ---------- */
-  const MRAIL = [['ecurie', '🏁', 'QG'], ['hebdo', '🌐', 'GP Hebdo'], ['passe', '🎟️', 'Passe'], ['pilotes', '👤', 'Pilotes'], ['chassis', '🏎️', 'Équipe'], ['transferts', '🤝', 'Transferts'], ['rd', '🔬', 'R&D'], ['muret', '🎧', 'Muret'], ['garage', '🧰', 'Garage'], ['sponsors', '💼', 'Sponsors'], ['ligues', '🏆', 'Ligues']];
+  // parcours d'un directeur d'écurie : le QG, l'équipe et ses pilotes, le personnel et la technique, les finances, puis la compétition et les récompenses
+  const MRAIL = [['ecurie', '🏁', 'QG'], ['chassis', '🏎️', 'Équipe'], ['pilotes', '👤', 'Pilotes'], ['transferts', '🤝', 'Transferts'], ['muret', '🎧', 'Muret'], ['rd', '🔬', 'R&D'], ['garage', '🧰', 'Garage'], ['sponsors', '💼', 'Sponsors'], ['hebdo', '🌐', 'GP Hebdo'], ['ligues', '🏆', 'Ligues'], ['passe', '🎟️', 'Passe']];
   function pageManager(tab) {
     tab = tab || 'ecurie';
     const ctx = mgrCtx();
+    // l'onglet Sponsors ouvert : les contrats terminés sont « vus », la pastille disparaît
+    if (tab === 'sponsors' && ctx.m.sponsors && (ctx.m.sponsors.log || []).some((x) => x.t > (ctx.m.sponsors.seen || 0))) { ctx.m.sponsors.seen = Date.now(); F1.store.save(); }
     const { m, league, ch, car, race } = ctx;
     const nl = MG().nextLeague(m.lp);
     const col = ch ? F1.teamColor(ch.id) : '#e10600';
@@ -1263,7 +1272,7 @@
     const start = `<div class="row" style="justify-content:space-between">${leagueBadge(league, 'lg')}<span class="muted" style="font-size:12px">Gains ×${league.mult} · ${MG().FIELD - 1} piloters IA</span></div>
       <div style="margin-top:12px"><div class="row" style="justify-content:space-between;font-size:12px"><span>${fmt(m.lp)} LP</span><span class="muted">${nl ? `${nl.icon} ${nl.name} à ${nl.min} LP` : 'Sommet atteint !'}</span></div><div class="ptsbar" style="height:9px;margin-top:5px"><i style="width:${prog}%;background:linear-gradient(90deg,${league.color},#fff)"></i></div></div>
       <div class="hq-kpi"><div><small>Courses gratuites</small><b>${left} / ${F1.store.racesPerDay()}</b></div><div><small>Victoire</small><b>${fmtPC(MG().PC_TABLE[0] * league.mult * (1 + ctx.tb.pc))}</b></div><div><small>Dernière place</small><b>${fmtPC(MG().PC_TABLE[19] * league.mult * (1 + ctx.tb.pc))}</b></div></div>
-      ${raceButton('btn block hq-go')}`;
+`;
     // 07 — équipe
     const staff = MG().STAFF_ROLES.map((r) => { const x = MG().staffOf(m, r.id); return `<div class="stf ${x ? 'on' : ''}"><span>${r.icon}</span><div><small>${esc(r.name)}</small><b>${x ? esc(x.name) : 'Poste vacant'}</b></div>${x ? stars(x.tier) : ''}</div>`; }).join('');
     const gTot = MG().GARAGE.reduce((a, g) => a + MG().garageLevel(m, g.id), 0);
@@ -1380,20 +1389,20 @@
   /* ---------- Marché des transferts : le coéquipier ----------
      Prix et cote de performance suivent l'actualité Paddock Wire ; à chaque course, la position du coéquipier
      rapporte une prime de PitCoins (moitié du barème de la ligue). */
-  const resaleM = (ctx) => (ctx.mate ? Math.round((MG().mateValue(MG().withExperience(ctx.mate, ctx.m.drvXp)) * MG().RESALE_K) / 5) * 5 : 0);
+  const resaleM = (ctx) => (ctx.mate ? Math.round((MG().mateValue(ctx.mate) * MG().RESALE_K * ((ctx.m.mate && ctx.m.mate.k) || 1)) / 5) * 5 : 0);
   function mgrTransfers(ctx) {
     const { m, mk, league } = ctx;
     const res = resaleM(ctx);
     const pcRow = [1, 2, 3, 5, 8, 10, 15].map((p) => `<span><small>P${p}</small><b>+${MG().matePC(p, false, league)}</b></span>`).join('');
     const cur = ctx.mate ? (() => {
-      const d = MG().withExperience(ctx.mate, m.drvXp), nf = MG().newsForm(d), p = F1.visuals.portrait(d.id), last = (m.races || []).find((x) => x.mate);
+      const d = MG().withExperience(ctx.mate, {}), nf = MG().newsForm(d), p = F1.visuals.portrait(d.id), last = (m.races || []).find((x) => x.mate);
       return `<div class="tr-cur" style="--tc:${tcol(d.teamId)}"><div class="gphoto" style="width:72px;height:72px">${p ? `<img src="${esc(p.img)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<i>${esc(d.code)}</i>${dnum(d.number, d.teamId, 'gnum', '#fff')}</div>
         <div style="flex:1;min-width:0"><small class="muted">Votre coéquipier</small><div class="tr-cur-n">${esc(d.name)}</div><div class="muted" style="font-size:12.5px">Cote de performance <b class="num">${d.rating + nf.perf}</b>${nf.perf ? ` <span class="${nf.perf > 0 ? 'up' : 'down'}">(${nf.perf > 0 ? '+' : ''}${nf.perf} actu)</span>` : ''} · ${m.stats.mateWins} victoire${m.stats.mateWins > 1 ? 's' : ''} · ${m.stats.matePodiums} podium${m.stats.matePodiums > 1 ? 's' : ''}${last ? ` · dernière course : ${last.mate.dnf ? 'abandon' : 'P' + last.mate.pos}` : ''}</div></div>
         <div style="text-align:right"><small class="muted">Valeur de revente</small><div><b>${fmtPC(res)}</b></div><button class="btn sm ghost" data-action="mate-release" style="margin-top:6px">Libérer</button></div></div>`;
     })() : `<div class="tr-cur empty"><div class="tr-slot">+</div><div><div class="tr-cur-n">Aucun coéquipier</div><div class="muted" style="font-size:13px">Recrutez un pilote ci-dessous : il court la seconde voiture de votre équipe et rapporte des PitCoins à chaque course.</div></div></div>`;
     const list = mk.drivers.filter((d) => !(m.driver && m.driver.id === d.id)).map((d) => {
-      const x = MG().withExperience(d, m.drvXp), nf = MG().newsForm(x), price = MG().mateValue(x), own = m.mate && m.mate.id === d.id;
-      const base = Math.max(10, Math.round((MG().valueOfDriver(x) * MG().MATE_K) / 5) * 5), dp = price - base;
+      const x = MG().withExperience(d, {}), nf = MG().newsForm(x), price = MG().mateValue(d), own = m.mate && m.mate.id === d.id;
+      const base = Math.max(10, Math.round((d.price * MG().MATE_K) / 5) * 5), dp = price - base;
       const net = price - (m.mate && !own ? res : 0), p = F1.visuals.portrait(d.id);
       return `<div class="tr-row ${own ? 'own' : ''}" style="--tc:${tcol(d.teamId)}"><div class="gphoto" style="width:44px;height:44px">${p ? `<img src="${esc(p.img)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<i>${esc(d.code)}</i>${dnum(d.number, d.teamId, 'gnum', '#fff')}</div>
         <div class="tr-who"><b>${esc(d.name)}</b><small>${esc(d.team || '')}${d.reserve ? ' · réserviste' : ''} · ${x.exp.age} ans</small></div>
@@ -1566,11 +1575,20 @@
   const p2 = (n) => String(n).padStart(2, '0');
   const hms = (ms) => { const t = Math.max(0, Math.ceil(ms / 1000)); return `${p2(Math.floor(t / 3600))}h ${p2(Math.floor((t % 3600) / 60))}m ${p2(t % 60)}s`; };
   const durTxt = (ms) => (ms <= 0 ? 'immédiat' : ms < 3600e3 ? `${Math.round(ms / 60e3)} min` : `${Math.floor(ms / 3600e3)} h${Math.round((ms % 3600e3) / 60e3) ? ' ' + p2(Math.round((ms % 3600e3) / 60e3)) : ''}`);
-  const railPing = (k) => {
-    if (k === 'rd') { const T = F1.store.tunnel(); return T.jobs.some((j) => j.end <= Date.now()) ? '<i class="rail-ping" title="Pièce prête à installer"></i>' : ''; }
-    if (k === 'passe') { const P = F1.store.pass(), t = MG().passTier(P.xp); for (let i = 1; i <= t; i++) if (!P.claimed[i]) return '<i class="rail-ping blue" title="Récompense à réclamer"></i>'; }
-    return '';
-  };
+  // compteur d'actions en attente par onglet (récompense à récupérer, pièce terminée, contrat sponsor bouclé)
+  function railCount(k) {
+    const m = F1.store.mgr();
+    try {
+      if (k === 'ecurie') return m.driver && m.chassis ? F1.store.objectives().filter((o) => o.done && !o.claimed).length : 0;
+      if (k === 'rd') return F1.store.tunnel().jobs.filter((j) => j.end <= Date.now()).length;
+      if (k === 'passe') { const P = F1.store.pass(), t = MG().passTier(P.xp); let n = 0; for (let i = 1; i <= t; i++) if (!P.claimed[i]) n++; return n; }
+      if (k === 'sponsors') return ((m.sponsors && m.sponsors.log) || []).filter((x) => x.t > (m.sponsors.seen || 0)).length;
+      if (k === 'hebdo') return m.weeklyPast && !m.weeklyPast.rewardClaimed ? 1 : 0;
+    } catch (e) { /* données incomplètes */ }
+    return 0;
+  }
+  const RAIL_TIP = { ecurie: 'objectif(s) du jour à récupérer', rd: 'pièce(s) prête(s) à installer', passe: 'palier(s) à réclamer', sponsors: 'contrat(s) terminé(s)', hebdo: 'prime de classement à récupérer' };
+  const railPing = (k) => { const n = railCount(k); return n ? `<i class="rail-badge ${k === 'passe' ? 'blue' : ''}" title="${n} ${RAIL_TIP[k] || ''}">${n > 9 ? '9+' : n}</i>` : ''; };
   function rdJobsHtml(m) {
     const T = F1.store.tunnel(), now = Date.now(), cells = [];
     for (let i = 0; i < 2; i++) {
@@ -1613,17 +1631,50 @@
   }
 
   /* ---------- Passe de saison ---------- */
-  const CHEST_C = { s: ['#c9ced8', '#8b93a1'], m: ['#ffd36b', '#c08a1e'], l: ['#ffe08a', '#e0a526'] };
-  function chestSvg(size) {
-    const [b1, b2] = CHEST_C[size];
-    return `<svg class="ps-chest ${size}" viewBox="0 0 64 56" aria-hidden="true"><defs><linearGradient id="psc-${size}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2be0c8"/><stop offset="1" stop-color="#0a6b60"/></linearGradient><linearGradient id="psb-${size}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${b1}"/><stop offset="1" stop-color="${b2}"/></linearGradient></defs>
-      ${size === 'l' ? '<circle cx="32" cy="28" r="27" fill="#2be0c8" opacity=".16"/>' : ''}
-      <path d="M8 25 Q8 9 32 9 Q56 9 56 25Z" fill="url(#psc-${size})" stroke="#043a33" stroke-width="2"/>
-      <rect x="8" y="25" width="48" height="25" rx="3" fill="url(#psc-${size})" stroke="#043a33" stroke-width="2"/>
-      <rect x="8" y="23" width="48" height="5" fill="#062c27"/>
-      <path d="M17 10.5 V50 M47 10.5 V50" stroke="url(#psb-${size})" stroke-width="5"/>
-      <rect x="27" y="22" width="10" height="13" rx="2.5" fill="url(#psb-${size})" stroke="#043a33" stroke-width="1.5"/><circle cx="32" cy="28" r="1.8" fill="#043a33"/>
-      ${size !== 's' ? '<path d="M50 6 l1.6 3.4 3.4 1.6 -3.4 1.6 -1.6 3.4 -1.6 -3.4 -3.4 -1.6 3.4 -1.6Z" fill="#fff" opacity=".9"/>' : ''}</svg>`;
+  /* Coffres du Passe : rendu 3D isométrique sobre (graphite mat, reflets doux, filet d'accent selon le rang) */
+  const CHEST_TIER = { s: { a: '#9aa3ad', k: 0.86 }, m: { a: '#2ec4b6', k: 0.93 }, l: { a: '#d6b25e', k: 1 } };
+  function chestSvg(size, open = false) {
+    const T = CHEST_TIER[size] || CHEST_TIER.s, id = 'ch' + size, a = T.a;
+    return `<svg class="ps-chest ${size} ${open ? 'open' : ''}" viewBox="0 0 80 76" aria-hidden="true" style="--ca:${a}">
+      <defs>
+        <linearGradient id="${id}t" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4a505a"/><stop offset=".55" stop-color="#30353d"/><stop offset="1" stop-color="#252930"/></linearGradient>
+        <linearGradient id="${id}l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b3038"/><stop offset="1" stop-color="#1b1e23"/></linearGradient>
+        <linearGradient id="${id}r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1e2228"/><stop offset="1" stop-color="#121418"/></linearGradient>
+        <radialGradient id="${id}s" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+        <radialGradient id="${id}g" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="${a}" stop-opacity=".55"/><stop offset="1" stop-color="${a}" stop-opacity="0"/></radialGradient>
+      </defs>
+      <ellipse cx="40" cy="68" rx="31" ry="7" fill="url(#${id}s)"/>
+      <ellipse class="ch-glow" cx="40" cy="36" rx="30" ry="22" fill="url(#${id}g)"/>
+      <g class="ch-body">
+        <path d="M12 32 L40 46 L40 66 L12 52Z" fill="url(#${id}l)"/>
+        <path d="M40 46 L68 32 L68 52 L40 66Z" fill="url(#${id}r)"/>
+        <path d="M40 46 V66" stroke="#5b616b" stroke-width=".8" opacity=".7"/>
+        <path d="M12 32 L40 46 L68 32" fill="none" stroke="${a}" stroke-width="1.4" opacity=".9"/>
+        <path d="M22 42.6 L30 46.6 L30 54.6 L22 50.6Z" fill="#14171b" stroke="${a}" stroke-width=".8" opacity=".95"/>
+        <circle cx="26" cy="47.4" r="1.2" fill="${a}"/><path d="M26 48.4 V50.6" stroke="${a}" stroke-width=".9"/>
+        ${size === 'l' ? `<path d="M50 44 L58 40 M50 48 L58 44" stroke="${a}" stroke-width=".7" opacity=".55"/>` : ''}
+      </g>
+      <g class="ch-lid">
+        <path d="M40 10 L68 24 L40 38 L12 24Z" fill="url(#${id}t)"/>
+        <path d="M12 24 L40 38 L40 45 L12 31Z" fill="#262a31"/>
+        <path d="M40 38 L68 24 L68 31 L40 45Z" fill="#191c21"/>
+        <path d="M12 24 L40 10 L68 24" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width=".8"/>
+        ${size !== 's' ? `<path d="M40 18 L50 23 L40 28 L30 23Z" fill="none" stroke="${a}" stroke-width="1" opacity=".85"/>` : '<path d="M33 20.5 L47 27.5" stroke="#fff" stroke-opacity=".08" stroke-width="3"/>'}
+        ${size === 'l' ? `<path d="M40 21 L44 23 L40 25 L36 23Z" fill="${a}"/>` : ''}
+      </g></svg>`;
+  }
+  // ouverture d'un ou plusieurs coffres : le couvercle se lève, le contenu s'affiche
+  function chestReveal(items, extra) {
+    const big = items.some((x) => x.size === 'l') ? 'l' : items.some((x) => x.size === 'm') ? 'm' : 's';
+    const total = items.reduce((s, x) => s + x.pc, 0);
+    modal(`<div class="ch-rev">
+      <div class="ch-rev-stage">${chestSvg(big)}</div>
+      <small>${items.length > 1 ? `${items.length} coffres ouverts` : esc(items[0].name)}</small>
+      <div class="ch-rev-amt">+${fmtPC(total)}</div>
+      ${items.length > 1 ? `<div class="ch-rev-list">${items.map((x) => `<span>${esc(x.name)} <b>+${x.pc}</b></span>`).join('')}</div>` : ''}
+      ${extra ? `<div class="ch-rev-extra">${extra}</div>` : ''}
+      <button class="btn" data-action="close-modal">Continuer</button></div>`);
+    const st = $('.ch-rev'); if (st) requestAnimationFrame(() => setTimeout(() => st.classList.add('open'), 450));
   }
   const livSwatch = (l) => `<span class="ps-liv" style="--a:${l.c[0]};--b:${l.c[1]};--c:${l.c[2] || l.c[1]}"><i></i></span>`;
   function passArt(r) {
@@ -1639,7 +1690,7 @@
     const complete = F1.store.passComplete();
     const cells = Array.from({ length: T }, (_, i) => {
       const t = i + 1, r = M.passReward(t), got = !!P.claimed[t], can = t <= tier && !got, cur = t === tier + 1;
-      const sub = r.kind === 'chest' ? `+${fmtPC(r.pc)}` : r.kind === 'token' ? '3ᵉ tentative au GP Hebdo' : esc(M.PASS_LIVERY_BY.get(r.id).desc);
+      const sub = r.kind === 'chest' ? (got ? `Contenait +${fmtPC((P.got && P.got[t]) || r.pc)}` : 'Contenu mystère') : r.kind === 'token' ? '3ᵉ tentative au GP Hebdo' : esc(M.PASS_LIVERY_BY.get(r.id).desc);
       return `<div class="ps-t ${got ? 'got' : can ? 'ready' : 'lock'} ${cur ? 'cur' : ''} ${r.kind === 'livery' ? 'star' : ''} k-${r.kind}">
         <div class="ps-n">${t}</div><div class="ps-art">${passArt(r)}</div>
         <div class="ps-name">${esc(r.name)}</div><small class="ps-sub">${sub}</small>
@@ -2135,7 +2186,7 @@
             ${rec.passXp ? passChip(rec.passXp) : ''}
             ${spRows ? `<div class="db-sps"><small class="muted">Objectifs sponsors</small>${spRows}</div>` : '<div class="muted" style="font-size:12px">Aucun sponsor sous contrat : signez-en un dans l\'onglet Sponsors.</div>'}</section>
         </div>
-        <div class="db-actions">${raceButton('btn ghost', 'm-again')}<button class="btn" data-action="m-qg">Retourner au QG</button></div></div>`;
+        <div class="db-actions"><button class="btn" data-action="m-qg">Retourner au QG</button></div></div>`;
       $('.race-ctl').classList.add('done');
       // barre d'XP animée
       if (xpAfter) requestAnimationFrame(() => { const el = $('#dbXp'); if (!el) return; const to = frac(xpAfter) * 100; if (rec.grew && !xpAfter.maxed) { el.style.width = '100%'; setTimeout(() => { el.style.transition = 'none'; el.style.width = '0%'; requestAnimationFrame(() => { el.style.transition = ''; el.style.width = to + '%'; }); }, 900); } else setTimeout(() => { el.style.width = to + '%'; }, 120); });
@@ -2390,7 +2441,7 @@
     try { F1.store.useWeeklyAttempt(ev.id, useToken); } catch (e) { return toast('⏳', esc(e.message), 'err'); }
     const meName = (F1.social.state.me && F1.social.state.me.username) || F1.store.get().name || 'Mon écurie';
     const player = { name: meName, driver: ctx.drvM, car: ctx.car, setup: ctx.m.setup, chassisId: ctx.ch.id };
-    const R = MG().createRace({ player, bots: (() => { const me2 = MG().mateEntry(ctx.mate, ctx.car, ctx.ch.id, ctx.ch.name), b2 = MG().weeklyBots(ev.seed, ctx.drvM && ctx.drvM.id, ctx.mate && ctx.mate.id); return me2 ? [me2, ...b2] : b2; })(), race: ev.race, seed: ev.seed, wxSeed: ev.seed, startTyre: ctx.m.next.tyre, plan: ctx.m.next.plan, manual: true });
+    const R = MG().createRace({ player, bots: (() => { const me2 = MG().mateEntry(ctx.mate, ctx.car, ctx.ch.id, ctx.ch.name), b2 = MG().weeklyBots(ev.seed, ctx.drvM && ctx.drvM.id, ctx.mate && ctx.mate.id, ctx.ch && ctx.ch.id); return me2 ? [me2, ...b2] : b2; })(), race: ev.race, seed: ev.seed, wxSeed: ev.seed, startTyre: ctx.m.next.tyre, plan: ctx.m.next.plan, manual: true });
     R.weekly = ev;
     showRace(R, { ...ctx, race: ev.race });
   }
@@ -2801,7 +2852,7 @@
       case 'ach-claim-all': { let t = 0; F1.store.achClaimable().forEach((x) => { t += F1.store.claimAch(x.id); }); achFly(a, t); confetti(140); toast('🏆', `+${jt(t)} crédités`, 'win'); setTimeout(route, 900); break; }
       case 'credits': credits(); break;
       case 'm-buy-d': { const ctx = mgrCtx(); const d0 = ctx.mk.byDriver.get(a.dataset.id); const d = { ...d0, price: MG().valueOfDriver(MG().withExperience(d0, ctx.m.drvXp)) }; try { F1.store.buyDriver(d, resaleD(ctx)); toast('🤝', `<b>${esc(d.name)}</b> rejoint votre écurie !`, 'win'); confetti(80); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
-      case 'mate-buy': { const ctx = mgrCtx(); const d0 = ctx.mk.byDriver.get(a.dataset.id); const x = MG().withExperience(d0, ctx.m.drvXp); try { F1.store.buyMate(d0, MG().mateValue(x), resaleM(ctx)); toast('🤝', `<b>${esc(d0.name)}</b> devient votre coéquipier !`, 'win'); confetti(70); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
+      case 'mate-buy': { const ctx = mgrCtx(); const d0 = ctx.mk.byDriver.get(a.dataset.id); try { F1.store.buyMate(d0, MG().mateValue(d0), resaleM(ctx)); toast('🤝', `<b>${esc(d0.name)}</b> devient votre coéquipier !`, 'win'); confetti(70); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'mate-release': { const ctx = mgrCtx(); if (!confirm(`Libérer ${ctx.m.mate.name} ? Vous récupérez ${resaleM(ctx)} PitCoins.`)) break; const g = F1.store.releaseMate(resaleM(ctx)); toast('🤝', `Coéquipier libéré : +${fmtPC(g)}`, 'win'); F1.social.sync(); route(); break; }
       case 'sp-sign': { try { const t = F1.store.signSponsor(a.dataset.id, a.dataset.slot); const sp = MG().SPONSOR_BY_ID.get(a.dataset.id); toast('💼', `Contrat signé avec <b>${esc(sp.name)}</b> : +${t.sign} PitCoins de prime de signature`, 'win'); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'm-buy-c': { const ctx = mgrCtx(); const c = ctx.mk.byChassis.get(a.dataset.id); if (ctx.m.chassis && ctx.m.rdSpent > 0 && !confirm('Changer d\'équipe remet votre R&D à zéro. Continuer ?')) break; try { F1.store.buyChassis(c, resaleC(ctx)); toast('🏎️', `Vous prenez la direction de <b>${esc(c.name)}</b> !`, 'win'); confetti(80); showAchievements(); F1.social.sync(); route(); setTimeout(() => openNumberPicker(true), 350); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
@@ -2836,8 +2887,13 @@
       case 'ps-claim': case 'ps-all': {
         try {
           const P = F1.store.pass(), t = MG().passTier(P.xp), list = a.dataset.t ? [+a.dataset.t] : Array.from({ length: t }, (_, i) => i + 1).filter((x) => !P.claimed[x]);
-          let pc = 0, tok = 0; const liv = [];
-          for (const x of list) { const r = F1.store.claimPass(x); if (r.kind === 'chest') pc += r.pc; else if (r.kind === 'token') tok++; else liv.push(MG().PASS_LIVERY_BY.get(r.id).name); }
+          let pc = 0, tok = 0; const liv = [], chests = [];
+          for (const x of list) { const r = F1.store.claimPass(x); if (r.kind === 'chest') { pc += r.pc; chests.push(r); } else if (r.kind === 'token') tok++; else liv.push(MG().PASS_LIVERY_BY.get(r.id).name); }
+          if (chests.length) {
+            route();
+            const extra = [tok ? `🎟️ ${tok} jeton${tok > 1 ? 's' : ''} de tentative` : '', ...liv.map((n) => `🎨 Livrée <b>${esc(n)}</b> (à équiper dans le Garage)`)].filter(Boolean).join('<br>');
+            chestReveal(chests, extra); setTimeout(() => confetti(liv.length ? 180 : 80), 700); showAchievements(); break;
+          }
           const parts = [pc ? `+${fmtPC(pc)}` : '', tok ? `${tok} jeton${tok > 1 ? 's' : ''} de tentative` : '', ...liv.map((n) => `livrée <b>${esc(n)}</b> (à équiper dans le Garage)`)].filter(Boolean);
           toast('🎁', `Passe de saison : ${parts.join(' · ')}`, 'win', 5000); confetti(liv.length ? 180 : 70);
           showAchievements(); route();

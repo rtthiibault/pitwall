@@ -166,9 +166,22 @@
      Un pilote formé jusqu'à 86 vaut donc nettement plus qu'un pilote à 82, même s'il a atteint son plafond. */
   const valueCurve = (r) => 45 * Math.exp((r - 80) / 7);
   const AGE_W = (age) => (age <= 21 ? 1.3 : age <= 23 ? 1.15 : age <= 27 ? 1 : age <= 32 ? 0.7 : 0.4);
+  // ancien barème (avant la hausse des prix) : sert uniquement à convertir la revente des pilotes achetés avant la mise à jour
+  function driverValueV1(rating, remaining, age) {
+    const upside = Math.min(1.5, (Math.max(0, remaining) / 6) * AGE_W(age));
+    return Math.max(15, Math.round((valueCurve(rating) * (0.8 + 0.2 * upside)) / 5) * 5);
+  }
+  /* Barème des pilotes : prix de base selon la note (interpolé entre ces repères), puis modulé de 85 % à 107 % selon la
+     marge de progression et l'âge. Une star coûte plusieurs semaines de gains : Verstappen ≈ 650–700, Norris/Leclerc/Russell ≈ 450–550. */
+  const PRICE_PTS = [[70, 35], [74, 55], [76, 70], [78, 90], [80, 110], [82, 135], [84, 170], [86, 240], [88, 390], [89, 500], [90, 530], [92, 640], [94, 770], [97, 950]];
+  function priceCurve(r) {
+    if (r <= PRICE_PTS[0][0]) return PRICE_PTS[0][1];
+    for (let i = 1; i < PRICE_PTS.length; i++) { const [r1, v1] = PRICE_PTS[i], [r0, v0] = PRICE_PTS[i - 1]; if (r <= r1) return v0 + ((v1 - v0) * (r - r0)) / (r1 - r0); }
+    return PRICE_PTS[PRICE_PTS.length - 1][1];
+  }
   function driverValue(rating, remaining, age) {
     const upside = Math.min(1.5, (Math.max(0, remaining) / 6) * AGE_W(age));   // 0 (plafond atteint) à 1,5 (jeune, tout à apprendre)
-    return Math.max(15, Math.round((valueCurve(rating) * (0.8 + 0.2 * upside)) / 5) * 5);
+    return Math.max(30, Math.round((priceCurve(rating) * (0.85 + 0.15 * upside)) / 5) * 5);
   }
   const RESALE_K = 0.78;   // revente : 78 % de la valeur marchande actuelle
   /* Effet de l'actualité Paddock Wire sur un pilote : une bonne nouvelle (cote en baisse) fait monter sa valeur et sa
@@ -182,7 +195,8 @@
   const MATE_K = 0.55;
   function mateValue(d) {
     if (!d) return 0;
-    const base = d.exp ? valueOfDriver(d) : d.price;
+    // cote de base du marché uniquement : l'XP éventuellement acquise comme titulaire ne compte pas pour un coéquipier
+    const base = d.price;
     return Math.max(10, Math.round((base * MATE_K * newsForm(d).priceK) / 5) * 5);
   }
   // Prime du coéquipier : la moitié du barème de PitCoins de la ligue, selon sa position d'arrivée
@@ -192,6 +206,7 @@
   const F1_POINTS = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
   // valeur d'un pilote tel qu'il est aujourd'hui (objet renvoyé par withExperience)
   const valueOfDriver = (x) => (x.exp ? driverValue((x.base ? x.base.rating : x.rating) + x.exp.pts, x.exp.cap - x.exp.pts, x.exp.age) : x.price);
+  const valueOfDriverV1 = (x) => (x.exp ? driverValueV1((x.base ? x.base.rating : x.rating) + x.exp.pts, x.exp.cap - x.exp.pts, x.exp.age) : driverValueV1(x.rating, growth(ageOf(x.id)).cap, ageOf(x.id)));
   function market(season) {
     const ents = [...GRID_BY.keys()];
     const drivers = season.drivers;
@@ -490,14 +505,31 @@
     const c = (v) => clamp(v + dd, 50, 99);
     return { ...d, rating: target, pace: c(d.pace), craft: c(d.craft), cons: c(d.cons) };
   }
-  function botField(mk, league, dayKey, meDriverId, mateId) {
+  /* Plateau IA sans doublon : deux baquets par écurie. L'écurie du joueur ne garde que les places laissées libres par
+     le joueur et son coéquipier. Les pilotes recrutés par le joueur quittent le plateau ; les baquets vides sont comblés
+     par les pilotes évincés de l'écurie du joueur, puis par les réservistes. Renvoie [id, nom, code, écurie du baquet]. */
+  const SEAT_ALIAS = { racing_bulls: 'rb', sauber: 'audi' };
+  function aiLineup(meDriverId, mateId, myTeam, has = () => true) {
+    const used = new Set([meDriverId, mateId].filter(Boolean));
+    const teams = [...new Set(GRID.map((g) => g[3]))];
+    const seats = new Map(teams.map((t) => [t, 2]));
+    const mine = SEAT_ALIAS[myTeam] || myTeam;
+    if (mine && seats.has(mine)) seats.set(mine, Math.max(0, 1 - (mateId ? 1 : 0)));
+    const out = [], spare = [];
+    for (const g of GRID) {
+      if (used.has(g[0]) || !has(g[0])) continue;
+      if (seats.get(g[3]) > 0) { seats.set(g[3], seats.get(g[3]) - 1); used.add(g[0]); out.push([g[0], g[1], g[2], g[3]]); } else spare.push(g);
+    }
+    for (const g of RESERVES) if (!used.has(g[0]) && has(g[0])) spare.push(g);
+    for (const t of teams) while (seats.get(t) > 0 && spare.length) { const g = spare.shift(); used.add(g[0]); seats.set(t, seats.get(t) - 1); out.push([g[0], g[1], g[2], t]); }
+    return out.slice(0, FIELD - 1 - (mateId ? 1 : 0));
+  }
+  function botField(mk, league, dayKey, meDriverId, mateId, myTeam) {
     const r = rng(hash(`bots-${league.id}-${dayKey}`));
     const li = LEAGUES.indexOf(league);
-    const slots = FIELD - 1 - (mateId ? 1 : 0);
-    let grid = GRID.filter((g) => g[0] !== meDriverId && g[0] !== mateId && mk.byDriver.has(g[0]));
-    if (grid.length > slots) grid = [...grid].sort((x, y) => mk.byDriver.get(y[0]).rating - mk.byDriver.get(x[0]).rating).slice(0, slots);
+    const grid = aiLineup(meDriverId, mateId, myTeam, (id) => mk.byDriver.has(id));
     return grid.map(([id, , , tid]) => {
-      const d = leagueDriver(mk.byDriver.get(id), league);
+      const d0 = leagueDriver(mk.byDriver.get(id), league), d = d0.teamId === tid ? d0 : { ...d0, team: TEAM_NAME[tid] || d0.team, seatTeam: tid };
       const c = mk.byChassis.get(tid) || mk.chassis[mk.chassis.length - 1];
       const lv = () => Math.round(league.bot[0] + r() * (league.bot[1] - league.bot[0]));
       const ups = { speed: lv(), df: lv(), rel: lv() };
@@ -1178,15 +1210,14 @@
   }
   // Managers IA de la semaine : pilotes et châssis tirés de tables fixes (identiques pour tous les joueurs), niveau « Argent »
   const WEEKLY_TEAM = { mercedes: 1, mclaren: 0.95, ferrari: 0.85, red_bull: 0.8, williams: 0.45, racing_bulls: 0.4, rb: 0.4, aston_martin: 0.35, haas: 0.3, alpine: 0.25, audi: 0.2, cadillac: 0.05 };
-  function weeklyBots(seed, meDriverId, mateId) {
+  function weeklyBots(seed, meDriverId, mateId, myTeam) {
     const r = rng(seed ^ 0x9e3779b9), L = LEAGUES[1];
-    const slots = FIELD - 1 - (mateId ? 1 : 0);
-    let grid = GRID.filter((g) => g[0] !== meDriverId && g[0] !== mateId);
-    while (grid.length > slots) grid.splice(seed % grid.length, 1);
+    const grid = aiLineup(meDriverId, mateId, myTeam);
     return grid.map(([id, name, code, tid]) => {
       const t = TALENT[id] || [78, 0, 0, 0];
       const rating = t[0] - 2 + Math.round(r() * 3);
-      const d0 = { id, name, code, short: shortName(name), team: TEAM_NAME[tid], teamId: tid, rating, pace: clamp(rating + t[1], 50, 99), craft: clamp(rating + t[2], 50, 99), cons: clamp(rating + t[3], 50, 99) };
+      const home = GRID_BY.get(id) ? GRID_BY.get(id).teamId : tid;
+      const d0 = { id, name, code, short: shortName(name), team: TEAM_NAME[tid], teamId: home, seatTeam: tid, rating, pace: clamp(rating + t[1], 50, 99), craft: clamp(rating + t[2], 50, 99), cons: clamp(rating + t[3], 50, 99) };
       const driver = leagueDriver(d0, L);
       const st = WEEKLY_TEAM[tid] != null ? WEEKLY_TEAM[tid] : WEEKLY_TEAM.racing_bulls, pr = TEAM_PROFILE[tid] || [0, 0, 0], base = 45 + 30 * st;
       const chassis = { id: tid, speed: Math.round(base + pr[0]), df: Math.round(base + pr[1]), rel: Math.round(base + 4 + pr[2]) };
@@ -1254,7 +1285,8 @@
   /* ---------- Passe de saison : 24 paliers ----------
      +100 XP par course de campagne, +150 XP par tentative au GP Hebdomadaire, 125 XP par palier (≈ un palier toutes les 1 à 1,5 courses). */
   const PASS_TIERS = 24, PASS_XP_TIER = 125, PASS_XP_RACE = 100, PASS_XP_WEEKLY = 150;
-  const PASS_CHEST = { s: { name: 'Petit coffre', pc: 25 }, m: { name: 'Coffre moyen', pc: 60 }, l: { name: 'Grand coffre', pc: 150 } };
+  // coffres mystères : contenu tiré au hasard à l'ouverture (fourchette de PitCoins selon le coffre)
+  const PASS_CHEST = { s: { name: 'Coffre Standard', pc: 25, min: 15, max: 40 }, m: { name: 'Coffre Avancé', pc: 65, min: 40, max: 90 }, l: { name: 'Coffre Prestige', pc: 155, min: 110, max: 200 } };
   const PASS_LIVERIES = [
     { id: 'carbon', tier: 8, name: 'Carbone Nu', desc: 'Fibre de carbone brute, finition mate, filet argent', c: ['#141518', '#c9ccd2'] },
     { id: 'neon', tier: 16, name: 'Nuit / Néon', desc: 'Bleu nuit profond, néons magenta et cyan', c: ['#0b0b1e', '#ff2bd6', '#22f0ff'] },
@@ -1266,7 +1298,7 @@
     if (liv) return { kind: 'livery', id: liv.id, name: `Livrée ${liv.name}` };
     if (tier % 6 === 0) return { kind: 'token', name: 'Jeton de tentative GP Hebdo' };
     const size = tier % 5 === 0 ? 'l' : tier % 2 === 0 ? 'm' : 's';
-    return { kind: 'chest', size, pc: PASS_CHEST[size].pc, name: PASS_CHEST[size].name };
+    return { kind: 'chest', size, pc: PASS_CHEST[size].pc, min: PASS_CHEST[size].min, max: PASS_CHEST[size].max, name: PASS_CHEST[size].name };
   }
   const passTier = (xp) => Math.min(PASS_TIERS, Math.floor((xp || 0) / PASS_XP_TIER));
 
@@ -1296,7 +1328,7 @@
     forecastLaps, trend, ruleOk, RULE_PENALTY, tyreStatus, MODES, redoLap, dryFor, FUEL_LOAD, MIX, ERS, ENG_CRIT, TYRE_LO, TYRE_HI, fuelDelta, KG,
     CLIMATE, climateOf, trackState, forecast, TYRES, isSlick, tyreDelta, DILEMMA_LAPS, dilemmaLaps, lapsOf, RACE_LAPS, planFor, REFILL_H, createRace, stepLap, dilemmaFor, applyChoice, RADIO,
     WEEKLY_ATTEMPTS, WEEKLY_FIRST_PRIME, isoWeek, weeklyEvent, weeklyBots, fmtRaceTime, fmtGap, weeklyPrize, CIRCUIT_NAME,
-    SPONSOR_COOLDOWN, rdBuildMs, rushCost, TUNNEL_SLOT2_PC, PASS_TIERS, PASS_XP_TIER, PASS_XP_RACE, PASS_XP_WEEKLY, PASS_CHEST, PASS_LIVERIES, PASS_LIVERY_BY, passReward, passTier,
+    aiLineup, driverValueV1, valueOfDriverV1, PRICE_PTS, SPONSOR_COOLDOWN, rdBuildMs, rushCost, TUNNEL_SLOT2_PC, PASS_TIERS, PASS_XP_TIER, PASS_XP_RACE, PASS_XP_WEEKLY, PASS_CHEST, PASS_LIVERIES, PASS_LIVERY_BY, passReward, passTier,
     SPONSORS, SPONSOR_BY_ID, goalText, sponsorTerms, sponsorAfterRace, SUB_K,
     TEAM_NAME, TEAM_CODE, GRID, GRID_BY, shortName, newsForm, mateValue, MATE_K, matePC, MATE_PC_K, F1_POINTS, mateEntry, START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, lpScale, AGE_PRICE, driverValue, valueOfDriver, RESALE_K, XP_DIV, PC_TABLE,
     RD_CATS, RD_PARTS, RD_BY_ID, rdBranches, partState, partsBonus,

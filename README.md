@@ -347,3 +347,17 @@ Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectoriel
 - Numéro du joueur (F1 Manager) : en rejoignant une écurie, on choisit son numéro de 1 à 99. Il n'est pas possible de prendre le numéro d'un autre pilote de la grille. On peut le changer depuis l'onglet Équipe.
   - Aperçu en direct dans la typographie de l'écurie : un numéro quelconque n'a pas de dessin officiel, donc il est composé avec une police Google Fonts proche du style de chaque écurie (chargée à la demande).
   - Le numéro choisi est peint sur la monoplace, affiché en course (tour, radio) et sur le profil.
+
+## F1 Manager : grille sans doublon, économie des pilotes, coffres mystères
+
+- **Un seul bouton de course** : celui du bandeau en haut du QG. Le bouton du panneau « Grille de départ » et celui du débrief ont été retirés.
+- **Rail** :
+  - ordre QG → Équipe → Pilotes → Transferts → Muret → R&D → Garage → Sponsors → GP Hebdo → Ligues → Passe ;
+  - compteurs : objectifs du jour à récupérer, pièces prêtes en soufflerie, paliers du Passe, contrats sponsors terminés pas encore vus, prime du GP Hebdo.
+- **Grille IA** (`aiLineup` dans `js/manager.js`) : 2 baquets par écurie. L'écurie du joueur ne garde que les places laissées libres par le joueur et son coéquipier. Les pilotes recrutés quittent le plateau, et les baquets vides sont comblés par les pilotes évincés, puis par les réservistes. Ni doublon, ni plus de 2 voitures par écurie (campagne et GP Hebdo).
+- **Coéquipier** : aucune XP. Sa note et son prix ne dépendent que de sa cote de base et de l'actualité Paddock Wire.
+- **Prix des pilotes** (`PRICE_PTS`) : environ ×2,3 à ×3. Pour les sauvegardes existantes, la revente des pilotes achetés avant la hausse reste calée sur l'ancien barème (facteur `k`), donc pas de plus-value gratuite.
+- **Passe de saison** :
+  - coffres Standard (15–40 PC), Avancé (40–90 PC) et Prestige (110–200 PC) ;
+  - contenu tiré à l'ouverture, avec une animation d'ouverture ;
+  - nouveau rendu 3D isométrique graphite.

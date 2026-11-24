@@ -1401,3 +1401,33 @@ body.on-home::after { mix-blend-mode: screen; }
 .modal-box:has(.np) { width: min(600px, 94vw); max-width: 94vw; }
 .np { min-width: 0; }
 .trow .tnm { flex: 0 0 26px; height: 14px; display: flex; align-items: center; justify-content: center; font-size: 14px; } .trow .tnm .dnum { height: 14px; max-width: 26px; } .trow.me .tnm { filter: drop-shadow(0 0 2px rgba(0,0,0,.9)); }
+
+/* ===== Rail du QG : compteurs d'actions en attente ===== */
+.rail-badge { position: absolute; top: 4px; right: 6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; display: grid; place-items: center;
+  background: var(--red2); color: #fff; font-size: 10.5px; font-weight: 800; font-style: normal; line-height: 1; box-shadow: 0 0 0 2px var(--bg); animation: badgeIn .3s ease-out; }
+.rail-badge.blue { background: var(--cyan); color: #04201d; }
+@keyframes badgeIn { from { transform: scale(.4); opacity: 0; } }
+
+/* ===== Coffres du Passe : 3D sobre + ouverture ===== */
+.ps-chest { width: 64px !important; height: 61px !important; filter: none !important; overflow: visible; }
+.ps-chest.s { width: 56px !important; height: 53px !important; } .ps-chest.l { width: 70px !important; height: 66px !important; }
+.ps-chest .ch-glow { opacity: 0; transition: opacity .4s; }
+.ps-chest.l .ch-glow { opacity: .35; }
+.ps-chest .ch-lid { transition: transform .55s cubic-bezier(.2,.9,.3,1.3); transform-origin: 40px 24px; }
+.ps-t.ready .ps-chest { animation: chestIdle 2.6s ease-in-out infinite; }
+@keyframes chestIdle { 50% { transform: translateY(-2px); } }
+.ps-t.got .ps-chest .ch-lid { transform: translate(0, -7px); }
+.ch-rev { display: grid; justify-items: center; gap: 8px; padding: 10px 6px 4px; text-align: center; min-width: min(380px, 84vw); }
+.ch-rev-stage { width: 170px; height: 160px; display: grid; place-items: center; }
+.ch-rev-stage .ps-chest { width: 170px !important; height: 160px !important; animation: chestShake .45s ease-in-out 1; }
+.ch-rev.open .ps-chest .ch-lid { transform: translate(0, -16px) rotate(-6deg); }
+.ch-rev.open .ps-chest .ch-glow { opacity: 1; }
+@keyframes chestShake { 20% { transform: rotate(-4deg); } 40% { transform: rotate(4deg); } 60% { transform: rotate(-2deg); } 80% { transform: rotate(2deg); } }
+.ch-rev small { font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.ch-rev-amt { font-size: 40px; font-weight: 900; opacity: 0; transform: translateY(8px) scale(.9); transition: all .45s .25s; }
+.ch-rev.open .ch-rev-amt { opacity: 1; transform: none; }
+.ch-rev-list { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; font-size: 12px; color: var(--muted); }
+.ch-rev-list span { padding: 3px 8px; border: 1px solid var(--line); border-radius: 999px; } .ch-rev-list b { color: var(--text); }
+.ch-rev-extra { font-size: 13px; line-height: 1.6; }
+.ps-art { height: 78px; }
+.ps-art .ps-chest.s { width: 66px !important; height: 63px !important; } .ps-art .ps-chest.m { width: 72px !important; height: 68px !important; } .ps-art .ps-chest.l { width: 80px !important; height: 76px !important; }
