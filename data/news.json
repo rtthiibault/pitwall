@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-24T13:41:37.180Z",
+ "updated": "2026-11-24T14:11:57.210Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-24T14:11:37.180Z",
+ "next": "2026-11-24T14:41:57.210Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -27,6 +27,32 @@
  ],
  "items": [
   {
+   "id": "news_wik9yd",
+   "timestamp": "2026-11-24T13:53:00.000Z",
+   "category": "PADDOCK",
+   "title": "Audi F1 veut arracher la septième place du championnat à Haas",
+   "summary": "Audi F1 aborde le Grand Prix du Qatar, l'avant-dernière manche de la saison, avec l'ambition de retrouver le chemin des points et de maintenir la pression sur Haas dans la lutte pour la septième place du championnat des constructeurs. Seulement trois points…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/audi-f1-veut-arracher-la-septieme-place-du-championnat-a-haas,213700.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/audi3_2_-3.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-24T14:11:57.210Z"
+  },
+  {
+   "id": "news_195at68",
+   "timestamp": "2026-11-24T13:16:00.000Z",
+   "category": "PADDOCK",
+   "title": "Dix ans après son sacre, Rosberg raconte les derniers jours de sa carrière en F1",
+   "summary": "Près de dix ans après avoir décroché son unique titre de champion du monde de Formule 1 face à Lewis Hamilton, Nico Rosberg est revenu sur l'immense pression qui l'avait accompagné à l'approche du Grand Prix décisif d'Abu Dhabi en 2016. L'Allemand a révélé…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/dix-ans-apres-son-sacre-rosberg-raconte-les-derniers-jours-de-sa-carriere-en-f1,213697.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/rosberg-2016_2_.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-24T14:11:57.210Z"
+  },
+  {
    "id": "news_xqsfwp",
    "timestamp": "2026-11-24T12:30:00.000Z",
    "category": "PADDOCK",
@@ -36,7 +62,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/la-valeur-des-ecuries-de-f1-explose-ferrari-atteint-8-74-milliards-d-euros,213698.html",
    "impact": null,
-   "firstSeen": "2026-11-24T13:11:33.770Z"
+   "firstSeen": "2026-11-24T13:11:33.770Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/ambiance-pirelli3_10_-5.jpg"
   },
   {
    "id": "news_6gz6r3",
@@ -48,7 +75,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/villeneuve-bouleverse-par-les-premieres-images-du-film-sur-son-pere,213694.html",
    "impact": null,
-   "firstSeen": "2026-11-24T12:11:25.924Z"
+   "firstSeen": "2026-11-24T12:11:25.924Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1402101_hires.jpg"
   },
   {
    "id": "news_15pwn7r",
@@ -72,7 +100,8 @@
     "bettingOddsMultiplier": 1.04,
     "impactLabel": "Aéro -1 pts | Cotes +4%"
    },
-   "firstSeen": "2026-11-24T11:41:22.971Z"
+   "firstSeen": "2026-11-24T11:41:22.971Z",
+   "image": "https://cdn-1.motorsport.com/images/amp/6lmAlV80/s6/flavio-briatore-alpine.jpg"
   },
   {
    "id": "news_c8oew2",
@@ -84,7 +113,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/motorsport/audi-f1-lance-freddie-slater-en-formule-2-ce-week-end-au-qatar,213701.html",
    "impact": null,
-   "firstSeen": "2026-11-24T12:11:25.924Z"
+   "firstSeen": "2026-11-24T12:11:25.924Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/audi0_13_.jpg"
   },
   {
    "id": "news_jkfsg8",
@@ -96,7 +126,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/la-pire-chose-serait-de-camper-sur-nos-positions-vowles-valide-le-retour-au-v8,213679.html",
    "impact": null,
-   "firstSeen": "2026-11-24T11:11:19.505Z"
+   "firstSeen": "2026-11-24T11:11:19.505Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1452411_hires.jpg"
   },
   {
    "id": "news_c2ygoe",
@@ -108,7 +139,8 @@
    "lang": "fr",
    "url": "https://www.autohebdo.fr/actualites/f1/le-podium-sest-envole-pour-antonelli-dans-le-dernier-tour-je-navais-plus-de-puissance.html",
    "impact": null,
-   "firstSeen": "2026-11-24T11:11:19.505Z"
+   "firstSeen": "2026-11-24T11:11:19.505Z",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/DPPI_00126024_2575-2.jpg"
   },
   {
    "id": "news_16csvjp",
@@ -120,7 +152,8 @@
    "lang": "fr",
    "url": "https://fr.motorsport.com/f1/news/isack-hadjar-frustre-vraiment-passe-radio-chez-red-bull-las-vegas/10877387/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
    "impact": null,
-   "firstSeen": "2026-11-24T10:41:14.453Z"
+   "firstSeen": "2026-11-24T10:41:14.453Z",
+   "image": "https://cdn-1.motorsport.com/images/amp/0qgKkjkY/s6/isack-hadjar-red-bull-racing.jpg"
   },
   {
    "id": "news_1pxqvdw",
@@ -132,7 +165,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/polemique-sur-la-biometrie-en-f1-aux-pilotes-de-decider-selon-les-patrons,213570.html",
    "impact": null,
-   "firstSeen": "2026-11-24T11:11:19.505Z"
+   "firstSeen": "2026-11-24T11:11:19.505Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/mclaren1_132_-3.jpg"
   },
   {
    "id": "news_1l1kw8n",
@@ -156,7 +190,8 @@
     "bettingOddsMultiplier": 0.92,
     "impactLabel": "Moteur +1 pts | Aéro +1 pts | Cotes -8%"
    },
-   "firstSeen": "2026-11-24T10:11:11.084Z"
+   "firstSeen": "2026-11-24T10:11:11.084Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/mercedes_57_-3.jpg"
   },
   {
    "id": "news_1m9exrj",
@@ -168,7 +203,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/antonelli-achete-un-garage-pour-sa-future-collection-de-voitures-et-revele,213510.html",
    "impact": null,
-   "firstSeen": "2026-11-24T09:11:02.535Z"
+   "firstSeen": "2026-11-24T09:11:02.535Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/mercedes_16_-7.jpg"
   },
   {
    "id": "news_mzp7zc",
@@ -180,7 +216,8 @@
    "lang": "fr",
    "url": "https://fr.motorsport.com/f1/news/oscar-piastri-evoque-projets-management-apres-separation-mark-webber/10877356/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
    "impact": null,
-   "firstSeen": "2026-11-24T08:40:59.181Z"
+   "firstSeen": "2026-11-24T08:40:59.181Z",
+   "image": "https://cdn-1.motorsport.com/images/amp/6zoDBPe0/s6/oscar-piastri-mclaren-2.jpg"
   },
   {
    "id": "news_eeyuj3",
@@ -192,7 +229,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/bearman-ferme-la-porte-a-alpine-f1-un-desaccord-salarial-bloque-son-contrat,213693.html",
    "impact": null,
-   "firstSeen": "2026-11-24T08:10:40.205Z"
+   "firstSeen": "2026-11-24T08:10:40.205Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/haas0_15_-4.jpg"
   },
   {
    "id": "news_x7qkca",
@@ -216,7 +254,8 @@
     "bettingOddsMultiplier": 1.08,
     "impactLabel": "Aéro -2 pts | Cotes +8%"
    },
-   "firstSeen": "2026-11-24T08:10:40.205Z"
+   "firstSeen": "2026-11-24T08:10:40.205Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456039_hires-3.jpg"
   },
   {
    "id": "news_ruafgp",
@@ -228,7 +267,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hadjar-a-change-chez-red-bull-mekies-revele-ce-qui-le-rend-desormais-plus,213687.html",
    "impact": null,
-   "firstSeen": "2026-11-24T07:10:30.843Z"
+   "firstSeen": "2026-11-24T07:10:30.843Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/redbull_123_-2.jpg"
   },
   {
    "id": "news_bnrk6p",
@@ -240,7 +280,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/presentation-et-horaires-du-grand-prix-du-qatar-2026-de-f1,213686.html",
    "impact": null,
-   "firstSeen": "2026-11-24T06:10:22.342Z"
+   "firstSeen": "2026-11-24T06:10:22.342Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1389137_hires.jpg"
   },
   {
    "id": "news_rfsuzx",
@@ -265,7 +306,8 @@
     "impactLabel": "Cotes -5%",
     "teamId": "red_bull"
    },
-   "firstSeen": "2026-11-23T18:06:54.493Z"
+   "firstSeen": "2026-11-23T18:06:54.493Z",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/1200x800-2589.png"
   },
   {
    "id": "news_nzmtz9",
@@ -277,7 +319,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/photos/photos-gp-de-las-vegas-de-f1-2026-la-galerie-bonus-du-week-end,213683.html",
    "impact": null,
-   "firstSeen": "2026-11-23T18:37:00.937Z"
+   "firstSeen": "2026-11-23T18:37:00.937Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/redbull_146_.jpg"
   },
   {
    "id": "news_13jh7jv",
@@ -289,7 +332,8 @@
    "lang": "fr",
    "url": "https://fr.motorsport.com/f1/news/max-verstappen-envisage-24h-daytona-des-2027/10877165/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
    "impact": null,
-   "firstSeen": "2026-11-23T18:06:54.493Z"
+   "firstSeen": "2026-11-23T18:06:54.493Z",
+   "image": "https://cdn-1.motorsport.com/images/amp/68VwB9x2/s6/max-verstappen-red-bull-racing-2.jpg"
   },
   {
    "id": "news_lcmlia",
@@ -314,7 +358,8 @@
     "bettingOddsMultiplier": 0.92,
     "impactLabel": "Moteur +2 pts | Cotes -8%"
    },
-   "firstSeen": "2026-11-23T18:37:00.937Z"
+   "firstSeen": "2026-11-23T18:37:00.937Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/redbull_104_.jpg"
   },
   {
    "id": "news_rnblpl",
@@ -326,7 +371,8 @@
    "lang": "fr",
    "url": "https://www.autohebdo.fr/actualites/f1/rien-ne-va-plus-chez-ferrari-apres-le-grand-prix-de-las-vegas.html",
    "impact": null,
-   "firstSeen": "2026-11-23T17:06:47.563Z"
+   "firstSeen": "2026-11-23T17:06:47.563Z",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/Ferrari-Las-Vegas.jpg"
   },
   {
    "id": "news_1wsb3t5",
@@ -338,7 +384,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/la-f1-est-tres-petite-aux-etats-unis-mais-domenicali-veut-concurrencer-la-nfl,213678.html",
    "impact": null,
-   "firstSeen": "2026-11-23T17:36:51.009Z"
+   "firstSeen": "2026-11-23T17:36:51.009Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1454519_hires.jpg"
   },
   {
    "id": "news_y47glz",
@@ -350,7 +397,8 @@
    "lang": "fr",
    "url": "https://fr.motorsport.com/f1/news/gp-qatar-2026-dates-horaires-infos-programme/10877189/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
    "impact": null,
-   "firstSeen": "2026-11-23T16:06:40.426Z"
+   "firstSeen": "2026-11-23T16:06:40.426Z",
+   "image": "https://cdn-1.motorsport.com/images/amp/2wlKJ3bY/s6/qatar-2.jpg"
   },
   {
    "id": "news_1opp6su",
@@ -362,7 +410,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/stella-donne-le-credit-du-double-podium-de-mclaren-f1-aux-pilotes,213650.html",
    "impact": null,
-   "firstSeen": "2026-11-23T16:36:43.989Z"
+   "firstSeen": "2026-11-23T16:36:43.989Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456226_hires.jpg"
   },
   {
    "id": "news_vt47of",
@@ -374,7 +423,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hamilton-deplore-un-deficit-brutal-en-vitesse-de-pointe-mais-la-realite-le,213684.html",
    "impact": null,
-   "firstSeen": "2026-11-23T15:36:35.718Z"
+   "firstSeen": "2026-11-23T15:36:35.718Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/ferrari_41_-6.jpg"
   },
   {
    "id": "news_enyy40",
@@ -386,7 +436,8 @@
    "lang": "fr",
    "url": "https://fr.motorsport.com/f1/news/hamilton-sidere-manque-vitesse-pointe-ferrari-las-vegas/10877234/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
    "impact": null,
-   "firstSeen": "2026-11-23T15:36:35.718Z"
+   "firstSeen": "2026-11-23T15:36:35.718Z",
+   "image": "https://cdn-1.motorsport.com/images/amp/6VyK51VY/s6/lewis-hamilton-ferrari.jpg"
   },
   {
    "id": "news_ihho01",
@@ -398,7 +449,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/il-perd-les-pedales-russell-ne-devrait-pas-s-attaquer-a-verstappen,213682.html",
    "impact": null,
-   "firstSeen": "2026-11-23T15:36:35.718Z"
+   "firstSeen": "2026-11-23T15:36:35.718Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/mercedes_4_-7.jpg"
   },
   {
    "id": "news_1nfq1de",
@@ -435,7 +487,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/critique-des-ses-debuts-le-madring-confirme-des-changements-des-le-gp-d-espagne,213681.html",
    "impact": null,
-   "firstSeen": "2026-11-23T15:36:35.718Z"
+   "firstSeen": "2026-11-23T15:36:35.718Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/mclaren0_82_.jpg"
   },
   {
    "id": "news_1lvgbzd",
@@ -446,8 +499,9 @@
    "source": "Nextgen-Auto",
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455860_hires.jpg",
    "impact": null,
-   "firstSeen": "2026-11-24T13:41:37.180Z"
+   "firstSeen": "2026-11-24T14:11:57.210Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -471,7 +525,8 @@
    "lang": "fr",
    "url": "https://fr.motorsport.com/f1/news/verstappen-confiance-securite-f1-qatar-abu-dhabi/10877205/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
    "impact": null,
-   "firstSeen": "2026-11-23T15:36:35.718Z"
+   "firstSeen": "2026-11-23T15:36:35.718Z",
+   "image": "https://cdn-1.motorsport.com/images/amp/6n7bvLA0/s6/max-verstappen-red-bull-racing-2.jpg"
   },
   {
    "id": "news_mxam5k",
@@ -483,7 +538,8 @@
    "lang": "fr",
    "url": "https://fr.motorsport.com/f1/news/ferrari-vasseur-croit-pas-regles-ecrites-gerer-hamilton-leclerc/10877160/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
    "impact": null,
-   "firstSeen": "2026-11-23T12:35:31.503Z"
+   "firstSeen": "2026-11-23T12:35:31.503Z",
+   "image": "https://cdn-1.motorsport.com/images/amp/YN7vBdV6/s6/frederic-vasseur-ferrari.jpg"
   },
   {
    "id": "news_1xkpudo",
@@ -495,7 +551,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/c-etait-fou-piastri-revient-de-l-enfer-et-arrache-un-podium-surprise,213655.html",
    "impact": null,
-   "firstSeen": "2026-11-23T15:36:35.718Z"
+   "firstSeen": "2026-11-23T15:36:35.718Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455995_hires.jpg"
   },
   {
    "id": "news_1ftl3wp",
@@ -519,7 +576,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/la-formule-1-a-t-elle-offert-sa-meilleure-course-ou-la-plus-artificielle,213666.html",
    "impact": null,
-   "firstSeen": "2026-11-23T12:35:31.503Z"
+   "firstSeen": "2026-11-23T12:35:31.503Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455751_hires.jpg"
   },
   {
    "id": "news_xo87iu",
@@ -531,7 +589,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/mercedes-f1-regrette-des-details-infimes-qui-ont-fait-basculer-la-course,213661.html",
    "impact": null,
-   "firstSeen": "2026-11-23T12:35:31.503Z"
+   "firstSeen": "2026-11-23T12:35:31.503Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456187_hires.jpg"
   },
   {
    "id": "news_1wi299s",
@@ -543,7 +602,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-et-russell-se-dechirent-mais-wolff-adore-leurs-provocations,213675.html",
    "impact": null,
-   "firstSeen": "2026-11-23T12:35:31.503Z"
+   "firstSeen": "2026-11-23T12:35:31.503Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455997_hires.jpg"
   },
   {
    "id": "news_1r6cvep",
@@ -555,7 +615,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/apres-le-baquet-cadillac-f1-rate-colton-herta-quitte-aussi-la-f2,213680.html",
    "impact": null,
-   "firstSeen": "2026-11-23T12:35:31.503Z"
+   "firstSeen": "2026-11-23T12:35:31.503Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/cadillac_4_-9.jpg"
   },
   {
    "id": "news_w3cs28",
@@ -567,7 +628,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/ocon-chez-aston-martin-f1-le-francais-seme-de-nouveaux-indices,213673.html",
    "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
+   "firstSeen": "2026-11-23T10:51:02.379Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/haas0_20_-6.jpg"
   },
   {
    "id": "news_1efzp2b",
@@ -579,7 +641,8 @@
    "lang": "fr",
    "url": "https://fr.motorsport.com/f1/news/pourquoi-contrat-bearman-haas-2027-toujours-pas-signe/10877121/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
    "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
+   "firstSeen": "2026-11-23T10:51:02.379Z",
+   "image": "https://cdn-1.motorsport.com/images/amp/0Lderom0/s6/oliver-bearman-haas-f1-team.jpg"
   },
   {
    "id": "news_lw0052",
@@ -591,7 +654,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/piastri-recadre-violemment-son-ingenieur-stella-y-voit-l-etoffe-d-un-champion,213677.html",
    "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
+   "firstSeen": "2026-11-23T10:51:02.379Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455837_hires.jpg"
   },
   {
    "id": "news_8y4pvx",
@@ -603,7 +667,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/vasseur-reconnait-que-la-rivalite-entre-leclerc-et-hamilton-est-devenue,213674.html",
    "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
+   "firstSeen": "2026-11-23T10:51:02.379Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1407656_hires.jpg"
   },
   {
    "id": "news_1q9kiv0",
@@ -615,7 +680,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/mercedes-pourrait-devoir-sacrifier-deux-equipes-en-f1,213667.html",
    "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
+   "firstSeen": "2026-11-23T10:51:02.379Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455934_hires.jpg"
   },
   {
    "id": "news_11rldsw",
@@ -627,7 +693,8 @@
    "lang": "fr",
    "url": "https://fr.motorsport.com/f1/news/stella-defend-coup-de-gueule-piastri-las-vegas/10877100/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
    "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
+   "firstSeen": "2026-11-23T10:51:02.379Z",
+   "image": "https://cdn-1.motorsport.com/images/amp/YMXbRO12/s6/oscar-piastri-mclaren-lando-no-3.jpg"
   },
   {
    "id": "news_12az6q7",
@@ -639,7 +706,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hamilton-a-fait-de-ferrari-son-equipe-la-grande-erreur-de-leclerc-selon,213665.html",
    "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
+   "firstSeen": "2026-11-23T10:51:02.379Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455871_hires.jpg"
   },
   {
    "id": "news_1plm0ta",
@@ -651,7 +719,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/norris-raconte-un-gp-passe-a-appuyer-sur-neuf-boutons-par-tour,213654.html",
    "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
+   "firstSeen": "2026-11-23T10:51:02.379Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456174_hires.jpg"
   },
   {
    "id": "news_txt6w9",
@@ -663,7 +732,8 @@
    "lang": "fr",
    "url": "https://fr.motorsport.com/f1/news/f1-devrait-reduire-nombre-equipes-clientes-details-cles-2030-emergent/10877063/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
    "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
+   "firstSeen": "2026-11-23T10:51:02.379Z",
+   "image": "https://cdn-1.motorsport.com/images/amp/6zoD4mk0/s6/george-russell-mercedes-2.jpg"
   },
   {
    "id": "news_1bdgf1c",
@@ -675,7 +745,8 @@
    "lang": "fr",
    "url": "https://fr.motorsport.com/f1/news/haas-maintien-rafael-camara-f1-mettant-fin-espoirs-f2/10877051/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
    "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
+   "firstSeen": "2026-11-23T10:51:02.379Z",
+   "image": "https://cdn-1.motorsport.com/images/amp/YvKBe8e6/s6/rafael-camara-haas.jpg"
   },
   {
    "id": "news_1kxggub",
@@ -687,7 +758,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/officiel-haas-f1-finira-la-saison-avec-camara-pas-de-titre-f2-pour-le-bresilien,213663.html",
    "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
+   "firstSeen": "2026-11-23T10:51:02.379Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456034_hires.jpg"
   },
   {
    "id": "news_nddezp",
@@ -723,7 +795,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-s-est-amuse-mais-allume-le-reglement-f1-c-etait-mario-kart-a-vegas,213653.html",
    "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
+   "firstSeen": "2026-11-23T10:51:02.379Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456042_hires.jpg"
   },
   {
    "id": "news_qnsok4",
@@ -747,7 +820,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-hamilton-antonelli-la-folie-gta-vi-s-empare-du-paddock,213646.html",
    "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
+   "firstSeen": "2026-11-23T10:51:02.379Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1450793_hires.jpg"
   },
   {
    "id": "news_1f7tl6z",
@@ -759,7 +833,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-elu-meilleur-pilote-de-l-histoire-de-la-f1,213660.html",
    "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
+   "firstSeen": "2026-11-23T10:51:02.379Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456307_hires.jpg"
   },
   {
    "id": "news_oy80vc",
@@ -771,7 +846,8 @@
    "lang": "fr",
    "url": "https://fr.motorsport.com/f1/news/aspect-course-verstappen-pris-de-vitesse-mercedes-laisse-sans-voix-red-bull/10876991/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
    "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
+   "firstSeen": "2026-11-23T10:51:02.379Z",
+   "image": "https://cdn-1.motorsport.com/images/amp/0R7B19O2/s6/max-verstappen-red-bull-racing-2.jpg"
   },
   {
    "id": "news_z9i657",
@@ -783,7 +859,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/briatore-demolit-la-politique-de-ferrari-avec-hamilton-et-leclerc,213657.html",
    "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
+   "firstSeen": "2026-11-23T10:51:02.379Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1454673_hires.jpg"
   },
   {
    "id": "news_8wjvtz",
@@ -795,7 +872,8 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/coup-de-theatre-bearman-pourrait-quitter-ferrari-et-haas-pour-alpine-f1,213658.html",
    "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
+   "firstSeen": "2026-11-23T10:51:02.379Z",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455549_hires.jpg"
   },
   {
    "id": "news_kj636i",
@@ -808,30 +886,6 @@
    "url": "https://www.autohebdo.fr/actualites/f1/las-vegas-une-opportunite-ratee-qui-fait-mal-pour-lindblad.html",
    "impact": null,
    "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_kel3dc",
-   "timestamp": "2026-11-22T12:59:00.000Z",
-   "category": "RÈGLEMENT",
-   "title": "Verstappen ne veut pas aller au GP du Qatar, Alonso s'en prend au calendrier de la F1",
-   "summary": "Max Verstappen ne cache pas ses inquiétudes à l'approche des deux derniers Grands Prix de la saison 2026, programmés au Qatar et à Abu Dhabi dans un contexte de tensions persistantes au Moyen-Orient. Malgré les garanties de sécurité communiquées par la FIA et…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-ne-veut-pas-aller-au-gp-du-qatar-alonso-s-en-prend-au-calendrier-de,213656.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
-  },
-  {
-   "id": "news_pl27tz",
-   "timestamp": "2026-11-22T12:21:00.000Z",
-   "category": "PADDOCK",
-   "title": "Mekies salue un Verstappen 'incroyable' et présente ses excuses à Hadjar",
-   "summary": "Laurent Mekies a salué la performance exceptionnelle de Max Verstappen après sa victoire au Grand Prix de Las Vegas, au terme d'une course spectaculaire marquée par d'innombrables dépassements et une gestion de l'énergie particulièrement complexe. Mais…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/mekies-salue-un-verstappen-incroyable-et-presente-ses-excuses-a-hadjar,213644.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
   }
  ]
 }
