@@ -361,3 +361,13 @@ Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectoriel
   - coffres Standard (15–40 PC), Avancé (40–90 PC) et Prestige (110–200 PC) ;
   - contenu tiré à l'ouverture, avec une animation d'ouverture ;
   - nouveau rendu 3D isométrique graphite.
+
+## F1 Manager : marché dynamique sans perte, accès par ligue, QG compacté
+
+- **Prix des pilotes** (titulaire et coéquipier) : valeur du jour × effet de l'actualité Paddock Wire (`driverPrice`, `mateValue`). La revente vaut le prix du jour, et jamais moins que le prix d'achat.
+- **Accès par ligue** (`driverLeagueReq`) : les 3 meilleurs pilotes du marché signent dès la ligue Platine, les 4e à 6e dès Or, les 7e à 10e dès Argent, les autres dès Bronze. Valable pour le titulaire comme pour le coéquipier ; les pilotes déjà sous contrat restent.
+- **QG** :
+  - « Préparation du week-end » sur toute la largeur, en 3 colonnes (météo | circuit et réglage | stratégie) ;
+  - le journal de course affiche les 5 dernières courses.
+- **Bonus** (« Pilote +24 % », « Pneus +36 % »…) : une infobulle explique l'effet concret en course.
+- « Passe » devient « Pass ».

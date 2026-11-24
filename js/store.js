@@ -49,7 +49,7 @@
     { id: 'mgr_rd', cat: 'manager', icon: '🔬', title: 'Bureau d\'études', desc: 'Développer 5 pièces en R&D', reward: 100, goal: (s) => ({ v: Object.keys((s.manager || {}).parts || {}).length, max: 5 }) },
     { id: 'mgr_mk5', cat: 'manager', icon: '🧬', title: 'Spécification ultime', desc: 'Amener une pièce au niveau Mk V', reward: 200 },
     { id: 'mgr_pkg', cat: 'manager', icon: '📦', title: 'Package complet', desc: 'Développer toutes les pièces d\'une branche de R&D', reward: 200 },
-    { id: 'pass_season', cat: 'manager', icon: '🎟️', title: 'Saison bouclée', desc: 'Réclamer les 24 paliers d\'un Passe de saison', reward: 300, goal: (s) => ({ v: ((s.manager && s.manager.pass && s.manager.pass.done) || []).length, max: 1 }) },
+    { id: 'pass_season', cat: 'manager', icon: '🎟️', title: 'Saison bouclée', desc: 'Réclamer les 24 paliers d\'un Pass de saison', reward: 300, goal: (s) => ({ v: ((s.manager && s.manager.pass && s.manager.pass.done) || []).length, max: 1 }) },
     { id: 'mgr_tunnel', cat: 'manager', icon: '🎲', title: 'Coup de poker', desc: 'Réussir un pari en soufflerie', reward: 100 },
     { id: 'mgr_staff', cat: 'manager', icon: '🎧', title: 'Muret au complet', desc: 'Pourvoir les 5 postes du muret', reward: 200, goal: (s) => ({ v: Object.values((s.manager || {}).staff || {}).filter(Boolean).length, max: 5 }) },
     { id: 'mgr_garage', cat: 'manager', icon: '🧰', title: 'Garage dernier cri', desc: 'Cumuler 25 niveaux d\'équipements de garage', reward: 250, goal: (s) => ({ v: Object.values((s.manager || {}).garage || {}).reduce((a, x) => a + (+x || 0), 0), max: 25 }) },
@@ -394,7 +394,7 @@
     T.slots = 2; save();
   }
 
-  /* ---------- Passe de saison ---------- */
+  /* ---------- Pass de saison ---------- */
   const pass = () => { const m = mgr(); if (!m.pass) m.pass = blankPass(); return m.pass; };
   function addPassXp(n) { const MG = F1.manager; if (!MG) return 0; const p = pass(); p.xp = Math.min(MG.PASS_TIERS * MG.PASS_XP_TIER, (p.xp || 0) + n); return n; }
   function claimPass(tier) {
@@ -409,7 +409,7 @@
       r.pc = r.min + Math.round(Math.random() * (r.max - r.min));
       if (!p.got) p.got = {};
       p.got[tier] = r.pc;
-      addPC(r.pc, `Passe de saison ${p.season} : ${r.name} (palier ${tier})`);
+      addPC(r.pc, `Pass de saison ${p.season} : ${r.name} (palier ${tier})`);
     }
     else if (r.kind === 'token') p.tokens = (p.tokens || 0) + 1;
     else if (r.kind === 'livery' && !p.liveries.includes(r.id)) p.liveries.push(r.id);
@@ -591,7 +591,7 @@
     }
     return m.weeklyGP;
   }
-  // tentatives de la semaine : 2, plus une 3e si un jeton de tentative (Passe de saison) a été utilisé
+  // tentatives de la semaine : 2, plus une 3e si un jeton de tentative (Pass de saison) a été utilisé
   const weeklyMax = (w) => ((F1.manager && F1.manager.WEEKLY_ATTEMPTS) || 2) + (w.bonus ? 1 : 0);
   function useWeeklyAttempt(weekId, useToken) {
     const w = weeklyGP(weekId);

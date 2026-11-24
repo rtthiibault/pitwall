@@ -1109,7 +1109,10 @@
   const statBar = (label, val, base, color, icon = '') => `<div class="sbar"><div class="sbar-h"><span>${icon} ${label}</span><b class="num">${Math.round(val)}</b></div><div class="sbar-t"><i style="width:${Math.min(100, base)}%;background:${color}"></i><i class="up" style="width:${Math.max(0, Math.min(100, val) - Math.min(100, base))}%"></i></div></div>`;
   const leagueBadge = (L, cls = '') => `<span class="lbadge ${cls}" style="--lc:${L.color}">${L.icon} ${L.name}</span>`;
   // revente d'un pilote : 78 % de sa valeur marchande actuelle (note du moment, progression acquise comprise)
-  const resaleD = (ctx) => (ctx.m.driver && ctx.drvM ? Math.round((MG().valueOfDriver(ctx.drvM) * MG().RESALE_K * (ctx.m.driver.k || 1)) / 5) * 5 : 0);
+  // revente d'un pilote : son prix du jour (note, progression et actualité Paddock Wire), jamais moins que ce qu'il a coûté
+  const resaleD = (ctx) => (ctx.m.driver && ctx.drvM ? Math.max(ctx.m.driver.price || 0, MG().driverPrice(ctx.drvM)) : 0);
+  // ligue requise pour signer un pilote (titulaire ou coéquipier) ; null si accessible
+  const lockOf = (ctx, id) => { const req = MG().driverLeagueReq(ctx.mk, id), cur = MG().LEAGUES.findIndex((l) => l.id === ctx.league.id); return req > cur ? MG().LEAGUES[req] : null; };
   // revente : 70 % du prix (le plus bas entre le prix payé et le prix actuel, pour éviter tout bénéfice quand les prix montent) + 50 % de la R&D investie
   const resaleC = (ctx) => (ctx.m.chassis ? Math.round((Math.min(ctx.m.chassis.price || Infinity, ctx.ch ? ctx.ch.price : Infinity) * 0.7 + (ctx.m.rdSpent || 0) * 0.5) / 5) * 5 : 0);
 
@@ -1158,7 +1161,7 @@
   }
   /* ---------- QG de l'écurie : coque (bandeau, rail de navigation) et tableau de bord ---------- */
   // parcours d'un directeur d'écurie : le QG, l'équipe et ses pilotes, le personnel et la technique, les finances, puis la compétition et les récompenses
-  const MRAIL = [['ecurie', '🏁', 'QG'], ['chassis', '🏎️', 'Équipe'], ['pilotes', '👤', 'Pilotes'], ['transferts', '🤝', 'Transferts'], ['muret', '🎧', 'Muret'], ['rd', '🔬', 'R&D'], ['garage', '🧰', 'Garage'], ['sponsors', '💼', 'Sponsors'], ['hebdo', '🌐', 'GP Hebdo'], ['ligues', '🏆', 'Ligues'], ['passe', '🎟️', 'Passe']];
+  const MRAIL = [['ecurie', '🏁', 'QG'], ['chassis', '🏎️', 'Équipe'], ['pilotes', '👤', 'Pilotes'], ['transferts', '🤝', 'Transferts'], ['muret', '🎧', 'Muret'], ['rd', '🔬', 'R&D'], ['garage', '🧰', 'Garage'], ['sponsors', '💼', 'Sponsors'], ['hebdo', '🌐', 'GP Hebdo'], ['ligues', '🏆', 'Ligues'], ['passe', '🎟️', 'Pass']];
   function pageManager(tab) {
     tab = tab || 'ecurie';
     const ctx = mgrCtx();
@@ -1221,7 +1224,18 @@
         <div class="rule ${ok ? 'ok' : 'ko'}">${ok ? '✓' : '⚠️'} Règle des 2 composés : sur course sèche, il faut utiliser au moins deux composés secs différents, sinon +${MG().RULE_PENALTY} s à l'arrivée.${ok ? '' : ' <b>Votre plan ne la respecte pas.</b>'}</div>
         <div class="muted" style="font-size:11px">Le plan s'exécute tout seul en course, mais vous gardez la main au muret : arrêt anticipé, autre composé, rythme.</div></div>`;
   }
+  // Préparation du week-end en ligne (pleine largeur) : météo | circuit et réglage | stratégie, côte à côte
+  function layoutWeek() {
+    const b = $('.p-week .pnl-b'); if (!b || b.querySelector(':scope > .wk-cols')) return;
+    const kids = [...b.children], strat = kids.find((k) => k.classList.contains('strat')), tr = kids.find((k) => k.classList.contains('ctraits'));
+    if (!strat || !tr) return;
+    const i = kids.indexOf(tr), cols = document.createElement('div'); cols.className = 'wk-cols';
+    const c1 = document.createElement('div'), c2 = document.createElement('div'), c3 = document.createElement('div');
+    kids.slice(0, i).forEach((k) => c1.appendChild(k)); kids.slice(i).filter((k) => k !== strat).forEach((k) => c2.appendChild(k)); c3.appendChild(strat);
+    cols.append(c1, c2, c3); b.appendChild(cols);
+  }
   function bindSetup() {
+    layoutWeek();
     const si = $('#setupIn');
     if (!si) return;
     si.addEventListener('input', () => { const v = +si.value; $('#setupLbl').textContent = v <= -0.35 ? 'Faible appui (vitesse)' : v >= 0.35 ? 'Fort appui (virages)' : 'Réglage médian'; });
@@ -1282,7 +1296,7 @@
       <div class="ptsbar" style="height:6px;margin-top:8px"><i style="width:${(o.val / o.goal) * 100}%;background:${o.done ? 'var(--win)' : 'linear-gradient(90deg,#a259ff,#ff4fa3)'}"></i></div>
       <div class="row" style="justify-content:space-between;margin-top:6px"><span class="muted num" style="font-size:12px">${o.val} / ${o.goal}</span>${o.claimed ? '<span class="chip green">✓ Récupéré</span>' : o.done ? `<button class="btn sm gold" data-action="obj-claim" data-id="${o.id}">Récupérer</button>` : ''}</div></div>`).join('');
     const log = m.races.length ? `<div class="table-wrap"><table class="tbl" style="font-size:13px"><thead><tr><th>Date</th><th>Circuit</th><th class="c">Départ</th><th class="c">Arrivée</th><th class="r">LP</th><th class="r">PitCoins</th><th class="r">XP pilote</th></tr></thead><tbody>
-        ${m.races.slice(0, 8).map((r) => `<tr><td class="muted">${DTF.format(new Date(r.t))}</td><td>${esc(r.gp || '')}</td><td class="c num">P${r.grid || '—'}</td><td class="c"><b>${r.dnf ? 'AB' : 'P' + r.pos}</b></td><td class="r"><span class="gain ${r.lp >= 0 ? 'up' : 'down'}">${r.lp >= 0 ? '+' : ''}${r.lp}</span></td><td class="r num">+${r.pc}</td><td class="r num">${r.xp != null ? '+' + r.xp : '—'}</td></tr>`).join('')}</tbody></table></div>` : '<div class="muted" style="font-size:13px">Aucune course disputée pour l\'instant.</div>';
+        ${m.races.slice(0, 5).map((r) => `<tr><td class="muted">${DTF.format(new Date(r.t))}</td><td>${esc(r.gp || '')}</td><td class="c num">P${r.grid || '—'}</td><td class="c"><b>${r.dnf ? 'AB' : 'P' + r.pos}</b></td><td class="r"><span class="gain ${r.lp >= 0 ? 'up' : 'down'}">${r.lp >= 0 ? '+' : ''}${r.lp}</span></td><td class="r num">+${r.pc}</td><td class="r num">${r.xp != null ? '+' + r.xp : '—'}</td></tr>`).join('')}</tbody></table></div>` : '<div class="muted" style="font-size:13px">Aucune course disputée pour l\'instant.</div>';
     // bandeau de départ : la course à lancer, bien visible dès l'arrivée sur le QG
     const per = F1.store.racesPerDay();
     const lights = Array.from({ length: per }, (_, i) => `<i class="${i < left ? 'on' : ''}"></i>`).join('');
@@ -1311,7 +1325,7 @@
         const own = m.driver && m.driver.id === d.id;
         const p = F1.visuals.portrait(d.id);
         const x = MG().withExperience(d, m.drvXp), e = x.exp;
-        const val = MG().valueOfDriver(x), net = val - (own ? 0 : res);
+        const val = MG().driverPrice(x), net = val - (own ? 0 : res), lock = own ? null : lockOf(ctx, d.id);
         return `<div class="mcard ${own ? 'own' : ''}" style="--tc:${tcol(d.teamId)}"><div class="row" style="flex-wrap:nowrap;align-items:start">
           <div class="gphoto" style="width:64px;height:64px">${p ? `<img src="${esc(p.img)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<i>${esc(d.code)}</i>${dnum(d.number, d.teamId, 'gnum', '#fff')}</div>
           <div style="min-width:0;flex:1"><div class="muted" style="font-size:12px">${flag(d.iso, 'sm')} ${esc(d.team || MG().TEAM_NAME[d.teamId] || '')}${d.reserve ? ' · réserviste' : ''} · ${e.age} ans</div><div style="font-weight:900;font-style:italic;text-transform:uppercase;font-size:17px;line-height:1.1">${esc(d.family)}</div>
@@ -1319,7 +1333,7 @@
           <div class="rating-big sm">${x.rating}</div></div>
           <div style="display:grid;gap:6px;margin:12px 0">${statBar('Rythme', x.pace, d.pace, tcol(d.teamId))}${statBar('Combativité', x.craft, d.craft, tcol(d.teamId))}${statBar('Régularité', x.cons, d.cons, tcol(d.teamId))}</div>
           <div class="muted" style="font-size:12px;margin:-4px 0 10px">${e.races ? `${e.races} course${e.races > 1 ? 's' : ''} avec vous · progression +${fmt(e.pts, 1)} / +${fmt(e.cap, e.cap % 1 ? 1 : 0)}` : `Marge de progression : +${fmt(e.cap, e.cap % 1 ? 1 : 0)} points · XP ×${e.mult}`}</div>
-          <div class="row" style="justify-content:space-between"><div><small class="muted" style="display:block;font-size:11px">${own ? 'Valeur marchande' : 'Prix'}</small><b style="font-size:18px">${fmtPC(val)}</b>${own ? `<small class="muted" style="display:block;font-size:11px">Revente : ${fmtPC(res)}</small>` : ''}</div>${own ? '' : `<button class="btn sm" data-action="m-buy-d" data-id="${esc(d.id)}" ${net > m.pc + 1e-9 ? 'disabled' : ''}>${m.driver ? `Transfert (${net >= 0 ? '−' : '+'}${Math.abs(net)})` : 'Recruter'}</button>`}</div></div>`;
+          <div class="row" style="justify-content:space-between"><div><small class="muted" style="display:block;font-size:11px">${own ? 'Valeur marchande' : 'Prix'}</small><b style="font-size:18px">${fmtPC(val)}</b>${own ? `<small class="muted" style="display:block;font-size:11px">Revente : ${fmtPC(res)}</small>` : ''}</div>${own ? '' : lock ? `<span class="chip lk" title="Les meilleurs pilotes ne signent qu'avec un manager confirmé">🔒 Ligue ${lock.icon} ${esc(lock.name)}</span>` : `<button class="btn sm" data-action="m-buy-d" data-id="${esc(d.id)}" ${net > m.pc + 1e-9 ? 'disabled' : ''}>${m.driver ? `Transfert (${net >= 0 ? '−' : '+'}${Math.abs(net)})` : 'Recruter'}</button>`}</div></div>`;
       }).join('')}</div>`;
   }
 
@@ -1389,7 +1403,8 @@
   /* ---------- Marché des transferts : le coéquipier ----------
      Prix et cote de performance suivent l'actualité Paddock Wire ; à chaque course, la position du coéquipier
      rapporte une prime de PitCoins (moitié du barème de la ligue). */
-  const resaleM = (ctx) => (ctx.mate ? Math.round((MG().mateValue(ctx.mate) * MG().RESALE_K * ((ctx.m.mate && ctx.m.mate.k) || 1)) / 5) * 5 : 0);
+  // revente du coéquipier : sa valeur du jour (cote de base + actualité), jamais moins que son prix d'achat
+  const resaleM = (ctx) => (ctx.mate ? Math.max((ctx.m.mate && ctx.m.mate.price) || 0, MG().mateValue(ctx.mate)) : 0);
   function mgrTransfers(ctx) {
     const { m, mk, league } = ctx;
     const res = resaleM(ctx);
@@ -1403,12 +1418,12 @@
     const list = mk.drivers.filter((d) => !(m.driver && m.driver.id === d.id)).map((d) => {
       const x = MG().withExperience(d, {}), nf = MG().newsForm(x), price = MG().mateValue(d), own = m.mate && m.mate.id === d.id;
       const base = Math.max(10, Math.round((d.price * MG().MATE_K) / 5) * 5), dp = price - base;
-      const net = price - (m.mate && !own ? res : 0), p = F1.visuals.portrait(d.id);
+      const net = price - (m.mate && !own ? res : 0), p = F1.visuals.portrait(d.id), lock = own ? null : lockOf(ctx, d.id);
       return `<div class="tr-row ${own ? 'own' : ''}" style="--tc:${tcol(d.teamId)}"><div class="gphoto" style="width:44px;height:44px">${p ? `<img src="${esc(p.img)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<i>${esc(d.code)}</i>${dnum(d.number, d.teamId, 'gnum', '#fff')}</div>
         <div class="tr-who"><b>${esc(d.name)}</b><small>${esc(d.team || '')}${d.reserve ? ' · réserviste' : ''} · ${x.exp.age} ans</small></div>
         <div class="tr-perf"><small>Cote</small><b class="num">${x.rating + nf.perf}</b>${nf.perf ? `<i class="${nf.perf > 0 ? 'up' : 'dn'}">${nf.perf > 0 ? '▲' : '▼'}${Math.abs(nf.perf)}</i>` : ''}</div>
         <div class="tr-price"><small>Prix</small><b>${fmtPC(price)}</b>${dp ? `<i class="${dp > 0 ? 'up' : 'dn'}" title="Effet Paddock Wire sur la valeur">${dp > 0 ? '▲' : '▼'} ${Math.abs(dp)}</i>` : ''}</div>
-        <div class="tr-act">${own ? '<span class="chip green">Coéquipier</span>' : `<button class="btn sm" data-action="mate-buy" data-id="${esc(d.id)}" ${net > m.pc + 1e-9 ? 'disabled' : ''}>${m.mate ? `Transférer (${net >= 0 ? '−' : '+'}${Math.abs(net)})` : 'Recruter'}</button>`}</div></div>`;
+        <div class="tr-act">${own ? '<span class="chip green">Coéquipier</span>' : lock ? `<span class="chip lk" title="Les meilleurs pilotes ne signent qu'avec un manager confirmé">🔒 Ligue ${lock.icon} ${esc(lock.name)}</span>` : `<button class="btn sm" data-action="mate-buy" data-id="${esc(d.id)}" ${net > m.pc + 1e-9 ? 'disabled' : ''}>${m.mate ? `Transférer (${net >= 0 ? '−' : '+'}${Math.abs(net)})` : 'Recruter'}</button>`}</div></div>`;
     }).join('');
     return `${cur}
       <div class="card tr-info"><div><b>Prime du coéquipier</b><small class="muted">PitCoins versés selon sa position d'arrivée (ligue ${esc(league.name)}), en plus de vos propres gains</small></div><div class="tr-pc">${pcRow}</div></div>
@@ -1451,9 +1466,30 @@
   const rdIcon = (k, col) => `<svg viewBox="0 0 80 70" class="rd-ico" fill="none" stroke="${col}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${RD_ICON[k] || RD_ICON.chip}</svg>`;
   const FX_LBL = { speed: '⚡ Vitesse', df: '🌀 Appui', rel: '🔧 Fiabilité', launch: '🚦 Départ', tyre: '🛞 Pneus', push: '🔋 Dépassement', pit: '🔧 Stand', sc: '📻 Stratégie SC', drv: '🎮 Pilote', wx: '🌧️ Réaction météo', pc: '💰 PitCoins', rd: '🔬 Coût R&D', tunnel: '🌬️ Soufflerie', races: '🏁 Courses/jour' };
   const fxVal = (k, v) => (['speed', 'df', 'rel'].includes(k) ? `+${fmt(v, Math.abs(v % 1) > 0.01 ? 1 : 0)}` : k === 'races' ? `+${v}` : k === 'rd' ? `−${Math.round(v * 100)} %` : k === 'pc' || k === 'tunnel' ? `+${Math.round(v * 100)} %` : `+${Math.round(v * 40)} %`);
+  // ce que fait concrètement chaque bonus (infobulle au survol)
+  function fxTip(k, v) {
+    const p = (x) => Math.round(x * 100), n1 = (x) => fmt(x, Math.abs(x % 1) > 0.05 ? 1 : 0);
+    const T = {
+      speed: `+${n1(v)} de vitesse de pointe : vous gagnez du temps dans les lignes droites, surtout sur les circuits rapides.`,
+      df: `+${n1(v)} d'appui : plus de vitesse en courbe, utile sur les circuits sinueux et sous la pluie.`,
+      rel: `+${n1(v)} de fiabilité : moins de risque de casse moteur ou mécanique pendant la course.`,
+      launch: `Meilleurs départs : moins de temps perdu au premier tour, et une vraie chance de gagner des places dès l'extinction des feux.`,
+      tyre: `Usure des pneus réduite : les relais tiennent plus longtemps et le rythme baisse moins en fin de relais.`,
+      push: `Plus de punch en fin de course : temps au tour amélioré dans les 5 derniers tours et en mode attaque.`,
+      pit: `Arrêts aux stands plus rapides et undercuts plus souvent réussis.`,
+      sc: `Meilleures décisions sous voiture de sécurité : l'arrêt « gratuit » est mieux exploité.`,
+      drv: `Votre pilote gagne +${n1(2 * Math.min(2.5, v))} point${2 * Math.min(2.5, v) >= 2 ? 's' : ''} de rythme, de combativité et de régularité pendant la course.`,
+      wx: `Réaction plus rapide aux changements de météo : meilleur choix de pneus et moins de temps perdu quand la pluie arrive ou s'arrête.`,
+      pc: `+${p(v)} % de PitCoins gagnés à chaque course.`,
+      rd: `Toutes les pièces de R&D coûtent ${p(v)} % moins cher.`,
+      tunnel: `+${p(v)} points de chances de réussite aux paris en soufflerie.`,
+      races: `+${v} course${v > 1 ? 's' : ''} gratuite${v > 1 ? 's' : ''} par fenêtre de 5 heures.`,
+    };
+    return T[k] || '';
+  }
   const pips = (lv) => `<span class="pips">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= lv ? 'on' : ''}"></i>`).join('')}</span>`;
 
-  const mechChips = (car) => { const e = Object.entries(car.mech || {}).filter(([, v]) => v > 0.01); return e.length ? `<div class="row" style="gap:6px;margin-top:12px">${e.map(([k, v]) => `<span class="chip">${FX_LBL[k]} ${fxVal(k, v)}</span>`).join('')}</div>` : ''; };
+  const mechChips = (car) => { const e = Object.entries(car.mech || {}).filter(([, v]) => v > 0.01); return e.length ? `<div class="row" style="gap:6px;margin-top:12px">${e.map(([k, v]) => `<span class="chip" data-tip="${esc(fxTip(k, v))}">${FX_LBL[k]} ${fxVal(k, v)}</span>`).join('')}</div>` : ''; };
   function mgrRD(ctx) {
     const { m, ch, car, w, race, league, bots } = ctx;
     if (!ch) return `<div class="empty"><div class="ic">🔬</div>Choisissez d'abord une équipe pour lancer la R&D.<div style="margin-top:14px"><a class="btn" href="#/manager/chassis">Voir les châssis</a></div></div>`;
@@ -1515,7 +1551,7 @@
           const ladder = `<div class="mk-ladder">${[1, 2, 3, 4, 5].map((i) => `<div class="mk ${i <= lv ? 'on' : ''} ${i === nl ? 'next' : ''}"><b>${MG().LV_NAME[i]}</b><small>${Object.entries(sel.fx).map(([k, v]) => fxVal(k, v * MG().LV_GAIN[i - 1])).join(' ')}</small>${i <= lv ? '' : `<small class="muted">${fmt(Math.round(MG().levelCost(sel, i) * (1 - ctx.tb.rd)))} PC</small>`}</div>`).join('')}</div>`;
           const can = st === 'available' || st === 'done';
           const job = F1.store.jobOf(sel.id), T = F1.store.tunnel(), ms = max ? 0 : MG().rdBuildMs(nl, sel.id), busy = ms > 0 && T.jobs.length >= T.slots;
-          return `${ladder}<div class="row" style="margin-top:12px;gap:8px">${max ? '' : Object.entries(sel.fx).map(([k, v]) => `<span class="chip green">${FX_LBL[k]} ${fxVal(k, v * step)}</span>`).join('')}${max || sel.cat === 'strat' ? '' : `<span class="chip ${g > 0 ? 'gold' : ''}">Indice au ${esc(race.nameFr.replace('Grand Prix', 'GP'))} : +${fmt(g, g % 1 ? 1 : 0)}</span>`}${sel.cat === 'strat' && !max ? '<span class="chip">Agit pendant la course</span>' : ''}</div>
+          return `${ladder}<div class="row" style="margin-top:12px;gap:8px">${max ? '' : Object.entries(sel.fx).map(([k, v]) => `<span class="chip green" data-tip="${esc(fxTip(k, v * step))}">${FX_LBL[k]} ${fxVal(k, v * step)}</span>`).join('')}${max || sel.cat === 'strat' ? '' : `<span class="chip ${g > 0 ? 'gold' : ''}">Indice au ${esc(race.nameFr.replace('Grand Prix', 'GP'))} : +${fmt(g, g % 1 ? 1 : 0)}</span>`}${sel.cat === 'strat' && !max ? '<span class="chip">Agit pendant la course</span>' : ''}</div>
           <div class="row" style="margin-top:14px;gap:10px">${max ? '<span class="chip green">🧬 Spécification maximale atteinte</span>' : job ? `<span class="chip gold">⏳ ${MG().LV_NAME[job.lv]} en soufflerie : ${job.end <= Date.now() ? 'prête à installer' : 'fin dans ' + durTxt(job.end - Date.now())}</span>` : !can ? '<span class="chip">🔒 Développez d\'abord la pièce précédente</span>'
             : `<button class="btn" data-action="rd-buy" data-p="${sel.id}" data-mode="safe" ${cost > m.pc + 1e-9 || busy ? 'disabled' : ''}>🔬 ${lv ? 'Passer en' : 'Développer'} ${MG().LV_NAME[nl]} · ${cost} PC · ⏱ ${durTxt(ms)}</button>
               <button class="btn ghost tunnel-btn" data-action="rd-buy" data-p="${sel.id}" data-mode="tunnel" ${half > m.pc + 1e-9 || busy ? 'disabled' : ''} title="Moitié prix, mais la pièce peut échouer en soufflerie. Chaque échec augmente les chances de la tentative suivante.">🎲 Pari soufflerie · ${half} PC · ${Math.round(ch2 * 100)} %</button>
@@ -1630,8 +1666,8 @@
     if (mode === 'tunnel') tunnelAnim(res, p, after); else after();
   }
 
-  /* ---------- Passe de saison ---------- */
-  /* Coffres du Passe : rendu 3D isométrique sobre (graphite mat, reflets doux, filet d'accent selon le rang) */
+  /* ---------- Pass de saison ---------- */
+  /* Coffres du Pass : rendu 3D isométrique sobre (graphite mat, reflets doux, filet d'accent selon le rang) */
   const CHEST_TIER = { s: { a: '#9aa3ad', k: 0.86 }, m: { a: '#2ec4b6', k: 0.93 }, l: { a: '#d6b25e', k: 1 } };
   function chestSvg(size, open = false) {
     const T = CHEST_TIER[size] || CHEST_TIER.s, id = 'ch' + size, a = T.a;
@@ -1700,7 +1736,7 @@
     const done = (P.done || []).map((d) => `<span class="ps-season" title="Terminée le ${new Date(d.at).toLocaleDateString('fr-FR')}">🎟️ Saison ${d.season}</span>`).join('');
     const livOwned = P.liveries.length;
     return `<section class="ps-hero">
-        <div class="ps-hl"><small>Passe de saison</small><h2>Saison ${P.season}</h2>
+        <div class="ps-hl"><small>Pass de saison</small><h2>Saison ${P.season}</h2>
           <div class="ps-earn"><span>🏁 Course de campagne <b>+${M.PASS_XP_RACE} XP</b></span><span>🌐 Tentative GP Hebdo <b>+${M.PASS_XP_WEEKLY} XP</b></span></div></div>
         <div class="ps-hr"><div class="ps-lvl"><b>${tier}</b><small>/ ${T}</small></div>
           <div class="ps-prog"><div class="ps-bar"><i style="width:${(P.xp / (T * XT)) * 100}%"></i></div>
@@ -1718,15 +1754,15 @@
     const P = F1.store.pass(), cur = P.skin || null;
     const sp = livery(m) || {};
     const opts = [{ id: null, name: 'Livrée d\'équipe', desc: ch.name, tier: 0 }, ...MG().PASS_LIVERIES];
-    return `<section class="lv-pick"><div class="lv-h"><div><h3>Livrée de la monoplace</h3><small class="muted">Les livrées spéciales se débloquent aux paliers 8, 16 et 24 du Passe de saison. Les logos de vos sponsors restent appliqués par-dessus.</small></div><a class="link" href="#/manager/passe">Passe de saison →</a></div>
+    return `<section class="lv-pick"><div class="lv-h"><div><h3>Livrée de la monoplace</h3><small class="muted">Les livrées spéciales se débloquent aux paliers 8, 16 et 24 du Pass de saison. Les logos de vos sponsors restent appliqués par-dessus.</small></div><a class="link" href="#/manager/passe">Pass de saison →</a></div>
       <div class="lv-grid">${opts.map((o) => {
         const own = !o.id || P.liveries.includes(o.id), on = cur === o.id;
         return `<button class="lv-opt ${on ? 'on' : ''} ${own ? '' : 'locked'}" ${own && !on ? `data-action="lv-set" data-id="${o.id || ''}"` : 'disabled'}>
           <div class="lv-car">${F1.visuals.car(ch.id, { view: 'side', shadow: false, sponsor: { main: sp.main || null, sub: sp.sub || null, skin: o.id } })}</div>
-          <b>${esc(o.name)}</b><small>${on ? '✓ Équipée' : own ? esc(o.desc || '') : `🔒 Palier ${o.tier} du Passe`}</small></button>`;
+          <b>${esc(o.name)}</b><small>${on ? '✓ Équipée' : own ? esc(o.desc || '') : `🔒 Palier ${o.tier} du Pass`}</small></button>`;
       }).join('')}</div></section>`;
   }
-  const passChip = (xp) => { const P = F1.store.pass(), t = MG().passTier(P.xp), XT = MG().PASS_XP_TIER, inT = t >= MG().PASS_TIERS ? XT : P.xp - t * XT; return `<a class="db-pass" href="#/manager/passe"><span>🎟️ Passe de saison <b>+${xp} XP</b></span><div class="bar"><i style="width:${(inT / XT) * 100}%"></i></div><small class="muted">Palier ${t} / ${MG().PASS_TIERS}${t < MG().PASS_TIERS ? ` · ${inT}/${XT} XP vers le palier ${t + 1}` : ''}</small></a>`; };
+  const passChip = (xp) => { const P = F1.store.pass(), t = MG().passTier(P.xp), XT = MG().PASS_XP_TIER, inT = t >= MG().PASS_TIERS ? XT : P.xp - t * XT; return `<a class="db-pass" href="#/manager/passe"><span>🎟️ Pass de saison <b>+${xp} XP</b></span><div class="bar"><i style="width:${(inT / XT) * 100}%"></i></div><small class="muted">Palier ${t} / ${MG().PASS_TIERS}${t < MG().PASS_TIERS ? ` · ${inT}/${XT} XP vers le palier ${t + 1}` : ''}</small></a>`; };
 
   // Mise à jour partielle de la page R&D (sans recharger la voiture 3D) puis zoom sur la pièce
   function rdRefresh() {
@@ -1744,7 +1780,7 @@
 
   /* ---------- Muret des stands : personnel ---------- */
   const stars = (n) => `<span class="stars">${'★'.repeat(n)}<i>${'★'.repeat(5 - n)}</i></span>`;
-  const teamFx = (fx, mult = 1) => Object.entries(fx).map(([k, v]) => `<span class="chip green">${FX_LBL[k]} ${fxVal(k, v * mult)}</span>`).join('');
+  const teamFx = (fx, mult = 1) => Object.entries(fx).map(([k, v]) => `<span class="chip green" data-tip="${esc(fxTip(k, v * mult))}">${FX_LBL[k]} ${fxVal(k, v * mult)}</span>`).join('');
   // écran du muret : contenu animé selon le poste
   function wallScreen(role, x, y, w, h, on) {
     const g = (c) => `<g transform="translate(${x} ${y})">${c}</g>`;
@@ -1790,7 +1826,7 @@
         <div class="muted" style="font-size:13px;margin:10px 0">${esc(x.bio)}</div><div class="row" style="gap:6px">${teamFx(role.fx, x.tier)}</div>
         <div class="row" style="justify-content:space-between;margin-top:14px"><b style="font-size:18px">${x.price ? fmtPC(x.price) : 'Gratuit'}</b>${own ? '<span class="chip green">En poste</span>' : `<button class="btn sm" data-action="staff-hire" data-r="${role.id}" data-id="${x.id}" ${net > m.pc + 1e-9 ? 'disabled' : ''}>${cur ? `Remplacer (${net >= 0 ? '−' : '+'}${Math.abs(net)})` : 'Recruter'}</button>`}</div></div>`;
     }).join('');
-    const sum = Object.entries(tb).filter(([k, v]) => v > 0.001 && FX_LBL[k]).map(([k, v]) => `<span class="chip">${FX_LBL[k]} ${fxVal(k, v)}</span>`).join('');
+    const sum = Object.entries(tb).filter(([k, v]) => v > 0.001 && FX_LBL[k]).map(([k, v]) => `<span class="chip" data-tip="${esc(fxTip(k, v))}">${FX_LBL[k]} ${fxVal(k, v)}</span>`).join('');
     return `${scene}<div class="notice" style="margin:16px 0">🎧 Cliquez sur un poste du muret pour voir les candidats. Remplacer quelqu'un vous rembourse 50 % de son prix. ${sum ? `<div class="row" style="gap:6px;margin-top:8px"><span class="muted" style="font-size:12px">Bonus actuels (personnel + garage) :</span>${sum}</div>` : ''}</div>
       <div class="section-h" style="margin-top:8px"><h2>${role.icon} ${esc(role.name)}</h2><span class="muted" style="font-size:13px;max-width:560px">${esc(role.desc)}</span></div><div class="mgrid">${cards}</div>`;
   }
@@ -1835,12 +1871,12 @@
     const tabs = zones.map((z) => { const it = MG().GARAGE.filter((g) => g.zone === z.id); return `<button class="rd-tab ${z.id === zone.id ? 'on' : ''}" data-action="garage-zone" data-z="${z.id}" style="--cc:${col}"><span>${z.icon}</span>${esc(z.name)}<small>${it.reduce((a, g) => a + L(g.id), 0)}/${it.length * MG().MAX_LV}</small></button>`; }).join('');
     const cards = MG().GARAGE.filter((g) => g.zone === zone.id).map((g) => {
       const l = L(g.id), maxed = l >= MG().MAX_LV, cost = maxed ? 0 : MG().garageCost(g, l + 1);
-      const fx = Object.entries(g.fx).map(([k, v]) => `<span class="chip ${l ? 'green' : ''}">${FX_LBL[k]} ${fxVal(k, v * MG().gCum(l))}${maxed ? '' : ` → ${fxVal(k, v * MG().gCum(l + 1))}`}</span>`).join('');
+      const fx = Object.entries(g.fx).map(([k, v]) => `<span class="chip ${l ? 'green' : ''}" data-tip="${esc(fxTip(k, v * MG().gCum(l)))}">${FX_LBL[k]} ${fxVal(k, v * MG().gCum(l))}${maxed ? '' : ` → ${fxVal(k, v * MG().gCum(l + 1))}`}</span>`).join('');
       return `<div class="mcard gcard ${maxed ? 'own' : ''}" style="--tc:${col};--cc:${col}"><div class="row" style="flex-wrap:nowrap;align-items:start"><div class="staff-ava">${g.icon}</div><div style="flex:1;min-width:0"><div style="font-weight:900;font-style:italic;text-transform:uppercase;font-size:16px;line-height:1.15">${esc(g.name)}</div><div style="margin-top:5px">${pips(l)}</div></div></div>
         <div class="muted" style="font-size:13px;margin:10px 0">${esc(g.desc)}</div><div class="row" style="gap:6px">${fx}</div>
         <div class="row" style="justify-content:space-between;margin-top:14px">${maxed ? '<span class="chip green">Niveau maximal</span>' : `<b style="font-size:18px">${fmtPC(cost)}</b><button class="btn sm" data-action="garage-up" data-id="${g.id}" ${cost > m.pc + 1e-9 ? 'disabled' : ''}>${l ? `Niveau ${l + 1}` : 'Installer'}</button>`}</div></div>`;
     }).join('');
-    const sum = Object.entries(tb).filter(([k, v]) => v > 0.001 && FX_LBL[k]).map(([k, v]) => `<span class="chip">${FX_LBL[k]} ${fxVal(k, v)}</span>`).join('');
+    const sum = Object.entries(tb).filter(([k, v]) => v > 0.001 && FX_LBL[k]).map(([k, v]) => `<span class="chip" data-tip="${esc(fxTip(k, v))}">${FX_LBL[k]} ${fxVal(k, v)}</span>`).join('');
     return `${scene}${liveryPicker(ctx)}${sum ? `<div class="notice" style="margin:16px 0"><div class="row" style="gap:6px"><span class="muted" style="font-size:12px">Bonus actuels (personnel + garage) :</span>${sum}</div></div>` : '<div class="notice" style="margin:16px 0">🧰 Chaque équipement a 5 niveaux. Les éléments installés apparaissent dans le garage, et chaque niveau de « Mécaniciens » ajoute deux personnes à l\'équipe.</div>'}
       <div class="rd-tabs" style="margin-bottom:16px">${tabs}</div><div class="mgrid">${cards}</div>`;
   }
@@ -2123,7 +2159,7 @@
           <div class="table-wrap"><table class="tbl db-tbl"><thead><tr><th>Pos</th><th>Pilote</th><th class="r">Écart</th></tr></thead><tbody>${rows}</tbody></table></div></section>
         <div class="db-side"><section class="db-card"><header><span>Grand Prix Hebdomadaire</span></header>
           <div class="db-money"><div><small>Meilleur temps</small><b>${w && w.bestTime != null ? MG().fmtRaceTime(w.bestTime) : '—'}</b></div><div><small>Tentatives restantes</small><b>${rec.left} / ${w ? F1.store.weeklyMax(w) : MG().WEEKLY_ATTEMPTS}</b></div><div><small>Classement général</small><b id="wkRank">…</b></div></div>
-          <div class="db-stats">${rec.prime ? `<span class="chip gold">+${fmtPC(rec.prime)} : premier chrono de la semaine</span>` : ''}${rec.xp ? `<span class="chip green">+${rec.xp} XP de participation</span>` : ''}${rec.passXp ? `<a class="chip blue" href="#/manager/passe">🎟️ +${rec.passXp} XP Passe de saison</a>` : ''}<span class="chip">Sponsors et ligue en pause pendant le Grand Prix Hebdomadaire</span></div>
+          <div class="db-stats">${rec.prime ? `<span class="chip gold">+${fmtPC(rec.prime)} : premier chrono de la semaine</span>` : ''}${rec.xp ? `<span class="chip green">+${rec.xp} XP de participation</span>` : ''}${rec.passXp ? `<a class="chip blue" href="#/manager/passe">🎟️ +${rec.passXp} XP Pass de saison</a>` : ''}<span class="chip">Sponsors et ligue en pause pendant le Grand Prix Hebdomadaire</span></div>
           <small class="muted">À la clôture (dimanche 23 h 59), une prime de PitCoins est versée selon votre rang, et un trophée pour un top 10.</small></section></div>
         <div class="db-actions">${rec.left > 0 ? '<button class="btn ghost" data-action="wk-go">Seconde tentative</button>' : ''}<button class="btn" data-action="wk-back">Retour au Grand Prix Hebdomadaire</button></div></div>`;
       $('.race-ctl').classList.add('done');
@@ -2708,7 +2744,7 @@
     const L = MG().leagueOf(m.lp || 0);
     return `<section class="pf-page">
       <div class="pf-hero"><button class="pf-ava" data-action="pf-ava" title="Changer de photo">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : `<span>${esc(name.slice(0, 1).toUpperCase())}</span>`}<i>Changer</i></button>
-        <div class="pf-id"><small class="muted">Profil joueur</small><h1>${esc(name)}</h1><div class="row" style="gap:6px;flex-wrap:wrap">${leagueBadge(L)}${m.number && m.chassis ? `<span class="chip pf-num" style="color:${F1.teamColor(m.chassis.id)}" title="Votre numéro de course">${F1.num.text(m.number, m.chassis.id)}</span>` : ''}<span class="chip">${Object.keys(p.ach).length} succès</span>${((m.pass && m.pass.done) || []).map((d) => `<span class="chip ps-badge" title="Passe de saison complété">🎟️ Saison ${d.season} complétée</span>`).join('')}${so.me ? '<span class="chip green">Profil en ligne</span>' : '<span class="chip">Profil local</span>'}</div></div>
+        <div class="pf-id"><small class="muted">Profil joueur</small><h1>${esc(name)}</h1><div class="row" style="gap:6px;flex-wrap:wrap">${leagueBadge(L)}${m.number && m.chassis ? `<span class="chip pf-num" style="color:${F1.teamColor(m.chassis.id)}" title="Votre numéro de course">${F1.num.text(m.number, m.chassis.id)}</span>` : ''}<span class="chip">${Object.keys(p.ach).length} succès</span>${((m.pass && m.pass.done) || []).map((d) => `<span class="chip ps-badge" title="Pass de saison complété">🎟️ Saison ${d.season} complétée</span>`).join('')}${so.me ? '<span class="chip green">Profil en ligne</span>' : '<span class="chip">Profil local</span>'}</div></div>
         <div class="pf-wallets"><div><small>Jetons</small><b>${jt(p.balance)}</b></div><div><small>PitCoins</small><b>${fmtPC(m.pc || 0)}</b></div><button class="btn sm ghost" data-action="profile">⚙ Pseudo & sauvegarde</button></div></div>
       <div class="pf-gallery ${S.pfAva ? 'open' : ''}" id="pfGallery"><div class="pf-gh"><b>Choisissez votre photo de profil</b><button class="btn sm ghost" data-action="pf-ava">Fermer</button></div>
         <div class="pf-avs">${AVATARS.map((src) => `<button class="pf-av ${p.avatar === src ? 'on' : ''}" data-action="pf-ava-set" data-src="${src}"><img src="${src}" alt="" loading="lazy"></button>`).join('')}<button class="pf-av none ${!p.avatar ? 'on' : ''}" data-action="pf-ava-set" data-src=""><span>${esc(name.slice(0, 1).toUpperCase())}</span><small>Initiale</small></button></div></div>
@@ -2816,6 +2852,18 @@
   }
 
   /* =================== Événements =================== */
+  // infobulle des éléments [data-tip] (bonus des pièces, du personnel et du garage)
+  const tipEl = document.createElement('div'); tipEl.className = 'tipbox'; document.body.appendChild(tipEl);
+  let tipOn = null;
+  const tipShow = (el) => {
+    tipOn = el; tipEl.textContent = el.dataset.tip; tipEl.classList.add('on');
+    const r = el.getBoundingClientRect(), w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+    tipEl.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + 'px';
+    tipEl.style.top = (r.top - h - 8 < 8 ? r.bottom + 8 : r.top - h - 8) + 'px';
+  };
+  document.addEventListener('mouseover', (e) => { const el = e.target.closest && e.target.closest('[data-tip]'); if (el && el.dataset.tip) { if (el !== tipOn) tipShow(el); } else if (tipOn) { tipOn = null; tipEl.classList.remove('on'); } });
+  document.addEventListener('focusin', (e) => { const el = e.target.closest && e.target.closest('[data-tip]'); if (el && el.dataset.tip) tipShow(el); });
+  window.addEventListener('scroll', () => { if (tipOn) { tipOn = null; tipEl.classList.remove('on'); } }, { passive: true });
   document.addEventListener('click', (e) => {
     const odd = e.target.closest('[data-sid]:not([data-action])');
     if (odd && !odd.disabled) { toggleSel(odd.dataset.sid, odd); return; }
@@ -2851,8 +2899,8 @@
       case 'ach-claim': { try { const n = F1.store.claimAch(a.dataset.id); achFly(a, n); toast('🏆', `+${jt(n)} crédités`, 'win'); setTimeout(route, 900); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'ach-claim-all': { let t = 0; F1.store.achClaimable().forEach((x) => { t += F1.store.claimAch(x.id); }); achFly(a, t); confetti(140); toast('🏆', `+${jt(t)} crédités`, 'win'); setTimeout(route, 900); break; }
       case 'credits': credits(); break;
-      case 'm-buy-d': { const ctx = mgrCtx(); const d0 = ctx.mk.byDriver.get(a.dataset.id); const d = { ...d0, price: MG().valueOfDriver(MG().withExperience(d0, ctx.m.drvXp)) }; try { F1.store.buyDriver(d, resaleD(ctx)); toast('🤝', `<b>${esc(d.name)}</b> rejoint votre écurie !`, 'win'); confetti(80); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
-      case 'mate-buy': { const ctx = mgrCtx(); const d0 = ctx.mk.byDriver.get(a.dataset.id); try { F1.store.buyMate(d0, MG().mateValue(d0), resaleM(ctx)); toast('🤝', `<b>${esc(d0.name)}</b> devient votre coéquipier !`, 'win'); confetti(70); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
+      case 'm-buy-d': { const ctx = mgrCtx(); const d0 = ctx.mk.byDriver.get(a.dataset.id); const d = { ...d0, price: MG().driverPrice(MG().withExperience(d0, ctx.m.drvXp)) }; const lk = lockOf(ctx, d0.id); if (lk) { toast('🔒', `${esc(d0.name)} ne signe qu'à partir de la ligue ${lk.icon} ${esc(lk.name)}`, 'err'); break; } try { F1.store.buyDriver(d, resaleD(ctx)); toast('🤝', `<b>${esc(d.name)}</b> rejoint votre écurie !`, 'win'); confetti(80); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
+      case 'mate-buy': { const ctx = mgrCtx(); const d0 = ctx.mk.byDriver.get(a.dataset.id); const lk = lockOf(ctx, d0.id); if (lk) { toast('🔒', `${esc(d0.name)} ne signe qu'à partir de la ligue ${lk.icon} ${esc(lk.name)}`, 'err'); break; } try { F1.store.buyMate(d0, MG().mateValue(d0), resaleM(ctx)); toast('🤝', `<b>${esc(d0.name)}</b> devient votre coéquipier !`, 'win'); confetti(70); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'mate-release': { const ctx = mgrCtx(); if (!confirm(`Libérer ${ctx.m.mate.name} ? Vous récupérez ${resaleM(ctx)} PitCoins.`)) break; const g = F1.store.releaseMate(resaleM(ctx)); toast('🤝', `Coéquipier libéré : +${fmtPC(g)}`, 'win'); F1.social.sync(); route(); break; }
       case 'sp-sign': { try { const t = F1.store.signSponsor(a.dataset.id, a.dataset.slot); const sp = MG().SPONSOR_BY_ID.get(a.dataset.id); toast('💼', `Contrat signé avec <b>${esc(sp.name)}</b> : +${t.sign} PitCoins de prime de signature`, 'win'); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'm-buy-c': { const ctx = mgrCtx(); const c = ctx.mk.byChassis.get(a.dataset.id); if (ctx.m.chassis && ctx.m.rdSpent > 0 && !confirm('Changer d\'équipe remet votre R&D à zéro. Continuer ?')) break; try { F1.store.buyChassis(c, resaleC(ctx)); toast('🏎️', `Vous prenez la direction de <b>${esc(c.name)}</b> !`, 'win'); confetti(80); showAchievements(); F1.social.sync(); route(); setTimeout(() => openNumberPicker(true), 350); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
@@ -2895,7 +2943,7 @@
             chestReveal(chests, extra); setTimeout(() => confetti(liv.length ? 180 : 80), 700); showAchievements(); break;
           }
           const parts = [pc ? `+${fmtPC(pc)}` : '', tok ? `${tok} jeton${tok > 1 ? 's' : ''} de tentative` : '', ...liv.map((n) => `livrée <b>${esc(n)}</b> (à équiper dans le Garage)`)].filter(Boolean);
-          toast('🎁', `Passe de saison : ${parts.join(' · ')}`, 'win', 5000); confetti(liv.length ? 180 : 70);
+          toast('🎁', `Pass de saison : ${parts.join(' · ')}`, 'win', 5000); confetti(liv.length ? 180 : 70);
           showAchievements(); route();
         } catch (err) { toast('⚠️', esc(err.message), 'err'); }
         break;

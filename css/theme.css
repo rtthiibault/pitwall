@@ -1431,3 +1431,19 @@ body.on-home::after { mix-blend-mode: screen; }
 .ch-rev-extra { font-size: 13px; line-height: 1.6; }
 .ps-art { height: 78px; }
 .ps-art .ps-chest.s { width: 66px !important; height: 63px !important; } .ps-art .ps-chest.m { width: 72px !important; height: 68px !important; } .ps-art .ps-chest.l { width: 80px !important; height: 76px !important; }
+
+/* ===== QG : préparation du week-end en ligne, pleine largeur ===== */
+.p-week { grid-column: span 12 !important; }
+.p-rd, .p-start { grid-column: span 6 !important; }
+.wk-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.25fr); gap: 18px; align-items: start; }
+.wk-cols > div { display: grid; gap: 10px; min-width: 0; align-content: start; }
+.wk-cols > div + div { padding-left: 18px; border-left: 1px solid rgba(255,255,255,.07); }
+@media (max-width: 1100px) { .p-rd, .p-start { grid-column: span 12 !important; } .wk-cols { grid-template-columns: 1fr; } .wk-cols > div + div { padding-left: 0; border-left: 0; } }
+
+/* ===== Infobulles des bonus ===== */
+[data-tip] { cursor: help; }
+.tipbox { position: fixed; z-index: 9999; max-width: 280px; padding: 8px 11px; border-radius: 8px; background: #0b0d11; border: 1px solid var(--line2); color: var(--text);
+  font-size: 12.5px; line-height: 1.4; box-shadow: 0 10px 28px rgba(0,0,0,.5); pointer-events: none; opacity: 0; transform: translateY(4px); transition: opacity .12s, transform .12s; }
+.tipbox.on { opacity: 1; transform: none; }
+.chip.lk { border-color: var(--line2); color: var(--muted); white-space: nowrap; }
+.dash { grid-auto-flow: row dense; }

@@ -206,6 +206,14 @@
   const F1_POINTS = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
   // valeur d'un pilote tel qu'il est aujourd'hui (objet renvoyé par withExperience)
   const valueOfDriver = (x) => (x.exp ? driverValue((x.base ? x.base.rating : x.rating) + x.exp.pts, x.exp.cap - x.exp.pts, x.exp.age) : x.price);
+  // prix d'un pilote titulaire aujourd'hui : valeur (note + progression) × effet de l'actualité Paddock Wire
+  const driverPrice = (x) => Math.max(30, Math.round((valueOfDriver(x) * newsForm(x).priceK) / 5) * 5);
+  /* Accès au marché selon la ligue : les meilleurs pilotes (classés par note) ne signent qu'avec un manager confirmé.
+     1er à 3e : ligue Platine · 4e à 6e : Or · 7e à 10e : Argent · les autres dès Bronze. Vaut aussi pour le coéquipier. */
+  function driverLeagueReq(mk, id) {
+    const rank = mk.drivers.filter((d) => !d.reserve).findIndex((d) => d.id === id);
+    return rank < 0 ? 0 : rank < 3 ? 3 : rank < 6 ? 2 : rank < 10 ? 1 : 0;
+  }
   const valueOfDriverV1 = (x) => (x.exp ? driverValueV1((x.base ? x.base.rating : x.rating) + x.exp.pts, x.exp.cap - x.exp.pts, x.exp.age) : driverValueV1(x.rating, growth(ageOf(x.id)).cap, ageOf(x.id)));
   function market(season) {
     const ents = [...GRID_BY.keys()];
@@ -1328,7 +1336,7 @@
     forecastLaps, trend, ruleOk, RULE_PENALTY, tyreStatus, MODES, redoLap, dryFor, FUEL_LOAD, MIX, ERS, ENG_CRIT, TYRE_LO, TYRE_HI, fuelDelta, KG,
     CLIMATE, climateOf, trackState, forecast, TYRES, isSlick, tyreDelta, DILEMMA_LAPS, dilemmaLaps, lapsOf, RACE_LAPS, planFor, REFILL_H, createRace, stepLap, dilemmaFor, applyChoice, RADIO,
     WEEKLY_ATTEMPTS, WEEKLY_FIRST_PRIME, isoWeek, weeklyEvent, weeklyBots, fmtRaceTime, fmtGap, weeklyPrize, CIRCUIT_NAME,
-    aiLineup, driverValueV1, valueOfDriverV1, PRICE_PTS, SPONSOR_COOLDOWN, rdBuildMs, rushCost, TUNNEL_SLOT2_PC, PASS_TIERS, PASS_XP_TIER, PASS_XP_RACE, PASS_XP_WEEKLY, PASS_CHEST, PASS_LIVERIES, PASS_LIVERY_BY, passReward, passTier,
+    aiLineup, driverPrice, driverLeagueReq, driverValueV1, valueOfDriverV1, PRICE_PTS, SPONSOR_COOLDOWN, rdBuildMs, rushCost, TUNNEL_SLOT2_PC, PASS_TIERS, PASS_XP_TIER, PASS_XP_RACE, PASS_XP_WEEKLY, PASS_CHEST, PASS_LIVERIES, PASS_LIVERY_BY, passReward, passTier,
     SPONSORS, SPONSOR_BY_ID, goalText, sponsorTerms, sponsorAfterRace, SUB_K,
     TEAM_NAME, TEAM_CODE, GRID, GRID_BY, shortName, newsForm, mateValue, MATE_K, matePC, MATE_PC_K, F1_POINTS, mateEntry, START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, lpScale, AGE_PRICE, driverValue, valueOfDriver, RESALE_K, XP_DIV, PC_TABLE,
     RD_CATS, RD_PARTS, RD_BY_ID, rdBranches, partState, partsBonus,
