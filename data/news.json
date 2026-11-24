@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-24T10:41:14.453Z",
+ "updated": "2026-11-24T11:11:19.505Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-24T11:11:14.453Z",
+ "next": "2026-11-24T11:41:19.505Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -27,6 +27,30 @@
  ],
  "items": [
   {
+   "id": "news_jkfsg8",
+   "timestamp": "2026-11-24T11:05:00.000Z",
+   "category": "RÈGLEMENT",
+   "title": "'La pire chose serait de camper sur nos positions' : Vowles valide le retour au V8 'à 100 %'",
+   "summary": "Le patron de Williams F1, James Vowles, a apporté son soutien au retour des moteurs V8 en Formule 1, désormais prévu pour 2030. Les discussions sur le cadre exact du règlement étant toujours en cours, il n'y a aucune indication quant à la date à laquelle…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/la-pire-chose-serait-de-camper-sur-nos-positions-vowles-valide-le-retour-au-v8,213679.html",
+   "impact": null,
+   "firstSeen": "2026-11-24T11:11:19.505Z"
+  },
+  {
+   "id": "news_c2ygoe",
+   "timestamp": "2026-11-24T10:45:00.000Z",
+   "category": "TECHNIQUE",
+   "title": "Le podium s’est envolé pour Antonelli dans le dernier tour : « Je n’avais plus de puissance »",
+   "summary": "Parti sixième, Kimi Antonelli s’est peut-être dressé comme la menace la plus crédible pour Max Verstappen lors du Grand Prix de Las Vegas de F1. L’Italien échangeait en effet la position de pointe avec le Néerlandais dans les derniers tours, tous les deux en…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/le-podium-sest-envole-pour-antonelli-dans-le-dernier-tour-je-navais-plus-de-puissance.html",
+   "impact": null,
+   "firstSeen": "2026-11-24T11:11:19.505Z"
+  },
+  {
    "id": "news_16csvjp",
    "timestamp": "2026-11-24T10:20:33.000Z",
    "category": "PADDOCK",
@@ -37,6 +61,18 @@
    "url": "https://fr.motorsport.com/f1/news/isack-hadjar-frustre-vraiment-passe-radio-chez-red-bull-las-vegas/10877387/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
    "impact": null,
    "firstSeen": "2026-11-24T10:41:14.453Z"
+  },
+  {
+   "id": "news_1pxqvdw",
+   "timestamp": "2026-11-24T10:14:00.000Z",
+   "category": "PADDOCK",
+   "title": "Polémique sur la biométrie en F1 : 'aux pilotes de décider' selon les patrons",
+   "summary": "La décision de la Formule 1 de diffuser à partir de 2027 certaines données physiologiques des pilotes pendant les Grands Prix fait débat. Alors que Max Verstappen a déjà clairement annoncé son refus de partager son rythme cardiaque ou d'autres informations…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/polemique-sur-la-biometrie-en-f1-aux-pilotes-de-decider-selon-les-patrons,213570.html",
+   "impact": null,
+   "firstSeen": "2026-11-24T11:11:19.505Z"
   },
   {
    "id": "news_1l1kw8n",
@@ -351,7 +387,7 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "impact": null,
-   "firstSeen": "2026-11-24T10:41:14.453Z"
+   "firstSeen": "2026-11-24T11:11:19.505Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -782,54 +818,6 @@
    "source": "Motorsport.com",
    "lang": "fr",
    "url": "https://fr.motorsport.com/f1/news/tops-flops-grand-prix-las-vegas-2026/10876897/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
-  },
-  {
-   "id": "news_12wqvi3",
-   "timestamp": "2026-11-22T10:38:00.000Z",
-   "category": "TECHNIQUE",
-   "title": "'Aucune performance' : Alonso et Stroll tirent à boulets rouges sur Honda après la course",
-   "summary": "Aston Martin F1 a vécu un nouveau Grand Prix particulièrement difficile à Las Vegas, où les performances du moteur Honda ont une fois encore lourdement handicapé Fernando Alonso et Lance Stroll. Le Canadien a terminé à une modeste 17e place, tandis que…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/aucune-performance-alonso-et-stroll-tirent-a-boulets-rouges-sur-honda-apres-la,213622.html",
-   "impact": {
-    "targetType": "engine",
-    "targetIds": [
-     "aston_martin"
-    ],
-    "managerModifiers": {
-     "powerUnit": -2,
-     "aero": 0,
-     "reliability": 0
-    },
-    "bettingOddsMultiplier": 1.08,
-    "impactLabel": "Moteur -2 pts | Cotes +8%"
-   },
-   "firstSeen": "2026-11-23T10:51:02.379Z"
-  },
-  {
-   "id": "news_1wuji1x",
-   "timestamp": "2026-11-22T10:25:57.000Z",
-   "category": "PADDOCK",
-   "title": "Verstappen dézingue la saison 2026 de Russell : \"Un désastre complet\"",
-   "summary": "Alors que l'accrochage entre Max Verstappen et George Russell lors de la troisième séance d'essais libres du Grand Prix de Las Vegas semblait avoir été réglé par un simple avertissement adressé au pilote Red Bull, le différend a depuis pris une nouvelle…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/verstappen-dezingue-saison-2026-russell-desastre-complet/10876887/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
-  },
-  {
-   "id": "news_fmakdd",
-   "timestamp": "2026-11-22T10:05:00.000Z",
-   "category": "RÈGLEMENT",
-   "title": "Haas F1 : Bearman savoure sa remontée spectaculaire à Las Vegas",
-   "summary": "Haas F1 a conclu le Grand Prix de Las Vegas sans inscrire de points, mais avec plusieurs motifs de satisfaction. Parti dernier après une pénalité liée au remplacement de composants de son groupe propulseur, Oliver Bearman a réalisé une belle remontée jusqu'à…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/haas-f1-bearman-savoure-sa-remontee-spectaculaire-a-las-vegas,213623.html",
    "impact": null,
    "firstSeen": "2026-11-23T10:51:02.379Z"
   }
