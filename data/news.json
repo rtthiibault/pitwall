@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-24T06:40:26.563Z",
+ "updated": "2026-11-24T07:10:30.843Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-24T07:10:26.563Z",
+ "next": "2026-11-24T07:40:30.843Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 99
+   "n": 95
   },
   {
    "name": "F1i",
@@ -26,6 +26,18 @@
   }
  ],
  "items": [
+  {
+   "id": "news_ruafgp",
+   "timestamp": "2026-11-24T06:47:00.000Z",
+   "category": "PADDOCK",
+   "title": "Hadjar a changé chez Red Bull : Mekies révèle ce qui le rend désormais plus rapide",
+   "summary": "Isack Hadjar a quitté le Grand Prix de Las Vegas sans le moindre point, mais sa prestation a pourtant renforcé la confiance de Red Bull dans son potentiel. Quatrième sur la grille de départ et brièvement en tête de la course, le Français a vu ses espoirs…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hadjar-a-change-chez-red-bull-mekies-revele-ce-qui-le-rend-desormais-plus,213687.html",
+   "impact": null,
+   "firstSeen": "2026-11-24T07:10:30.843Z"
+  },
   {
    "id": "news_bnrk6p",
    "timestamp": "2026-11-24T06:00:00.000Z",
@@ -243,7 +255,7 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "impact": null,
-   "firstSeen": "2026-11-24T06:40:26.563Z"
+   "firstSeen": "2026-11-24T07:10:30.843Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -794,18 +806,6 @@
    "source": "Nextgen-Auto",
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hamilton-ferrari-aurait-du-miser-sur-moi-pour-battre-antonelli,213651.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_1kp8w9o",
-   "timestamp": "2026-11-22T08:27:00.000Z",
-   "category": "PADDOCK",
-   "title": "Wolff est 'déçu' mais relativise les 'erreurs' d'Antonelli et Russell à Las Vegas",
-   "summary": "Mercedes F1 pensait jouer la victoire au Grand Prix de Las Vegas, George Russell réussissant à dépasser Max Verstappen à de nombreuses reprises, tandis que Kimi Antonelli est remonté de la sixième place pour se mêler à la lutte. Mais un accident du Britannique…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/wolff-est-decu-mais-relativise-les-erreurs-d-antonelli-et-russell-a-las-vegas,213645.html",
    "impact": null,
    "firstSeen": "2026-11-23T10:59:50.658Z"
   }
