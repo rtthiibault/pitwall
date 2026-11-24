@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-24T17:42:33.303Z",
+ "updated": "2026-11-24T18:12:38.027Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-24T18:12:33.303Z",
+ "next": "2026-11-24T18:42:38.027Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 93
+   "n": 92
   },
   {
    "name": "F1i",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_pam1ts",
+   "timestamp": "2026-11-24T18:00:00.000Z",
+   "category": "PADDOCK",
+   "title": "Avec un double Top 10 à Las Vegas, Alpine reste dans la course à la cinquième place du championnat",
+   "summary": "À la roulette du Bellagio, quand sortent le 10 et le 43, c’est toute l’écurie Alpine qui passe à la caisse. Dix-huit points, c’est le jackpot pour les Bleus qui reviennent à 27 points de Racing Bulls au championnat « Constructeurs ». Aller chercher la « P5 »…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/avec-un-double-top-10-a-las-vegas-alpine-reste-dans-la-course-a-la-cinquieme-place-du-championnat.html",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/DPPI_00126024_2961-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-24T18:12:38.027Z"
+  },
   {
    "id": "news_74k88x",
    "timestamp": "2026-11-24T17:04:00.000Z",
@@ -579,7 +592,7 @@
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455860_hires.jpg",
    "impact": null,
-   "firstSeen": "2026-11-24T17:42:33.303Z"
+   "firstSeen": "2026-11-24T18:12:38.027Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -875,18 +888,6 @@
    "impact": null,
    "firstSeen": "2026-11-23T10:51:02.379Z",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456042_hires.jpg"
-  },
-  {
-   "id": "news_qnsok4",
-   "timestamp": "2026-11-22T16:46:12.000Z",
-   "category": "RÈGLEMENT",
-   "title": "Un Grand Prix totalement fou à Las Vegas grâce au règlement F1 2026 ?",
-   "summary": "Rarement une course de Formule 1 aura offert autant de rebondissements ! Le Grand Prix de Las Vegas a été le théâtre de 352 changements de position, dont 35 changements de leader. Un spectacle qui ne doit rien au hasard : le tracé américain semble avoir été…",
-   "source": "AutoHebdo",
-   "lang": "fr",
-   "url": "https://www.autohebdo.fr/actualites/f1/un-grand-prix-totalement-fou-a-las-vegas-grace-au-reglement-f1-2026.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
   }
  ]
 }
