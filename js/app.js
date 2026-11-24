@@ -298,6 +298,7 @@
   }
   // numéro d'un pilote dans le dessin de son écurie (couleur de l'écurie par défaut)
   const dnum = (n, teamId, cls = '', color) => (n ? `<span class="dn ${cls}" style="color:${color || tcol(teamId)}">${F1.num.html(n, teamId)}</span>` : '');
+  const dnumOf = (id, cls = 'in') => { const d = drv(id) || (S.season.upcoming && S.season.upcoming.drivers.get(id)); return d && !d.crew ? dnum(d.number, d.teamId, cls) : ''; };
   function drvCell(id, extra = '') {
     const d = drv(id); if (!d) return esc(id);
     const t = team(d.teamId);
@@ -315,7 +316,7 @@
     const on = S.slip.some((l) => l.sid === x.sid);
     const closed = m && isClosed(m);
     const color = x.teamId ? tcol(x.teamId) : 'var(--gold)';
-    const lbl = label != null ? label : `${x.teamId ? `<span class="tstripe" style="background:${color}"></span>` : ''}${esc(x.label)}`;
+    const lbl = label != null ? label : `${x.teamId ? `<span class="tstripe" style="background:${color}"></span>` : ''}${esc(x.label)}${x.driverId ? dnumOf(x.driverId) : ''}`;
     return `<button class="odd ${compact ? 'compact' : ''} ${on ? 'on' : ''} ${cls}" data-sid="${esc(x.sid)}" ${closed ? 'disabled' : ''} title="${esc(x.mtitle)} — ${esc(x.label)} · probabilité estimée ${pct(x.prob)}">${compact ? '' : `<span class="lbl">${lbl}</span>`}<span class="o">${fmtOdds(x.odds)}</span>${x.news ? `<span class="pdw-odd ${x.news > 1 ? 'up' : 'dn'}" title="Paddock Wire : cote ${x.news > 1 ? 'en hausse' : 'en baisse'} de ${Math.abs(Math.round((x.news - 1) * 100))} % sous l'effet de l'actualité">${x.news > 1 ? '▲' : '▼'}</span>` : ''}${compact ? '' : `<span class="bar" style="width:${Math.min(100, x.prob * 100)}%;color:${color}"></span>`}</button>`;
   }
   function closeChip(m) {
@@ -342,7 +343,7 @@
 
   function h2hCard(m) {
     const [sa, sb] = m.selections;
-    const side = (s) => { const d = drv(s.driverId); return `<div class="side" style="--tc:${tcol(d.teamId)}"><div class="row" style="flex-wrap:nowrap;gap:10px;margin-bottom:4px">${ava(d.id, 'md')}<div class="n">${esc(d.family)}</div></div><div class="t">${flag(d.iso, 'sm')} ${esc(team(d.teamId).short)} · ${fmt(d.points)} pts</div>${oddBtn(s, m, { label: 'Devant' })}</div>`; };
+    const side = (s) => { const d = drv(s.driverId); return `<div class="side" style="--tc:${tcol(d.teamId)}"><div class="row" style="flex-wrap:nowrap;gap:10px;margin-bottom:4px">${ava(d.id, 'md')}<div class="n">${esc(d.family)}${dnumOf(d.id)}</div></div><div class="t">${flag(d.iso, 'sm')} ${esc(team(d.teamId).short)} · ${fmt(d.points)} pts</div>${oddBtn(s, m, { label: 'Devant' })}</div>`; };
     return `<div class="card market"><div class="market-h"><div><h3>${esc(m.title)}</h3><div class="sub">${esc(m.sub)} · le mieux classé à l'arrivée</div></div>${closeChip(m)}</div>
       <div class="h2h">${side(sa)}<div class="vs">VS</div>${side(sb)}</div>
       <div class="h2h-bar"><i style="width:${sa.prob * 100}%;background:${tcol(drv(sa.driverId).teamId)}"></i><i style="flex:1;background:${tcol(drv(sb.driverId).teamId)};opacity:.7"></i></div>
@@ -524,7 +525,7 @@
     const r = S.season.lastDone;
     if (!r) return `<div class="card"><h3>Dernier Grand Prix</h3><div class="empty"><div class="ic">🏁</div>Aucune course disputée pour l'instant.</div></div>`;
     const top = r.results.slice(0, 3);
-    const step = (x, p) => { if (!x) return '<div></div>'; const d = drv(x.driverId); return `<div class="pod-step p${p}" style="--tc:${tcol(x.teamId)};--mc:${['var(--gold)', 'var(--silver)', 'var(--bronze)'][p - 1]}">${ava(d.id, 'lg')}<div class="who">${flag(d.iso, 'sm')} ${esc(d.family)}</div><div class="tm">${esc(team(x.teamId).short)}</div><div class="blk">${p}</div></div>`; };
+    const step = (x, p) => { if (!x) return '<div></div>'; const d = drv(x.driverId); return `<div class="pod-step p${p}" style="--tc:${tcol(x.teamId)};--mc:${['var(--gold)', 'var(--silver)', 'var(--bronze)'][p - 1]}">${ava(d.id, 'lg')}<div class="who">${flag(d.iso, 'sm')} ${esc(d.family)}${dnumOf(d.id)}</div><div class="tm">${esc(team(x.teamId).short)}</div><div class="blk">${p}</div></div>`; };
     return `<a class="card" href="#/gp/${r.round}"><div class="market-h"><div><h3>${flag(r.iso, 'sm')} ${esc(r.nameFr)}</h3><div class="sub">Dernier Grand Prix · ${DAY.format(r.date)}</div></div><span class="chip">Résultats →</span></div>
       <div class="podium">${step(top[1], 2)}${step(top[0], 1)}${step(top[2], 3)}</div></a>`;
   }
@@ -611,7 +612,7 @@
     const slots = T.map((id, i) => {
       if (!id) return `<div class="tslot"><div class="pp">P${i + 1}</div><div class="muted" style="font-size:13px">Choisissez un pilote</div></div>`;
       const d = drv(id);
-      return `<button class="tslot filled" style="--tc:${tcol(d.teamId)}" data-action="tierce-clear" data-i="${i}" title="Retirer"><div class="pp">P${i + 1}</div>${ava(d.id, 'md')}<div class="nn">${esc(d.family)}</div><div class="muted" style="font-size:12px">${esc(team(d.teamId).short)} ✕</div></button>`;
+      return `<button class="tslot filled" style="--tc:${tcol(d.teamId)}" data-action="tierce-clear" data-i="${i}" title="Retirer"><div class="pp">P${i + 1}</div>${ava(d.id, 'md')}<div class="nn">${esc(d.family)}${dnumOf(d.id)}</div><div class="muted" style="font-size:12px">${esc(team(d.teamId).short)} ✕</div></button>`;
     }).join('');
     let res = '';
     if (T.every(Boolean)) {
@@ -770,13 +771,13 @@
     const tab = S.gpTab;
     const tabs = `<div class="seg" style="margin-bottom:16px"><button class="${tab === 'race' ? 'on' : ''}" data-action="gptab" data-t="race">Course</button>${r.sprintResults ? `<button class="${tab === 'sprint' ? 'on' : ''}" data-action="gptab" data-t="sprint">Sprint</button>` : ''}<button class="${tab === 'quali' ? 'on' : ''}" data-action="gptab" data-t="quali">Qualifications</button></div>`;
     const top = r.results.slice(0, 3);
-    const step = (x, p) => { if (!x) return '<div></div>'; const d = drv(x.driverId); return `<div class="pod-step p${p}" style="--tc:${tcol(x.teamId)};--mc:${['var(--gold)', 'var(--silver)', 'var(--bronze)'][p - 1]}">${ava(d.id, 'lg')}<div class="who">${flag(d.iso, 'sm')} ${esc(d.family)}</div><div class="tm">${esc(team(x.teamId).short)}</div><div class="blk">${p}</div></div>`; };
+    const step = (x, p) => { if (!x) return '<div></div>'; const d = drv(x.driverId); return `<div class="pod-step p${p}" style="--tc:${tcol(x.teamId)};--mc:${['var(--gold)', 'var(--silver)', 'var(--bronze)'][p - 1]}">${ava(d.id, 'lg')}<div class="who">${flag(d.iso, 'sm')} ${esc(d.family)}${dnumOf(d.id)}</div><div class="tm">${esc(team(x.teamId).short)}</div><div class="blk">${p}</div></div>`; };
     const fl = r.results.find((x) => x.fastestRank === 1);
     const gainer = r.results.filter((x) => x.classified && x.grid > 0).sort((a, b) => (b.grid - b.pos) - (a.grid - a.pos))[0];
     const dnfs = r.results.filter((x) => !x.classified);
     const side = `<div class="grid" style="align-content:start"><div class="card"><h3>Podium</h3><div class="podium">${step(top[1], 2)}${step(top[0], 1)}${step(top[2], 3)}</div></div>
-      <div class="grid g2">${fl ? `<div class="stat"><small>Meilleur tour</small><b style="font-size:18px">${esc(drv(fl.driverId).family)}</b><span class="muted num">${esc(fl.fastestTime || '')}</span></div>` : ''}
-      ${gainer ? `<div class="stat"><small>Remontada</small><b style="font-size:18px">${esc(drv(gainer.driverId).family)}</b><span class="gain up">P${gainer.grid} → P${gainer.pos} (+${gainer.grid - gainer.pos})</span></div>` : ''}
+      <div class="grid g2">${fl ? `<div class="stat"><small>Meilleur tour</small><b style="font-size:18px">${dnumOf(fl.driverId, 'pre')}${esc(drv(fl.driverId).family)}</b><span class="muted num">${esc(fl.fastestTime || '')}</span></div>` : ''}
+      ${gainer ? `<div class="stat"><small>Remontada</small><b style="font-size:18px">${dnumOf(gainer.driverId, 'pre')}${esc(drv(gainer.driverId).family)}</b><span class="gain up">P${gainer.grid} → P${gainer.pos} (+${gainer.grid - gainer.pos})</span></div>` : ''}
       <div class="stat"><small>Classés</small><b>${r.results.length - dnfs.length} / ${r.results.length}</b></div><div class="stat"><small>Abandons</small><b>${dnfs.length}</b></div></div></div>`;
     let table;
     if (tab === 'quali') {
@@ -948,9 +949,9 @@
     const show = locked ? saved || [] : draft;
     // cote retenue pour chaque marche : celle figée à l'enregistrement, sinon la cote du moment
     const oddAt = (i) => (locked || (saved && !dirty) ? (savedO && savedO[i]) : oddOf(show[i])) || null;
-    const slots = [0, 1, 2].map((i) => { const id = show[i], d = id && drvOf(id), o = id ? oddAt(i) : null, m = riskK(o); return `<button class="pd-slot ${id ? 'on' : ''}" ${locked ? 'disabled' : `data-action="pd-clear" data-s="${k}" data-i="${i}" title="Retirer"`} style="--tc:${d ? F1.teamColor(d.teamId) : 'var(--line2)'}"><span class="pd-step">P${i + 1}</span>${d ? `<b>${esc(d.code)}</b><small>${esc(d.family)}</small>${o ? `<span class="pd-k ${m >= 2 ? 'hi' : m > 1.05 ? 'mid' : ''}">cote ${fmtOdds(o)} · ${fmtK(m)}</span>` : ''}` : '<em>Choisir un pilote</em>'}${top ? `<i class="pd-real">${drvTag(top[i])}</i>` : ''}</button>`; }).join('');
+    const slots = [0, 1, 2].map((i) => { const id = show[i], d = id && drvOf(id), o = id ? oddAt(i) : null, m = riskK(o); return `<button class="pd-slot ${id ? 'on' : ''}" ${locked ? 'disabled' : `data-action="pd-clear" data-s="${k}" data-i="${i}" title="Retirer"`} style="--tc:${d ? F1.teamColor(d.teamId) : 'var(--line2)'}"><span class="pd-step">P${i + 1}</span>${d ? `<b>${d.number ? dnum(d.number, d.teamId, 'pdn') : ''}${esc(d.code)}</b><small>${esc(d.family)}</small>${o ? `<span class="pd-k ${m >= 2 ? 'hi' : m > 1.05 ? 'mid' : ''}">cote ${fmtOdds(o)} · ${fmtK(m)}</span>` : ''}` : '<em>Choisir un pilote</em>'}${top ? `<i class="pd-real">${drvTag(top[i])}</i>` : ''}</button>`; }).join('');
     const maxPts = show.filter(Boolean).length === 3 ? [0, 1, 2].reduce((a, i) => a + Math.round(PODIUM[k].exact[i] * riskK(oddAt(i))), 0) + PODIUM[k].perfect : 0;
-    const picker = locked ? '' : `<div class="pd-grid">${ids.map((id) => { const d = drvOf(id), used = draft.includes(id), od = OD.get(id); return `<button class="pd-drv ${used ? 'used' : ''}" data-action="pd-pick" data-s="${k}" data-d="${esc(id)}" style="--tc:${F1.teamColor(d.teamId)}"><b>${esc(d.code)}</b><small>${esc(d.family)}</small>${od ? `<span class="pd-odd num">${fmtOdds(od.odds)}${oddArrow(od.news)}</span>` : ''}</button>`; }).join('')}</div>`;
+    const picker = locked ? '' : `<div class="pd-grid">${ids.map((id) => { const d = drvOf(id), used = draft.includes(id), od = OD.get(id); return `<button class="pd-drv ${used ? 'used' : ''}" data-action="pd-pick" data-s="${k}" data-d="${esc(id)}" style="--tc:${F1.teamColor(d.teamId)}"><b>${d.number ? dnum(d.number, d.teamId, 'pdn') : ''}${esc(d.code)}</b><small>${esc(d.family)}</small>${od ? `<span class="pd-odd num">${fmtOdds(od.odds)}${oddArrow(od.news)}</span>` : ''}</button>`; }).join('')}</div>`;
     const status = locked
       ? (top ? `<span>Résultat officiel à droite de chaque marche</span>${pts != null ? `<b class="pd-pts">+${pts} pts</b>` : '<span class="muted">Pas de pronostic</span>'}` : `<span>🔒 Verrouillé depuis le ${DTF.format(st)}${saved ? '' : ' · aucun pronostic'}</span>`)
       : `<span>Verrouillage dans <b>${untilTxt(st.getTime() - Date.now())}</b> (${DTF.format(st)})${maxPts ? ` · podium exact : <b class="pd-max">${maxPts} pts</b>` : ''}</span><button class="btn sm" data-action="pd-save" data-s="${k}" ${full && dirty ? '' : 'disabled'}>${saved && !dirty ? 'Enregistré ✓' : 'Enregistrer'}</button>`;
@@ -1395,7 +1396,7 @@
         const idx = MG().compat(c, w, MG().bestSetup(c, w));
         const nm = NM[c.id];
         const pw = nm ? Object.entries(lbl).filter(([k]) => nm[k]).map(([k, l]) => `<span class="tm-pw ${nm[k] > 0 ? 'up' : 'down'}">${nm[k] > 0 ? '▲' : '▼'} ${l} ${nm[k] > 0 ? '+' : ''}${fmt(nm[k], 1)}</span>`).join('') : '';
-        const duo = MG().GRID.filter((g) => g[3] === c.id).map((g) => esc(g[1])).join(' · ');
+        const duo = MG().GRID.filter((g) => g[3] === c.id).map((g) => { const dd = mk.byDriver.get(g[0]); return esc(g[1]) + (dd && dd.number ? dnum(dd.number, c.id, 'in') : ''); }).join(' · ');
         return `<div class="mcard tm-card ${own ? 'own' : ''}" style="--tc:${F1.teamColor(c.id)}"><div class="row" style="justify-content:space-between;align-items:start"><div><div class="tm-name">${esc(c.name)}</div><div class="muted" style="font-size:12px">Pilotes officiels : ${duo || '—'}</div><div class="muted" style="font-size:12px">Indice au prochain GP : <b>${idx}</b></div></div>${own ? '<span class="chip green">Votre équipe</span>' : ''}</div>
           <div style="margin:4px -6px">${F1.visuals.car(c.id, { view: '34', shadow: false, sponsor: own ? livery(m) : null })}</div>
           <div style="display:grid;gap:6px;margin-bottom:10px">${MG().STATS.map((st) => statBar(st.short, c[st.k] + ((nm && nm[st.k]) || 0), c[st.k], F1.teamColor(c.id), st.icon)).join('')}</div>
@@ -2399,7 +2400,7 @@
     const mtEl = $('#mtele'), mtBtn = $('#mtlBtn');
     let mtOpen = getPref('mapTele') === '1', mtTrace = [], mtLast = 0;
     const mtShow = () => { mtEl.hidden = !mtOpen; mtBtn.classList.toggle('on', mtOpen); $('.race-stage').classList.toggle('mt-open', mtOpen); };
-    mtEl.innerHTML = `<div class="mt-h"><span class="mt-num" style="--tc:${meCol};--ti:${meInk}">${esc(String(drvNum || meX.driver.code))}</span><b>${esc(meX.driver.code)}</b><small>Télémétrie live</small></div>
+    mtEl.innerHTML = `<div class="mt-h"><span class="mt-num" style="--tc:${meCol};--ti:${meInk}">${plate(drvNum, meTeam, meInk, meX.driver.code)}</span><b>${esc(meX.driver.code)}</b><small>Télémétrie live</small></div>
       <div class="mt-rev">${Array.from({ length: 15 }, (_, i) => `<i class="${i < 5 ? 'g' : i < 10 ? 'r' : 'b'}"></i>`).join('')}</div>
       <div class="mt-main"><div class="mt-spd"><b class="num" data-m="v">0</b><small>km/h</small></div><div class="mt-gear"><b data-m="g">N</b><small>rapport</small></div>
         <div class="mt-pd"><span><i data-m="thr"></i></span><span class="brk"><i data-m="brk"></i></span><small>ACC · FRN</small></div></div>

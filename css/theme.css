@@ -1449,3 +1449,7 @@ body.on-home::after { mix-blend-mode: screen; }
 .dash { grid-auto-flow: row dense; }
 .np-big .dnum { height: 150px; } .np-quick .dnum { height: 26px; } .np-bar-n .dnum { height: 40px; max-width: 64px; } .chip.pf-num .dnum { height: 18px; }
 @media (max-width: 600px) { .np-big .dnum { height: 110px; } }
+.dn.pdn { height: 1em; margin-right: .3em; vertical-align: -.12em; } .dn.pdn .dnum { height: 1em; }
+.dn.pre { height: .95em; margin-right: .35em; vertical-align: -.1em; } .dn.pre .dnum { height: .95em; }
+.odd .lbl .dn.in { height: .95em; margin-left: .35em; } .odd .lbl .dn.in .dnum { height: .95em; }
+.pod-step .who .dn.in, .tslot .nn .dn.in, .market .side .n .dn.in { height: .9em; }
