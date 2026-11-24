@@ -3001,7 +3001,7 @@
     const L = MG().leagueOf(m.lp || 0);
     return `<section class="pf-page">
       <div class="pf-hero"><button class="pf-ava" data-action="pf-ava" title="Changer de photo">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : `<span>${esc(name.slice(0, 1).toUpperCase())}</span>`}<i>Changer</i></button>
-        <div class="pf-id"><small class="muted">Profil joueur</small><h1>${esc(name)}</h1><div class="row" style="gap:6px;flex-wrap:wrap">${leagueBadge(L)}${m.number && m.chassis ? `<span class="chip pf-num" style="color:${F1.teamColor(m.chassis.id)}" title="Votre numéro de course">${F1.num.html(m.number, m.chassis.id)}</span>` : ''}<span class="chip">${Object.keys(p.ach).length} succès</span>${((m.pass && m.pass.done) || []).map((d) => `<span class="chip ps-badge" title="Pass de saison complété">🎟️ Saison ${d.season} complétée</span>`).join('')}${so.me ? '<span class="chip green">Profil en ligne</span>' : '<span class="chip">Profil local</span>'}</div></div>
+        <div class="pf-id"><small class="muted">Profil joueur</small><h1>${esc(name)} <button class="pf-edit" data-action="profile" title="Changer de pseudo">✏️ Modifier</button></h1><div class="row" style="gap:6px;flex-wrap:wrap">${leagueBadge(L)}${m.number && m.chassis ? `<span class="chip pf-num" style="color:${F1.teamColor(m.chassis.id)}" title="Votre numéro de course">${F1.num.html(m.number, m.chassis.id)}</span>` : ''}<span class="chip">${Object.keys(p.ach).length} succès</span>${((m.pass && m.pass.done) || []).map((d) => `<span class="chip ps-badge" title="Pass de saison complété">🎟️ Saison ${d.season} complétée</span>`).join('')}${so.me ? '<span class="chip green">Profil en ligne</span>' : '<span class="chip">Profil local</span>'}</div></div>
         <div class="pf-wallets"><div><small>Jetons</small><b>${jt(p.balance)}</b></div><div><small>PitCoins</small><b>${fmtPC(m.pc || 0)}</b></div><button class="btn sm ghost" data-action="profile">⚙ Pseudo & sauvegarde</button></div></div>
       <div class="pf-gallery ${S.pfAva ? 'open' : ''}" id="pfGallery"><div class="pf-gh"><b>Choisissez votre photo de profil</b><button class="btn sm ghost" data-action="pf-ava">Fermer</button></div>
         <div class="pf-avs">${AVATARS.map((src) => `<button class="pf-av ${p.avatar === src ? 'on' : ''}" data-action="pf-ava-set" data-src="${src}"><img src="${src}" alt="" loading="lazy"></button>`).join('')}<label class="pf-av up ${p.avatar && /^data:/.test(p.avatar) ? 'on' : ''}" title="Importer ma photo">${p.avatar && /^data:/.test(p.avatar) ? `<img src="${esc(p.avatar)}" alt="">` : '<span>＋</span>'}<small>Ma photo</small><input type="file" accept="image/*" id="pfUpload" hidden></label><button class="pf-av none ${!p.avatar ? 'on' : ''}" data-action="pf-ava-set" data-src=""><span>${esc(name.slice(0, 1).toUpperCase())}</span><small>Initiale</small></button></div></div>
@@ -3051,8 +3051,10 @@
   }
   function profile() {
     const p = F1.store.get();
+    const so = SO(), cur = (so.me && so.me.username) || p.name || '';
     modal(`<h2>Profil</h2><label class="muted" style="font-size:13px;font-weight:700">Pseudo</label>
-      <div class="row" style="margin:6px 0 20px;flex-wrap:nowrap"><input class="field" id="nameIn" maxlength="24" value="${esc(p.name)}"><button class="btn sm" data-action="save-name">OK</button></div>
+      <div class="row" style="margin:6px 0 4px;flex-wrap:nowrap"><input class="field" id="nameIn" maxlength="24" value="${esc(cur)}"><button class="btn sm" data-action="rename">Enregistrer</button></div>
+      <p class="muted" style="font-size:12px;margin:0 0 20px">${so.me ? 'Affiché dans vos ligues et les classements. 3 à 24 caractères : lettres sans accent, chiffres, _ . -' : 'Affiché sur ce site. Il servira aussi de pseudo en ligne quand vous créerez votre profil joueur.'}</p>
       <h3 style="margin:0 0 6px">Sauvegarde</h3><p class="muted" style="font-size:13px;margin-top:0">Vos données restent dans ce navigateur. Copiez ce code pour les transférer sur un autre appareil.</p>
       <textarea class="field" id="expCode" readonly>${esc(F1.store.exportCode())}</textarea>
       <div class="row" style="margin:8px 0 18px"><button class="btn sm ghost" data-action="copy-code">📋 Copier</button></div>
@@ -3247,6 +3249,19 @@
       case 'f-accept': socialAct(() => F1.social.accept(+a.dataset.id), 'Vous êtes maintenant amis 🤝'); break;
       case 'f-remove': if (!a.dataset.confirm || confirm('Retirer ce joueur de vos amis ?')) socialAct(() => F1.social.remove(+a.dataset.id)); break;
       case 'f-copy': (navigator.clipboard ? navigator.clipboard.writeText(a.dataset.v) : Promise.reject()).then(() => toast('🔗', 'Lien d\'invitation copié : envoyez-le à vos amis !', 'win'), () => prompt('Copiez ce lien :', a.dataset.v)); break;
+      case 'rename': {
+        const v = ($('#nameIn').value || '').trim(), so = SO();
+        if (!v) { $('#nameIn').focus(); break; }
+        if (so.ready && so.me) {
+          const n = F1.social.cleanName(v);
+          if (!F1.social.USER_RE.test(n)) { toast('⚠️', 'Pseudo : 3 à 24 caractères, lettres sans accent, chiffres, _ . -', 'err'); break; }
+          if (n === so.me.username) { F1.store.setName(n); closeModal(); route(); break; }
+          a.disabled = true;
+          F1.social.claim(n, so.me.team).then(() => { F1.store.setName(n); closeModal(); toast('✏️', `Pseudo changé : <b>${esc(n)}</b>`, 'win'); route(); })
+            .catch((err) => { a.disabled = false; toast('⚠️', esc(err.message), 'err'); });
+        } else { F1.store.setName(v.slice(0, 24)); closeModal(); toast('✏️', `Pseudo changé : <b>${esc(v.slice(0, 24))}</b>`, 'win'); route(); }
+        break;
+      }
       case 'save-name': { const v = ($('#nameIn').value || '').trim(); if (!v) { $('#nameIn').focus(); return; } F1.store.setName(v); closeModal(); toast('👋', `Bienvenue, <b>${esc(v)}</b> !`, 'win'); route(); break; }
       case 'copy-code': { const t = $('#expCode'); t.select(); (navigator.clipboard ? navigator.clipboard.writeText(t.value) : Promise.reject()).then(() => toast('📋', 'Code copié'), () => document.execCommand('copy')); break; }
       case 'import': try { F1.store.importCode($('#impCode').value); closeModal(); shownBal = null; updateWallet(); route(); toast('✅', 'Sauvegarde importée', 'win'); } catch (err) { toast('⚠️', 'Code de sauvegarde invalide', 'err'); } break;
@@ -3266,7 +3281,7 @@
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') { if ($('#modal').innerHTML && F1.store.get().name) closeModal(); else if (S.slipOpen) { S.slipOpen = false; renderSlip(); } }
-    if (e.key === 'Enter' && e.target.id === 'nameIn') $('[data-action="save-name"]').click();
+    if (e.key === 'Enter' && e.target.id === 'nameIn') ($('[data-action="rename"]') || $('[data-action="save-name"]')).click();
     if (e.key === 'Enter' && e.target.id === 'claimName' && $('[data-action="f-claim"]')) $('[data-action="f-claim"]').click();
   });
   window.addEventListener('resize', () => { document.body.classList.toggle('has-slip', S.slip.length > 0 && innerWidth >= 1280); });

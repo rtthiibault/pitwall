@@ -1686,3 +1686,4 @@ details.pdw-how[open] summary { margin-bottom: 8px; }
 details.lg-how summary { cursor: pointer; font-weight: 800; } details.lg-how[open] summary { margin-bottom: 10px; }
 @media (max-width: 1150px) { .lgx-top { grid-template-columns: 1fr; } .lgx-top .lgd-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 700px) { .lgx-quick { grid-template-columns: 1fr; } .lgx-top .lgd-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .lgx-l .lg-card-x { grid-template-columns: auto minmax(0, 1fr); } .lgx-l .lgc-pod { grid-column: 1 / -1; justify-self: start; } }
+.pf-edit { margin-left: 10px; vertical-align: middle; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--line2); background: transparent; color: var(--muted); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; } .pf-edit:hover { color: var(--text); border-color: var(--text); }
