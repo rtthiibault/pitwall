@@ -1593,3 +1593,64 @@ details.pdw-how[open] summary { margin-bottom: 8px; }
 .pwb-top { flex-wrap: wrap; row-gap: 8px; }
 @media (max-width: 860px) { .pwb-word { font-size: clamp(34px, 13vw, 64px); } .pwb-head { -webkit-line-clamp: 4; font-size: 22px; } .pwb-num { height: 30%; } }
 @media (max-width: 860px) { .pwb-word { font-size: clamp(32px, 11.5vw, 60px); } .pwb-body { max-width: none; } }
+
+/* ===================== Mes ligues : tableau de bord ===================== */
+.lgd { display: grid; gap: 12px; margin: 16px 0 22px; padding: 18px 20px; border-radius: 10px; border: 1px solid color-mix(in srgb, var(--gold) 35%, var(--line));
+  background: radial-gradient(120% 150% at 0% 0%, rgba(233,190,62,.14), transparent 55%), linear-gradient(180deg, var(--card), var(--bg2)); }
+.lgd-main { display: grid; grid-template-columns: minmax(220px, 300px) minmax(0, 1fr); gap: 18px; align-items: center; }
+.lgd-score { display: grid; gap: 4px; }
+.lgd-score small { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); }
+.lgd-score > b { font-size: 64px; line-height: .95; font-weight: 900; font-variation-settings: 'wdth' 118; }
+.lgd-rank { font-size: 12.5px; margin-top: 6px; color: var(--text); } .lgd-rank:empty { display: none; }
+.lgd-kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.lgd-k { display: grid; gap: 2px; align-content: start; padding: 10px 12px; border-radius: 8px; background: rgba(0,0,0,.22); border: 1px solid var(--line); min-width: 0; }
+.lgd-k small { font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.lgd-k b { font-size: 24px; font-weight: 900; } .lgd-k span { font-size: 11.5px; color: var(--muted); line-height: 1.3; overflow: hidden; text-overflow: ellipsis; }
+.lgd-k.gold { border-color: var(--gold); } .lgd-k.gold b { color: var(--gold); }
+.lgd-chart { display: grid; gap: 6px; }
+.lgd-bars { display: flex; align-items: flex-end; gap: 6px; height: 110px; }
+.lgd-bar { flex: 1; max-width: 60px; height: 100%; display: grid; grid-template-rows: 1fr auto; position: relative; }
+.lgd-bar i { align-self: end; display: block; border-radius: 4px 4px 0 0; background: linear-gradient(180deg, var(--gold), #8a6a12); min-height: 4px; }
+.lgd-bar span { font-size: 10px; color: var(--muted); text-align: center; padding-top: 3px; }
+.lgd-bar b { position: absolute; left: 0; right: 0; top: -2px; text-align: center; font-size: 10.5px; }
+@media (max-width: 1100px) { .lgd-main { grid-template-columns: 1fr; } .lgd-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .lgd-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .lgd-score > b { font-size: 52px; } }
+
+/* podium visuel des pronostics : P2 · P1 · P3 */
+.pd-slots { align-items: end; }
+.pd-slot.s0 { order: 2; min-height: 92px; border-color: color-mix(in srgb, var(--gold) 55%, var(--line)); }
+.pd-slot.s1 { order: 1; min-height: 76px; }
+.pd-slot.s2 { order: 3; min-height: 66px; }
+.pd-slot.s0 .pd-step { color: var(--gold); }
+
+/* historique des 5 derniers GP */
+.lgh { display: grid; gap: 10px; }
+.lgh-row { display: grid; grid-template-columns: minmax(200px, 1fr) minmax(0, 1.3fr) minmax(0, 1.3fr); gap: 14px; align-items: center; padding: 12px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); }
+.lgh-gp { display: flex; align-items: center; gap: 10px; min-width: 0; } .lgh-gp b { display: block; font-size: 14px; } .lgh-gp small { font-size: 11.5px; }
+.lgh-pts { margin-left: auto; font-size: 20px; font-weight: 900; color: var(--gold); }
+.lgh-s { display: grid; gap: 5px; min-width: 0; } .lgh-s > small { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; } .lgh-s > small b { color: var(--text); }
+.lgh-pk { display: flex; gap: 5px; flex-wrap: wrap; }
+.lgh-d { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px 3px 6px; border-radius: 5px; font-size: 12px; font-weight: 800; background: rgba(255,255,255,.04); border: 1px solid var(--line); border-left: 3px solid var(--tc); }
+.lgh-d i { font-style: normal; font-size: 10px; color: var(--muted); font-weight: 700; }
+.lgh-d.ok { background: rgba(60,191,110,.16); border-color: var(--win); border-left-color: var(--tc); } .lgh-d.mid { background: rgba(233,190,62,.13); border-color: color-mix(in srgb, var(--gold) 60%, var(--line)); border-left-color: var(--tc); } .lgh-d.ko { opacity: .6; }
+.lgh-real { font-size: 11px; color: var(--muted); }
+@media (max-width: 900px) { .lgh-row { grid-template-columns: 1fr; } }
+
+/* cartes de ligue enrichies */
+.lg-card.lead { border-top-color: var(--gold); box-shadow: 0 0 0 1px rgba(233,190,62,.35); }
+.lg-card-x { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; gap: 8px 12px; align-items: center; }
+.lgc-rank { grid-row: span 2; display: grid; justify-items: center; padding: 6px 10px; border-radius: 8px; background: rgba(0,0,0,.25); border: 1px solid var(--line); }
+.lgc-rank b { font-size: 30px; line-height: 1; font-weight: 900; } .lgc-rank sup { font-size: 13px; } .lgc-rank small { font-size: 11px; color: var(--muted); }
+.lg-card.lead .lgc-rank { border-color: var(--gold); } .lg-card.lead .lgc-rank b { color: var(--gold); }
+.lgc-info { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.lgc-info small { display: block; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; font-weight: 700; } .lgc-info b { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+.lgc-pod { display: flex; align-items: flex-end; gap: 6px; }
+.lgc-step { display: grid; justify-items: center; gap: 2px; }
+.lgc-step span { width: 34px; text-align: center; font-size: 10px; font-weight: 900; border-radius: 3px 3px 0 0; background: rgba(255,255,255,.08); }
+.lgc-step.s0 { order: 2; } .lgc-step.s0 span { height: 18px; background: var(--gold); color: #1c1500; } .lgc-step.s1 { order: 1; } .lgc-step.s1 span { height: 13px; } .lgc-step.s2 { order: 3; } .lgc-step.s2 span { height: 9px; }
+.lgc-av { width: 28px; height: 28px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; font-size: 12px; font-weight: 800; background: var(--raised); border: 2px solid var(--line2); }
+.lgc-av img { width: 100%; height: 100%; object-fit: cover; }
+.lgc-av { flex: none; width: 30px !important; height: 30px !important; min-width: 30px; aspect-ratio: 1; }
+.lgc-av img { width: 30px !important; height: 30px !important; max-width: none; }
+.lgd-bar { grid-template-rows: auto 1fr auto; } .lgd-bar b { position: static; order: -1; font-size: 10.5px; padding-bottom: 2px; }
+.lgc-av, .lgc-av img { border-radius: 50% !important; }

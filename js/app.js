@@ -265,7 +265,7 @@
     }
     if (r === 'mes-paris') mountBankroll();
     if (r === 'amis') mountFriends(parts);
-    if (r === 'ligues') { if (parts[1] === 'l') mountLeaguePage(); else mountLeagues(); }
+    if (r === 'ligues') { if (parts[1] === 'l') mountLeaguePage(); else { mountLeagues(); mountLeagueDash(); } }
     if (r === 'manager') mountManager(parts[1]);
     if (r === 'manager' && parts[1] === 'hebdo') mountWeekly(); else { stopWeekly(); if (r === 'manager') weeklyClaim(); }
   }
@@ -1041,7 +1041,7 @@
     const show = locked ? saved || [] : draft;
     // cote retenue pour chaque marche : celle figée à l'enregistrement, sinon la cote du moment
     const oddAt = (i) => (locked || (saved && !dirty) ? (savedO && savedO[i]) : oddOf(show[i])) || null;
-    const slots = [0, 1, 2].map((i) => { const id = show[i], d = id && drvOf(id), o = id ? oddAt(i) : null, m = riskK(o); return `<button class="pd-slot ${id ? 'on' : ''}" ${locked ? 'disabled' : `data-action="pd-clear" data-s="${k}" data-i="${i}" title="Retirer"`} style="--tc:${d ? F1.teamColor(d.teamId) : 'var(--line2)'}"><span class="pd-step">P${i + 1}</span>${d ? `<b>${d.number ? dnum(d.number, d.teamId, 'pdn') : ''}${esc(d.code)}</b><small>${esc(d.family)}</small>${o ? `<span class="pd-k ${m >= 2 ? 'hi' : m > 1.05 ? 'mid' : ''}">cote ${fmtOdds(o)} · ${fmtK(m)}</span>` : ''}` : '<em>Choisir un pilote</em>'}${top ? `<i class="pd-real">${drvTag(top[i])}</i>` : ''}</button>`; }).join('');
+    const slots = [0, 1, 2].map((i) => { const id = show[i], d = id && drvOf(id), o = id ? oddAt(i) : null, m = riskK(o); return `<button class="pd-slot s${i} ${id ? 'on' : ''}" ${locked ? 'disabled' : `data-action="pd-clear" data-s="${k}" data-i="${i}" title="Retirer"`} style="--tc:${d ? F1.teamColor(d.teamId) : 'var(--line2)'}"><span class="pd-step">P${i + 1}</span>${d ? `<b>${d.number ? dnum(d.number, d.teamId, 'pdn') : ''}${esc(d.code)}</b><small>${esc(d.family)}</small>${o ? `<span class="pd-k ${m >= 2 ? 'hi' : m > 1.05 ? 'mid' : ''}">cote ${fmtOdds(o)} · ${fmtK(m)}</span>` : ''}` : '<em>Choisir un pilote</em>'}${top ? `<i class="pd-real">${drvTag(top[i])}</i>` : ''}</button>`; }).join('');
     const maxPts = show.filter(Boolean).length === 3 ? [0, 1, 2].reduce((a, i) => a + Math.round(PODIUM[k].exact[i] * riskK(oddAt(i))), 0) + PODIUM[k].perfect : 0;
     const picker = locked ? '' : `<div class="pd-grid">${ids.map((id) => { const d = drvOf(id), used = draft.includes(id), od = OD.get(id); return `<button class="pd-drv ${used ? 'used' : ''}" data-action="pd-pick" data-s="${k}" data-d="${esc(id)}" style="--tc:${F1.teamColor(d.teamId)}"><b>${d.number ? dnum(d.number, d.teamId, 'pdn') : ''}${esc(d.code)}</b><small>${esc(d.family)}</small>${od ? `<span class="pd-odd num">${fmtOdds(od.odds)}${oddArrow(od.news)}</span>` : ''}</button>`; }).join('')}</div>`;
     const status = locked
@@ -1056,7 +1056,7 @@
     }
     const so = SO(), gp = leagueGp(), y = (S.f1 || S.season).year;
     const head = `<div class="market-head"><div><h1>Mes ligues</h1><div class="muted" style="margin-top:6px">Pronostiquez le podium des qualifications et de la course, et affrontez vos amis au classement. Des points de ligue seulement : ni jetons, ni PitCoins.</div></div></div>`;
-    let h = head;
+    let h = head + '<div id="lgDash" class="lgd"><div class="skeleton" style="height:150px"></div></div>';
     if (gp) {
       const key = `${y}-${gp.round}`;
       if (!S.pdDraft || S.pdDraft.key !== key) { const lp = localPicks(); S.pdDraft = { key, quali: ((lp[pkKey(y, gp.round, 'quali')] || {}).p || [null, null, null]).slice(), race: ((lp[pkKey(y, gp.round, 'race')] || {}).p || [null, null, null]).slice() }; }
@@ -1064,7 +1064,8 @@
         <div class="pd-cards">${podiumCard(gp, 'quali', y)}${podiumCard(gp, 'race', y)}</div>`;
     } else h += '<div class="empty"><div class="ic">🏁</div>Aucun Grand Prix à pronostiquer pour le moment.</div>';
     const code = parts[1] === 'rejoindre' && parts[2] ? decodeURIComponent(parts[2]) : '';
-    h += '<div class="section-h" style="margin-top:28px"><h2>Vos ligues</h2><span class="muted" style="font-size:13px">Ouvrez le classement complet d\'une ligue avec son bouton dédié</span></div>';
+    h += '<div class="section-h" style="margin-top:28px"><h2>Mes 5 derniers Grands Prix</h2><span class="muted" style="font-size:13px">Vos podiums face aux résultats officiels</span></div><div id="lgHist" class="lgh"><div class="skeleton" style="height:120px"></div></div>';
+    h += '<div class="section-h" style="margin-top:28px"><h2>Vos ligues</h2><span class="muted" style="font-size:13px">Votre rang, l\'écart au leader et le podium de chaque ligue</span></div>';
     if (!so.enabled) return h + '<div class="notice">Les ligues utilisent la base de données du système d\'amis, qui n\'est pas encore activée sur ce site. Vos pronostics sont gardés sur cet appareil.</div>';
     if (so.error) return h + `<div class="notice red">⚠️ Connexion impossible : ${esc(so.error)} <button class="btn sm ghost" data-action="f-retry">Réessayer</button></div>`;
     if (!so.ready) return h + '<div class="skeleton"></div>';
@@ -1097,8 +1098,87 @@
     list.innerHTML = missing ? '<div class="notice" style="font-size:13px">Les ligues privées ne sont pas encore activées : le propriétaire du site doit exécuter <code>supabase/migration-bet-leagues.sql</code> puis <code>supabase/migration-podium.sql</code> dans Supabase.</div>'
       : leagues.length ? leagues.map((l) => `<div class="lg-card" data-href="#/ligues/l/${l.id}"><div class="lg-card-h"><span class="lg-ic">🏆</span><div style="min-width:0"><b>${esc(l.name)}</b><small>${l.members} membre${l.members > 1 ? 's' : ''}${l.owner === me ? ' · créée par vous' : ''}</small></div></div>
           <div class="lg-card-code"><small>Code</small><b>${esc(l.code)}</b></div>
+          <div class="lg-card-x" data-lg="${l.id}"><div class="skeleton" style="height:58px"></div></div>
           <a class="btn sm" href="#/ligues/l/${l.id}">Voir le classement de la ligue</a></div>`).join('')
         : '<div class="card lg-empty"><b>Aucune ligue pour l\'instant</b><span class="muted">Créez-en une et partagez son code (PIT-XXXX), ou rejoignez celle d\'un ami.</span></div>';
+    window.__lgBest = null; leagues.forEach(fillLeagueCard);
+  }
+  /* ---------- Mes ligues : statistiques du joueur et des ligues ---------- */
+  // points d'un joueur sur une liste de GP disputés, à partir de ses pronostics (serveur, sinon cet appareil pour soi)
+  function pickStats(pickOf, done) {
+    const per = [];
+    let total = 0, exact = 0, onPod = 0, made = 0, perfect = 0;
+    done.forEach((race) => {
+      let gpPts = 0, any = false;
+      ['quali', 'race'].forEach((k) => {
+        const pk = pickOf(race.round, k), top = actualTop(race, k), st = sessionStart(race, k);
+        if (!pk || !top) return;
+        any = true;
+        const late = st && pk.at > st && !pk.local;
+        const pts = late ? 0 : podiumScore(pk.p, top, k, pk.o) || 0;
+        gpPts += pts;
+        if (!late) { pk.p.forEach((d, i) => { made++; if (d === top[i]) exact++; else if (top.includes(d)) onPod++; }); if (pk.p.every((d, i) => d === top[i])) perfect++; }
+      });
+      if (any) per.push({ race, pts: gpPts });
+      total += gpPts;
+    });
+    return { total, per, exact, onPod, made, perfect, gps: per.length, best: per.reduce((m, x) => (x.pts > (m ? m.pts : -1) ? x : m), null), last: per[per.length - 1] || null };
+  }
+  const pickFrom = (rows, uid, y, local) => (round, k) => {
+    const r = rows.find((x) => x.user_id === uid && x.round === round && x.session === k);
+    if (r) return { p: [r.p1, r.p2, r.p3], o: [r.o1, r.o2, r.o3].map(Number), at: new Date(r.updated_at) };
+    if (local) { const l = localPicks()[pkKey(y, round, k)]; if (l && l.p && l.p.every(Boolean)) return { p: l.p, o: l.o || [], at: new Date(l.t || 0), local: true }; }
+    return null;
+  };
+  let lgMine = null;   // mes statistiques (pour le meilleur rang en ligue)
+  async function mountLeagueDash() {
+    const dash = $('#lgDash'); if (!dash) return;
+    const f1 = S.f1 || S.season, y = f1.year, so = SO(), done = f1.races.filter((r) => r.results);
+    let rows = [];
+    if (so.ready && so.me) { try { rows = await F1.social.podiumPicks([so.me.id], y); } catch (e) { /* pronostics partagés indisponibles */ } }
+    if (!$('#lgDash')) return;
+    const st = pickStats(pickFrom(rows, so.me && so.me.id, y, true), done);
+    lgMine = st;
+    const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+    const bars = st.per.slice(-12), mx = Math.max(10, ...bars.map((x) => x.pts));
+    const kpi = (l, v, sub = '', cls = '') => `<div class="lgd-k ${cls}"><small>${l}</small><b>${v}</b>${sub ? `<span>${sub}</span>` : ''}</div>`;
+    dash.innerHTML = `<div class="lgd-main"><div class="lgd-score"><small>Mes points de ligue · saison ${y}</small><b class="num">${fmt(st.total)}</b><span class="muted">${st.gps ? `${st.gps} Grand${st.gps > 1 ? 's' : ''} Prix pronostiqué${st.gps > 1 ? 's' : ''}` : 'Aucun pronostic noté pour l\'instant'}</span><div class="lgd-rank" id="lgdRank"></div></div>
+        <div class="lgd-kpis">${kpi('Dernier GP', st.last ? `+${st.last.pts}` : '—', st.last ? esc(st.last.race.nameFr.replace('Grand Prix', 'GP')) : '')}${kpi('Meilleur GP', st.best ? `+${st.best.pts}` : '—', st.best ? esc(st.best.race.nameFr.replace('Grand Prix', 'GP')) : '')}
+          ${kpi('Bonne marche', `${pct(st.exact, st.made)} %`, `${st.exact} pilote${st.exact > 1 ? 's' : ''} pile à sa place`)}${kpi('Sur le podium', `${pct(st.exact + st.onPod, st.made)} %`, 'pilotes choisis montés sur le podium')}${kpi('Podiums parfaits', st.perfect, 'les 3 marches exactes', st.perfect ? 'gold' : '')}</div></div>
+      ${bars.length ? `<div class="lgd-chart"><small class="muted">Points par Grand Prix</small><div class="lgd-bars">${bars.map((x) => `<div class="lgd-bar" title="${esc(x.race.nameFr)} : ${x.pts} pts"><i style="height:${Math.max(4, (x.pts / mx) * 100)}%"></i><span>${esc((x.race.iso || '').toUpperCase() || x.race.round)}</span><b>${x.pts}</b></div>`).join('')}</div></div>` : ''}`;
+    // historique détaillé des 5 derniers GP pronostiqués
+    const hist = $('#lgHist');
+    if (hist) {
+      const pk = pickFrom(rows, so.me && so.me.id, y, true);
+      const last = st.per.slice(-5).reverse();
+      hist.innerHTML = last.length ? last.map(({ race, pts }) => {
+        const ses = (k) => { const p = pk(race.round, k), top = actualTop(race, k); if (!p || !top) return `<div class="lgh-s"><small>${PODIUM[k].label}</small><span class="muted">pas de pronostic</span></div>`;
+          const sp = podiumScore(p.p, top, k, p.o) || 0;
+          return `<div class="lgh-s"><small>${PODIUM[k].label} <b>+${sp}</b></small><div class="lgh-pk">${p.p.map((d, i) => `<span class="lgh-d ${d === top[i] ? 'ok' : top.includes(d) ? 'mid' : 'ko'}" style="--tc:${F1.teamColor(drvOf(d).teamId)}"><i>P${i + 1}</i>${drvOf(d).number ? dnum(drvOf(d).number, drvOf(d).teamId, 'pdn') : ''}${esc(drvOf(d).code || '?')}</span>`).join('')}</div>
+            <div class="lgh-real">Officiel : ${top.map((d) => esc(drvOf(d).code || '?')).join(' · ')}</div></div>`; };
+        return `<div class="lgh-row"><div class="lgh-gp">${flag(race.iso, 'sm')}<div><b>${esc(race.nameFr)}</b><small class="muted">Manche ${race.round}</small></div><span class="lgh-pts">+${pts}</span></div>${ses('quali')}${ses('race')}</div>`;
+      }).join('') : '<div class="card lg-empty"><b>Pas encore d\'historique</b><span class="muted">Pronostiquez le podium du prochain Grand Prix : vos résultats s\'afficheront ici après la course.</span></div>';
+    }
+  }
+  // carte d'une ligue : mon rang, mes points, le leader, le podium de la ligue
+  async function fillLeagueCard(l) {
+    const el = document.querySelector(`.lg-card-x[data-lg="${l.id}"]`); if (!el) return;
+    const so = SO(), f1 = S.f1 || S.season, y = f1.year, me = so.me.id, done = f1.races.filter((r) => r.results);
+    try {
+      const members = await F1.social.leagueBoard(l.id);
+      let picks = []; try { picks = await F1.social.podiumPicks(members.map((p) => p.id), y); } catch (e) { /* */ }
+      const rows = members.map((p) => ({ p, ...pickStats(pickFrom(picks, p.id, y, p.id === me), done) })).sort((a, b) => b.total - a.total || (b.last ? b.last.pts : 0) - (a.last ? a.last.pts : 0));
+      const i = rows.findIndex((x) => x.p.id === me), mine = rows[i], lead = rows[0];
+      const el2 = document.querySelector(`.lg-card-x[data-lg="${l.id}"]`); if (!el2) return;
+      const av = (x) => `<span class="lgc-av" title="${esc(x.p.username)} · ${x.total} pts">${x.p.avatar && AVA_OK.test(x.p.avatar) ? `<img src="${esc(x.p.avatar)}" alt="">` : esc((x.p.username || '?')[0].toUpperCase())}</span>`;
+      el2.innerHTML = `<div class="lgc-rank"><b>${i + 1}<sup>${i === 0 ? 'er' : 'e'}</sup></b><small>sur ${rows.length}</small></div>
+        <div class="lgc-info"><div><small>Mes points</small><b>${mine ? mine.total : 0}</b></div><div><small>${i === 0 ? 'Avance' : 'Retard'}</small><b class="${i === 0 ? 'up' : 'down'}">${i === 0 ? (rows[1] ? `+${mine.total - rows[1].total}` : '—') : `−${lead.total - (mine ? mine.total : 0)}`}</b></div><div><small>Leader</small><b>${esc(lead.p.username)}</b></div></div>
+        <div class="lgc-pod">${rows.slice(0, 3).map((x, k) => `<div class="lgc-step s${k}">${av(x)}<span>${k + 1}</span></div>`).join('')}</div>`;
+      el2.closest('.lg-card').classList.toggle('lead', i === 0);
+      // meilleur rang dans le tableau de bord
+      const best = (window.__lgBest = window.__lgBest && window.__lgBest.rank <= i + 1 ? window.__lgBest : { rank: i + 1, of: rows.length, name: l.name });
+      const r = $('#lgdRank'); if (r) r.innerHTML = `🏆 Meilleur classement : <b>${best.rank}${best.rank === 1 ? 'er' : 'e'} sur ${best.of}</b> dans « ${esc(best.name)} »`;
+    } catch (e) { el.innerHTML = `<span class="muted" style="font-size:12px">Classement indisponible</span>`; }
   }
   // Classement complet d'une ligue : points de la saison, du dernier GP, et comparaison des pronostics une fois verrouillés
   async function leagueBoardHtml(sel) {

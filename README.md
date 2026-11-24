@@ -412,3 +412,15 @@ Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectoriel
   - badge « Nouveau » pour les dépêches arrivées depuis la visite précédente ;
   - étiquettes pilotes (avec leur numéro) et écuries détectées.
 - `scripts/update-news.mjs` relève maintenant l'image de chaque article (`<enclosure>`, `<media:content>` ou première `<img>`), dans le champ `image`.
+
+## Mes ligues : refonte
+
+- **Tableau de bord de la saison** :
+  - points de ligue, dernier et meilleur GP, % de pilotes à la bonne marche, % de pilotes montés sur le podium, podiums parfaits ;
+  - meilleur classement parmi ses ligues ;
+  - graphique des points par Grand Prix.
+
+  Calculé avec les pronostics enregistrés sur le serveur, ou sur cet appareil.
+- **Pronostics** affichés en podium (P2 · P1 · P3).
+- **« Mes 5 derniers Grands Prix »** : pronostic de qualifications et de course face au résultat officiel (vert : bonne marche, jaune : sur le podium), points obtenus.
+- **Cartes de ligue** : mon rang, mes points, avance ou retard sur le leader, podium de la ligue avec avatars.
