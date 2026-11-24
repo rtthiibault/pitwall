@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-24T11:11:19.505Z",
+ "updated": "2026-11-24T11:41:22.971Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-24T11:41:19.505Z",
+ "next": "2026-11-24T12:11:22.971Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,30 @@
   }
  ],
  "items": [
+  {
+   "id": "news_15pwn7r",
+   "timestamp": "2026-11-24T11:31:59.000Z",
+   "category": "PADDOCK",
+   "title": "Ce que Flavio Briatore retient de McLaren après le \"désastre\" Fernando Alonso",
+   "summary": "Déceptions, luttes intestines et succession de dirigeants : tels sont les éléments qui ont caractérisé la \"décennie perdue\" d'Alpine depuis que Renault a racheté l'écurie basée à Enstone fin 2015. Son actuel dirigeant, Flavio Briatore, estime qu'Alpine peut…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/flavio-briatore-retient-mclaren-apres-desastre-fernando-alonso/10876008/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "impact": {
+    "targetType": "team",
+    "targetIds": [
+     "mclaren"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": -1,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 1.04,
+    "impactLabel": "Aéro -1 pts | Cotes +4%"
+   },
+   "firstSeen": "2026-11-24T11:41:22.971Z"
+  },
   {
    "id": "news_jkfsg8",
    "timestamp": "2026-11-24T11:05:00.000Z",
@@ -387,7 +411,7 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "impact": null,
-   "firstSeen": "2026-11-24T11:11:19.505Z"
+   "firstSeen": "2026-11-24T11:41:22.971Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -806,18 +830,6 @@
    "source": "Nextgen-Auto",
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/que-faire-apres-le-nouvel-accrochage-entre-hamilton-et-leclerc-vasseur-annonce,213652.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
-  },
-  {
-   "id": "news_okc7k8",
-   "timestamp": "2026-11-22T10:56:16.000Z",
-   "category": "PADDOCK",
-   "title": "Les tops et les flops d'un Grand Prix de Las Vegas complètement fou",
-   "summary": "Des monoplaces regroupées à quelques secondes d'intervalle, 35 changements de leader et des pilotes qui cherchaient à trouver le meilleur positionnement pour franchir la ligne d'arrivée en tête dans le dernier tour : le Grand Prix de Las Vegas a ressemblé à…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/tops-flops-grand-prix-las-vegas-2026/10876897/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
    "impact": null,
    "firstSeen": "2026-11-23T10:51:02.379Z"
   }
