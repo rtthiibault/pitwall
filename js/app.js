@@ -1268,11 +1268,11 @@
     const nwm = F1.news && F1.news.teamMods()[ch.id];
     const nwTxt = nwm ? [['speed', 'Vitesse'], ['df', 'Appui'], ['rel', 'Fiabilité']].filter(([k]) => nwm[k]).map(([k, l]) => `${l} ${nwm[k] > 0 ? '+' : ''}${nwm[k]}`).join(' · ') : '';
     const pwStrip = nwm ? `<a class="pdw-strip ${nwm.speed + nwm.df + nwm.rel < 0 ? 'neg' : 'pos'}" href="#/paddock">${PW_ICON}<span><b>Paddock Wire</b> · l'actualité ${esc(ch.name)} pèse sur votre châssis en course : <b class="num">${nwTxt}</b></span><span class="pdw-go">Voir les dépêches →</span></a>` : '';
-    const stand = pwStrip + `<div class="hq-car">${F1.visuals.car(ch.id, { live: true, number: m.number || drvM.number, numTeam: m.number ? ch.id : drvM.teamId, sponsor: livery(m) })}</div><div class="tele-grid">${tele}</div>${mechChips(car)}`;
+    const stand = pwStrip + `<div class="hq-car">${F1.visuals.car(ch.id, { live: true, number: m.number || drvM.number, numTeam: ch.id, sponsor: livery(m) })}</div><div class="tele-grid">${tele}</div>${mechChips(car)}`;
     // 02 — pilote
     const e = drvM.exp;
     const dstat = (l, k) => statBar(l, drvM[k], drvM.base[k], 'var(--gold)');
-    const pilot = `<div class="row" style="flex-wrap:nowrap"><div class="gphoto" style="--tc:${tcol(drvM.teamId)};width:70px;height:70px">${p ? `<img src="${esc(p.img)}" alt="" onerror="this.remove()">` : ''}<i>${esc(drvM.code)}</i>${dnum(drvM.number, drvM.teamId, 'gnum', '#fff')}</div>
+    const pilot = `<div class="row" style="flex-wrap:nowrap"><div class="gphoto" style="--tc:${tcol(drvM.teamId)};width:70px;height:70px">${p ? `<img src="${esc(p.img)}" alt="" onerror="this.remove()">` : ''}<i>${esc(drvM.code)}</i>${dnum(drvM.number, ch ? ch.id : drvM.teamId, 'gnum', '#fff')}</div>
         <div style="min-width:0"><div class="muted upper" style="font-size:10px;font-weight:700">${flag(drvM.iso, 'sm')} ${esc(drvM.team || MG().TEAM_NAME[drvM.teamId] || '')}</div><div class="hq-name">${esc(drvM.family)}</div></div><div class="sp"></div><div class="rating-big">${drvM.rating}</div></div>
       ${xpBlock(e)}<div style="display:grid;gap:6px;margin-top:12px">${dstat('Rythme', 'pace')}${dstat('Combativité', 'craft')}${dstat('Régularité', 'cons')}</div>`;
     // 03 — châssis
@@ -1349,6 +1349,7 @@
     if (who && !mine) { const d = drv(who); return { ok: false, msg: `Déjà porté par ${d ? esc(d.given + ' ' + d.family) : 'un pilote de la grille'}` }; }
     return { ok: true, msg: mine ? 'Le numéro de votre pilote titulaire' : 'Numéro disponible' };
   }
+  const numBig = (v, team) => (F1.num.clean(v) ? F1.num.html(v, team) : F1.num.text('?', team));
   function openNumberPicker(first) {
     const ctx = mgrCtx(), ch = ctx.ch; if (!ch) return;
     F1.num.loadFonts();
@@ -1357,15 +1358,15 @@
     const free = [7, 9, 13, 17, 19, 21, 22, 24, 28, 33, 47, 99].filter((n) => !F1.num.takenBy(n)).slice(0, 8);
     modal(`<div class="np" style="--tc:${col};--tc-ink:${inkOn(col)}">
       <div class="np-h"><small>${first ? 'Bienvenue chez ' + esc(ch.name) : esc(ch.name)}</small><h3>Choisissez votre numéro</h3><span class="muted">Il sera peint sur votre monoplace dans la typographie de l'écurie.</span></div>
-      <div class="np-stage"><div class="np-big" id="npBig">${F1.num.text(cur || '?', team)}</div><div class="np-team">${esc(ch.name)}</div></div>
+      <div class="np-stage"><div class="np-big" id="npBig">${numBig(cur, team)}</div><div class="np-team">${esc(ch.name)}</div></div>
       <div class="np-row"><input class="field np-in" id="npIn" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="—" value="${esc(cur)}" aria-label="Votre numéro (1 à 99)"><div class="np-msg" id="npMsg"></div></div>
-      <div class="np-quick">${free.map((n) => `<button data-action="np-pick" data-n="${n}">${F1.num.text(n, team)}</button>`).join('')}</div>
+      <div class="np-quick">${free.map((n) => `<button data-action="np-pick" data-n="${n}">${F1.num.html(n, team)}</button>`).join('')}</div>
       ${refs ? `<div class="np-refs"><small class="muted">Numéros des pilotes officiels de l'écurie</small><div>${refs}</div></div>` : ''}
       <div class="np-actions">${first ? '<button class="btn ghost" data-action="close-modal">Plus tard</button>' : '<button class="btn ghost" data-action="close-modal">Annuler</button>'}<button class="btn" data-action="np-save" id="npSave">Valider mon numéro</button></div></div>`);
     const inp = $('#npIn'), upd = () => {
       inp.value = F1.num.clean(inp.value);
       const st = npState(inp.value, ctx);
-      $('#npBig').innerHTML = F1.num.text(inp.value || '?', team);
+      $('#npBig').innerHTML = numBig(inp.value, team);
       $('#npBig').classList.remove('pop'); void $('#npBig').offsetWidth; $('#npBig').classList.add('pop');
       $('#npMsg').innerHTML = st.msg; $('#npMsg').className = 'np-msg ' + (inp.value ? (st.ok ? 'ok' : 'ko') : '');
       $('#npSave').disabled = !st.ok;
@@ -1378,7 +1379,7 @@
   function myNumberBar(ctx) {
     const { m, ch } = ctx; if (!ch) return '';
     const col = F1.teamColor(ch.id);
-    return `<div class="np-bar" style="--tc:${col}"><div class="np-bar-n">${m.number ? F1.num.text(m.number, ch.id) : '<span class="muted">—</span>'}</div>
+    return `<div class="np-bar" style="--tc:${col}"><div class="np-bar-n">${m.number ? F1.num.html(m.number, ch.id) : '<span class="muted">—</span>'}</div>
       <div style="min-width:0;flex:1"><b>${m.number ? `Votre numéro de course : ${esc(m.number)}` : 'Vous n\'avez pas encore choisi votre numéro'}</b><small class="muted">Peint sur votre ${esc(ch.name)} dans la typographie de l'écurie, affiché en course et sur votre profil.</small></div>
       <button class="btn sm" data-action="np-open">${m.number ? 'Changer de numéro' : 'Choisir mon numéro'}</button></div>`;
   }
@@ -1413,7 +1414,7 @@
     const res = resaleM(ctx);
     const pcRow = [1, 2, 3, 5, 8, 10, 15].map((p) => `<span><small>P${p}</small><b>+${MG().matePC(p, false, league)}</b></span>`).join('');
     const cur = ctx.mate ? (() => {
-      const d = MG().withExperience(ctx.mate, {}), nf = MG().newsForm(d), p = F1.visuals.portrait(d.id), last = (m.races || []).find((x) => x.mate);
+      const d = { ...MG().withExperience(ctx.mate, {}), teamId: (ctx.ch && ctx.ch.id) || ctx.mate.teamId }, nf = MG().newsForm(ctx.mate), p = F1.visuals.portrait(d.id), last = (m.races || []).find((x) => x.mate);
       return `<div class="tr-cur" style="--tc:${tcol(d.teamId)}"><div class="gphoto" style="width:72px;height:72px">${p ? `<img src="${esc(p.img)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<i>${esc(d.code)}</i>${dnum(d.number, d.teamId, 'gnum', '#fff')}</div>
         <div style="flex:1;min-width:0"><small class="muted">Votre coéquipier</small><div class="tr-cur-n">${esc(d.name)}</div><div class="muted" style="font-size:12.5px">Cote de performance <b class="num">${d.rating + nf.perf}</b>${nf.perf ? ` <span class="${nf.perf > 0 ? 'up' : 'down'}">(${nf.perf > 0 ? '+' : ''}${nf.perf} actu)</span>` : ''} · ${m.stats.mateWins} victoire${m.stats.mateWins > 1 ? 's' : ''} · ${m.stats.matePodiums} podium${m.stats.matePodiums > 1 ? 's' : ''}${last ? ` · dernière course : ${last.mate.dnf ? 'abandon' : 'P' + last.mate.pos}` : ''}</div></div>
         <div style="text-align:right"><small class="muted">Valeur de revente</small><div><b>${fmtPC(res)}</b></div><button class="btn sm ghost" data-action="mate-release" style="margin-top:6px" ${F1.store.mateLocked() ? 'disabled title="Un seul changement de coéquipier par jour"' : ''}>Libérer</button></div></div>`;
@@ -1820,7 +1821,7 @@
     const scene = `<div class="wall2" style="--tc:${col}">
       <div class="wall2-gantry"><b>PITWALL</b><span>${ch ? esc(ch.name) : 'Votre écurie'}</span></div>
       <div class="wall2-bays">${bays}</div>
-      <div class="wall2-track"><i class="wall2-kerb"></i>${ch ? `<div class="wall2-car">${F1.visuals.car(ch.id, { view: 'side', numTeam: ctx.m.number ? ch.id : ctx.drvM && ctx.drvM.teamId, number: ctx.m.number ? ctx.m.number : ctx.drvM ? ctx.drvM.number : '', sponsor: livery(m) })}</div>` : ''}</div></div>`;
+      <div class="wall2-track"><i class="wall2-kerb"></i>${ch ? `<div class="wall2-car">${F1.visuals.car(ch.id, { view: 'side', numTeam: ch.id, number: ctx.m.number ? ctx.m.number : ctx.drvM ? ctx.drvM.number : '', sponsor: livery(m) })}</div>` : ''}</div></div>`;
     const cur = MG().staffOf(m, role.id);
     const cards = MG().STAFF[role.id].map((x) => {
       const own = cur && cur.id === x.id, refund = cur ? Math.round(cur.price * 0.5) : 0, net = x.price - refund;
@@ -1973,12 +1974,12 @@
     const ROW = matchMedia('(min-width: 900px)').matches ? 22 : 30, LAPS = res.LAPS, leagueBefore = ctx.league;
     const meX = res.me;
     const colorOf = (x) => F1.teamColor(x.c.chassisId || (ctx.ch && ctx.ch.id));
-    const tower = res.field.map((x) => `<div class="trow ${x.c.me ? 'me' : ''} ${x.c.mate ? 'mate' : ''}" data-i="${x.i}" style="transform:translateY(${(x.grid - 1) * ROW}px)"><b class="tp">${x.grid}</b><span class="tstripe" style="background:${colorOf(x)};height:16px"></span><span class="tnm">${x.c.me ? (ctx.m.number ? F1.num.html(ctx.m.number, ctx.ch && ctx.ch.id, { color: colorOf(x) }) : x.driver.number ? F1.num.html(x.driver.number, ctx.drvM && ctx.drvM.teamId, { color: colorOf(x) }) : '') : x.driver.number ? F1.num.html(x.driver.number, x.driver.teamId, { color: colorOf(x) }) : ''}</span><span class="tn">${esc(x.name)}</span><span class="tc">${esc(x.driver.code)}</span><span class="tt">${tyreDot(x.tyre, 'sm')}</span><span class="tps" title="Arrêts aux stands"></span><span class="tg num">—</span></div>`).join('');
+    const tower = res.field.map((x) => `<div class="trow ${x.c.me ? 'me' : ''} ${x.c.mate ? 'mate' : ''}" data-i="${x.i}" style="transform:translateY(${(x.grid - 1) * ROW}px)"><b class="tp">${x.grid}</b><span class="tstripe" style="background:${colorOf(x)};height:16px"></span><span class="tnm">${x.c.me ? ((ctx.m.number || x.driver.number) ? F1.num.html(ctx.m.number || x.driver.number, ctx.ch && ctx.ch.id, { color: colorOf(x) }) : '') : x.driver.number ? F1.num.html(x.driver.number, x.c.chassisId || x.driver.teamId, { color: colorOf(x) }) : ''}</span><span class="tn">${esc(x.name)}</span><span class="tc">${esc(x.driver.code)}</span><span class="tt">${tyreDot(x.tyre, 'sm')}</span><span class="tps" title="Arrêts aux stands"></span><span class="tg num">—</span></div>`).join('');
     const drvNum = ctx.m.number || (ctx.drvM && ctx.drvM.number) || (meX.driver && meX.driver.number) || '', meCol = colorOf(meX), meInk = inkOn(meCol);
     const meTeam = ctx.ch && ctx.ch.id;
     const plate = (n, teamId, ink, fb) => (F1.num.clean(n) ? F1.num.html(n, teamId, { color: ink }) : esc(String(fb || '?')));
     // en-tête radio : numéro du pilote aux couleurs de l'écurie + égaliseur
-    const RHEAD = (title, extra = '') => `<div class="radio-h"><span class="rdo-plate" style="--tc:${meCol};--ti:${meInk}">${plate(drvNum, ctx.m.number ? meTeam : (ctx.drvM && ctx.drvM.teamId) || meTeam, meInk, meX.driver.code)}</span><span class="radio-wave"><i></i><i></i><i></i><i></i><i></i></span><span class="rdo-title">${title}</span>${extra}</div>`;
+    const RHEAD = (title, extra = '') => `<div class="radio-h"><span class="rdo-plate" style="--tc:${meCol};--ti:${meInk}">${plate(drvNum, meTeam, meInk, meX.driver.code)}</span><span class="radio-wave"><i></i><i></i><i></i><i></i><i></i></span><span class="rdo-title">${title}</span>${extra}</div>`;
     // portée du radar : tours de prévision visibles à l'avance
     const sg = MG().staffOf(ctx.m, 'st');
     const range = Math.round((1 + MG().garageLevel(ctx.m, 'radar') + (sg && sg.tier >= 4 ? 1 : 0)) * res.K);
@@ -2343,8 +2344,8 @@
     // identité radio d'une voiture : numéro et nom réels du pilote quand il existe dans la saison, sinon son code
     const radioId = (x) => {
       const md = {};
-      if (x.c.me) return { num: String(drvNum || x.driver.code), team: ctx.m.number ? meTeam : (ctx.drvM && ctx.drvM.teamId) || meTeam, name: x.driver.name || x.driver.code, code: x.driver.code };
-      return { num: String(x.driver.number || md.number || x.driver.code || '?'), team: x.driver.teamId || x.c.chassisId, name: x.driver.short || x.name, code: x.driver.code || '?' };
+      if (x.c.me) return { num: String(drvNum || x.driver.code), team: meTeam, name: x.driver.name || x.driver.code, code: x.driver.code };
+      return { num: String(x.driver.number || md.number || x.driver.code || '?'), team: x.c.chassisId || x.driver.teamId, name: x.driver.short || x.name, code: x.driver.code || '?' };
     };
     function trSay(txt, x = meX) {
       // file d'attente courte : on ne garde pas plus de deux messages des autres pilotes en attente
@@ -2747,7 +2748,7 @@
     const L = MG().leagueOf(m.lp || 0);
     return `<section class="pf-page">
       <div class="pf-hero"><button class="pf-ava" data-action="pf-ava" title="Changer de photo">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : `<span>${esc(name.slice(0, 1).toUpperCase())}</span>`}<i>Changer</i></button>
-        <div class="pf-id"><small class="muted">Profil joueur</small><h1>${esc(name)}</h1><div class="row" style="gap:6px;flex-wrap:wrap">${leagueBadge(L)}${m.number && m.chassis ? `<span class="chip pf-num" style="color:${F1.teamColor(m.chassis.id)}" title="Votre numéro de course">${F1.num.text(m.number, m.chassis.id)}</span>` : ''}<span class="chip">${Object.keys(p.ach).length} succès</span>${((m.pass && m.pass.done) || []).map((d) => `<span class="chip ps-badge" title="Pass de saison complété">🎟️ Saison ${d.season} complétée</span>`).join('')}${so.me ? '<span class="chip green">Profil en ligne</span>' : '<span class="chip">Profil local</span>'}</div></div>
+        <div class="pf-id"><small class="muted">Profil joueur</small><h1>${esc(name)}</h1><div class="row" style="gap:6px;flex-wrap:wrap">${leagueBadge(L)}${m.number && m.chassis ? `<span class="chip pf-num" style="color:${F1.teamColor(m.chassis.id)}" title="Votre numéro de course">${F1.num.html(m.number, m.chassis.id)}</span>` : ''}<span class="chip">${Object.keys(p.ach).length} succès</span>${((m.pass && m.pass.done) || []).map((d) => `<span class="chip ps-badge" title="Pass de saison complété">🎟️ Saison ${d.season} complétée</span>`).join('')}${so.me ? '<span class="chip green">Profil en ligne</span>' : '<span class="chip">Profil local</span>'}</div></div>
         <div class="pf-wallets"><div><small>Jetons</small><b>${jt(p.balance)}</b></div><div><small>PitCoins</small><b>${fmtPC(m.pc || 0)}</b></div><button class="btn sm ghost" data-action="profile">⚙ Pseudo & sauvegarde</button></div></div>
       <div class="pf-gallery ${S.pfAva ? 'open' : ''}" id="pfGallery"><div class="pf-gh"><b>Choisissez votre photo de profil</b><button class="btn sm ghost" data-action="pf-ava">Fermer</button></div>
         <div class="pf-avs">${AVATARS.map((src) => `<button class="pf-av ${p.avatar === src ? 'on' : ''}" data-action="pf-ava-set" data-src="${src}"><img src="${src}" alt="" loading="lazy"></button>`).join('')}<button class="pf-av none ${!p.avatar ? 'on' : ''}" data-action="pf-ava-set" data-src=""><span>${esc(name.slice(0, 1).toUpperCase())}</span><small>Initiale</small></button></div></div>

@@ -23,7 +23,25 @@
   }
   const clean = (n) => String(n == null ? '' : n).replace(/[^0-9]/g, '').slice(0, 2);
   const official = (n, team) => { const g = GLYPHS[clean(n)]; return g && (!team || g.t === tkey(team)) ? g : null; };
-  const paths = (g, fill) => g.p.map(([d, eo]) => `<path d="${d}" fill="${fill}"${eo ? ' fill-rule="evenodd" clip-rule="evenodd"' : ''}/>`).join('');
+  /* Dessin d'un numéro dans la typographie d'une écurie :
+     1. numéro officiel du pilote dans son écurie réelle (fichiers formula1.com) ;
+     2. numéro redessiné dans le style de l'écurie (22 numéros × 10 écuries, F1.NUM_TEAMS) — un pilote qui change d'écurie prend sa typographie ;
+     3. numéro composé avec le jeu de chiffres de l'écurie (numéro choisi par le joueur) ;
+     sinon null (police de remplacement). */
+  function glyph(n, team) {
+    const c = clean(n); if (!c) return null;
+    const o = official(c, team); if (o) return o;
+    const T = F1.NUM_TEAMS && F1.NUM_TEAMS[tkey(team)];
+    if (!T) return null;
+    if (T.n[c]) return { vb: T.n[c][0], p: [[T.n[c][1], 1]] };
+    if (T.d && [...c].every((ch) => +ch <= 8)) {
+      let x = 0; const p = [];
+      [...c].forEach((ch, i) => { const [w, d] = T.d[+ch]; if (i) x += T.gap; p.push([d, 1, x]); x += w; });
+      return { vb: `-10 -10 ${x + 20} 1021`, p };
+    }
+    return null;
+  }
+  const paths = (g, fill) => g.p.map(([d, eo, dx]) => `<path d="${d}" fill="${fill}"${eo ? ' fill-rule="evenodd" clip-rule="evenodd"' : ''}${dx ? ` transform="translate(${dx} 0)"` : ''}/>`).join('');
   // numéro composé dans la police de l'écurie (couleur via --nc)
   function text(n, team, { cls = '', color = '' } = {}) {
     loadFonts();
@@ -32,14 +50,14 @@
   // numéro en HTML : dessin officiel si le pilote en a un pour cette écurie, sinon police de l'écurie
   function html(n, team, { cls = '', color = 'currentColor', title = '' } = {}) {
     const c = clean(n); if (!c) return '';
-    const g = official(c, team);
+    const g = glyph(c, team);
     if (!g) return text(c, team, { cls, color: color === 'currentColor' ? '' : color });
     return `<svg class="dnum ${cls}" viewBox="${g.vb}" role="img" aria-label="${title || 'Numéro ' + c}">${paths(g, color)}</svg>`;
   }
   // même chose à l'intérieur d'un dessin SVG (voiture vue de profil) : centré sur x, posé sur la ligne y, hauteur h
   function inSvg(n, team, x, y, h, fill) {
     const c = clean(n); if (!c) return '';
-    const g = official(c, team);
+    const g = glyph(c, team);
     if (!g) { loadFonts(); return `<text x="${x}" y="${y}" text-anchor="middle" class="nf-${tkey(team)}" font-size="${h * 1.25}" fill="${fill}">${c}</text>`; }
     const vb = g.vb.split(' ').map(Number), w = (vb[2] / vb[3]) * h;
     return `<svg x="${x - w / 2}" y="${y - h}" width="${w}" height="${h}" viewBox="${g.vb}" overflow="visible">${paths(g, fill)}</svg>`;
@@ -47,5 +65,5 @@
   const ofDriver = (id) => BY_DRIVER[id] || '';
   // pilote de la grille qui porte déjà ce numéro (pour le choix du numéro du joueur)
   const takenBy = (n) => { const c = clean(n); return Object.keys(BY_DRIVER).find((k) => BY_DRIVER[k] === c) || null; };
-  F1.num = { GLYPHS, BY_DRIVER, FONTS, html, text, inSvg, official, ofDriver, takenBy, loadFonts, tkey, clean };
+  F1.num = { glyph, GLYPHS, BY_DRIVER, FONTS, html, text, inSvg, official, ofDriver, takenBy, loadFonts, tkey, clean };
 })(globalThis.F1 = globalThis.F1 || {});

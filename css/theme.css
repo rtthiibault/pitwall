@@ -1447,3 +1447,5 @@ body.on-home::after { mix-blend-mode: screen; }
 .tipbox.on { opacity: 1; transform: none; }
 .chip.lk { border-color: var(--line2); color: var(--muted); white-space: nowrap; }
 .dash { grid-auto-flow: row dense; }
+.np-big .dnum { height: 150px; } .np-quick .dnum { height: 26px; } .np-bar-n .dnum { height: 40px; max-width: 64px; } .chip.pf-num .dnum { height: 18px; }
+@media (max-width: 600px) { .np-big .dnum { height: 110px; } }

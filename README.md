@@ -372,3 +372,12 @@ Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectoriel
 - **Bonus** (« Pilote +24 % », « Pneus +36 % »…) : une infobulle explique l'effet concret en course.
 - « Passe » devient « Pass ».
 - **Pari soufflerie** : un seul pari toutes les 2 heures (`TUNNEL_BET_CD`). Le bouton affiche le temps restant.
+
+## Numéros dans la typographie de l'écurie où court le pilote
+
+- `js/numbers-teams.js` contient les 22 numéros 2026 redessinés dans le style de 10 écuries (fichiers fournis), et les jeux de chiffres 0–8 quand ils se découpent proprement : Alpine, Astin Martin, Cadilac, Haass, MacLaren, Wiliams, Racing Buls.
+- Ordre de priorité (`F1.num.glyph`) :
+  1. numéro officiel du pilote dans son écurie réelle ;
+  2. numéro redessiné dans l'écurie où il court (pilote transféré en F1 Manager, pilote du joueur, coéquipier) ;
+  3. numéro composé chiffre à chiffre (numéro choisi par le joueur) ;
+  4. police de remplacement (chiffre 9, ou Ferrari, Red Bull, Mercedes et Audi pour un numéro hors grille).
