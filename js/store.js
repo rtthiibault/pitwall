@@ -266,8 +266,11 @@
     save();
   }
   // Coéquipier : recrutement, transfert (remplacement avec revente) ou libération
+  // un seul changement de coéquipier (recrutement, transfert ou libération) par jour
+  const mateLocked = () => mgr().mateDay === dayKey();
   function buyMate(d, price, resale) {
     const m = mgr();
+    if (mateLocked()) throw new Error('Un seul changement de coéquipier par jour : revenez demain');
     if (m.driver && m.driver.id === d.id) throw new Error('Ce pilote est déjà votre pilote titulaire');
     if (m.mate && m.mate.id === d.id) throw new Error('Ce pilote est déjà votre coéquipier');
     const net = price - (resale || 0);
@@ -275,12 +278,15 @@
     if (resale) addPC(resale, `Transfert : départ de ${m.mate.name}`);
     spendPC(price, `Recrutement du coéquipier : ${d.name}`);
     m.mate = { id: d.id, name: d.name, price, at: Date.now() };
+    m.mateDay = dayKey();
     unlock('mate1');
     save();
   }
   function releaseMate(resale) {
     const m = mgr(); if (!m.mate) return 0;
+    if (mateLocked()) throw new Error('Un seul changement de coéquipier par jour : revenez demain');
     const name = m.mate.name;
+    m.mateDay = dayKey();
     if (resale) addPC(resale, `Transfert : départ de ${name}`);
     m.mate = null; save();
     return resale || 0;
@@ -638,5 +644,5 @@
   function reset() { const n = get().name; state = blank(); state.name = n; save(); }
   const popUnlocked = () => unlocked.splice(0);
 
-  F1.store = { setNumber, installPart, rushJob, unlockSlot2, jobOf, tunnel, pass, claimPass, passComplete, nextSeason, setSkin, weeklyMax, sponsorCooldown, achProgress, claimAch, achClaimable, noteStat, setAvatar, ACH_BY, buyMate, releaseMate, weeklyGP, useWeeklyAttempt, recordWeekly, claimWeeklyGP, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
+  F1.store = { mateLocked, setNumber, installPart, rushJob, unlockSlot2, jobOf, tunnel, pass, claimPass, passComplete, nextSeason, setSkin, weeklyMax, sponsorCooldown, achProgress, claimAch, achClaimable, noteStat, setAvatar, ACH_BY, buyMate, releaseMate, weeklyGP, useWeeklyAttempt, recordWeekly, claimWeeklyGP, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
 })(globalThis.F1 = globalThis.F1 || {});

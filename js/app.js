@@ -1110,7 +1110,10 @@
   const leagueBadge = (L, cls = '') => `<span class="lbadge ${cls}" style="--lc:${L.color}">${L.icon} ${L.name}</span>`;
   // revente d'un pilote : 78 % de sa valeur marchande actuelle (note du moment, progression acquise comprise)
   // revente d'un pilote : son prix du jour (note, progression et actualité Paddock Wire), jamais moins que ce qu'il a coûté
-  const resaleD = (ctx) => (ctx.m.driver && ctx.drvM ? Math.max(ctx.m.driver.price || 0, MG().driverPrice(ctx.drvM)) : 0);
+  /* revente d'un pilote : son prix du jour (note, progression et actualité Paddock Wire). Bonne actualité : plus-value ;
+     mauvaise : on perd un peu, au plus 10 % du prix d'achat. */
+  const RESALE_FLOOR = 0.9;
+  const resaleD = (ctx) => (ctx.m.driver && ctx.drvM ? Math.max(Math.round(((ctx.m.driver.price || 0) * RESALE_FLOOR) / 5) * 5, MG().driverPrice(ctx.drvM)) : 0);
   // ligue requise pour signer un pilote (titulaire ou coéquipier) ; null si accessible
   const lockOf = (ctx, id) => { const req = MG().driverLeagueReq(ctx.mk, id), cur = MG().LEAGUES.findIndex((l) => l.id === ctx.league.id); return req > cur ? MG().LEAGUES[req] : null; };
   // revente : 70 % du prix (le plus bas entre le prix payé et le prix actuel, pour éviter tout bénéfice quand les prix montent) + 50 % de la R&D investie
@@ -1404,7 +1407,7 @@
      Prix et cote de performance suivent l'actualité Paddock Wire ; à chaque course, la position du coéquipier
      rapporte une prime de PitCoins (moitié du barème de la ligue). */
   // revente du coéquipier : sa valeur du jour (cote de base + actualité), jamais moins que son prix d'achat
-  const resaleM = (ctx) => (ctx.mate ? Math.max((ctx.m.mate && ctx.m.mate.price) || 0, MG().mateValue(ctx.mate)) : 0);
+  const resaleM = (ctx) => (ctx.mate ? Math.max(Math.round((((ctx.m.mate && ctx.m.mate.price) || 0) * RESALE_FLOOR) / 5) * 5, MG().mateValue(ctx.mate)) : 0);
   function mgrTransfers(ctx) {
     const { m, mk, league } = ctx;
     const res = resaleM(ctx);
@@ -1413,19 +1416,19 @@
       const d = MG().withExperience(ctx.mate, {}), nf = MG().newsForm(d), p = F1.visuals.portrait(d.id), last = (m.races || []).find((x) => x.mate);
       return `<div class="tr-cur" style="--tc:${tcol(d.teamId)}"><div class="gphoto" style="width:72px;height:72px">${p ? `<img src="${esc(p.img)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<i>${esc(d.code)}</i>${dnum(d.number, d.teamId, 'gnum', '#fff')}</div>
         <div style="flex:1;min-width:0"><small class="muted">Votre coéquipier</small><div class="tr-cur-n">${esc(d.name)}</div><div class="muted" style="font-size:12.5px">Cote de performance <b class="num">${d.rating + nf.perf}</b>${nf.perf ? ` <span class="${nf.perf > 0 ? 'up' : 'down'}">(${nf.perf > 0 ? '+' : ''}${nf.perf} actu)</span>` : ''} · ${m.stats.mateWins} victoire${m.stats.mateWins > 1 ? 's' : ''} · ${m.stats.matePodiums} podium${m.stats.matePodiums > 1 ? 's' : ''}${last ? ` · dernière course : ${last.mate.dnf ? 'abandon' : 'P' + last.mate.pos}` : ''}</div></div>
-        <div style="text-align:right"><small class="muted">Valeur de revente</small><div><b>${fmtPC(res)}</b></div><button class="btn sm ghost" data-action="mate-release" style="margin-top:6px">Libérer</button></div></div>`;
+        <div style="text-align:right"><small class="muted">Valeur de revente</small><div><b>${fmtPC(res)}</b></div><button class="btn sm ghost" data-action="mate-release" style="margin-top:6px" ${F1.store.mateLocked() ? 'disabled title="Un seul changement de coéquipier par jour"' : ''}>Libérer</button></div></div>`;
     })() : `<div class="tr-cur empty"><div class="tr-slot">+</div><div><div class="tr-cur-n">Aucun coéquipier</div><div class="muted" style="font-size:13px">Recrutez un pilote ci-dessous : il court la seconde voiture de votre équipe et rapporte des PitCoins à chaque course.</div></div></div>`;
     const list = mk.drivers.filter((d) => !(m.driver && m.driver.id === d.id)).map((d) => {
       const x = MG().withExperience(d, {}), nf = MG().newsForm(x), price = MG().mateValue(d), own = m.mate && m.mate.id === d.id;
       const base = Math.max(10, Math.round((d.price * MG().MATE_K) / 5) * 5), dp = price - base;
-      const net = price - (m.mate && !own ? res : 0), p = F1.visuals.portrait(d.id), lock = own ? null : lockOf(ctx, d.id);
+      const net = price - (m.mate && !own ? res : 0), p = F1.visuals.portrait(d.id), lock = own ? null : lockOf(ctx, d.id), dayLock = F1.store.mateLocked();
       return `<div class="tr-row ${own ? 'own' : ''}" style="--tc:${tcol(d.teamId)}"><div class="gphoto" style="width:44px;height:44px">${p ? `<img src="${esc(p.img)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<i>${esc(d.code)}</i>${dnum(d.number, d.teamId, 'gnum', '#fff')}</div>
         <div class="tr-who"><b>${esc(d.name)}</b><small>${esc(d.team || '')}${d.reserve ? ' · réserviste' : ''} · ${x.exp.age} ans</small></div>
         <div class="tr-perf"><small>Cote</small><b class="num">${x.rating + nf.perf}</b>${nf.perf ? `<i class="${nf.perf > 0 ? 'up' : 'dn'}">${nf.perf > 0 ? '▲' : '▼'}${Math.abs(nf.perf)}</i>` : ''}</div>
         <div class="tr-price"><small>Prix</small><b>${fmtPC(price)}</b>${dp ? `<i class="${dp > 0 ? 'up' : 'dn'}" title="Effet Paddock Wire sur la valeur">${dp > 0 ? '▲' : '▼'} ${Math.abs(dp)}</i>` : ''}</div>
-        <div class="tr-act">${own ? '<span class="chip green">Coéquipier</span>' : lock ? `<span class="chip lk" title="Les meilleurs pilotes ne signent qu'avec un manager confirmé">🔒 Ligue ${lock.icon} ${esc(lock.name)}</span>` : `<button class="btn sm" data-action="mate-buy" data-id="${esc(d.id)}" ${net > m.pc + 1e-9 ? 'disabled' : ''}>${m.mate ? `Transférer (${net >= 0 ? '−' : '+'}${Math.abs(net)})` : 'Recruter'}</button>`}</div></div>`;
+        <div class="tr-act">${own ? '<span class="chip green">Coéquipier</span>' : lock ? `<span class="chip lk" title="Les meilleurs pilotes ne signent qu'avec un manager confirmé">🔒 Ligue ${lock.icon} ${esc(lock.name)}</span>` : `<button class="btn sm" data-action="mate-buy" data-id="${esc(d.id)}" ${net > m.pc + 1e-9 || dayLock ? 'disabled' : ''} ${dayLock ? 'title="Un seul changement de coéquipier par jour"' : ''}>${m.mate ? `Transférer (${net >= 0 ? '−' : '+'}${Math.abs(net)})` : 'Recruter'}</button>`}</div></div>`;
     }).join('');
-    return `${cur}
+    return `${F1.store.mateLocked() ? '<div class="notice" style="margin-bottom:12px">⏳ Vous avez déjà changé de coéquipier aujourd\'hui : le prochain recrutement, transfert ou départ sera possible demain.</div>' : '<div class="muted" style="font-size:12.5px;margin-bottom:10px">Un seul changement de coéquipier par jour. À la revente, le pilote vaut son prix du jour : une bonne actualité le valorise, une mauvaise vous fait perdre un peu (10 % au plus).</div>'}${cur}
       <div class="card tr-info"><div><b>Prime du coéquipier</b><small class="muted">PitCoins versés selon sa position d'arrivée (ligue ${esc(league.name)}), en plus de vos propres gains</small></div><div class="tr-pc">${pcRow}</div></div>
       <div class="section-h" style="margin-top:18px"><h2>🤝 Marché des transferts</h2><span class="muted" style="font-size:13px">Prix et cotes suivent l'actualité Paddock Wire : ▲ bonne nouvelle, ▼ blessure, pénalité ou difficultés</span></div>
       <div class="tr-list">${list}</div>`;
@@ -2901,7 +2904,7 @@
       case 'credits': credits(); break;
       case 'm-buy-d': { const ctx = mgrCtx(); const d0 = ctx.mk.byDriver.get(a.dataset.id); const d = { ...d0, price: MG().driverPrice(MG().withExperience(d0, ctx.m.drvXp)) }; const lk = lockOf(ctx, d0.id); if (lk) { toast('🔒', `${esc(d0.name)} ne signe qu'à partir de la ligue ${lk.icon} ${esc(lk.name)}`, 'err'); break; } try { F1.store.buyDriver(d, resaleD(ctx)); toast('🤝', `<b>${esc(d.name)}</b> rejoint votre écurie !`, 'win'); confetti(80); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'mate-buy': { const ctx = mgrCtx(); const d0 = ctx.mk.byDriver.get(a.dataset.id); const lk = lockOf(ctx, d0.id); if (lk) { toast('🔒', `${esc(d0.name)} ne signe qu'à partir de la ligue ${lk.icon} ${esc(lk.name)}`, 'err'); break; } try { F1.store.buyMate(d0, MG().mateValue(d0), resaleM(ctx)); toast('🤝', `<b>${esc(d0.name)}</b> devient votre coéquipier !`, 'win'); confetti(70); showAchievements(); F1.social.sync(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
-      case 'mate-release': { const ctx = mgrCtx(); if (!confirm(`Libérer ${ctx.m.mate.name} ? Vous récupérez ${resaleM(ctx)} PitCoins.`)) break; const g = F1.store.releaseMate(resaleM(ctx)); toast('🤝', `Coéquipier libéré : +${fmtPC(g)}`, 'win'); F1.social.sync(); route(); break; }
+      case 'mate-release': { const ctx = mgrCtx(); if (!confirm(`Libérer ${ctx.m.mate.name} ? Vous récupérez ${resaleM(ctx)} PitCoins (un seul changement de coéquipier par jour).`)) break; let g; try { g = F1.store.releaseMate(resaleM(ctx)); } catch (err) { toast('⚠️', esc(err.message), 'err'); break; } toast('🤝', `Coéquipier libéré : +${fmtPC(g)}`, 'win'); F1.social.sync(); route(); break; }
       case 'sp-sign': { try { const t = F1.store.signSponsor(a.dataset.id, a.dataset.slot); const sp = MG().SPONSOR_BY_ID.get(a.dataset.id); toast('💼', `Contrat signé avec <b>${esc(sp.name)}</b> : +${t.sign} PitCoins de prime de signature`, 'win'); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'm-buy-c': { const ctx = mgrCtx(); const c = ctx.mk.byChassis.get(a.dataset.id); if (ctx.m.chassis && ctx.m.rdSpent > 0 && !confirm('Changer d\'équipe remet votre R&D à zéro. Continuer ?')) break; try { F1.store.buyChassis(c, resaleC(ctx)); toast('🏎️', `Vous prenez la direction de <b>${esc(c.name)}</b> !`, 'win'); confetti(80); showAchievements(); F1.social.sync(); route(); setTimeout(() => openNumberPicker(true), 350); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'rd-cat': { const was = $('#pu3d') ? 'pu' : 'car'; S.rdCat = a.dataset.c; S.rdSel = null; S.rdView = null; if ((a.dataset.c === 'pu' ? 'pu' : 'car') !== was) route(); else rdRefresh(); break; }

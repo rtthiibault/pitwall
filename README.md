@@ -364,7 +364,7 @@ Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectoriel
 
 ## F1 Manager : marché dynamique sans perte, accès par ligue, QG compacté
 
-- **Prix des pilotes** (titulaire et coéquipier) : valeur du jour × effet de l'actualité Paddock Wire (`driverPrice`, `mateValue`). La revente vaut le prix du jour, et jamais moins que le prix d'achat.
+- **Prix des pilotes** (titulaire et coéquipier) : valeur du jour × effet de l'actualité Paddock Wire (`driverPrice`, `mateValue`). La revente vaut le prix du jour : une mauvaise actualité fait perdre un peu (10 % du prix d'achat au plus), une bonne fait gagner. Un seul changement de coéquipier par jour.
 - **Accès par ligue** (`driverLeagueReq`) : les 3 meilleurs pilotes du marché signent dès la ligue Platine, les 4e à 6e dès Or, les 7e à 10e dès Argent, les autres dès Bronze. Valable pour le titulaire comme pour le coéquipier ; les pilotes déjà sous contrat restent.
 - **QG** :
   - « Préparation du week-end » sur toute la largeur, en 3 colonnes (météo | circuit et réglage | stratégie) ;
