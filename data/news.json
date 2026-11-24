@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-24T05:40:18.192Z",
+ "updated": "2026-11-24T06:10:22.342Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-24T06:10:18.192Z",
+ "next": "2026-11-24T06:40:22.342Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 104
+   "n": 99
   },
   {
    "name": "F1i",
@@ -26,6 +26,18 @@
   }
  ],
  "items": [
+  {
+   "id": "news_bnrk6p",
+   "timestamp": "2026-11-24T06:00:00.000Z",
+   "category": "PADDOCK",
+   "title": "Présentation et horaires du Grand Prix du Qatar 2026 de F1",
+   "summary": "La saison arrive à son avant-dernière manche, puisque le paddock se rend à Losail pour disputer le Grand Prix du Qatar. Les pilotes et les équipes vont connaître un défi radicalement différent, sinon carrément inversé de celui de Las Vegas, avec un asphalte…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/presentation-et-horaires-du-grand-prix-du-qatar-2026-de-f1,213686.html",
+   "impact": null,
+   "firstSeen": "2026-11-24T06:10:22.342Z"
+  },
   {
    "id": "news_rfsuzx",
    "timestamp": "2026-11-23T18:00:00.000Z",
@@ -231,7 +243,7 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "impact": null,
-   "firstSeen": "2026-11-24T05:40:18.192Z"
+   "firstSeen": "2026-11-24T06:10:22.342Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -794,18 +806,6 @@
    "source": "Nextgen-Auto",
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/wolff-est-decu-mais-relativise-les-erreurs-d-antonelli-et-russell-a-las-vegas,213645.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_x80v7w",
-   "timestamp": "2026-11-22T08:09:32.000Z",
-   "category": "RÈGLEMENT",
-   "title": "Pérez accuse Câmara de ne pas l'avoir vu, la FIA lui met 5 places pour le Qatar",
-   "summary": "Cadillac a vécu un Grand Prix de Las Vegas contrasté, entre l'arrivée de Valtteri Bottas à la 18e place et l'abandon prématuré de Sergio Pérez après un accrochage avec Rafael Câmara. Si le Finlandais a pu accumuler de précieux kilomètres au terme d'une course…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/perez-accuse-camara-de-ne-pas-l-avoir-vu-la-fia-lui-met-5-places-pour-le-qatar,213621.html",
    "impact": null,
    "firstSeen": "2026-11-23T10:59:50.658Z"
   }
