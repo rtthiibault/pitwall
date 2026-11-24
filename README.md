@@ -327,7 +327,7 @@ Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectoriel
 
 ## F1 Manager : soufflerie en temps réel, Passe de saison, rotation des sponsors
 
-- **Soufflerie (R&D)** : chaque développement, même au plein tarif, est fabriqué en soufflerie : Mk I 8 à 15 min, Mk II 15 à 30 min (selon la pièce), Mk III 4 h, Mk IV 5 h, Mk V 6 h.
+- **Soufflerie (R&D)** : chaque développement, même au plein tarif, est fabriqué en soufflerie : Mk I 2 à 5 min, Mk II 15 à 30 min (selon la pièce), Mk III 4 h, Mk IV 5 h, Mk V 6 h.
   - L'heure de fin est enregistrée : le chrono continue même site fermé.
   - Un emplacement de fabrication ; un deuxième se débloque pour 1 500 PitCoins.
   - La carte « Soufflerie en cours » affiche la barre de progression et le compte à rebours (05h 42m 10s), puis le bouton « Installer la pièce ». C'est à l'installation que le pari soufflerie est tranché.
