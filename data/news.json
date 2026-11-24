@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-24T07:40:35.609Z",
+ "updated": "2026-11-24T08:10:40.205Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-24T08:10:35.609Z",
+ "next": "2026-11-24T08:40:40.205Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,42 @@
   }
  ],
  "items": [
+  {
+   "id": "news_eeyuj3",
+   "timestamp": "2026-11-24T08:09:00.000Z",
+   "category": "PADDOCK",
+   "title": "Bearman ferme la porte à Alpine F1, un désaccord salarial bloque son contrat",
+   "summary": "Oliver Bearman a catégoriquement démenti les rumeurs selon lesquelles il pourrait quitter Haas pour rejoindre une autre écurie de Formule 1 en 2027, alors que l'officialisation de son contrat pour la saison prochaine se fait toujours attendre. Si les récentes…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/bearman-ferme-la-porte-a-alpine-f1-un-desaccord-salarial-bloque-son-contrat,213693.html",
+   "impact": null,
+   "firstSeen": "2026-11-24T08:10:40.205Z"
+  },
+  {
+   "id": "news_x7qkca",
+   "timestamp": "2026-11-24T07:26:00.000Z",
+   "category": "TECHNIQUE",
+   "title": "Sanction financière, suspension : jusqu'où Ferrari est-elle prête à aller sur le conflit Leclerc-Hamilton ?",
+   "summary": "La situation devient de plus en plus préoccupante chez Ferrari après le nouvel accrochage entre Charles Leclerc et Lewis Hamilton lors du Grand Prix de Las Vegas. La Scuderia envisagerait désormais des sanctions financières, voire la suspension de l'un de ses…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/sanction-financiere-suspension-jusqu-ou-ferrari-est-elle-prete-a-aller-sur-le,213688.html",
+   "impact": {
+    "targetType": "team",
+    "targetIds": [
+     "ferrari"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": -2,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 1.08,
+    "impactLabel": "Aéro -2 pts | Cotes +8%"
+   },
+   "firstSeen": "2026-11-24T08:10:40.205Z"
+  },
   {
    "id": "news_ruafgp",
    "timestamp": "2026-11-24T06:47:00.000Z",
@@ -255,7 +291,7 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "impact": null,
-   "firstSeen": "2026-11-24T07:40:35.609Z"
+   "firstSeen": "2026-11-24T08:10:40.205Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -782,30 +818,6 @@
    "source": "Nextgen-Auto",
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/racing-bulls-va-tirer-des-lecons-du-zero-pointe-a-las-vegas,213620.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_1j7upk6",
-   "timestamp": "2026-11-22T08:53:01.000Z",
-   "category": "PADDOCK",
-   "title": "Vasseur exaspéré par \"l'escalade des tensions\" entre Hamilton et Leclerc chez Ferrari",
-   "summary": "Directeur de Ferrari, Frédéric Vasseur juge \"inacceptable\" le contact entre Charles Leclerc et Lewis Hamilton à Las Vegas, estimant qu'il témoigne d'un \"manque de respect envers l'équipe\". De nouvelles réunions de crise sont prévues, trois semaines seulement…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/vasseur-exaspere-escalade-tensions-hamilton-leclerc/10876854/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_6efh45",
-   "timestamp": "2026-11-22T08:43:50.000Z",
-   "category": "PADDOCK",
-   "title": "Hamilton : Ferrari aurait dû 'miser sur moi' pour battre Antonelli",
-   "summary": "Lewis Hamilton en a rajouté une couche après l'arrivée à Las Vegas et estime que Ferrari a laissé passer une occasion de se battre pour le titre mondial face à Kimi Antonelli en ne lui apportant pas suffisamment de soutien lorsqu'il occupait la deuxième place…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hamilton-ferrari-aurait-du-miser-sur-moi-pour-battre-antonelli,213651.html",
    "impact": null,
    "firstSeen": "2026-11-23T10:59:50.658Z"
   }
