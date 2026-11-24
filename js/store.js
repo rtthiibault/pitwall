@@ -332,7 +332,7 @@
     return pc;
   }
   // Recherche : chaque pièce progresse de Mk I à Mk V. mode 'tunnel' = pari soufflerie (moitié prix, réussite incertaine).
-  // Mk I s'installe tout de suite ; à partir de Mk II la pièce est fabriquée en soufflerie (heure de fin enregistrée),
+  // Toute pièce est fabriquée en soufflerie (heure de fin enregistrée), même en développement sûr au plein tarif,
   // puis il faut l'installer : c'est à ce moment que le pari soufflerie est tranché.
   const tunnel = () => { const m = mgr(); if (!m.tunnel) m.tunnel = { slots: 1, jobs: [] }; return m.tunnel; };
   const jobOf = (pid) => tunnel().jobs.find((j) => j.pid === pid) || null;

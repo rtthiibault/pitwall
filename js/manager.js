@@ -1278,11 +1278,12 @@
     return { status: 'run' };
   }
   /* ---------- Soufflerie : temps de fabrication réels ----------
-     Mk I : immédiat · Mk II : 15 à 30 min (selon la pièce) · Mk III : 4 h · Mk IV : 5 h · Mk V : 6 h.
+     Toute pièce passe en fabrication, même en développement sûr (plein tarif) :
+     Mk I : 8 à 15 min · Mk II : 15 à 30 min (selon la pièce) · Mk III : 4 h · Mk IV : 5 h · Mk V : 6 h.
      Le chrono tourne même site fermé (heure de fin enregistrée). Terminer tout de suite coûte des jetons. */
   const BUILD_H = [0, 0, 0, 4, 5, 6];
   function rdBuildMs(level, partId) {
-    if (level <= 1) return 0;
+    if (level <= 1) return (8 + (hash('build1-' + partId) % 8)) * 60e3;
     if (level === 2) return (15 + (hash('build-' + partId) % 16)) * 60e3;
     return BUILD_H[Math.min(5, level)] * 3600e3;
   }
