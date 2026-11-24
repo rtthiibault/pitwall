@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-24T14:11:57.210Z",
+ "updated": "2026-11-24T14:42:02.047Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-24T14:41:57.210Z",
+ "next": "2026-11-24T15:12:02.047Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -501,7 +501,7 @@
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455860_hires.jpg",
    "impact": null,
-   "firstSeen": "2026-11-24T14:11:57.210Z"
+   "firstSeen": "2026-11-24T14:42:02.047Z"
   },
   {
    "id": "news_1ya8qqd",
