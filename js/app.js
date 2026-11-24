@@ -264,7 +264,7 @@
     }
     if (r === 'mes-paris') mountBankroll();
     if (r === 'amis') mountFriends(parts);
-    if (r === 'ligues') mountLeagues();
+    if (r === 'ligues') { if (parts[1] === 'l') mountLeaguePage(); else mountLeagues(); }
     if (r === 'manager') mountManager(parts[1]);
     if (r === 'manager' && parts[1] === 'hebdo') mountWeekly(); else { stopWeekly(); if (r === 'manager') weeklyClaim(); }
   }
@@ -956,6 +956,9 @@
       <div class="pd-slots">${slots}</div>${picker}<div class="pd-foot">${status}</div>${locked ? '' : '<small class="pd-risk">Plus la cote d\'un pilote est haute, plus il rapporte : jusqu\'à ×3. Les cotes bougent avec les dépêches Paddock Wire (▲ rouge : en hausse, ▼ vert : en baisse) et sont figées quand vous enregistrez.</small>'}</section>`;
   }
   function pageLeagues(parts) {
+    if (parts[1] === 'l' && parts[2]) {
+      return `<section class="lgp"><a class="lgp-back" href="#/ligues">← Toutes mes ligues</a><div id="lgPage" data-id="${esc(parts[2])}"><div class="skeleton" style="height:320px"></div></div></section>`;
+    }
     const so = SO(), gp = leagueGp(), y = (S.f1 || S.season).year;
     const head = `<div class="market-head"><div><h1>Mes ligues</h1><div class="muted" style="margin-top:6px">Pronostiquez le podium des qualifications et de la course, et affrontez vos amis au classement. Des points de ligue seulement : ni jetons, ni PitCoins.</div></div></div>`;
     let h = head;
@@ -997,9 +1000,9 @@
     lgCache = leagues;
     const me = so.me.id;
     list.innerHTML = missing ? '<div class="notice" style="font-size:13px">Les ligues privées ne sont pas encore activées : le propriétaire du site doit exécuter <code>supabase/migration-bet-leagues.sql</code> puis <code>supabase/migration-podium.sql</code> dans Supabase.</div>'
-      : leagues.length ? leagues.map((l) => `<div class="lg-card"><div class="lg-card-h"><span class="lg-ic">🏆</span><div style="min-width:0"><b>${esc(l.name)}</b><small>${l.members} membre${l.members > 1 ? 's' : ''}${l.owner === me ? ' · créée par vous' : ''}</small></div></div>
+      : leagues.length ? leagues.map((l) => `<div class="lg-card" data-href="#/ligues/l/${l.id}"><div class="lg-card-h"><span class="lg-ic">🏆</span><div style="min-width:0"><b>${esc(l.name)}</b><small>${l.members} membre${l.members > 1 ? 's' : ''}${l.owner === me ? ' · créée par vous' : ''}</small></div></div>
           <div class="lg-card-code"><small>Code</small><b>${esc(l.code)}</b></div>
-          <button class="btn sm" data-action="lg-open" data-id="${l.id}">Voir le classement de la ligue</button></div>`).join('')
+          <a class="btn sm" href="#/ligues/l/${l.id}">Voir le classement de la ligue</a></div>`).join('')
         : '<div class="card lg-empty"><b>Aucune ligue pour l\'instant</b><span class="muted">Créez-en une et partagez son code (PIT-XXXX), ou rejoignez celle d\'un ami.</span></div>';
   }
   // Classement complet d'une ligue : points de la saison, du dernier GP, et comparaison des pronostics une fois verrouillés
@@ -1039,6 +1042,19 @@
           ${actualTop(cmp, 'quali') || actualTop(cmp, 'race') ? `<tr class="pd-real-row"><td><b>Résultat officiel</b></td><td>${actualTop(cmp, 'quali') ? `<span class="pd-mini">${actualTop(cmp, 'quali').map((d) => drvTag(d)).join('')}</span>` : '<span class="muted">à venir</span>'}</td><td></td><td>${actualTop(cmp, 'race') ? `<span class="pd-mini">${actualTop(cmp, 'race').map((d) => drvTag(d)).join('')}</span>` : '<span class="muted">à venir</span>'}</td><td></td></tr>` : ''}
           ${rows.map((x) => `<tr class="${x.p.id === me ? 'me-row' : ''}"><td><b>${esc(x.p.username)}</b></td>${cell(x.p.id, cmp, 'quali')}${cell(x.p.id, cmp, 'race')}</tr>`).join('')}</tbody></table></div></div>` : ''}
       <div class="card" style="margin-top:12px">${bareme()}<div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn sm ghost" data-action="lg-leave" data-id="${sel.id}">Quitter la ligue</button></div></div>`;
+  }
+  // Page de classement d'une ligue (pleine page)
+  async function mountLeaguePage() {
+    const el = $('#lgPage'); if (!el) return;
+    const so = SO();
+    if (!so.ready || !so.me) { el.innerHTML = '<div class="notice">Connectez votre profil joueur pour voir le classement de vos ligues.</div>'; return; }
+    try {
+      if (!lgCache.length) lgCache = await F1.social.myLeagues();
+      const sel = lgCache.find((l) => String(l.id) === String(el.dataset.id));
+      if (!sel) { el.innerHTML = '<div class="notice">Ligue introuvable : vous n\'en faites peut-être plus partie.</div>'; return; }
+      const html = await leagueBoardHtml(sel);
+      if ($('#lgPage')) $('#lgPage').innerHTML = html;
+    } catch (e) { if ($('#lgPage')) $('#lgPage').innerHTML = `<div class="notice red">⚠️ ${esc(e.message)}</div>`; }
   }
   async function openLeague(id) {
     const sel = lgCache.find((l) => String(l.id) === String(id)); if (!sel) return;
@@ -2578,6 +2594,9 @@
   document.addEventListener('click', (e) => {
     const odd = e.target.closest('[data-sid]:not([data-action])');
     if (odd && !odd.disabled) { toggleSel(odd.dataset.sid, odd); return; }
+    // carte entièrement cliquable (ex. une ligue) : les liens et boutons qu'elle contient gardent leur propre action
+    const card = e.target.closest('[data-href]');
+    if (card && !e.target.closest('a, button')) { location.hash = card.dataset.href; return; }
     const a = e.target.closest('[data-action]');
     if (!a) return;
     const act = a.dataset.action;
@@ -2671,7 +2690,7 @@
       case 'lg-create': { const n = ($('#lgName') || {}).value; (async () => { try { const l = await F1.social.createLeague(n); S.lgSel = l.id; F1.store.noteStat('leagueJoined', true); showAchievements(); toast('🏆', `Ligue <b>${esc(l.name)}</b> créée. Code à partager : <b>${esc(l.code)}</b>`, 'win'); route(); } catch (e) { toast('⚠️', esc(e.missing ? 'Ligues privées pas encore activées sur ce site (migration Supabase à exécuter).' : e.message), 'err'); } })(); break; }
       case 'lg-join': { const c = ($('#lgCode') || {}).value; (async () => { try { const l = await F1.social.joinLeague(c); S.lgSel = l.id; F1.store.noteStat('leagueJoined', true); showAchievements(); toast('🤝', `Vous avez rejoint <b>${esc(l.name)}</b>`, 'win'); route(); } catch (e) { toast('⚠️', esc(e.missing ? 'Ligues privées pas encore activées sur ce site (migration Supabase à exécuter).' : e.message), 'err'); } })(); break; }
       case 'lg-copy': { const txt = `Rejoins ma ligue de pronostics F1 sur PITWALL avec le code ${a.dataset.code} : ${a.dataset.link}`; (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast('📋', 'Invitation copiée : collez-la à vos amis', 'win')).catch(() => toast('📋', `Code : <b>${esc(a.dataset.code)}</b>`, 'win')); break; }
-      case 'lg-leave': { if (!confirm('Quitter cette ligue ?')) break; (async () => { try { await F1.social.leaveLeague(a.dataset.id); S.lgSel = 'off'; closeModal(); toast('👋', 'Vous avez quitté la ligue', 'win'); route(); } catch (e) { toast('⚠️', esc(e.message), 'err'); } })(); break; }
+      case 'lg-leave': { if (!confirm('Quitter cette ligue ?')) break; (async () => { try { await F1.social.leaveLeague(a.dataset.id); S.lgSel = 'off'; closeModal(); if (/^#\/ligues\/l\//.test(location.hash)) location.hash = '#/ligues'; toast('👋', 'Vous avez quitté la ligue', 'win'); route(); } catch (e) { toast('⚠️', esc(e.message), 'err'); } })(); break; }
       case 'f-claim': { const n = $('#claimName').value.trim(), t = $('#claimTeam').value; socialAct(async () => { await F1.social.claim(n, t); if (!F1.store.get().name) F1.store.setName(n); }, `Profil créé : bienvenue ${esc(n)} !`); break; }
       case 'f-edit': { const me = SO().me; modal(`<h2>Profil joueur</h2><label class="muted" style="font-size:13px;font-weight:700">Pseudo public</label><input class="field" id="claimName" maxlength="24" value="${esc(me.username)}" style="margin:6px 0 12px"><label class="muted" style="font-size:13px;font-weight:700">Écurie favorite</label><select class="field" id="claimTeam" style="margin:6px 0 16px">${teamOptions(me.team)}</select><div class="row"><button class="btn sm ghost" data-action="close-modal">Annuler</button><span class="sp"></span><button class="btn sm" data-action="f-save">Enregistrer</button></div>`); break; }
       case 'f-save': { const n = $('#claimName').value.trim(), t = $('#claimTeam').value; closeModal(); socialAct(() => F1.social.claim(n, t), 'Profil mis à jour'); break; }
