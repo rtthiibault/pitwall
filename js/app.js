@@ -1056,18 +1056,23 @@
     }
     const so = SO(), gp = leagueGp(), y = (S.f1 || S.season).year;
     const head = `<div class="market-head"><div><h1>Mes ligues</h1><div class="muted" style="margin-top:6px">Pronostiquez le podium des qualifications et de la course, et affrontez vos amis au classement. Des points de ligue seulement : ni jetons, ni PitCoins.</div></div></div>`;
-    let h = '<div id="lgDash" class="lgd"><div class="skeleton" style="height:150px"></div></div>';
+    const dashHtml = '<div id="lgDash" class="lgd"><div class="skeleton" style="height:150px"></div></div>';
+    // accès rapide : pronostic du GP (avec l'échéance), historique, création
+    const nextLock = gp && ['quali', 'race'].map((k) => sessionStart(gp, k)).find((t) => t && t.getTime() > Date.now());
+    const quick = `<div class="lgx-quick">${gp ? `<button class="lgx-q hot" data-action="scroll-to" data-to="#pdSec"><b>🎯 Pronostiquer ${esc(gp.nameFr.replace('Grand Prix', 'le GP'))}</b><small>${nextLock ? `verrouillage dans ${untilTxt(nextLock.getTime() - Date.now())}` : 'pronostics verrouillés'}</small></button>` : ''}<button class="lgx-q" data-action="scroll-to" data-to="#lgHistSec"><b>📊 Mes 5 derniers GP</b><small>pronostics face aux résultats</small></button><button class="lgx-q" data-action="scroll-to" data-to="#lgFormsSec"><b>➕ Créer ou rejoindre</b><small>une ligue entre amis</small></button></div>`;
+    let h = '';
     if (gp) {
       const key = `${y}-${gp.round}`;
       if (!S.pdDraft || S.pdDraft.key !== key) { const lp = localPicks(); S.pdDraft = { key, quali: ((lp[pkKey(y, gp.round, 'quali')] || {}).p || [null, null, null]).slice(), race: ((lp[pkKey(y, gp.round, 'race')] || {}).p || [null, null, null]).slice() }; }
-      h += `<div class="pd-gp"><div class="row" style="gap:10px;flex-wrap:nowrap">${flag(gp.iso, 'lg')}<div><div class="pd-gp-name">${esc(gp.nameFr)}</div><small class="muted">Manche ${gp.round} · ${esc(gp.circuit)} · vos pronostics valent pour toutes vos ligues</small></div></div></div>
+      h += `<div id="pdSec" class="lgx-anchor"></div><div class="pd-gp"><div class="row" style="gap:10px;flex-wrap:nowrap">${flag(gp.iso, 'lg')}<div><div class="pd-gp-name">${esc(gp.nameFr)}</div><small class="muted">Manche ${gp.round} · ${esc(gp.circuit)} · vos pronostics valent pour toutes vos ligues</small></div></div></div>
         <div class="pd-cards">${podiumCard(gp, 'quali', y)}${podiumCard(gp, 'race', y)}</div>`;
     } else h += '<div class="empty"><div class="ic">🏁</div>Aucun Grand Prix à pronostiquer pour le moment.</div>';
     const code = parts[1] === 'rejoindre' && parts[2] ? decodeURIComponent(parts[2]) : '';
-    h += '<div class="section-h" style="margin-top:28px"><h2>Mes 5 derniers Grands Prix</h2><span class="muted" style="font-size:13px">Vos podiums face aux résultats officiels</span></div><div id="lgHist" class="lgh"><div class="skeleton" style="height:120px"></div></div>';
+    h += '<div id="lgHistSec" class="lgx-anchor"></div><div class="section-h" style="margin-top:28px"><h2>Mes 5 derniers Grands Prix</h2><span class="muted" style="font-size:13px">Vos podiums face aux résultats officiels</span></div><div id="lgHist" class="lgh"><div class="skeleton" style="height:120px"></div></div>';
     // vos ligues en haut de la page, création / adhésion et barème en bas
-    const lgHead = '<div class="section-h" style="margin-top:8px"><h2>Vos ligues</h2><span class="muted" style="font-size:13px">Votre rang, l\'écart au leader et le podium de chaque ligue</span></div>';
-    const top = (x) => head + lgHead + x + h;
+    const lgHead = '<div class="lgx-h"><h2>Vos ligues</h2><span class="muted">Rang · écart au leader · podium</span></div>';
+    // en haut : vos ligues (à gauche) et vos points de ligue (à droite)
+    const top = (x, after = '') => head + quick + `<div class="lgx-top"><section class="lgx-l">${lgHead}${x}</section>${dashHtml}</div>` + h + after;
     if (!so.enabled) return top('<div class="notice">Les ligues utilisent la base de données du système d\'amis, qui n\'est pas encore activée sur ce site. Vos pronostics sont gardés sur cet appareil.</div>');
     if (so.error) return top(`<div class="notice red">⚠️ Connexion impossible : ${esc(so.error)} <button class="btn sm ghost" data-action="f-retry">Réessayer</button></div>`);
     if (!so.ready) return top('<div class="skeleton"></div>');
@@ -1080,10 +1085,10 @@
         <select class="field" id="claimTeam" style="margin:6px 0 16px">${teamOptions('')}</select>
         <button class="btn block" data-action="f-claim">Créer mon profil joueur</button></div>`);
     }
-    return head + lgHead + `<div class="lg-cards" id="lgList"><div class="skeleton" style="height:110px"></div></div>` + h + `
-      <div class="section-h" style="margin-top:28px"><h2>Créer ou rejoindre une ligue</h2></div><div class="lg-forms"><div class="card lg-form"><b>Créer une ligue</b><div class="row" style="gap:6px;flex-wrap:nowrap"><input class="field" id="lgName" maxlength="40" placeholder="Nom (ex. Les potes du lycée)"><button class="btn sm" data-action="lg-create">Créer</button></div><small class="muted">Un code d'invitation unique est généré (ex. PIT-K7Q2).</small></div>
+    return top(`<div class="lg-cards" id="lgList"><div class="skeleton" style="height:110px"></div></div>`, `
+      <div id="lgFormsSec" class="lgx-anchor"></div><div class="section-h" style="margin-top:28px"><h2>Créer ou rejoindre une ligue</h2></div><div class="lg-forms"><div class="card lg-form"><b>Créer une ligue</b><div class="row" style="gap:6px;flex-wrap:nowrap"><input class="field" id="lgName" maxlength="40" placeholder="Nom (ex. Les potes du lycée)"><button class="btn sm" data-action="lg-create">Créer</button></div><small class="muted">Un code d'invitation unique est généré (ex. PIT-K7Q2).</small></div>
         <div class="card lg-form"><b>Rejoindre avec un code</b><div class="row" style="gap:6px;flex-wrap:nowrap"><input class="field" id="lgCode" maxlength="9" placeholder="PIT-XXXX" style="text-transform:uppercase" value="${esc(code)}"><button class="btn sm ${code ? '' : 'ghost'}" data-action="lg-join">Rejoindre</button></div></div></div>
-      <div class="card lg-how">${bareme()}</div>`;
+      <details class="card lg-how"><summary>Barème des points</summary>${bareme()}</details>`);
   }
   // Liste des ligues : une carte par ligue, le classement complet s'ouvre dans une fenêtre dédiée
   let lgCache = [];
@@ -1101,7 +1106,7 @@
       : leagues.length ? leagues.map((l) => `<div class="lg-card" data-href="#/ligues/l/${l.id}"><div class="lg-card-h"><span class="lg-ic">🏆</span><div style="min-width:0"><b>${esc(l.name)}</b><small>${l.members} membre${l.members > 1 ? 's' : ''}${l.owner === me ? ' · créée par vous' : ''}</small></div></div>
           <div class="lg-card-code"><small>Code</small><b>${esc(l.code)}</b></div>
           <div class="lg-card-x" data-lg="${l.id}"><div class="skeleton" style="height:58px"></div></div>
-          <a class="btn sm" href="#/ligues/l/${l.id}">Voir le classement de la ligue</a></div>`).join('')
+          <a class="lg-go" href="#/ligues/l/${l.id}" aria-label="Voir le classement de la ligue">Classement complet ›</a></div>`).join('')
         : '<div class="card lg-empty"><b>Aucune ligue pour l\'instant</b><span class="muted">Créez-en une et partagez son code (PIT-XXXX), ou rejoignez celle d\'un ami.</span></div>';
     window.__lgBest = null; leagues.forEach(fillLeagueCard);
   }
@@ -3247,6 +3252,7 @@
       case 'import': try { F1.store.importCode($('#impCode').value); closeModal(); shownBal = null; updateWallet(); route(); toast('✅', 'Sauvegarde importée', 'win'); } catch (err) { toast('⚠️', 'Code de sauvegarde invalide', 'err'); } break;
       case 'reset': if (confirm('Effacer tous vos paris et repartir avec ' + F1.store.START + ' jetons ?')) { F1.store.reset(); closeModal(); route(); toast('↺', 'Partie réinitialisée'); } break;
       case 'close-modal': closeModal(); break;
+      case 'scroll-to': { const t = $(a.dataset.to); if (t) window.scrollTo({ top: t.getBoundingClientRect().top + scrollY - 80, behavior: 'smooth' }); break; }
       case 'np-open': openNumberPicker(false); break;
       case 'np-pick': { const i = $('#npIn'); if (i) { i.value = a.dataset.n; i.dispatchEvent(new Event('input')); } break; }
       case 'np-save': { const i = $('#npIn'); try { const n = F1.store.setNumber(i ? i.value : ''); closeModal(); toast('🏁', `Numéro <b>${esc(n)}</b> validé : il est peint sur votre monoplace`, 'win'); confetti(60); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }

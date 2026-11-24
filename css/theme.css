@@ -1654,3 +1654,35 @@ details.pdw-how[open] summary { margin-bottom: 8px; }
 .lgc-av img { width: 30px !important; height: 30px !important; max-width: none; }
 .lgd-bar { grid-template-rows: auto 1fr auto; } .lgd-bar b { position: static; order: -1; font-size: 10.5px; padding-bottom: 2px; }
 .lgc-av, .lgc-av img { border-radius: 50% !important; }
+
+/* ===================== Mes ligues : mise en page en deux colonnes ===================== */
+.lgx-quick { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 14px 0 16px; }
+.lgx-q { display: grid; gap: 2px; text-align: left; padding: 11px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); font: inherit; cursor: pointer; transition: border-color .15s, transform .15s; }
+.lgx-q:hover { border-color: var(--line2); transform: translateY(-2px); }
+.lgx-q b { font-size: 14px; } .lgx-q small { font-size: 12px; color: var(--muted); }
+.lgx-q.hot { border-color: color-mix(in srgb, var(--red) 60%, var(--line)); background: linear-gradient(100deg, rgba(215,38,30,.18), var(--card) 70%); }
+.lgx-q.hot small { color: #ffb4ae; }
+.lgx-anchor { scroll-margin-top: 90px; }
+.lgx-top { display: grid; grid-template-columns: minmax(300px, 0.85fr) minmax(0, 1.4fr); gap: 16px; align-items: stretch; margin-bottom: 22px; }
+.lgx-l { display: grid; align-content: start; gap: 10px; padding: 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); min-width: 0; }
+.lgx-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; } .lgx-h h2 { margin: 0; font-size: 20px; } .lgx-h .muted { font-size: 12px; }
+.lgx-top .lgd { margin: 0; }
+.lgx-top .lgd-main { grid-template-columns: 1fr; gap: 14px; }
+.lgx-top .lgd-kpis { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.lgx-top .lgd-score { grid-template-columns: auto 1fr; column-gap: 16px; align-items: end; }
+.lgx-top .lgd-score small { grid-column: span 2; } .lgx-top .lgd-score > b { grid-row: span 2; } .lgx-top .lgd-rank { grid-column: 2; margin: 0; }
+/* cartes de ligue compactes dans la colonne de gauche */
+.lgx-l .lg-cards { grid-template-columns: 1fr; gap: 8px; }
+.lgx-l .lg-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 12px; padding: 12px 14px; border-top-width: 1px; border-left: 3px solid var(--gold); transition: transform .15s, border-color .15s; }
+.lgx-l .lg-card:hover { transform: translateX(3px); border-color: var(--line2); border-left-color: var(--gold); }
+.lgx-l .lg-card.lead { border-left-color: var(--gold); background: linear-gradient(100deg, rgba(233,190,62,.12), var(--panel) 60%); }
+.lgx-l .lg-card-h { grid-column: 1; }
+.lgx-l .lg-card-code { grid-column: 2; align-self: start; padding: 3px 8px; gap: 6px; } .lgx-l .lg-card-code small { font-size: 9.5px; } .lgx-l .lg-card-code b { font-size: 12.5px; }
+.lgx-l .lg-card-x { grid-column: 1 / -1; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: auto; }
+.lgx-l .lgc-rank { grid-row: auto; } .lgx-l .lgc-pod { justify-self: end; }
+.lgx-l .lg-go { grid-column: 1 / -1; justify-self: end; font-size: 12px; font-weight: 700; color: var(--gold); text-decoration: none; margin-top: -4px; }
+.lgx-l .lg-go:hover { text-decoration: underline; }
+.lgx-l .lg-empty { margin: 0; }
+details.lg-how summary { cursor: pointer; font-weight: 800; } details.lg-how[open] summary { margin-bottom: 10px; }
+@media (max-width: 1150px) { .lgx-top { grid-template-columns: 1fr; } .lgx-top .lgd-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 700px) { .lgx-quick { grid-template-columns: 1fr; } .lgx-top .lgd-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .lgx-l .lg-card-x { grid-template-columns: auto minmax(0, 1fr); } .lgx-l .lgc-pod { grid-column: 1 / -1; justify-self: start; } }
