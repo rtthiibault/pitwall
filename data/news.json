@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-24T11:41:22.971Z",
+ "updated": "2026-11-24T12:11:25.924Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-24T12:11:22.971Z",
+ "next": "2026-11-24T12:41:25.924Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -27,6 +27,18 @@
  ],
  "items": [
   {
+   "id": "news_6gz6r3",
+   "timestamp": "2026-11-24T11:47:00.000Z",
+   "category": "PADDOCK",
+   "title": "Villeneuve bouleversé par les premières images du film sur son père",
+   "summary": "Jacques Villeneuve n'a pas encore eu l'occasion de découvrir dans son intégralité le nouveau film consacré à son père, Gilles Villeneuve, mais les premières images ont suffi à susciter une vive émotion chez le champion du monde 1997 de Formule 1. Alors que le…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/villeneuve-bouleverse-par-les-premieres-images-du-film-sur-son-pere,213694.html",
+   "impact": null,
+   "firstSeen": "2026-11-24T12:11:25.924Z"
+  },
+  {
    "id": "news_15pwn7r",
    "timestamp": "2026-11-24T11:31:59.000Z",
    "category": "PADDOCK",
@@ -49,6 +61,18 @@
     "impactLabel": "Aéro -1 pts | Cotes +4%"
    },
    "firstSeen": "2026-11-24T11:41:22.971Z"
+  },
+  {
+   "id": "news_c8oew2",
+   "timestamp": "2026-11-24T11:24:00.000Z",
+   "category": "PADDOCK",
+   "title": "Audi F1 lance Freddie Slater en Formule 2 ce week-end au Qatar",
+   "summary": "Membre du programme de développement des jeunes pilotes d'Audi F1, Freddie Slater va faire ses débuts en Formule 2 dès ce week-end, à l'occasion du Grand Prix du Qatar. Le Britannique rejoindra Invicta Racing pour les deux dernières manches de la saison 2026…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/motorsport/audi-f1-lance-freddie-slater-en-formule-2-ce-week-end-au-qatar,213701.html",
+   "impact": null,
+   "firstSeen": "2026-11-24T12:11:25.924Z"
   },
   {
    "id": "news_jkfsg8",
@@ -411,7 +435,7 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "impact": null,
-   "firstSeen": "2026-11-24T11:41:22.971Z"
+   "firstSeen": "2026-11-24T12:11:25.924Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -806,30 +830,6 @@
    "source": "Motorsport.com",
    "lang": "fr",
    "url": "https://fr.motorsport.com/f1/news/lewis-hamilton-charles-leclercs-etat-esprit-coute-beaucoup-points/10876914/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
-  },
-  {
-   "id": "news_33efcj",
-   "timestamp": "2026-11-22T11:40:00.000Z",
-   "category": "PADDOCK",
-   "title": "'Peut-être la meilleure course de F1' : Zak Brown émerveillé par le Grand Prix du jour à Las Vegas",
-   "summary": "McLaren a signé un double podium au Grand Prix de Las Vegas, avec Lando Norris deuxième et Oscar Piastri troisième, au terme d'une course que Zak Brown considère comme l'une des plus spectaculaires de l'histoire de la Formule 1. Malgré un important déficit de…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/peut-etre-la-meilleure-course-de-f1-zak-brown-emerveille-par-le-grand-prix-du,213648.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
-  },
-  {
-   "id": "news_1gp9ddw",
-   "timestamp": "2026-11-22T11:09:00.000Z",
-   "category": "PADDOCK",
-   "title": "Que faire après le nouvel accrochage entre Hamilton et Leclerc ? Vasseur annonce la couleur !",
-   "summary": "Frédéric Vasseur a donc haussé le ton après le nouvel accrochage entre Charles Leclerc et Lewis Hamilton lors du Grand Prix de Las Vegas. Pour la deuxième fois en trois courses, les deux pilotes Ferrari se sont retrouvés impliqués dans un incident que leur…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/que-faire-apres-le-nouvel-accrochage-entre-hamilton-et-leclerc-vasseur-annonce,213652.html",
    "impact": null,
    "firstSeen": "2026-11-23T10:51:02.379Z"
   }
