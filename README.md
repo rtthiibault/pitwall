@@ -371,3 +371,4 @@ Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectoriel
   - le journal de course affiche les 5 dernières courses.
 - **Bonus** (« Pilote +24 % », « Pneus +36 % »…) : une infobulle explique l'effet concret en course.
 - « Passe » devient « Pass ».
+- **Pari soufflerie** : un seul pari toutes les 2 heures (`TUNNEL_BET_CD`). Le bouton affiche le temps restant.

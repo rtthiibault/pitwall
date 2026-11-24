@@ -1289,6 +1289,7 @@
   // terminer immédiatement : 1 jeton par minute restante (arrondi aux 5 jetons supérieurs), 10 jetons minimum
   const rushCost = (msLeft) => Math.max(10, Math.ceil(Math.max(0, msLeft) / 60e3 / 5) * 5);
   const TUNNEL_SLOT2_PC = 1500;
+  const TUNNEL_BET_CD = 2 * 3600e3;   // délai entre deux paris en soufflerie (on ne peut pas les enchaîner)
 
   /* ---------- Passe de saison : 24 paliers ----------
      +100 XP par course de campagne, +150 XP par tentative au GP Hebdomadaire, 125 XP par palier (≈ un palier toutes les 1 à 1,5 courses). */
@@ -1336,7 +1337,7 @@
     forecastLaps, trend, ruleOk, RULE_PENALTY, tyreStatus, MODES, redoLap, dryFor, FUEL_LOAD, MIX, ERS, ENG_CRIT, TYRE_LO, TYRE_HI, fuelDelta, KG,
     CLIMATE, climateOf, trackState, forecast, TYRES, isSlick, tyreDelta, DILEMMA_LAPS, dilemmaLaps, lapsOf, RACE_LAPS, planFor, REFILL_H, createRace, stepLap, dilemmaFor, applyChoice, RADIO,
     WEEKLY_ATTEMPTS, WEEKLY_FIRST_PRIME, isoWeek, weeklyEvent, weeklyBots, fmtRaceTime, fmtGap, weeklyPrize, CIRCUIT_NAME,
-    aiLineup, driverPrice, driverLeagueReq, driverValueV1, valueOfDriverV1, PRICE_PTS, SPONSOR_COOLDOWN, rdBuildMs, rushCost, TUNNEL_SLOT2_PC, PASS_TIERS, PASS_XP_TIER, PASS_XP_RACE, PASS_XP_WEEKLY, PASS_CHEST, PASS_LIVERIES, PASS_LIVERY_BY, passReward, passTier,
+    TUNNEL_BET_CD, aiLineup, driverPrice, driverLeagueReq, driverValueV1, valueOfDriverV1, PRICE_PTS, SPONSOR_COOLDOWN, rdBuildMs, rushCost, TUNNEL_SLOT2_PC, PASS_TIERS, PASS_XP_TIER, PASS_XP_RACE, PASS_XP_WEEKLY, PASS_CHEST, PASS_LIVERIES, PASS_LIVERY_BY, passReward, passTier,
     SPONSORS, SPONSOR_BY_ID, goalText, sponsorTerms, sponsorAfterRace, SUB_K,
     TEAM_NAME, TEAM_CODE, GRID, GRID_BY, shortName, newsForm, mateValue, MATE_K, matePC, MATE_PC_K, F1_POINTS, mateEntry, START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, lpScale, AGE_PRICE, driverValue, valueOfDriver, RESALE_K, XP_DIV, PC_TABLE,
     RD_CATS, RD_PARTS, RD_BY_ID, rdBranches, partState, partsBonus,

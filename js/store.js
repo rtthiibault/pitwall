@@ -358,9 +358,12 @@
     const tb = MG.teamBonus(m);
     const full = Math.round(MG.levelCost(part, lv + 1) * (1 - tb.rd));
     const tunnelMode = mode === 'tunnel';
+    const wait = tunnelMode ? betWait() : 0;
+    if (wait > 0) throw new Error(`Pari soufflerie déjà tenté récemment : prochain pari possible dans ${Math.ceil(wait / 60e3)} min`);
     const cost = tunnelMode ? Math.round(full / 2) : full;
     const chance = tunnelMode ? Math.min(0.95, MG.tunnelChance(m.fails[part.id] || 0) + tb.tunnel) : 1;
     spendPC(cost, `R&D${tunnelMode ? ' (soufflerie)' : ''} : ${part.name} ${MG.LV_NAME[lv + 1]}`);
+    if (tunnelMode) m.betAt = Date.now();
     m.rdSpent += cost;
     if (ms > 0) {
       const now = Date.now(), job = { pid: part.id, lv: lv + 1, mode: tunnelMode ? 'tunnel' : 'safe', chance, cost, start: now, end: now + ms };
@@ -373,6 +376,8 @@
     return { ok, level: m.parts[part.id] || 0, chance, cost };
   }
   // Fabrication terminée : la pièce est installée (ou rejetée si le pari soufflerie échoue)
+  // temps restant avant le prochain pari soufflerie (0 = disponible)
+  function betWait() { const m = mgr(); return m.betAt ? Math.max(0, m.betAt + F1.manager.TUNNEL_BET_CD - Date.now()) : 0; }
   function installPart(pid) {
     const m = mgr(), MG = F1.manager, T = tunnel(), j = jobOf(pid);
     if (!j) throw new Error('Aucune pièce en fabrication');
@@ -644,5 +649,5 @@
   function reset() { const n = get().name; state = blank(); state.name = n; save(); }
   const popUnlocked = () => unlocked.splice(0);
 
-  F1.store = { mateLocked, setNumber, installPart, rushJob, unlockSlot2, jobOf, tunnel, pass, claimPass, passComplete, nextSeason, setSkin, weeklyMax, sponsorCooldown, achProgress, claimAch, achClaimable, noteStat, setAvatar, ACH_BY, buyMate, releaseMate, weeklyGP, useWeeklyAttempt, recordWeekly, claimWeeklyGP, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
+  F1.store = { betWait, mateLocked, setNumber, installPart, rushJob, unlockSlot2, jobOf, tunnel, pass, claimPass, passComplete, nextSeason, setSkin, weeklyMax, sponsorCooldown, achProgress, claimAch, achClaimable, noteStat, setAvatar, ACH_BY, buyMate, releaseMate, weeklyGP, useWeeklyAttempt, recordWeekly, claimWeeklyGP, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
 })(globalThis.F1 = globalThis.F1 || {});
