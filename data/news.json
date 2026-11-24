@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-24T08:40:59.181Z",
+ "updated": "2026-11-24T09:11:02.535Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-24T09:10:59.181Z",
+ "next": "2026-11-24T09:41:02.535Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,18 @@
   }
  ],
  "items": [
+  {
+   "id": "news_1m9exrj",
+   "timestamp": "2026-11-24T08:53:00.000Z",
+   "category": "PADDOCK",
+   "title": "Antonelli achète un garage pour sa future collection de voitures et révèle celles qu'il convoite",
+   "summary": "Sacré champion du monde de Formule 1 à seulement 20 ans, Kimi Antonelli commence déjà à préparer une collection de voitures d'exception. Le pilote Mercedes a révélé avoir acheté un bâtiment destiné à accueillir ses futures acquisitions, avec plusieurs modèles…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/antonelli-achete-un-garage-pour-sa-future-collection-de-voitures-et-revele,213510.html",
+   "impact": null,
+   "firstSeen": "2026-11-24T09:11:02.535Z"
+  },
   {
    "id": "news_mzp7zc",
    "timestamp": "2026-11-24T08:27:57.000Z",
@@ -303,7 +315,7 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "impact": null,
-   "firstSeen": "2026-11-24T08:40:59.181Z"
+   "firstSeen": "2026-11-24T09:11:02.535Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -806,18 +818,6 @@
    "source": "Motorsport.com",
    "lang": "fr",
    "url": "https://fr.motorsport.com/f1/news/hadjar-et-perez-penalises-grand-prix-las-vegas/10876871/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_13if8uh",
-   "timestamp": "2026-11-22T09:21:00.000Z",
-   "category": "PADDOCK",
-   "title": "Williams F1 : Sainz arrache la 8e place, la FW48 d'Albon prend feu",
-   "summary": "Williams F1 a connu un Grand Prix de Las Vegas aux deux visages. Carlos Sainz a décroché une précieuse huitième place au terme d'une course qu'il estime avoir parfaitement exécutée, notamment grâce à une gestion intelligente de son énergie électrique qui lui a…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/williams-f1-sainz-arrache-la-8e-place-la-fw48-d-albon-prend-feu,213626.html",
    "impact": null,
    "firstSeen": "2026-11-23T10:59:50.658Z"
   }
