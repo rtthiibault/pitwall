@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-24T10:11:11.084Z",
+ "updated": "2026-11-24T10:41:14.453Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-24T10:41:11.084Z",
+ "next": "2026-11-24T11:11:14.453Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,18 @@
   }
  ],
  "items": [
+  {
+   "id": "news_16csvjp",
+   "timestamp": "2026-11-24T10:20:33.000Z",
+   "category": "PADDOCK",
+   "title": "Hadjar frustré : ce qui s'est vraiment passé à la radio chez Red Bull à Las Vegas",
+   "summary": "Isack Hadjar s'est élancé du quatrième rang sur la grille de départ du Grand Prix de Las Vegas de Formule 1. Dès le quatrième tour, il occupait déjà la deuxième place, juste derrière son coéquipier chez Red Bull, Max Verstappen. Et comme le Grand Prix s'était…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/isack-hadjar-frustre-vraiment-passe-radio-chez-red-bull-las-vegas/10877387/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "impact": null,
+   "firstSeen": "2026-11-24T10:41:14.453Z"
+  },
   {
    "id": "news_1l1kw8n",
    "timestamp": "2026-11-24T09:31:00.000Z",
@@ -339,7 +351,7 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "impact": null,
-   "firstSeen": "2026-11-24T10:11:11.084Z"
+   "firstSeen": "2026-11-24T10:41:14.453Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -820,18 +832,6 @@
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/haas-f1-bearman-savoure-sa-remontee-spectaculaire-a-las-vegas,213623.html",
    "impact": null,
    "firstSeen": "2026-11-23T10:51:02.379Z"
-  },
-  {
-   "id": "news_17vqlqk",
-   "timestamp": "2026-11-22T09:42:00.000Z",
-   "category": "PADDOCK",
-   "title": "Audi F1 : une course folle ne suffit pas à éviter une nouvelle 11e place pour Hülkenberg",
-   "summary": "Audi F1 est passée tout près des points au Grand Prix de Las Vegas, au terme d'une course particulièrement animée qui a vu Nico Hülkenberg et Gabriel Bortoleto terminer respectivement 11e et 12e. Encore une 11e place pour l'Allemand ! Les deux pilotes ont…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/audi-f1-une-course-folle-ne-suffit-pas-a-eviter-une-nouvelle-11e-place-pour,213624.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:59:50.658Z"
   }
  ]
 }
