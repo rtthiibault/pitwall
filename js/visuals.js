@@ -39,8 +39,14 @@
   }
 
   /* Monoplace 2026 vue de profil (nez à droite). opts : number, spin (roues animées), shadow, cam, compound */
+  // couleurs des livrées spéciales du Passe de saison pour le dessin 2D (avant chargement de la 3D ou sans WebGL)
+  const SKIN_SVG = {
+    carbon: { body: '#1b1d21', accent: '#2d3036', detail: '#c9ccd2', helmet: '#c9ccd2' },
+    neon: { body: '#0d0b24', accent: '#ff2bd6', detail: '#22f0ff', helmet: '#22f0ff' },
+    gold: { body: '#f4f1e8', accent: '#d4a52a', detail: '#17171b', helmet: '#d4a52a' },
+  };
   function svgCar(teamId, opts = {}) {
-    const L = livery(teamId);
+    const L = (opts.sponsor && opts.sponsor.skin && SKIN_SVG[opts.sponsor.skin]) || livery(teamId);
     const id = 'c' + (++uid);
     const num = opts.number != null ? String(opts.number) : '';
     const carbon = '#141419';
@@ -176,7 +182,7 @@
     const view = opts.view || (opts.live ? '34' : 'side');
     // WEC : prototype 3D du constructeur ; le dessin 2D reste affiché le temps du chargement (ou sans WebGL)
     const fb = String(teamId).startsWith('w_') ? proto(teamId, opts) : svgCar(teamId, opts);
-    const sp = opts.sponsor && (opts.sponsor.main || opts.sponsor.sub) ? ` data-sp="${encodeURIComponent(JSON.stringify(opts.sponsor))}"` : '';
+    const sp = opts.sponsor && (opts.sponsor.main || opts.sponsor.sub || opts.sponsor.skin) ? ` data-sp="${encodeURIComponent(JSON.stringify(opts.sponsor))}"` : '';
     return `<div class="car3d ${opts.live ? 'live' : ''} v-${view}" data-team="${teamId}" data-view="${view}"${sp}><div class="car3d-fb">${fb}</div></div>`;
   }
   const spOf = (el) => { try { return el.dataset.sp ? JSON.parse(decodeURIComponent(el.dataset.sp)) : null; } catch (e) { return null; } };
@@ -388,6 +394,39 @@
     },
   };
   LIVERY_RULES.racing_bulls = LIVERY_RULES.rb;
+  // Livrées spéciales du Passe de saison (peintes sur la monoplace générique, quel que soit le constructeur)
+  LIVERY_RULES.skin_carbon = { // Carbone Nu : carbone brut mat, filet argent
+    line: '#3a3d44', finish: { rough: 0.55, clear: 0.25 },
+    rules: [
+      R('#c9ccd2', C, RW, { v: [0.92, X] }), R('#0f1012', C, FILL),
+      R('#2b2e34', A, FILL), R('#0b0c0e', LOW), R('#0b0c0e', { v: [-X, 0.17] }),
+      R('#c9ccd2', BAND(0.3, 0.315), { u: [0.3, 0.85] }),
+      R('#c9ccd2', { u: [0.6, X], ny: [0.35, X], v: [0.2, X], s: [-X, 0.03], line: false }),
+      R('#141518', GRAD('#24272c', 'v', 0.2, 0.75)),
+    ],
+  };
+  LIVERY_RULES.skin_neon = { // Nuit / Néon : bleu nuit, néons magenta et cyan
+    line: '#22f0ff', finish: { rough: 0.25, clear: 1 },
+    rules: [
+      R('#ff2bd6', C, RW, { v: [0.85, X] }), R('#22f0ff', C, RW, { s: [0.45, X] }), R('#22f0ff', C, FW, { s: [0.72, X] }), R('#07070f', C, FILL),
+      R('#ff2bd6', A, FILL), R('#05050b', LOW), R('#05050b', { v: [-X, 0.17] }),
+      R('#22f0ff', BAND(0.28, 0.31), { u: [0.25, 0.9] }),
+      R('#ff2bd6', { u: [0.6, X], ny: [0.35, X], v: [0.2, X], s: [-X, 0.09] }),
+      R('#ff2bd6', { u: [0.16, 0.45], v: [0.6, X], s: [-X, 0.06] }),
+      R('#0b0b1e', GRAD('#2a1260', 'u', 0.15, 0.95)),
+    ],
+  };
+  LIVERY_RULES.skin_gold = { // Championne : blanc nacré, or
+    line: '#b8891a', finish: { rough: 0.2, clear: 1 },
+    rules: [
+      R('#d4a52a', C, RW, { v: [0.8, X] }), R('#d4a52a', C, RW, { s: [0.45, X] }), R('#d4a52a', C, FW, { s: [0.7, X] }), R('#16161a', C, FILL),
+      R('#d4a52a', A, FILL), R('#1a1a1e', LOW), R('#1a1a1e', { v: [-X, 0.17] }),
+      R('#d4a52a', { u: [0.6, X], ny: [0.35, X], v: [0.2, X], s: [-X, 0.1] }),
+      R('#d4a52a', BAND(0.3, 0.34), { u: [0.3, 0.85] }),
+      R('#d4a52a', { u: [0.44, 0.62], v: [0.76, X] }),
+      R('#f6f4ee', GRAD('#e7e2d6', 'v', 0.2, 0.8)),
+    ],
+  };
   const liveryRules = (id) => LIVERY_RULES[id] || null;
 
   F1.visuals = { car, svgCar, hydrate, livery, liveryRules, loadPortraits, portrait, allPortraits };

@@ -710,7 +710,7 @@ function mountPU(el, { part = null } = {}) {
   return api;
 }
 
-function buildCar(teamId, { xray = false } = {}) {
+function buildCar(teamId, { xray = false, skin = null } = {}) {
   if (isWec(teamId)) {
     const parts = WEC_PARTS.get(wecKey(teamId));
     if (!parts) throw new Error('modèle WEC pas encore chargé');
@@ -718,8 +718,11 @@ function buildCar(teamId, { xray = false } = {}) {
     for (const p of parts) { const m = new THREE.Mesh(p.geometry, W[p.name] || W.carbon); m.castShadow = true; m.receiveShadow = true; g.add(m); }
     return g;
   }
-  const set = setOf(teamId);
+  // livrée spéciale du Passe de saison : monoplace générique peinte avec la livrée choisie
+  const skinId = skin && F1.visuals && F1.visuals.liveryRules && F1.visuals.liveryRules('skin_' + skin) ? 'skin_' + skin : null;
+  const set = skinId ? { parts: PARTS, bounds: BOUNDS } : setOf(teamId);
   const U = xray ? xrayUniforms() : null;
+  if (skinId) teamId = skinId;
   if (set.parts !== PARTS) {
     // monoplace dédiée : matériaux et textures d'origine (copiés pour que l'atelier puisse les modifier)
     const car = new THREE.Group();
@@ -812,7 +815,7 @@ function makeScene(renderer, teamId, { ground = true, xray = false, sponsor = nu
     const blob = new THREE.Mesh(new THREE.PlaneGeometry(6.6, 2.8), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cv), transparent: true, depthWrite: false }));
     blob.rotation.x = -Math.PI / 2; blob.position.y = 0.002; scene.add(blob);
   }
-  const car = buildCar(teamId, { xray });
+  const car = buildCar(teamId, { xray, skin: sponsor && sponsor.skin });
   if (sponsor && !String(teamId).startsWith('w_')) applySponsor(car, sponsor);
   scene.add(car);
   return { scene, car };
@@ -835,7 +838,7 @@ function newRenderer(canvas, w, h) {
 let snapR = null;
 const cache = new Map();
 function snapshot(teamId, { view = '34', w = 960, h = 520, sponsor = null } = {}) {
-  const key = `${teamId}|${view}|${w}x${h}|${sponsor ? [sponsor.main && sponsor.main.name, sponsor.sub && sponsor.sub.name].join('+') : ''}`;
+  const key = `${teamId}|${view}|${w}x${h}|${sponsor ? [sponsor.main && sponsor.main.name, sponsor.sub && sponsor.sub.name, sponsor.skin].join('+') : ''}`;
   if (cache.has(key)) return cache.get(key);
   if (!snapR) { const c = document.createElement('canvas'); c.__snap = true; snapR = newRenderer(c, w, h); }
   snapR.setSize(w, h, false);

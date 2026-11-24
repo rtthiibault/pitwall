@@ -324,3 +324,18 @@ Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectoriel
 - **Mes ligues (Paris)** : liste épurée des ligues ; le classement complet et les pronostics s'ouvrent avec « Voir le classement de la ligue ».
 - **Succès** : onglet dédié (à la place d'Amis, toujours accessible depuis l'en-tête), 39 succès sur tout le site avec progression, récompense en jetons à réclamer.
 - **Profil** (`#/profil`, clic sur l'avatar) : tableau de bord F1 Manager et Paris, activité récente, succès à la une, galerie d'avatars (`assets/avatars/`).
+
+## F1 Manager : soufflerie en temps réel, Passe de saison, rotation des sponsors
+
+- **Soufflerie (R&D)** : Mk I s'installe tout de suite. Dès Mk II, la pièce est fabriquée en soufflerie : Mk II 15 à 30 min (selon la pièce), Mk III 4 h, Mk IV 5 h, Mk V 6 h.
+  - L'heure de fin est enregistrée : le chrono continue même site fermé.
+  - Un emplacement de fabrication ; un deuxième se débloque pour 1 500 PitCoins.
+  - La carte « Soufflerie en cours » affiche la barre de progression et le compte à rebours (05h 42m 10s), puis le bouton « Installer la pièce ». C'est à l'installation que le pari soufflerie est tranché.
+  - « Terminer maintenant » coûte des jetons (1 jeton par minute restante, 10 au minimum).
+- **Passe de saison** (onglet « Passe ») : 24 paliers de 125 XP. Une course de campagne rapporte +100 XP, une tentative au GP Hebdo +150 XP. Récompenses :
+  - coffres de PitCoins (25, 60 ou 150 PC) ;
+  - jetons de tentative aux paliers 6, 12 et 18 (une 3ᵉ tentative au GP Hebdo, une fois par semaine) ;
+  - livrées spéciales aux paliers 8, 16 et 24 : Carbone Nu, Nuit / Néon, Championne Or & Blanc.
+  
+  Les livrées s'équipent dans le Garage, et les logos des sponsors restent par-dessus. Une fois les 24 paliers réclamés, « Commencer la saison suivante » ajoute un badge « Saison N complétée » au profil.
+- **Sponsors** : un contrat terminé (réussi ou raté) bloque ce sponsor pendant 9 courses, en principal comme en secondaire. Pour que la rotation reste possible, le catalogue passe de 10 à 14 partenaires (Brûlerie Lumen, Rivio, Stratos Énergie, Meridian Bank). Les objectifs et les primes de Garage Dumas, Valcourt, Orbital, Synapse et TORQ ont été rééquilibrés.

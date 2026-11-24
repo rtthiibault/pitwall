@@ -49,6 +49,7 @@
     { id: 'mgr_rd', cat: 'manager', icon: '🔬', title: 'Bureau d\'études', desc: 'Développer 5 pièces en R&D', reward: 100, goal: (s) => ({ v: Object.keys((s.manager || {}).parts || {}).length, max: 5 }) },
     { id: 'mgr_mk5', cat: 'manager', icon: '🧬', title: 'Spécification ultime', desc: 'Amener une pièce au niveau Mk V', reward: 200 },
     { id: 'mgr_pkg', cat: 'manager', icon: '📦', title: 'Package complet', desc: 'Développer toutes les pièces d\'une branche de R&D', reward: 200 },
+    { id: 'pass_season', cat: 'manager', icon: '🎟️', title: 'Saison bouclée', desc: 'Réclamer les 24 paliers d\'un Passe de saison', reward: 300, goal: (s) => ({ v: ((s.manager && s.manager.pass && s.manager.pass.done) || []).length, max: 1 }) },
     { id: 'mgr_tunnel', cat: 'manager', icon: '🎲', title: 'Coup de poker', desc: 'Réussir un pari en soufflerie', reward: 100 },
     { id: 'mgr_staff', cat: 'manager', icon: '🎧', title: 'Muret au complet', desc: 'Pourvoir les 5 postes du muret', reward: 200, goal: (s) => ({ v: Object.values((s.manager || {}).staff || {}).filter(Boolean).length, max: 5 }) },
     { id: 'mgr_garage', cat: 'manager', icon: '🧰', title: 'Garage dernier cri', desc: 'Cumuler 25 niveaux d\'équipements de garage', reward: 250, goal: (s) => ({ v: Object.values((s.manager || {}).garage || {}).reduce((a, x) => a + (+x || 0), 0), max: 25 }) },
@@ -67,6 +68,7 @@
     return { v: 1, name: '', created: Date.now(), balance: START, bets: [], claimed: {}, rescues: {}, ach: {}, achClaimed: {}, stats: { tokensEarned: 0, newsWins: 0, leagueJoined: false, pwVisits: 0, podiumPicks: 0 }, avatar: null, history: [{ t: Date.now(), b: START }], manager: blankManager() };
   }
   const blankManager = () => ({ pc: (F1.manager && F1.manager.START_PC) || 300, driver: null, chassis: null, ups: { speed: 0, df: 0, rel: 0 }, parts: {}, rdSpent: 0, setup: 0, lp: 0, best: 0, races: [], day: { key: 0, n: 0, paid: 0 }, log: [], staff: {}, garage: {}, fails: {}, daily: { key: '' }, drvXp: {}, next: { seed: (Math.random() * 4294967296) >>> 0, tyre: 'M', plan: { stops: [{ lap: 9, tyre: 'H' }] } } });
+  const blankPass = (season = 1, done = [], liveries = [], tokens = 0, skin = null) => ({ season, xp: 0, claimed: {}, tokens, liveries, skin, done });
   function load() {
     try { state = JSON.parse(localStorage.getItem(KEY)); } catch (e) { state = null; }
     if (!state || state.v !== 1) state = blank();
@@ -87,6 +89,9 @@
     if (!m.garage) m.garage = {};
     if (!m.sponsors) m.sponsors = { main: null, sub: null, log: [] };
     if (m.mate === undefined) m.mate = null;
+    if (!m.sponsors.cool) m.sponsors.cool = {};
+    if (!m.tunnel) m.tunnel = { slots: 1, jobs: [] };
+    if (!m.pass) m.pass = blankPass();
     // statistiques de carrière du manager (reconstituées depuis l'historique des anciennes sauvegardes)
     if (!m.stats) {
       const rs = m.races || [], P = (F1.manager && F1.manager.F1_POINTS) || [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
@@ -319,32 +324,106 @@
     save();
     return pc;
   }
-  // Recherche : chaque pièce progresse de Mk I à Mk V. mode 'tunnel' = pari soufflerie (moitié prix, réussite incertaine)
+  // Recherche : chaque pièce progresse de Mk I à Mk V. mode 'tunnel' = pari soufflerie (moitié prix, réussite incertaine).
+  // Mk I s'installe tout de suite ; à partir de Mk II la pièce est fabriquée en soufflerie (heure de fin enregistrée),
+  // puis il faut l'installer : c'est à ce moment que le pari soufflerie est tranché.
+  const tunnel = () => { const m = mgr(); if (!m.tunnel) m.tunnel = { slots: 1, jobs: [] }; return m.tunnel; };
+  const jobOf = (pid) => tunnel().jobs.find((j) => j.pid === pid) || null;
+  function applyResearch(part, level, tunnelMode, ok) {
+    const m = mgr(), MG = F1.manager, d = daily();
+    if (ok) {
+      m.parts[part.id] = level; m.fails[part.id] = 0; d.rd++;
+      if (tunnelMode) { d.tunnelOk++; unlock('mgr_tunnel'); }
+      if (Object.keys(m.parts).length >= 5) unlock('mgr_rd');
+      if (level >= MG.MAX_LV) unlock('mgr_mk5');
+      if (MG.branchPackage(part.cat, part.br, m.parts).minL >= 1) unlock('mgr_pkg');
+    } else m.fails[part.id] = (m.fails[part.id] || 0) + 1;
+  }
   function research(part, mode = 'safe') {
     const m = mgr(), MG = F1.manager;
     if (!m.chassis) throw new Error('Achetez d\'abord un châssis');
     const lv = MG.partLevel(m.parts, part.id);
     if (lv >= MG.MAX_LV) throw new Error('Pièce déjà au niveau maximal');
     if (!lv && MG.partState(part, m.parts) !== 'available') throw new Error('Développez d\'abord la pièce précédente de cette branche');
+    if (jobOf(part.id)) throw new Error('Cette pièce est déjà en soufflerie');
+    const ms = MG.rdBuildMs(lv + 1, part.id), T = tunnel();
+    if (ms > 0 && T.jobs.length >= T.slots) throw new Error('La soufflerie est occupée : installez ou terminez la pièce en cours');
     const tb = MG.teamBonus(m);
     const full = Math.round(MG.levelCost(part, lv + 1) * (1 - tb.rd));
-    const tunnel = mode === 'tunnel';
-    const cost = tunnel ? Math.round(full / 2) : full;
-    const chance = tunnel ? Math.min(0.95, MG.tunnelChance(m.fails[part.id] || 0) + tb.tunnel) : 1;
-    spendPC(cost, `R&D${tunnel ? ' (soufflerie)' : ''} : ${part.name} ${MG.LV_NAME[lv + 1]}`);
+    const tunnelMode = mode === 'tunnel';
+    const cost = tunnelMode ? Math.round(full / 2) : full;
+    const chance = tunnelMode ? Math.min(0.95, MG.tunnelChance(m.fails[part.id] || 0) + tb.tunnel) : 1;
+    spendPC(cost, `R&D${tunnelMode ? ' (soufflerie)' : ''} : ${part.name} ${MG.LV_NAME[lv + 1]}`);
     m.rdSpent += cost;
+    if (ms > 0) {
+      const now = Date.now(), job = { pid: part.id, lv: lv + 1, mode: tunnelMode ? 'tunnel' : 'safe', chance, cost, start: now, end: now + ms };
+      T.jobs.push(job); save();
+      return { queued: true, job, cost };
+    }
     const ok = Math.random() < chance;
-    const d = daily();
-    if (ok) {
-      m.parts[part.id] = lv + 1; m.fails[part.id] = 0; d.rd++;
-      if (tunnel) { d.tunnelOk++; unlock('mgr_tunnel'); }
-      if (Object.keys(m.parts).length >= 5) unlock('mgr_rd');
-      if (lv + 1 >= MG.MAX_LV) unlock('mgr_mk5');
-      if (MG.branchPackage(part.cat, part.br, m.parts).minL >= 1) unlock('mgr_pkg');
-    } else m.fails[part.id] = (m.fails[part.id] || 0) + 1;
+    applyResearch(part, lv + 1, tunnelMode, ok);
     save();
     return { ok, level: m.parts[part.id] || 0, chance, cost };
   }
+  // Fabrication terminée : la pièce est installée (ou rejetée si le pari soufflerie échoue)
+  function installPart(pid) {
+    const m = mgr(), MG = F1.manager, T = tunnel(), j = jobOf(pid);
+    if (!j) throw new Error('Aucune pièce en fabrication');
+    if (j.end > Date.now()) throw new Error('La pièce n\'est pas encore prête');
+    const part = MG.RD_BY_ID.get(pid);
+    T.jobs = T.jobs.filter((x) => x !== j);
+    const ok = Math.random() < j.chance;
+    if (part) applyResearch(part, j.lv, j.mode === 'tunnel', ok);
+    save();
+    return { ok, level: m.parts[pid] || 0, chance: j.chance, cost: j.cost, mode: j.mode };
+  }
+  // Terminer immédiatement une fabrication en payant des jetons
+  function rushJob(pid) {
+    const j = jobOf(pid); if (!j) throw new Error('Aucune pièce en fabrication');
+    const left = j.end - Date.now(); if (left <= 0) return 0;
+    const cost = F1.manager.rushCost(left);
+    if (state.balance + 1e-9 < cost) throw new Error(`Il faut ${cost} jetons pour terminer tout de suite`);
+    state.balance = Math.round((state.balance - cost) * 100) / 100; track();
+    j.end = Date.now(); save();
+    return cost;
+  }
+  function unlockSlot2() {
+    const T = tunnel(); if (T.slots >= 2) throw new Error('Deuxième emplacement déjà débloqué');
+    spendPC(F1.manager.TUNNEL_SLOT2_PC, 'Soufflerie : deuxième emplacement de fabrication');
+    T.slots = 2; save();
+  }
+
+  /* ---------- Passe de saison ---------- */
+  const pass = () => { const m = mgr(); if (!m.pass) m.pass = blankPass(); return m.pass; };
+  function addPassXp(n) { const MG = F1.manager; if (!MG) return 0; const p = pass(); p.xp = Math.min(MG.PASS_TIERS * MG.PASS_XP_TIER, (p.xp || 0) + n); return n; }
+  function claimPass(tier) {
+    const MG = F1.manager, p = pass();
+    tier = +tier;
+    if (!(tier >= 1 && tier <= MG.PASS_TIERS)) throw new Error('Palier inconnu');
+    if (MG.passTier(p.xp) < tier) throw new Error('Palier pas encore atteint');
+    if (p.claimed[tier]) throw new Error('Récompense déjà réclamée');
+    const r = MG.passReward(tier);
+    if (r.kind === 'chest') addPC(r.pc, `Passe de saison ${p.season} : ${r.name} (palier ${tier})`);
+    else if (r.kind === 'token') p.tokens = (p.tokens || 0) + 1;
+    else if (r.kind === 'livery' && !p.liveries.includes(r.id)) p.liveries.push(r.id);
+    p.claimed[tier] = Date.now();
+    save();
+    return r;
+  }
+  const passComplete = () => { const p = pass(); return Array.from({ length: F1.manager.PASS_TIERS }, (_, i) => i + 1).every((t) => p.claimed[t]); };
+  function nextSeason() {
+    if (!passComplete()) throw new Error('Réclamez d\'abord les 24 paliers');
+    const m = mgr(), p = pass();
+    m.pass = blankPass(p.season + 1, [...(p.done || []), { season: p.season, at: Date.now() }], p.liveries, p.tokens, p.skin);
+    save();
+    return m.pass;
+  }
+  function setSkin(id) {
+    const p = pass();
+    if (id && !p.liveries.includes(id)) throw new Error('Livrée pas encore débloquée');
+    p.skin = id || null; save();
+  }
+
   // Personnel : recruter un membre du muret des stands (l'ancien titulaire est repris à 50 %)
   function hireStaff(role, id) {
     const m = mgr(), MG = F1.manager;
@@ -421,6 +500,7 @@
       m.races[0].xp = gain; m.races[0].grew = Math.floor(after) > Math.floor(before);
     }
     m.races[0].sponsors = sponsorsAfterRace(r.pos, r.dnf);
+    m.races[0].passXp = addPassXp(F1.manager ? F1.manager.PASS_XP_RACE : 0);
     // statistiques de carrière et prime du coéquipier
     const st = m.stats, P = (F1.manager && F1.manager.F1_POINTS) || [];
     st.races++; if (r.dnf) st.dnf++; else { if (r.pos === 1) st.wins++; if (r.pos <= 3) st.podiums++; st.best = Math.min(st.best, r.pos); st.points += P[r.pos - 1] || 0; }
@@ -450,6 +530,8 @@
     if (m.sponsors[slot]) throw new Error('Cet emplacement a déjà un sponsor');
     const other = m.sponsors[slot === 'main' ? 'sub' : 'main'];
     if (other && other.id === id) throw new Error('Ce sponsor est déjà sur votre voiture');
+    const wait = sponsorCooldown(id);
+    if (wait > 0) throw new Error(`${s.name} ne re-signe pas tout de suite : encore ${wait} course${wait > 1 ? 's' : ''} à disputer`);
     const L = MG.LEAGUES.findIndex((l) => l.id === MG.leagueOf(m.lp).id);
     if (L < s.league) throw new Error(`Ce sponsor ne signe qu'à partir de la ligue ${MG.LEAGUES[s.league].name}`);
     const t = MG.sponsorTerms(s, slot);
@@ -457,6 +539,12 @@
     addPC(t.sign, `Sponsor : prime de signature ${s.name}`);
     save();
     return t;
+  }
+  // Courses restant à disputer avant de pouvoir re-signer un sponsor (0 = disponible)
+  function sponsorCooldown(id) {
+    const m = mgr(), c = m.sponsors && m.sponsors.cool && m.sponsors.cool[id];
+    if (c == null) return 0;
+    return Math.max(0, F1.manager.SPONSOR_COOLDOWN - ((m.stats && m.stats.races) || 0) + c);
   }
   // Après chaque course : avancement des contrats, prime ou pénalité à l'échéance
   function sponsorsAfterRace(pos, dnf) {
@@ -470,7 +558,7 @@
       const row = { slot, id: c.id, name: s.name, color: s.color, ink: s.ink, goal: MG.goalText(s.goal), hits: c.hits, count: s.goal.count, done: c.done, races: s.goal.races, hitNow, status: r.status, amount: 0 };
       if (r.status === 'win') { addPC(t.reward, `Sponsor ${s.name} : objectif atteint`); row.amount = t.reward; }
       if (r.status === 'fail') { const pen = Math.min(m.pc, t.penalty); addPC(-pen, `Sponsor ${s.name} : objectif manqué (pénalité)`); row.amount = -pen; }
-      if (r.status !== 'run') { m.sponsors[slot] = null; m.sponsors.log.unshift({ id: c.id, slot, status: r.status, amount: row.amount, t: Date.now() }); if (m.sponsors.log.length > 20) m.sponsors.log.pop(); }
+      if (r.status !== 'run') { m.sponsors[slot] = null; if (!m.sponsors.cool) m.sponsors.cool = {}; m.sponsors.cool[c.id] = ((m.stats && m.stats.races) || 0) + 1; m.sponsors.log.unshift({ id: c.id, slot, status: r.status, amount: row.amount, t: Date.now() }); if (m.sponsors.log.length > 20) m.sponsors.log.pop(); }
       out.push(row);
     }
     return out;
@@ -487,11 +575,17 @@
     }
     return m.weeklyGP;
   }
-  function useWeeklyAttempt(weekId) {
-    const w = weeklyGP(weekId), max = (F1.manager && F1.manager.WEEKLY_ATTEMPTS) || 2;
-    if (w.attemptsUsed >= max) throw new Error('Plus de tentative cette semaine : rendez-vous lundi pour le prochain Grand Prix');
+  // tentatives de la semaine : 2, plus une 3e si un jeton de tentative (Passe de saison) a été utilisé
+  const weeklyMax = (w) => ((F1.manager && F1.manager.WEEKLY_ATTEMPTS) || 2) + (w.bonus ? 1 : 0);
+  function useWeeklyAttempt(weekId, useToken) {
+    const w = weeklyGP(weekId);
+    if (w.attemptsUsed >= weeklyMax(w)) {
+      const p = pass();
+      if (!useToken || w.bonus || !(p.tokens > 0)) throw new Error('Plus de tentative cette semaine : rendez-vous lundi pour le prochain Grand Prix');
+      p.tokens--; w.bonus = true;
+    }
     w.attemptsUsed++; save();
-    return max - w.attemptsUsed;
+    return weeklyMax(w) - w.attemptsUsed;
   }
   // Fin d'une tentative : meilleur temps conservé, prime au premier chrono valide, petit bonus d'XP (aucun effet sur les sponsors ni la ligue)
   function recordWeekly(r) {
@@ -502,8 +596,9 @@
     if (improved) { w.bestTime = r.timeMs; w.bestPosition = r.pos; w.bestConfig = { chassis: r.chassis, chassisId: r.chassisId, driver: r.driver }; }
     if (r.timeMs != null && !w.firstPrime) { w.firstPrime = true; prime = (F1.manager && F1.manager.WEEKLY_FIRST_PRIME) || 50; addPC(prime, 'Grand Prix Hebdomadaire : premier chrono de la semaine'); }
     if (m.driver && r.xp) { const x = m.drvXp[m.driver.id] || (m.drvXp[m.driver.id] = { xp: 0, races: 0 }); x.xp += r.xp; xp = r.xp; }
+    const passXp = addPassXp(F1.manager ? F1.manager.PASS_XP_WEEKLY : 0);
     save();
-    return { improved, prime, xp, best: w.bestTime, left: ((F1.manager && F1.manager.WEEKLY_ATTEMPTS) || 2) - w.attemptsUsed };
+    return { improved, prime, xp, passXp, best: w.bestTime, left: weeklyMax(w) - w.attemptsUsed };
   }
   // Prime de classement de la semaine passée (une seule fois) et trophée pour un top 10
   function claimWeeklyGP(rank, total) {
@@ -527,5 +622,5 @@
   function reset() { const n = get().name; state = blank(); state.name = n; save(); }
   const popUnlocked = () => unlocked.splice(0);
 
-  F1.store = { achProgress, claimAch, achClaimable, noteStat, setAvatar, ACH_BY, buyMate, releaseMate, weeklyGP, useWeeklyAttempt, recordWeekly, claimWeeklyGP, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
+  F1.store = { installPart, rushJob, unlockSlot2, jobOf, tunnel, pass, claimPass, passComplete, nextSeason, setSkin, weeklyMax, sponsorCooldown, achProgress, claimAch, achClaimable, noteStat, setAvatar, ACH_BY, buyMate, releaseMate, weeklyGP, useWeeklyAttempt, recordWeekly, claimWeeklyGP, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
 })(globalThis.F1 = globalThis.F1 || {});
