@@ -1133,7 +1133,8 @@
   function spProgress(c, s) {
     const g = s.goal;
     return `<div class="sp-prog"><div class="sp-hits">${Array.from({ length: g.count }, (_, i) => `<i class="${i < c.hits ? 'on' : ''}"></i>`).join('')}<span>${c.hits}/${g.count} objectif${g.count > 1 ? 's' : ''}</span></div>
-      <div class="sp-left"><div class="bar"><i style="width:${(c.done / g.races) * 100}%"></i></div><small>${c.done}/${g.races} courses disputées · ${g.races - c.done} restante${g.races - c.done > 1 ? 's' : ''}</small></div></div>`;
+      <div class="sp-left"><div class="bar"><i style="width:${(c.done / g.races) * 100}%"></i></div><small>${c.done}/${g.races} courses disputées · ${g.races - c.done} restante${g.races - c.done > 1 ? 's' : ''}</small></div>
+      ${c.hits >= g.count ? `<div class="sp-met">✓ Objectif atteint : la prime sera versée à la fin du contrat (dans ${g.races - c.done} course${g.races - c.done > 1 ? 's' : ''})</div>` : ''}</div>`;
   }
   function mgrSponsors(ctx) {
     const { m, ch, league } = ctx;
@@ -1160,7 +1161,7 @@
     return `<div class="sp-top">
         <div class="sp-car">${ch ? F1.visuals.car(ch.id, { view: 'side', shadow: false, sponsor: livery(m) }) : '<div class="muted">Choisissez une équipe pour afficher votre livrée.</div>'}<small class="muted">Les sponsors sous contrat apparaissent sur votre monoplace : principal sur les pontons et le nez, secondaire sur l'aileron arrière.</small></div>
         <div class="sp-slots">${slot('main', 'Sponsor principal', 'pontons et nez')}${slot('sub', 'Sponsor secondaire', 'aileron arrière · prime et pénalité ×0,6')}</div></div>
-      <div class="muted" style="font-size:13px;margin:14px 0 4px">Un contrat se juge course après course. Objectif atteint avant l'échéance : la prime tombe tout de suite. Échéance sans objectif atteint : pénalité en PitCoins. Un contrat terminé (réussi ou non) bloque ce sponsor pendant ${MG().SPONSOR_COOLDOWN} courses, en principal comme en secondaire.</div>
+      <div class="muted" style="font-size:13px;margin:14px 0 4px">Un contrat se juge course après course. Le contrat court toujours jusqu'à son échéance, même si l'objectif est rempli plus tôt : la prime est versée à la fin du contrat. Échéance sans objectif atteint : pénalité en PitCoins. Un contrat terminé (réussi ou non) bloque ce sponsor pendant ${MG().SPONSOR_COOLDOWN} courses, en principal comme en secondaire.</div>
       ${TIERS.map(([t, name, sub]) => `<div class="sp-tier"><div class="sp-tier-h"><b>${name}</b><small>${sub}</small></div><div class="sp-grid">${MG().SPONSORS.filter((s) => s.tier === t).map(card).join('')}</div></div>`).join('')}
       ${log ? `<div class="sp-tier"><div class="sp-tier-h"><b>Contrats terminés</b></div><div class="sp-logs">${log}</div></div>` : ''}`;
   }
@@ -2257,7 +2258,7 @@
           <div class="xp-track"><i id="dbXp" style="width:${frac(xpBefore) * 100}%"></i></div>
           <div class="row" style="justify-content:space-between;font-size:13px"><span><b class="up">+${rec.xp || 0} XP</b> sur cette course</span><span class="muted">${xpAfter.maxed ? 'Plafond de progression atteint' : `${Math.ceil(xpAfter.next)} XP avant le prochain point`}</span></div>
           <div class="db-stats">${statUp.length ? statUp.map(([l, d]) => `<span class="chip green">${l} +${fmt(d, 1)}</span>`).join('') : '<span class="muted" style="font-size:12px">Pas encore de hausse de caractéristique : elle vient avec le prochain point de progression.</span>'}${rec.grew ? '<span class="chip gold">Nouveau point de progression !</span>' : ''}</div></div>` : '';
-      const spRows = (rec.sponsors || []).map((x) => `<div class="db-sp"><span class="sp-badge" style="--sc:${x.color};--si:${x.ink}">${esc(x.name)}</span><div style="min-width:0"><div style="font-size:13px">${esc(x.goal)}</div><small class="muted">${x.status === 'win' ? 'Objectif atteint : prime versée' : x.status === 'fail' ? 'Contrat échu sans objectif : pénalité' : `${x.hits}/${x.count} objectif${x.count > 1 ? 's' : ''} · ${x.done}/${x.races} courses${x.hitNow ? ' · objectif rempli sur cette course' : ''}`}</small></div>${x.amount ? `<b class="${x.amount > 0 ? 'up' : 'down'}">${x.amount > 0 ? '+' : '−'}${fmtPC(Math.abs(x.amount))}</b>` : ''}</div>`).join('');
+      const spRows = (rec.sponsors || []).map((x) => `<div class="db-sp"><span class="sp-badge" style="--sc:${x.color};--si:${x.ink}">${esc(x.name)}</span><div style="min-width:0"><div style="font-size:13px">${esc(x.goal)}</div><small class="muted">${x.status === 'win' ? 'Objectif atteint : prime versée' : x.status === 'fail' ? 'Contrat échu sans objectif : pénalité' : x.status === 'met' ? `✓ Objectif atteint · prime versée à l'échéance (${x.done}/${x.races} courses)` : `${x.hits}/${x.count} objectif${x.count > 1 ? 's' : ''} · ${x.done}/${x.races} courses${x.hitNow ? ' · objectif rempli sur cette course' : ''}`}</small></div>${x.amount ? `<b class="${x.amount > 0 ? 'up' : 'down'}">${x.amount > 0 ? '+' : '−'}${fmtPC(Math.abs(x.amount))}</b>` : ''}</div>`).join('');
       const pcNet = Math.round((m.pc - pcBefore) * 100) / 100;
       const lpMin = Lnow.min, lpNext = MG().nextLeague(m.lp), lpPct = lpNext ? ((m.lp - lpMin) / (lpNext.min - lpMin)) * 100 : 100;
       const fl = byI.get(res.fastest.who);

@@ -1275,13 +1275,13 @@
   const SUB_K = 0.6; // emplacement secondaire : prime et pénalité réduites
   const goalText = (g) => (g.top === 1 ? `Gagner ${g.count > 1 ? g.count + ' courses' : 'une course'}` : `Finir ${g.count > 1 ? g.count + ' fois' : 'une fois'} dans le top ${g.top}`) + ` lors des ${g.races} prochaines courses`;
   const sponsorTerms = (s, slot) => { const k = slot === 'sub' ? SUB_K : 1; return { sign: Math.round(s.sign * k), reward: Math.round(s.reward * k), penalty: Math.round(s.penalty * k) }; };
-  // Mise à jour d'un contrat après une course : renvoie { status: 'run' | 'win' | 'fail' }
+  /* Mise à jour d'un contrat après une course. Le contrat court toujours jusqu'à son échéance, même objectif rempli :
+     on ne peut pas enchaîner les signatures. Renvoie { status: 'run' | 'met' (objectif atteint, contrat en cours) | 'win' | 'fail' } */
   function sponsorAfterRace(c, pos, dnf) {
     const s = SPONSOR_BY_ID.get(c.id); if (!s) return { status: 'fail' };
     c.done++; if (!dnf && pos <= s.goal.top) c.hits++;
-    if (c.hits >= s.goal.count) return { status: 'win' };
-    if (c.done >= s.goal.races) return { status: 'fail' };
-    return { status: 'run' };
+    if (c.done >= s.goal.races) return { status: c.hits >= s.goal.count ? 'win' : 'fail' };
+    return { status: c.hits >= s.goal.count ? 'met' : 'run' };
   }
   /* ---------- Soufflerie : temps de fabrication réels ----------
      Mk I s'installe tout de suite ; dès Mk II, la pièce passe en fabrication, même en développement sûr (plein tarif) :

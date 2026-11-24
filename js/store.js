@@ -613,7 +613,7 @@
       const row = { slot, id: c.id, name: s.name, color: s.color, ink: s.ink, goal: MG.goalText(s.goal), hits: c.hits, count: s.goal.count, done: c.done, races: s.goal.races, hitNow, status: r.status, amount: 0 };
       if (r.status === 'win') { addPC(t.reward, `Sponsor ${s.name} : objectif atteint`); row.amount = t.reward; }
       if (r.status === 'fail') { const pen = Math.min(m.pc, t.penalty); addPC(-pen, `Sponsor ${s.name} : objectif manqué (pénalité)`); row.amount = -pen; }
-      if (r.status !== 'run') { m.sponsors[slot] = null; if (!m.sponsors.cool) m.sponsors.cool = {}; m.sponsors.cool[c.id] = ((m.stats && m.stats.races) || 0) + 1; m.sponsors.log.unshift({ id: c.id, slot, status: r.status, amount: row.amount, t: Date.now() }); if (m.sponsors.log.length > 20) m.sponsors.log.pop(); }
+      if (r.status === 'win' || r.status === 'fail') { m.sponsors[slot] = null; if (!m.sponsors.cool) m.sponsors.cool = {}; m.sponsors.cool[c.id] = ((m.stats && m.stats.races) || 0) + 1; m.sponsors.log.unshift({ id: c.id, slot, status: r.status, amount: row.amount, t: Date.now() }); if (m.sponsors.log.length > 20) m.sponsors.log.pop(); }
       out.push(row);
     }
     return out;

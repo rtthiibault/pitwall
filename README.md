@@ -394,3 +394,4 @@ Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectoriel
   - au changement de mois, prime selon la ligue de fin de mois (`SEASON_PRIZE`, 150 à 2 200 PC) ;
   - puis les LP repartent à 60 % ;
   - un bilan s'affiche une fois ; l'historique est dans l'onglet Ligues.
+- **Sponsors** : un contrat court toujours jusqu'à son échéance, même si l'objectif est rempli avant. La prime est versée à la fin, ce qui ralentit la cadence des signatures.
