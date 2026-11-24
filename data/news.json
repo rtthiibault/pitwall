@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-24T08:10:40.205Z",
+ "updated": "2026-11-24T08:40:59.181Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-24T08:40:40.205Z",
+ "next": "2026-11-24T09:10:59.181Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,18 @@
   }
  ],
  "items": [
+  {
+   "id": "news_mzp7zc",
+   "timestamp": "2026-11-24T08:27:57.000Z",
+   "category": "PADDOCK",
+   "title": "Piastri évoque ses projets de management après sa séparation avec Mark Webber",
+   "summary": "Le pilote McLaren indique que sa future structure de management n'est pas encore définie, après avoir mis fin à son partenariat avec ses managers Ann et Mark Webber. Le 9 novembre, Piastri a publié un communiqué commun dans lequel il indiquait que les deux…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/oscar-piastri-evoque-projets-management-apres-separation-mark-webber/10877356/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "impact": null,
+   "firstSeen": "2026-11-24T08:40:59.181Z"
+  },
   {
    "id": "news_eeyuj3",
    "timestamp": "2026-11-24T08:09:00.000Z",
@@ -291,7 +303,7 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "impact": null,
-   "firstSeen": "2026-11-24T08:10:40.205Z"
+   "firstSeen": "2026-11-24T08:40:59.181Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -806,18 +818,6 @@
    "source": "Nextgen-Auto",
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/williams-f1-sainz-arrache-la-8e-place-la-fw48-d-albon-prend-feu,213626.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:59:50.658Z"
-  },
-  {
-   "id": "news_1moh4k6",
-   "timestamp": "2026-11-22T08:56:00.000Z",
-   "category": "PADDOCK",
-   "title": "Racing Bulls va 'tirer des leçons' du zéro pointé à Las Vegas",
-   "summary": "Racing Bulls a certainement manqué une opportunité de très bon résultat à Las Vegas après une erreur d'Arvid Lindblad, qui évoluait dans le top 5 et se battait même pour le podium un moment, et un souci mécanique sur la voiture de Liam Lawson qui lui a fait…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/racing-bulls-va-tirer-des-lecons-du-zero-pointe-a-las-vegas,213620.html",
    "impact": null,
    "firstSeen": "2026-11-23T10:59:50.658Z"
   }
