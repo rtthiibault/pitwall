@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-24T16:42:23.399Z",
+ "updated": "2026-11-24T17:12:28.380Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-24T17:12:23.399Z",
+ "next": "2026-11-24T17:42:28.380Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,32 @@
   }
  ],
  "items": [
+  {
+   "id": "news_74k88x",
+   "timestamp": "2026-11-24T17:04:00.000Z",
+   "category": "PADDOCK",
+   "title": "Norris se moque de Russell : 'il arrêterait la F1 pour devenir James Bond !'",
+   "summary": "Et si le prochain James Bond se trouvait sur la grille de Formule 1 ? Interrogé sur le pilote qui pourrait incarner le célèbre agent secret britannique au cinéma, Lando Norris a rapidement désigné George Russell, estimant que son compatriote possède le style…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/norris-se-moque-de-russell-il-arreterait-la-f1-pour-devenir-james-bond,213519.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1453070_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-24T17:12:28.380Z"
+  },
+  {
+   "id": "news_1lhny61",
+   "timestamp": "2026-11-24T16:18:00.000Z",
+   "category": "RÈGLEMENT",
+   "title": "La F1 révèle comment la direction de course prend ses décisions (vidéo)",
+   "summary": "La FIA a publié une nouvelle vidéo offrant un aperçu de la manière dont les décisions sont prises au sein de la direction de course lors des Grands Prix. Le directeur de course de Formule 1, Rui Marques, le pilote de la voiture de sécurité, Bernd Schneider, et…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/la-f1-revele-comment-la-direction-de-course-prend-ses-decisions-video,213524.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/fia_3_.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-24T17:12:28.380Z"
+  },
   {
    "id": "news_hwoe8c",
    "timestamp": "2026-11-24T16:06:23.000Z",
@@ -553,7 +579,7 @@
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455860_hires.jpg",
    "impact": null,
-   "firstSeen": "2026-11-24T16:42:23.399Z"
+   "firstSeen": "2026-11-24T17:12:28.380Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -861,32 +887,6 @@
    "url": "https://www.autohebdo.fr/actualites/f1/un-grand-prix-totalement-fou-a-las-vegas-grace-au-reglement-f1-2026.html",
    "impact": null,
    "firstSeen": "2026-11-23T10:51:02.379Z"
-  },
-  {
-   "id": "news_v5mhe8",
-   "timestamp": "2026-11-22T16:29:00.000Z",
-   "category": "PADDOCK",
-   "title": "Verstappen, Hamilton, Antonelli : la folie GTA VI s'empare du paddock",
-   "summary": "La sortie très attendue de Grand Theft Auto VI n'a pas échappé aux pilotes de Formule 1, même en plein week-end du Grand Prix de Las Vegas. Max Verstappen a déjà téléchargé le jeu, Lewis Hamilton a emporté sa PlayStation et Kimi Antonelli compte sur son père…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-hamilton-antonelli-la-folie-gta-vi-s-empare-du-paddock,213646.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1450793_hires.jpg"
-  },
-  {
-   "id": "news_1f7tl6z",
-   "timestamp": "2026-11-22T15:43:00.000Z",
-   "category": "PADDOCK",
-   "title": "Verstappen élu meilleur pilote de l'histoire de la F1",
-   "summary": "Max Verstappen a été désigné meilleur pilote de l'histoire de la Formule 1 par les lecteurs d'un magazine néerlandais, mais le quadruple champion du monde ne semble guère impressionné par cette distinction. Alors que George Russell lui reproche justement de se…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-elu-meilleur-pilote-de-l-histoire-de-la-f1,213660.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456307_hires.jpg"
   }
  ]
 }
