@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-24T18:42:42.665Z",
+ "updated": "2026-11-24T19:12:49.144Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-24T19:12:42.665Z",
+ "next": "2026-11-24T19:42:49.144Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 92
+   "n": 91
   },
   {
    "name": "F1i",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_b02y3q",
+   "timestamp": "2026-11-24T18:53:26.000Z",
+   "category": "PADDOCK",
+   "title": "L'heure du choix approche pour Colton Herta après le refus de Cadillac pour 2027",
+   "summary": "La décision de Cadillac de conserver le titulaire expérimenté Valtteri Bottas aux côtés de Sergio Perez relève d'un choix de continuité et de stabilité, après une première saison 2026 semée d'embûches pour la 11e équipe de Formule 1. Elle soulève également des…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/heure-choix-colton-herta-apres-refus-cadillac-2028/10877540/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/2y7QPOK6/s6/colton-herta-hitech-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-24T19:12:49.144Z"
+  },
   {
    "id": "news_pam1ts",
    "timestamp": "2026-11-24T18:00:00.000Z",
@@ -592,7 +605,7 @@
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455860_hires.jpg",
    "impact": null,
-   "firstSeen": "2026-11-24T18:42:42.665Z"
+   "firstSeen": "2026-11-24T19:12:49.144Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -875,19 +888,6 @@
     "impactLabel": "Aéro -1 pts | Cotes +4%"
    },
    "firstSeen": "2026-11-23T10:51:02.379Z"
-  },
-  {
-   "id": "news_ayehsz",
-   "timestamp": "2026-11-22T17:15:00.000Z",
-   "category": "RÈGLEMENT",
-   "title": "Verstappen s'est amusé mais allume le règlement F1 : c'était Mario Kart à Vegas !",
-   "summary": "Dans une course de Las Vegas aussi étrange et animée que piégeuse, c'est Max Verstappen qui l'aura emporté : le Néerlandais, en tête durant la majorité des tours, a remporté un 4e succès de l'année entièrement mérité, et qui doit beaucoup à sa maîtrise de…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-s-est-amuse-mais-allume-le-reglement-f1-c-etait-mario-kart-a-vegas,213653.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456042_hires.jpg"
   }
  ]
 }
