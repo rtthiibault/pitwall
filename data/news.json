@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-24T12:41:29.213Z",
+ "updated": "2026-11-24T13:11:33.770Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-24T13:11:29.213Z",
+ "next": "2026-11-24T13:41:33.770Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 94
+   "n": 93
   },
   {
    "name": "F1i",
@@ -26,6 +26,18 @@
   }
  ],
  "items": [
+  {
+   "id": "news_xqsfwp",
+   "timestamp": "2026-11-24T12:30:00.000Z",
+   "category": "PADDOCK",
+   "title": "La valeur des écuries de F1 explose : Ferrari atteint 8,74 milliards d'euros !",
+   "summary": "La valeur des écuries de Formule 1 continue de connaître une croissance spectaculaire. Selon le classement 2026 publié par le magazine économique Forbes, la valorisation moyenne des équipes du championnat du monde a bondi de 47% en l'espace d'un an, passant de…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/la-valeur-des-ecuries-de-f1-explose-ferrari-atteint-8-74-milliards-d-euros,213698.html",
+   "impact": null,
+   "firstSeen": "2026-11-24T13:11:33.770Z"
+  },
   {
    "id": "news_6gz6r3",
    "timestamp": "2026-11-24T11:47:00.000Z",
@@ -435,7 +447,7 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "impact": null,
-   "firstSeen": "2026-11-24T12:41:29.213Z"
+   "firstSeen": "2026-11-24T13:11:33.770Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -818,18 +830,6 @@
    "source": "Nextgen-Auto",
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/mekies-salue-un-verstappen-incroyable-et-presente-ses-excuses-a-hadjar,213644.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z"
-  },
-  {
-   "id": "news_15420a8",
-   "timestamp": "2026-11-22T11:46:10.000Z",
-   "category": "PADDOCK",
-   "title": "Hamilton : \"L'état d'esprit de Charles Leclerc nous a coûté beaucoup de points aujourd'hui\"",
-   "summary": "Lewis Hamilton a subtilement laissé entendre que \"l'état d'esprit\" de Charles Leclerc était à l'origine de leur accrochage lors du Grand Prix de Las Vegas de Formule 1. Hamilton et Leclerc occupaient les sixième et septième places au 37e tour de la course dans…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/lewis-hamilton-charles-leclercs-etat-esprit-coute-beaucoup-points/10876914/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
    "impact": null,
    "firstSeen": "2026-11-23T10:51:02.379Z"
   }
