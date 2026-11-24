@@ -5,6 +5,7 @@
   const SDK = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js';
   let COLS = 'id,username,team,balance,profit,bets_won,bets_done,best_odds,achievements,updated_at';
   let avatarProbed = false;
+  let customAvatar = true;   // passe à false si le serveur refuse les photos importées (contrainte d'origine)
   const USER_RE = /^[A-Za-z0-9_.-]{3,24}$/;
   const S = {
     enabled: !!(CFG.supabaseUrl && CFG.supabaseAnonKey), ready: false, error: null,
@@ -80,7 +81,9 @@
     if (!v2Cols) return base;
     const st = m.stats || {}, p = F1.store.get();
     // statistiques détaillées et photo de profil (supabase/migration-profile-v2.sql)
-    return { ...base, mgr_mate: m.mate ? m.mate.id : null, mgr_wins: st.wins || 0, mgr_podiums: Math.max(st.podiums || 0, st.wins || 0), mgr_races: Math.max(st.races || 0, st.podiums || 0), mgr_best: st.best && st.best < 99 ? st.best : null, mgr_points: st.points || 0, avatar: p.avatar || null };
+    // photo importée : on envoie la version réduite (128 px), seulement si le serveur l'accepte (migration-avatar-upload.sql)
+    const av = p.avatar && /^data:/.test(p.avatar) ? (customAvatar ? p.avatarSmall || null : null) : p.avatar || null;
+    return { ...base, mgr_mate: m.mate ? m.mate.id : null, mgr_wins: st.wins || 0, mgr_podiums: Math.max(st.podiums || 0, st.wins || 0), mgr_races: Math.max(st.races || 0, st.podiums || 0), mgr_best: st.best && st.best < 99 ? st.best : null, mgr_points: st.points || 0, avatar: av };
   }
   let v2Cols = true;
   async function updateMe(row) {
@@ -89,6 +92,11 @@
     if (r.error && v2Cols && mgrCols && /column|schema cache|PGRST204/i.test((r.error.message || '') + (r.error.code || ''))) {
       v2Cols = false;
       r = await S.client.from('profiles').update({ ...row, ...mgrRow() }).eq('id', S.user.id);
+    }
+    // photo importée refusée par la contrainte du serveur : on garde la synchro sans elle
+    if (r.error && customAvatar && (r.error.code === '23514' || /avatar/i.test(r.error.message || ''))) {
+      customAvatar = false;
+      r = await S.client.from('profiles').update(mgrCols ? { ...row, ...mgrRow() } : row).eq('id', S.user.id);
     }
     if (r.error && mgrCols && /column|schema cache|PGRST204/i.test((r.error.message || '') + (r.error.code || ''))) {
       mgrCols = false;

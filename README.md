@@ -395,3 +395,8 @@ Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectoriel
   - puis les LP repartent à 60 % ;
   - un bilan s'affiche une fois ; l'historique est dans l'onglet Ligues.
 - **Sponsors** : un contrat court toujours jusqu'à son échéance, même si l'objectif est rempli avant. La prime est versée à la fin, ce qui ralentit la cadence des signatures.
+
+## Photo de profil importée
+
+- Dans le profil, la tuile « Ma photo » ouvre le sélecteur de fichier. L'image est recadrée en carré au centre et compressée en JPEG dans le navigateur : 256 px pour l'affichage, environ 25 Ko, gardée sur l'appareil ; 128 px pour le serveur, environ 8 Ko.
+- Pour que les autres joueurs la voient (classements, ligues), exécuter `supabase/migration-avatar-upload.sql`. Sans la migration, la photo reste locale et la synchronisation continue normalement.

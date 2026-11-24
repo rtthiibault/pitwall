@@ -283,6 +283,8 @@
   }
 
   /* =================== Composants =================== */
+  // avatars acceptés à l'affichage : images du site ou photos importées (JPEG/WebP encodées)
+  const AVA_OK = /^(assets\/avatars\/avatar-\d+\.webp|data:image\/(jpeg|webp);base64,[A-Za-z0-9+\/=]+)$/;
   const drv = (id) => S.season.drivers.get(id) || (S.f1 && S.f1.drivers.get(id));
   const team = (id) => S.season.teams.get(id) || (S.f1 && S.f1.teams.get(id)) || { short: id, color: '#888', name: id };
   const tcol = (id) => team(id).color;
@@ -809,7 +811,7 @@
   }
   function uava(p, cls = '') {
     const c = p.team ? tcol(p.team) : 'var(--red)';
-    const img = p.avatar && /^assets\/avatars\/avatar-\d+\.webp$/.test(p.avatar) ? `<img src="${esc(p.avatar)}" alt="" loading="lazy">` : '';
+    const img = p.avatar && AVA_OK.test(p.avatar) ? `<img src="${esc(p.avatar)}" alt="" loading="lazy">` : '';
     return `<span class="ava ${cls}" style="--tc:${c}">${img}<i>${esc((p.username || '?').slice(0, 2).toUpperCase())}</i></span>`;
   }
   function relBtn(p) {
@@ -2782,6 +2784,30 @@
 
   /* =================== Profil & tableau de bord =================== */
   const AVATARS = [1, 2, 3, 4, 5, 6].map((i) => `assets/avatars/avatar-${i}.webp`);
+  // photo importée : recadrage carré au centre, compressée en JPEG (256 px pour l'affichage, 128 px pour le serveur)
+  function cropPhoto(file, size, q) {
+    return new Promise((ok, ko) => {
+      const url = URL.createObjectURL(file), img = new Image();
+      img.onload = () => {
+        const s = Math.min(img.naturalWidth, img.naturalHeight), c = document.createElement('canvas'); c.width = c.height = size;
+        const x = c.getContext('2d'); x.imageSmoothingQuality = 'high';
+        x.drawImage(img, (img.naturalWidth - s) / 2, (img.naturalHeight - s) / 2, s, s, 0, 0, size, size);
+        URL.revokeObjectURL(url); ok(c.toDataURL('image/jpeg', q));
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); ko(new Error('Image illisible : choisissez un fichier JPEG, PNG ou WebP')); };
+      img.src = url;
+    });
+  }
+  async function importPhoto(file) {
+    if (!file) return;
+    if (!/^image\//.test(file.type)) return toast('⚠️', 'Choisissez une image (JPEG, PNG, WebP…)', 'err');
+    if (file.size > 15e6) return toast('⚠️', 'Image trop lourde (15 Mo maximum)', 'err');
+    try {
+      const big = await cropPhoto(file, 256, 0.86), small = await cropPhoto(file, 128, 0.78);
+      F1.store.setAvatar(big, small); S.pfAva = false; F1.social.sync(true); showAchievements(); route();
+      toast('🪪', 'Photo de profil importée', 'win');
+    } catch (e) { toast('⚠️', esc(e.message), 'err'); }
+  }
   function pageProfile() {
     const p = F1.store.get(), st = F1.store.stats(), m = p.manager || {}, ms = m.stats || {}, so = SO();
     const name = (so.me && so.me.username) || p.name || 'Joueur';
@@ -2801,7 +2827,7 @@
         <div class="pf-id"><small class="muted">Profil joueur</small><h1>${esc(name)}</h1><div class="row" style="gap:6px;flex-wrap:wrap">${leagueBadge(L)}${m.number && m.chassis ? `<span class="chip pf-num" style="color:${F1.teamColor(m.chassis.id)}" title="Votre numéro de course">${F1.num.html(m.number, m.chassis.id)}</span>` : ''}<span class="chip">${Object.keys(p.ach).length} succès</span>${((m.pass && m.pass.done) || []).map((d) => `<span class="chip ps-badge" title="Pass de saison complété">🎟️ Saison ${d.season} complétée</span>`).join('')}${so.me ? '<span class="chip green">Profil en ligne</span>' : '<span class="chip">Profil local</span>'}</div></div>
         <div class="pf-wallets"><div><small>Jetons</small><b>${jt(p.balance)}</b></div><div><small>PitCoins</small><b>${fmtPC(m.pc || 0)}</b></div><button class="btn sm ghost" data-action="profile">⚙ Pseudo & sauvegarde</button></div></div>
       <div class="pf-gallery ${S.pfAva ? 'open' : ''}" id="pfGallery"><div class="pf-gh"><b>Choisissez votre photo de profil</b><button class="btn sm ghost" data-action="pf-ava">Fermer</button></div>
-        <div class="pf-avs">${AVATARS.map((src) => `<button class="pf-av ${p.avatar === src ? 'on' : ''}" data-action="pf-ava-set" data-src="${src}"><img src="${src}" alt="" loading="lazy"></button>`).join('')}<button class="pf-av none ${!p.avatar ? 'on' : ''}" data-action="pf-ava-set" data-src=""><span>${esc(name.slice(0, 1).toUpperCase())}</span><small>Initiale</small></button></div></div>
+        <div class="pf-avs">${AVATARS.map((src) => `<button class="pf-av ${p.avatar === src ? 'on' : ''}" data-action="pf-ava-set" data-src="${src}"><img src="${src}" alt="" loading="lazy"></button>`).join('')}<label class="pf-av up ${p.avatar && /^data:/.test(p.avatar) ? 'on' : ''}" title="Importer ma photo">${p.avatar && /^data:/.test(p.avatar) ? `<img src="${esc(p.avatar)}" alt="">` : '<span>＋</span>'}<small>Ma photo</small><input type="file" accept="image/*" id="pfUpload" hidden></label><button class="pf-av none ${!p.avatar ? 'on' : ''}" data-action="pf-ava-set" data-src=""><span>${esc(name.slice(0, 1).toUpperCase())}</span><small>Initiale</small></button></div></div>
       <div class="pf-grid">
         <div class="card pf-block"><div class="pf-bh"><h3>F1 Manager</h3>${ring(winrate(ms.wins || 0, ms.races || 0), 'var(--red2)', 'victoires')}</div>
           <div class="pf-kpis">${kpi('Victoires', fmt(ms.wins || 0), '', 'up')}${kpi('Défaites', fmt(mgrLoss), 'courses non gagnées')}${kpi('Podiums', fmt(ms.podiums || 0))}${kpi('Meilleure position', ms.best && ms.best < 99 ? 'P' + ms.best : '—')}${kpi('Points', fmt(ms.points || 0), 'barème F1')}${kpi('PitCoins gagnés', fmtPC(ms.pcEarned || 0))}</div>
@@ -2918,6 +2944,7 @@
   document.addEventListener('mouseover', (e) => { const el = e.target.closest && e.target.closest('[data-tip]'); if (el && el.dataset.tip) { if (el !== tipOn) tipShow(el); } else if (tipOn) { tipOn = null; tipEl.classList.remove('on'); } });
   document.addEventListener('focusin', (e) => { const el = e.target.closest && e.target.closest('[data-tip]'); if (el && el.dataset.tip) tipShow(el); });
   window.addEventListener('scroll', () => { if (tipOn) { tipOn = null; tipEl.classList.remove('on'); } }, { passive: true });
+  document.addEventListener('change', (e) => { if (e.target && e.target.id === 'pfUpload') importPhoto(e.target.files && e.target.files[0]); });
   document.addEventListener('click', (e) => {
     const odd = e.target.closest('[data-sid]:not([data-action])');
     if (odd && !odd.disabled) { toggleSel(odd.dataset.sid, odd); return; }

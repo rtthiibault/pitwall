@@ -137,7 +137,8 @@
   }
   const achClaimable = () => { get(); return ACH.filter((a) => state.ach[a.id] && !(state.achClaimed || {})[a.id]); };
   function noteStat(k, v) { get(); state.stats[k] = v === undefined ? (state.stats[k] || 0) + 1 : v; save(); }
-  function setAvatar(src) { get(); state.avatar = src; save(); }
+  // photo de profil : image du site, ou photo importée (data:image, déjà recadrée et compressée) avec sa version réduite pour le serveur
+  function setAvatar(src, small) { get(); state.avatar = src; state.avatarSmall = small || null; save(); }
 
   function placeBet(legs, stake) {
     get();
