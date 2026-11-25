@@ -1875,7 +1875,9 @@ button.avatar { position: relative; border: 0; cursor: pointer; font: inherit; p
 .um-head b { display: block; font-size: 15px; } .um-head small { font-size: 12px; color: var(--muted); }
 .um-i { display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 9px; text-decoration: none; color: var(--text); }
 .um-i:hover, .um-i:focus-visible { background: #20252d; outline: none; }
-.um-ic { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; background: #1f242c; font-size: 16px; flex: none; }
+.um-ic { --ic: #94a3b8; width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; flex: none; color: var(--ic); background: color-mix(in srgb, var(--ic) 13%, #1a1e25); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ic) 24%, transparent); transition: background .15s, transform .15s; }
+.um-i:hover .um-ic, .um-i:focus-visible .um-ic { background: color-mix(in srgb, var(--ic) 22%, #1a1e25); transform: scale(1.06); }
+@media (prefers-reduced-motion: reduce) { .um-ic { transition: none; } .um-i:hover .um-ic { transform: none; } }
 .um-l { flex: 1; min-width: 0; font-size: 14px; font-weight: 700; } .um-l small { display: block; font-size: 11.5px; font-weight: 500; color: var(--muted); }
 .um-n { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; display: grid; place-items: center; background: var(--red2); color: #fff; font-size: 11px; }
 .um-sep { height: 1px; background: #262c35; margin: 6px 4px; }

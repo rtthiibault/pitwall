@@ -3224,20 +3224,30 @@
     if (!b) { b = document.createElement('i'); b.className = 'av-badge'; av.appendChild(b); }
     b.textContent = n > 9 ? '9+' : n;
   }
+  // Icônes du menu compte : trait 1,8 sur grille 24, couleur héritée, une teinte d'accent par rubrique
+  const umSvg = (d) => `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const UM_IC = {
+    profil: ['#60a5fa', umSvg('<circle cx="12" cy="8" r="3.6"/><path d="M4.8 20a7.2 7.2 0 0 1 14.4 0"/>')],
+    msg: ['#34d399', umSvg('<path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-4.2 3.6V16H6.5A2.5 2.5 0 0 1 4 13.5z"/><path d="M8.5 10h.01M12 10h.01M15.5 10h.01" stroke-width="2.6"/>')],
+    notif: ['#fbbf24', umSvg('<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/>')],
+    circuit: ['#f87171', umSvg('<path d="M4.5 7.6A3.1 3.1 0 0 1 7.6 4.5h4.6c1.5 0 2.2 1.1 2.8 2.2l.8 1.5c.5.9 1.4 1.5 2.5 1.5a2.8 2.8 0 0 1 2.8 2.8v3.4a4 4 0 0 1-4 4H7.6a3.1 3.1 0 0 1-3.1-3.1v-1.3c0-1 .8-1.8 1.8-1.8h3a1.6 1.6 0 0 0 0-3.2h-3c-1 0-1.8-.8-1.8-1.8z"/><g stroke="none"><rect x="11.4" y="17.3" width="2.6" height="4.4" rx=".4" fill="#fff"/><rect x="11.4" y="17.3" width="1.3" height="1.1" fill="#1a1e25"/><rect x="12.7" y="18.4" width="1.3" height="1.1" fill="#1a1e25"/><rect x="11.4" y="19.5" width="1.3" height="1.1" fill="#1a1e25"/><rect x="12.7" y="20.6" width="1.3" height="1.1" fill="#1a1e25"/></g>')],
+    amis: ['#a78bfa', umSvg('<circle cx="9" cy="8.5" r="3.2"/><path d="M3.2 19a5.8 5.8 0 0 1 11.6 0"/><path d="M15.2 5.6a3.2 3.2 0 0 1 0 5.9M17.4 13.6a5.8 5.8 0 0 1 3.4 5.4"/>')],
+    set: ['#94a3b8', umSvg('<circle cx="12" cy="12" r="3"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.5-2-3.4-2.3.9a7.6 7.6 0 0 0-2.6-1.5L14 2.6h-4l-.5 2.4a7.6 7.6 0 0 0-2.6 1.5l-2.3-.9-2 3.4 2 1.5a7.6 7.6 0 0 0 0 3l-2 1.5 2 3.4 2.3-.9a7.6 7.6 0 0 0 2.6 1.5l.5 2.4h4l.5-2.4a7.6 7.6 0 0 0 2.6-1.5l2.3.9 2-3.4z"/>')],
+  };
   function userMenu(open) {
     let el = $('#umenu');
     if (!open) { if (el) el.remove(); const av = $('#avatar'); if (av) av.setAttribute('aria-expanded', 'false'); return; }
     const p = F1.store.get(), so = SO(), name = (so.me && so.me.username) || p.name || 'Joueur', m = F1.store.mgr();
     const nN = notifCount(), nM = so.unread || 0, nF = (so.incoming || []).length;
-    const item = (href, ic, label, n, sub) => `<a class="um-i" href="${href}" role="menuitem"><span class="um-ic">${ic}</span><span class="um-l">${label}${sub ? `<small>${sub}</small>` : ''}</span>${n ? `<b class="um-n">${n > 9 ? '9+' : n}</b>` : ''}</a>`;
+    const item = (href, ic, label, n, sub) => `<a class="um-i" href="${href}" role="menuitem"><span class="um-ic" style="--ic:${UM_IC[ic][0]}">${UM_IC[ic][1]}</span><span class="um-l">${label}${sub ? `<small>${sub}</small>` : ''}</span>${n ? `<b class="um-n">${n > 9 ? '9+' : n}</b>` : ''}</a>`;
     el = document.createElement('div'); el.id = 'umenu'; el.className = 'umenu'; el.setAttribute('role', 'menu');
     el.innerHTML = `<a class="um-head" href="#/profil"><span class="um-av">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : esc(name.slice(0, 1).toUpperCase())}</span><span><b>${esc(name)}</b><small>${esc(MG().leagueOf(m.lp).name)} · ${fmtJ(p.balance)} jetons</small></span></a>
-      ${item('#/profil', '👤', 'Mon profil', 0, 'Statistiques et photo')}
-      ${item('#/messagerie', '💬', 'Messagerie', nM, so.me ? (nM ? 'Nouveaux messages' : 'Discuter avec tes amis') : 'Profil en ligne requis')}
-      ${item('#/notifications', '🔔', 'Notifications', nN)}
-      ${item('#/circuits', '🗺️', 'Circuits', 0, 'Tous les tracés de la saison')}
-      ${item('#/amis', '👥', 'Amis', nF, nF ? 'Demandes en attente' : '')}
-      <div class="um-sep"></div>${item('#/parametres', '⚙️', 'Paramètres', 0)}`;
+      ${item('#/profil', 'profil', 'Mon profil', 0, 'Statistiques et photo')}
+      ${item('#/messagerie', 'msg', 'Messagerie', nM, so.me ? (nM ? 'Nouveaux messages' : 'Discuter avec tes amis') : 'Profil en ligne requis')}
+      ${item('#/notifications', 'notif', 'Notifications', nN)}
+      ${item('#/circuits', 'circuit', 'Circuits', 0, 'Tous les tracés de la saison')}
+      ${item('#/amis', 'amis', 'Amis', nF, nF ? 'Demandes en attente' : '')}
+      <div class="um-sep"></div>${item('#/parametres', 'set', 'Paramètres', 0)}`;
     document.body.appendChild(el);
     const av = $('#avatar'), r = av.getBoundingClientRect();
     el.style.top = `${r.bottom + 10}px`; el.style.right = `${Math.max(8, innerWidth - r.right)}px`;
