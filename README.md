@@ -424,3 +424,9 @@ Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectoriel
 - **Pronostics** affichés en podium (P2 · P1 · P3).
 - **« Mes 5 derniers Grands Prix »** : pronostic de qualifications et de course face au résultat officiel (vert : bonne marche, jaune : sur le podium), points obtenus.
 - **Cartes de ligue** : mon rang, mes points, avance ou retard sur le leader, podium de la ligue avec avatars.
+
+## Accueil : refonte
+
+- **Hero** : le vrai tracé du prochain circuit (`F1.CIRCUITS`), dessiné au chargement, avec un point aux couleurs de l'écurie du favori qui fait le tour (fixe si l'utilisateur a demandé à réduire les animations). Compte à rebours en feux de départ, programme du week-end en ligne de temps, carte du favori (numéro, cote), météo, sélecteur Formule 1 / Endurance compact.
+- **« Ton week-end »** : jetons (et prime à récupérer), paris en cours, pronostic de ligue (0, 1 ou 2 podiums remplis), F1 Manager (courses gratuites, pièce prête). Ce bandeau remplace les alertes de prime et le bloc de statistiques du bas.
+- **Ordre de la page** : hero, Ton week-end, favoris, À la une, Paddock Wire, dernier podium et classement, saison suivante.

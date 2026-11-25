@@ -548,14 +548,14 @@
   function pageHome() {
     const s = S.season;
     const nx = s.next;
-    let h = seriesSwitch() + hero(nx);
+    const f1Home = S.series !== 'wec' && nx;
+    let h = f1Home ? heroTrack(nx) + yourWeekend(s, nx) : seriesSwitch() + hero(nx);
     if (s.pending) h += `<div class="notice red" style="margin-top:18px">🏁 <b>${esc(s.pending.nameFr)}</b> : course terminée ou en cours — vos paris seront réglés dès la publication des résultats officiels.</div>`;
     if (S.series !== 'wec' && s.doneCount === 0 && nx && F1.store.canClaimSeason(s)) h += `<div class="notice" style="margin-top:18px">🎆 Nouvelle saison ${s.year} : prime de lancement <b>+${jt(F1.store.SEASON_BONUS)}</b>. <span class="sp"></span><button class="btn sm gold" data-action="claim-season">Récupérer</button></div>`;
     if (s.prev && s.doneCount === 0) { const ch = [...s.prev.drivers.values()].sort((a, b) => b.points - a.points)[0]; if (ch) h += `<div class="notice" style="margin-top:18px">🏆 Saison ${s.prev.year} terminée : <b>${esc(ch.given + ' ' + ch.family)}</b> champion du monde avec ${fmt(ch.points)} points. Les cotes ${s.year} partent de la hiérarchie ${s.prev.year}.</div>`; }
-    if (S.series !== 'wec' && nx && F1.store.canClaim(s, nx)) h += `<div class="notice" style="margin-top:18px">🎁 Prime du week-end disponible : <b>+${jt(F1.store.WEEKLY)}</b> pour le ${esc(nx.nameFr)}. <span class="sp"></span><button class="btn sm gold" data-action="claim">Récupérer</button></div>`;
-    if (S.series !== 'wec' && nx && F1.store.canRescue(s, nx)) h += `<div class="notice red" style="margin-top:18px">💸 Réservoir vide ? Le stand vous ravitaille : <b>+${jt(F1.store.RESCUE)}</b>. <span class="sp"></span><button class="btn sm" data-action="rescue">Ravitailler</button></div>`;
+    if (!f1Home && S.series !== 'wec' && nx && F1.store.canClaim(s, nx)) h += `<div class="notice" style="margin-top:18px">🎁 Prime du week-end disponible : <b>+${jt(F1.store.WEEKLY)}</b> pour le ${esc(nx.nameFr)}. <span class="sp"></span><button class="btn sm gold" data-action="claim">Récupérer</button></div>`;
+    if (!f1Home && S.series !== 'wec' && nx && F1.store.canRescue(s, nx)) h += `<div class="notice red" style="margin-top:18px">💸 Réservoir vide ? Le stand vous ravitaille : <b>+${jt(F1.store.RESCUE)}</b>. <span class="sp"></span><button class="btn sm" data-action="rescue">Ravitailler</button></div>`;
 
-    h += pwHome();
     if (S.markets.length) {
       const win = S.markets.find((m) => m.kind === 'win');
       h += `<section class="section"><div class="section-h"><h2>Favoris pour la victoire</h2><a class="link" href="#/paris">Tous les marchés</a></div><div class="grid g4">${win.selections.slice(0, 4).map((x, i) => favCard(x, win, i)).join('')}</div></section>`;
@@ -564,10 +564,71 @@
       const quali = S.markets.find((m) => m.kind === 'pole') || S.markets.find((m) => m.kind === 'sprintWin') || S.markets.find((m) => m.kind === 'podium');
       h += `<section class="section"><div class="section-h"><h2>À la une</h2></div><div class="grid g3">${boostCard(boost) || ''}${rival ? h2hCard(rival) : ''}${marketCard(quali, { limit: 6 })}</div></section>`;
     }
+    h += pwHome();
     h += `<section class="section"><div class="grid g2">${lastPodium()}${miniStandings()}</div></section>`;
     h += upcomingTeaser();
-    h += homeStats();
+    if (!f1Home) h += homeStats();
     return h;
+  }
+
+  /* ---------- Accueil : le tracé du prochain circuit, feux de départ, programme du week-end ---------- */
+  function trackSvg(circuitId, color) {
+    const raw = F1.CIRCUITS && F1.CIRCUITS[circuitId];
+    if (!raw) return '';
+    const pts = raw.split(' ').map((q) => q.split(',').map(Number)).map(([x, y]) => [x, 1000 - y]);
+    const xs = pts.map((q) => q[0]), ys = pts.map((q) => q[1]);
+    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), pad = 60;
+    const d = 'M' + pts.map((q) => q.join(' ')).join(' L') + ' Z';
+    const [sx, sy] = pts[0], [nx2, ny2] = pts[3] || pts[1];
+    const ang = (Math.atan2(ny2 - sy, nx2 - sx) * 180) / Math.PI;
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return `<svg class="hx-track" viewBox="${x0 - pad} ${y0 - pad} ${x1 - x0 + pad * 2} ${y1 - y0 + pad * 2}" role="img" aria-label="Tracé du circuit">
+      <path class="hx-t-glow" d="${d}" style="stroke:${color}"/><path class="hx-t-asphalt" d="${d}"/><path class="hx-t-line" id="hxTrk" d="${d}" pathLength="1"/>
+      <g transform="translate(${sx} ${sy}) rotate(${ang})"><rect x="-4" y="-26" width="8" height="52" fill="url(#hxChk)"/></g>
+      <defs><pattern id="hxChk" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff"/><rect width="4" height="4" fill="#111"/><rect x="4" y="4" width="4" height="4" fill="#111"/></pattern></defs>
+      ${still ? '' : `<circle class="hx-car" r="13" style="fill:${color}"><animateMotion dur="14s" repeatCount="indefinite" rotate="auto"><mpath href="#hxTrk"/></animateMotion></circle>`}</svg>`;
+  }
+  function heroTrack(nx) {
+    const s = S.season, now = Date.now();
+    const nextSess = nx.sessions.find((x) => x.date.getTime() > now);
+    const w = S.weather;
+    const favW = S.markets.find((m) => m.kind === 'win'), favS = favW && favW.selections[0], favD = favS && drv(favS.driverId);
+    const tc = favD ? team(favD.teamId).color : '#d7261e';
+    const sw = `<div class="hx-series">${[['f1', 'Formule 1'], ['wec', 'Endurance']].map(([k, l]) => { const lock = k === 'wec' && WEC_LOCKED; return `<button class="${S.series === k ? 'on' : ''}" ${lock ? 'disabled title="Bientôt disponible"' : `data-action="series" data-s="${k}"`}>${l}${lock ? ' <small>bientôt</small>' : ''}</button>`; }).join('')}</div>`;
+    const lights = `<div class="hx-lights" data-cd="${nx.date.getTime()}" aria-label="Compte à rebours avant le départ">${['jours', 'heures', 'min', 's'].map((u, i) => `<div class="hx-pod"><i></i><b data-u="${i}">--</b><small>${u}</small></div>`).join('')}</div>`;
+    const rail = `<ol class="hx-rail">${nx.sessions.map((x) => { const st = x.date.getTime() < now ? 'done' : x === nextSess ? 'next' : ''; return `<li class="${st}"><span>${esc(x.label)}</span><b>${WD.format(x.date)} ${HM.format(x.date)}</b></li>`; }).join('')}</ol>`;
+    const tags = [nx.sprint ? 'Week-end sprint' : '', nx.street ? 'Circuit urbain' : ''].filter(Boolean).map((t) => `<span class="hx-tag">${t}</span>`).join('');
+    const wx = w ? `<span>${w.rain >= 50 ? '🌧️' : w.rain >= 25 ? '🌦️' : w.code <= 1 ? '☀️' : '⛅'} ${w.temp} °C, pluie ${w.rain} %, vent ${w.wind} km/h</span>` : '';
+    return `<section class="hx" style="--tc:${tc}">
+      <div class="hx-l">
+        <div class="hx-top">${flag(nx.iso, 'lg')}<span class="hx-round">Manche ${nx.round} sur ${s.races.length}</span>${tags}${sw}</div>
+        <h1 class="hx-title">${esc(nx.nameFr)}</h1>
+        <p class="hx-place">${esc(nx.circuit)}, ${esc(nx.locality)}. Départ ${DAYL.format(nx.date)} à ${HM.format(nx.date)}.</p>
+        ${lights}${rail}
+        <div class="hx-cta"><a class="btn" href="#/paris">Parier sur ce Grand Prix</a><a class="btn ghost" href="#/paris/tierce">Jouer le tiercé</a></div>
+      </div>
+      <figure class="hx-map">${trackSvg(nx.circuitId, tc) || `<div class="hx-car3d">${F1.visuals.car(favD ? favD.teamId : 'mclaren', { live: true })}</div>`}
+        <figcaption>${favD ? `<a class="hx-fav" href="#/paris" style="--tc:${tc}">${favD.number ? `<span class="hx-fav-n">${F1.num.html(favD.number, favD.teamId, { color: 'currentColor' })}</span>` : ''}<span><small>Favori</small><b>${esc(favD.given)} ${esc(favD.family)}</b></span><span class="hx-fav-o"><small>Cote</small><b>${fmtOdds(favS.odds)}</b></span></a>` : ''}${wx ? `<div class="hx-wx">${wx}</div>` : ''}</figcaption></figure>
+    </section>`;
+  }
+  // « Ton week-end » : ce qui attend le joueur, en un seul endroit
+  function yourWeekend(s, nx) {
+    const p = F1.store.get(), st = F1.store.stats(), m = F1.store.mgr();
+    const tile = (cls, icon, label, value, sub, action) => `<div class="yw-t ${cls}"><span class="yw-ic">${icon}</span><div class="yw-b"><small>${label}</small><b>${value}</b>${sub ? `<span>${sub}</span>` : ''}</div>${action || ''}</div>`;
+    const bonus = F1.store.canClaimSeason(s) && s.doneCount === 0 ? { act: 'claim-season', v: F1.store.SEASON_BONUS, l: `Prime de lancement ${s.year}` }
+      : F1.store.canClaim(s, nx) ? { act: 'claim', v: F1.store.WEEKLY, l: 'Prime du week-end' } : F1.store.canRescue(s, nx) ? { act: 'rescue', v: F1.store.RESCUE, l: 'Ravitaillement' } : null;
+    const wallet = tile(bonus ? 'hot' : '', coin, 'Mes jetons', fmtJ(p.balance), bonus ? `${bonus.l} : +${fmt(bonus.v)}` : `${st.profit >= 0 ? '+' : ''}${fmtJ(st.profit)} de bénéfice`, bonus ? `<button class="btn sm gold" data-action="${bonus.act}">Récupérer</button>` : '');
+    const bets = tile('', '🎟️', 'Paris en cours', st.open, st.open ? `${fmtJ(st.openStake)} jetons engagés` : 'Aucun pari pour ce Grand Prix', `<a class="yw-go" href="#/${st.open ? 'mes-paris' : 'paris'}">${st.open ? 'Voir' : 'Parier'}</a>`);
+    const lp = localPicks(), y = s.year, has = (k) => { const e = lp[pkKey(y, nx.round, k)]; return e && e.p && e.p.every(Boolean); };
+    const nPick = (has('quali') ? 1 : 0) + (has('race') ? 1 : 0);
+    const picks = tile(nPick < 2 ? 'todo' : '', '🏆', 'Pronostic de ligue', `${nPick} sur 2`, nPick === 2 ? 'Qualifications et course remplies' : nPick ? 'Il reste un podium à pronostiquer' : 'Qualifications et course à pronostiquer', `<a class="yw-go" href="#/ligues">${nPick === 2 ? 'Modifier' : 'Pronostiquer'}</a>`);
+    let mgr;
+    if (!m.driver || !m.chassis) mgr = tile('', F1_ICON, 'F1 Manager', 'Écurie à monter', 'Recrutez un pilote et choisissez une équipe', '<a class="yw-go" href="#/manager">Commencer</a>');
+    else {
+      const ready = F1.store.tunnel().jobs.filter((j) => j.end <= Date.now()).length, left = F1.store.racesLeft();
+      mgr = tile(ready || left ? 'todo' : '', F1_ICON, 'F1 Manager', `${left} course${left > 1 ? 's' : ''} gratuite${left > 1 ? 's' : ''}`, ready ? `${ready} pièce${ready > 1 ? 's' : ''} prête${ready > 1 ? 's' : ''} à installer` : `Ligue ${esc(MG().leagueOf(m.lp).name)}, ${fmt(m.lp)} LP`, '<a class="yw-go" href="#/manager">Ouvrir</a>');
+    }
+    return `<section class="yw" aria-label="Ton week-end">${wallet}${bets}${picks}${mgr}</section>`;
   }
 
   function hero(nx) {
