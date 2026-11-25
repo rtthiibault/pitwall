@@ -3199,7 +3199,7 @@
   function numAvCfg() {
     let c = null; try { c = JSON.parse(localStorage.getItem(NUMAV_KEY)); } catch (e) { /* stockage indisponible */ }
     const m = F1.store.mgr();
-    return Object.assign({ n: m.number || '3', team: (m.chassis && F1.num.tkey(m.chassis.id)) || 'red_bull', style: 'plaque' }, c || {});
+    return Object.assign({ n: m.number || '3', team: (m.chassis && F1.num.tkey(m.chassis.id)) || 'red_bull', style: 'plaque', bg: 'auto', plate: '#c9ced6' }, c || {});
   }
   function numAvSave(c) { try { localStorage.setItem(NUMAV_KEY, JSON.stringify(c)); } catch (e) { /* stockage indisponible */ } }
   function numAvOpen() {
@@ -3212,6 +3212,8 @@
           <label class="nav-av-l">Numéro<input class="field" id="naN" inputmode="numeric" maxlength="2" value="${esc(c.n)}" autocomplete="off"></label>
           <div class="nav-av-l">Typographie</div><div class="nav-av-teams">${NA.TEAMS.map((t) => `<button type="button" class="nav-av-t ${t === c.team ? 'on' : ''}" data-action="na-team" data-t="${t}" style="--tc:${F1.teamColor(t)}"><i></i>${esc(SHORT[t] || t)}</button>`).join('')}</div>
           <div class="nav-av-l">Style</div><div class="nav-av-st">${NA.STYLES.map(([k, l]) => `<button type="button" class="${k === c.style ? 'on' : ''}" data-action="na-style" data-s="${k}">${l}</button>`).join('')}</div>
+          <div class="nav-av-l">Fond</div><div class="nav-av-sw" data-k="bg">${NA.BG_PRESETS.map(([v, l]) => `<button type="button" class="${c.bg === v ? 'on' : ''}" data-action="na-col" data-k="bg" data-v="${v}" title="${l}" style="--sw:${v === 'auto' ? `linear-gradient(135deg, ${NA.LOOK[c.team].bg}, #05070c)` : v}">${v === 'auto' ? '<small>Auto</small>' : ''}</button>`).join('')}<label class="nav-av-pick" title="Couleur libre"><input type="color" id="naBg" value="${/^#/.test(c.bg) ? c.bg : '#0b1b4d'}"><span>＋</span></label></div>
+          <div class="nav-av-l">Plaque</div><div class="nav-av-sw" data-k="plate">${NA.PLATE_PRESETS.map(([v, l]) => `<button type="button" class="${c.plate === v ? 'on' : ''}" data-action="na-col" data-k="plate" data-v="${v}" title="${l}" style="--sw:${v === 'team' ? F1.teamColor(c.team) : v}">${v === 'team' ? '<small>Écurie</small>' : ''}</button>`).join('')}<label class="nav-av-pick" title="Couleur libre"><input type="color" id="naPlate" value="${/^#/.test(c.plate) ? c.plate : '#c9ced6'}"><span>＋</span></label></div>
           <button class="btn" data-action="na-use" style="margin-top:16px;width:100%">Utiliser comme photo de profil</button>
         </div></div></div>`);
     S.numAv = c; numAvDraw();
@@ -3232,6 +3234,11 @@
     numAvSave(c); S.pfAva = false; closeModal(); F1.social.sync(true); showAchievements(); route();
     toast('🪪', `Avatar n°${esc(F1.num.clean(c.n))} enregistré`, 'win');
   }
+  document.addEventListener('input', (e) => {
+    if (!e.target || !S.numAv) return;
+    const k = e.target.id === 'naBg' ? 'bg' : e.target.id === 'naPlate' ? 'plate' : null;
+    if (k) { S.numAv[k] = e.target.value; $$(`.nav-av-sw[data-k="${k}"] button`).forEach((b) => b.classList.remove('on')); e.target.closest('.nav-av-pick').classList.add('on'); numAvDraw(); }
+  });
   document.addEventListener('input', (e) => { if (e.target && e.target.id === 'naN' && S.numAv) { const v = F1.num.clean(e.target.value); e.target.value = v; if (v) { S.numAv.n = v; numAvDraw(); } } });
 
   /* =================== Compte : menu de l'avatar, notifications, messagerie, circuits, paramètres =================== */
@@ -3567,7 +3574,8 @@
       case 'rescue': { const g = F1.store.rescue(S.season, S.season.next); if (g) { toast('⛽', `Ravitaillement : +${jt(g)}`, 'win'); route(); } break; }
       case 'profile': profile(); break;
       case 'numav': numAvOpen(); break;
-      case 'na-team': { S.numAv.team = a.dataset.t; $$('.nav-av-t').forEach((b) => b.classList.toggle('on', b === a)); numAvDraw(); break; }
+      case 'na-team': { S.numAv.team = a.dataset.t; $$('.nav-av-t').forEach((b) => b.classList.toggle('on', b === a)); const au = $('.nav-av-sw [data-v="auto"]'); if (au) au.style.setProperty('--sw', `linear-gradient(135deg, ${F1.numAvatar.LOOK[a.dataset.t].bg}, #05070c)`); const tm = $('.nav-av-sw [data-v="team"]'); if (tm) tm.style.setProperty('--sw', F1.teamColor(a.dataset.t)); numAvDraw(); break; }
+      case 'na-col': { S.numAv[a.dataset.k] = a.dataset.v; $$(`.nav-av-sw[data-k="${a.dataset.k}"] button`).forEach((b) => b.classList.toggle('on', b === a)); numAvDraw(); break; }
       case 'na-style': { S.numAv.style = a.dataset.s; $$('.nav-av-st button').forEach((b) => b.classList.toggle('on', b === a)); numAvDraw(); break; }
       case 'na-use': numAvUse(); break;
       case 'pf-ava': { S.pfAva = !S.pfAva; const gal = $('#pfGallery'); if (gal) gal.classList.toggle('open', !!S.pfAva); break; }
