@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-25T14:47:06.814Z",
+ "updated": "2026-11-25T15:17:12.395Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-25T15:17:06.814Z",
+ "next": "2026-11-25T15:47:12.395Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 78
+   "n": 77
   },
   {
    "name": "F1i",
@@ -26,6 +26,32 @@
   }
  ],
  "items": [
+  {
+   "id": "news_gtr7pu",
+   "timestamp": "2026-11-25T15:05:00.000Z",
+   "category": "PADDOCK",
+   "title": "Bearman veut réussir ses qualifications, Câmara veut gagner en confiance",
+   "summary": "Haas F1 espère rebondir au Grand Prix du Qatar ce week-end après un résultat décevant à Las Vegas, alors que l'équipe lutte toujours pour garder la septième place du championnat face à Audi, qui est revenue à trois points. Oliver Bearman continue à boucler sa…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/bearman-veut-reussir-ses-qualifications-camara-veut-gagner-en-confiance,213723.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1454965_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-25T15:17:12.395Z"
+  },
+  {
+   "id": "news_yuzuga",
+   "timestamp": "2026-11-25T14:23:00.000Z",
+   "category": "PADDOCK",
+   "title": "Red Bull veut la 3e place du championnat : Verstappen et Hadjar prêts à repousser McLaren dès le Qatar",
+   "summary": "Red Bull Racing aborde le Grand Prix du Qatar avec la volonté de prolonger son excellente dynamique de fin de saison et de consolider sa troisième place au championnat des constructeurs face à McLaren. Vainqueur à Las Vegas, où il a décroché le 75e succès de…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/red-bull-veut-la-3e-place-du-championnat-verstappen-et-hadjar-prets-a-repousser,213726.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/redbull_119_-4.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-25T15:17:12.395Z"
+  },
   {
    "id": "news_1ld0iea",
    "timestamp": "2026-11-25T13:47:00.000Z",
@@ -826,7 +852,7 @@
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455860_hires.jpg",
    "impact": null,
-   "firstSeen": "2026-11-25T14:47:06.814Z"
+   "firstSeen": "2026-11-25T15:17:12.395Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -852,32 +878,6 @@
    "impact": null,
    "firstSeen": "2026-11-23T15:36:35.718Z",
    "image": "https://cdn-1.motorsport.com/images/amp/6n7bvLA0/s6/max-verstappen-red-bull-racing-2.jpg"
-  },
-  {
-   "id": "news_mxam5k",
-   "timestamp": "2026-11-23T12:21:06.000Z",
-   "category": "PADDOCK",
-   "title": "Ferrari ne croit pas à des règles écrites pour gérer Hamilton et Leclerc",
-   "summary": "Le passage de Frédéric Vasseur devant la presse après le Grand Prix de Las Vegas ressemblait, à bien des égards, à une copie presque conforme de celui de Mexico. À ces deux occasions, l'échange avec les journalistes s'est déroulé dans une petite salle presque…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/ferrari-vasseur-croit-pas-regles-ecrites-gerer-hamilton-leclerc/10877160/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "impact": null,
-   "firstSeen": "2026-11-23T12:35:31.503Z",
-   "image": "https://cdn-1.motorsport.com/images/amp/YN7vBdV6/s6/frederic-vasseur-ferrari.jpg"
-  },
-  {
-   "id": "news_1xkpudo",
-   "timestamp": "2026-11-23T12:15:00.000Z",
-   "category": "RÈGLEMENT",
-   "title": "'C'était fou' : Piastri revient de l'enfer et arrache un podium surprise !",
-   "summary": "Avant le Grand Prix de Las Vegas, Oscar Piastri s'attendait à un Grand Prix difficile, en raison de la faible vitesse de pointe de sa McLaren F1… Et c'était même encore avant de savoir qu'il partirait 17e, en raison d'une pénalité moteur. Personne ne…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/c-etait-fou-piastri-revient-de-l-enfer-et-arrache-un-podium-surprise,213655.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T15:36:35.718Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455995_hires.jpg"
   }
  ]
 }
