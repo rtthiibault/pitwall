@@ -1849,3 +1849,5 @@ details.lg-how summary { cursor: pointer; font-weight: 800; } details.lg-how[ope
 .sxs .f1-ico.sxs-ic { width: 34px; height: 13px; }
 @media (max-width: 1000px) { .hx-top .sxs { margin-left: 0; } }
 .hx-top .sxs { margin-right: 32px; } @media (max-width: 1000px) { .hx-top .sxs { margin-right: 0; } }
+.hx-top .sxs { margin-right: 72px; }
+@media (max-width: 1000px) { .hx-top .sxs { margin-right: 0; } }
