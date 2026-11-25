@@ -1,0 +1,201 @@
+/* =====================================================================================
+   F1 Manager : direction artistique « box des stands »
+   L'en-tête est la porte du garage aux couleurs de l'écurie (numéro du pilote en filigrane,
+   marquage jaune du box au sol). Le menu est une tour de chronométrage, les panneaux reprennent
+   les habillages télé : coins coupés, titres en italique condensé, aucun cadre superflu.
+   Tout est rangé sous .hq pour ne pas toucher au reste du site.
+   ===================================================================================== */
+.hq {
+  --asphalt: #101318;
+  --tarmac: #171b21;
+  --tarmac-2: #1e232b;
+  --tarmac-3: #262c35;
+  --chalk: #f2f3f5;
+  --pit: #ffd23f;
+  --kerb: #e10600;
+  --cut: 12px;
+  --tc-ink: #fff;
+  font-feature-settings: 'tnum';
+}
+/* titres : Archivo italique, chasse étroite */
+.hq .box-team, .hq .pnl-h h2, .hq-main h1, .hq-main h2, .hq-main > h3, .hq .section-h h2, .hq .section-h h3, .hq .hq-name, .hq .go-l h2 {
+  font-family: 'Archivo', var(--f); font-style: italic; font-stretch: 72%; font-variation-settings: 'wdth' 72;
+}
+
+/* ---------- Porte du box ---------- */
+.hq .box {
+  position: relative; overflow: hidden; isolation: isolate;
+  min-height: 168px; padding: 26px 30px 34px; display: flex; align-items: flex-end;
+  border-radius: 10px 10px 0 0;
+  background:
+    linear-gradient(105deg, color-mix(in srgb, var(--tc) 92%, #000) 0%, color-mix(in srgb, var(--tc) 62%, #05070a) 42%, #0b0d11 78%);
+  color: var(--tc-ink);
+}
+/* bandes de livrée en diagonale */
+.hq .box::before {
+  content: ''; position: absolute; inset: -40% -10% -40% 34%; z-index: -1;
+  background: repeating-linear-gradient(115deg, transparent 0 46px, rgba(255,255,255,.07) 46px 58px, transparent 58px 92px, rgba(0,0,0,.22) 92px 150px);
+  mask-image: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent);
+}
+/* volet du garage : lames horizontales très discrètes */
+.hq .box::after {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: repeating-linear-gradient(180deg, rgba(255,255,255,.035) 0 1px, transparent 1px 14px);
+}
+.hq .box-ghost {
+  position: absolute; right: 3%; top: 8%; bottom: 8%; z-index: -1;
+  width: 46%; display: grid; place-items: center end;
+  color: #fff; opacity: .14; pointer-events: none;
+}
+.hq .box-ghost .dnum { height: 100%; width: auto; max-width: 100%; font-size: 150px; line-height: 1; }
+.hq .box-l { position: relative; display: grid; gap: 8px; min-width: 0; max-width: 72%; }
+.hq .box-crumb { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: color-mix(in srgb, var(--tc-ink) 78%, transparent); }
+.hq .box-crumb .hq-live { width: 8px; height: 8px; box-shadow: 0 0 0 3px rgba(46,229,157,.25); }
+.hq .box-team {
+  margin: 0; font-size: clamp(34px, 5.2vw, 66px); font-weight: 900; line-height: .9; letter-spacing: -.01em;
+  text-transform: uppercase; color: #fff; text-shadow: 0 2px 18px rgba(0,0,0,.35);
+  overflow-wrap: anywhere;
+}
+.hq .box-crew { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; font-size: 14px; color: rgba(255,255,255,.86); }
+.hq .box-drv { display: inline-flex; align-items: center; gap: 8px; }
+.hq .box-drv b { font-weight: 800; color: #fff; }
+.hq .box-num { display: inline-grid; place-items: center; height: 26px; min-width: 30px; padding: 0 6px; background: #fff; color: var(--tc);
+  clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%); }
+.hq .box-num .dnum { height: 18px; width: auto; font-size: 17px; }
+.hq .box-mate b { color: #fff; font-weight: 700; }
+.hq .box .lbadge { background: rgba(0,0,0,.35); border-color: rgba(255,255,255,.2); }
+/* marquage du box au sol : ligne jaune, damier à l'arrivée */
+.hq .box-line {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 8px;
+  background:
+    linear-gradient(90deg, var(--pit) 0 calc(100% - 96px), transparent calc(100% - 96px)),
+    repeating-conic-gradient(#fff 0 25%, #111 0 50%) right bottom / 8px 8px;
+}
+
+/* ---------- Bande de chronométrage (HUD) ---------- */
+.hq .hq-hud {
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0;
+  border: 0 !important; border-radius: 0 !important; background: #0a0c10 !important; overflow: hidden;
+}
+.hq .hq-hud > div { position: relative; min-width: 0; padding: 12px 20px 13px; border: 0 !important; }
+.hq .hq-hud > div + div::before {
+  content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 1px; background: #2a3039; transform: skewX(-18deg);
+}
+.hq .hq-hud small { display: block; font-size: 12px !important; font-weight: 500 !important; letter-spacing: 0 !important; text-transform: none !important; color: var(--muted); }
+.hq .hq-hud b { display: block; margin-top: 2px; font-size: 22px !important; font-weight: 800 !important; font-stretch: 80%; font-variation-settings: 'wdth' 80; color: var(--chalk); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- Corps : tour de chronométrage + contenu ---------- */
+.hq .hq-body {
+  grid-template-columns: 184px minmax(0, 1fr) !important;
+  background: var(--asphalt) !important; border: 0 !important; border-radius: 0 0 10px 10px !important;
+}
+.hq .hq-rail {
+  gap: 2px !important; padding: 12px 0 12px 10px !important; background: #0c0e12 !important; border-right: 0 !important; border-radius: 0 0 0 10px !important;
+}
+.hq .hq-rail a {
+  display: grid !important; grid-template-columns: 26px minmax(0, 1fr) auto; align-items: center; justify-items: start !important; gap: 10px !important;
+  padding: 9px 12px 9px 10px !important; border-radius: 0 !important; border: 0 !important;
+  font-size: 14px !important; font-weight: 600 !important; letter-spacing: 0 !important; text-transform: none !important;
+  color: #aeb6c0 !important; background: transparent !important; text-decoration: none;
+  box-shadow: inset 3px 0 0 transparent;
+}
+.hq .hq-rail a em { font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hq .hq-rail a span { display: grid; place-items: center; width: 26px; font-size: 17px !important; }
+.hq .hq-rail a:hover { color: #fff !important; background: rgba(255,255,255,.04) !important; }
+/* rangée en tête : comme le leader sur la tour, fond clair et liseré écurie */
+.hq .hq-rail a.on {
+  color: #0c0e12 !important; background: var(--chalk) !important; font-weight: 800 !important;
+  box-shadow: inset 4px 0 0 var(--tc);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+}
+.hq .hq-rail a.on span .pi { filter: invert(1) brightness(.2); opacity: 1 !important; }
+.hq .hq-rail a:focus-visible { outline: 2px solid var(--pit); outline-offset: -2px; clip-path: none; }
+.hq .rail-badge { position: static !important; transform: none !important; }
+
+.hq .hq-main { padding: 20px 22px 26px !important; }
+
+/* ---------- Bandeau de départ ---------- */
+.hq .go-strip {
+  position: relative; overflow: hidden; border: 0 !important; border-radius: 0 !important; box-shadow: none !important;
+  padding: 20px 26px 22px !important; margin-bottom: 18px !important;
+  background: linear-gradient(100deg, var(--tarmac-2), var(--tarmac) 60%) !important;
+  clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 0 100%);
+}
+/* grille de départ peinte au sol */
+.hq .go-strip::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--tc);
+}
+.hq .go-strip::after {
+  content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 34%; pointer-events: none;
+  background: repeating-linear-gradient(90deg, transparent 0 58px, rgba(255,255,255,.05) 58px 62px);
+  mask-image: linear-gradient(90deg, transparent, #000);
+}
+.hq .go-l small { color: var(--muted) !important; filter: none !important; letter-spacing: 0 !important; text-transform: none !important; font-size: 13px !important; font-weight: 600 !important; }
+.hq .go-l h2 { font-size: clamp(24px, 3vw, 36px) !important; font-weight: 900 !important; line-height: 1; }
+.hq .go-lights { background: #050608 !important; border-radius: 4px !important; padding: 8px 12px !important; gap: 10px !important; }
+.hq .go-lights i { width: 22px !important; height: 22px !important; }
+.hq .go-big { position: relative; z-index: 1; border-radius: 0 !important; clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%); padding: 0 38px !important; font-stretch: 80%; font-style: italic; }
+.hq .go-big:focus-visible { clip-path: none; outline: 3px solid var(--pit); outline-offset: 2px; }
+
+/* ---------- Panneaux du QG ---------- */
+.hq .pnl {
+  position: relative; border: 0 !important; border-radius: 0 !important; background: var(--tarmac) !important;
+  clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%);
+}
+.hq .pnl-h {
+  display: flex; align-items: baseline; gap: 12px; padding: 14px 18px 10px !important; border-bottom: 0 !important;
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--tc) 80%, #fff 0%);
+}
+.hq .pnl-h h2 { flex: 1; margin: 0; font-size: 19px; font-weight: 800; line-height: 1.1; color: var(--chalk); }
+.hq .pnl-l { font-size: 13px !important; font-weight: 600 !important; color: #c3cad3 !important; text-decoration: none !important; padding: 3px 10px; background: var(--tarmac-3);
+  clip-path: polygon(5px 0, 100% 0, calc(100% - 5px) 100%, 0 100%); }
+.hq .pnl-l:hover { color: #fff !important; background: color-mix(in srgb, var(--tc) 40%, var(--tarmac-3)); }
+.hq .pnl-b { padding: 4px 18px 18px !important; }
+.hq .p-stand { background: radial-gradient(120% 90% at 30% 0%, color-mix(in srgb, var(--tc) 16%, var(--tarmac)), var(--tarmac) 60%) !important; }
+.hq .hq-name { font-weight: 900 !important; }
+.hq .rating-big { font-family: 'Archivo', var(--f); font-style: italic; font-stretch: 75%; font-variation-settings: 'wdth' 75; font-weight: 900; }
+
+/* jauges : traits plats façon télémétrie */
+.hq .sbar-t, .hq .ptsbar, .hq .xp-bar, .hq .tl-bars { border-radius: 0 !important; }
+.hq .sbar-t i, .hq .ptsbar i, .hq .xp-bar i, .hq .tl-bars i { border-radius: 0 !important; }
+
+/* tableaux du QG : lignes de classement */
+.hq .tbl thead th { font-size: 12px; font-weight: 600; text-transform: none; letter-spacing: 0; color: var(--muted); border-bottom: 2px solid var(--tarmac-3); }
+.hq .tbl tbody tr:nth-child(odd) td { background: rgba(255,255,255,.018); }
+
+/* ---------- Sous-pages : composants communs ---------- */
+.hq-main > h1, .hq-main .section-h h2, .hq-main .section-h h3 { font-weight: 900; letter-spacing: -.005em; }
+.hq-main .card, .hq-main .mcard {
+  border-radius: 4px; background: var(--tarmac) !important; border-color: var(--tarmac-3) !important;
+}
+.hq-main .mcard:hover, .hq-main .card.lk:hover { border-color: color-mix(in srgb, var(--tc) 60%, var(--tarmac-3)) !important; }
+.hq-main .notice { border-radius: 0 !important; }
+.hq-main .chip { border-radius: 3px; }
+/* bouton principal : parallélogramme, comme les plaques de numéro */
+.hq-main .btn:not(.ghost):not(.sm):not(.go-big) { border-radius: 0; clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%); padding-left: 22px; padding-right: 22px; }
+.hq-main .btn.sm:not(.ghost) { border-radius: 0; clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%); padding-left: 14px; padding-right: 14px; }
+.hq-main .btn:focus-visible { clip-path: none; outline: 2px solid var(--pit); outline-offset: 2px; }
+.hq-main .btn.ghost { border-radius: 2px; }
+
+/* ---------- Mobile ---------- */
+@media (max-width: 900px) {
+  .hq .hq-hud { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .hq .hq-hud > div:nth-child(4)::before { display: none; }
+}
+@media (max-width: 760px) {
+  .hq .box { min-height: 136px; padding: 20px 18px 26px; }
+  .hq .box-l { max-width: 100%; }
+  .hq .box-ghost { opacity: .12; right: -14%; }
+  .hq .hq-body { grid-template-columns: minmax(0, 1fr) !important; }
+  .hq .hq-rail { flex-direction: row !important; overflow-x: auto; padding: 8px 8px 0 !important; border-radius: 0 !important; scrollbar-width: none; }
+  .hq .hq-rail a { grid-template-columns: auto auto auto; flex: none; padding: 8px 14px 8px 10px !important; }
+  .hq .hq-rail a.on { box-shadow: inset 0 -3px 0 var(--tc); clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%); }
+  .hq .hq-main { padding: 14px 12px 20px !important; }
+  .hq .hq-hud > div { padding: 10px 12px; }
+  .hq .hq-hud b { font-size: 18px !important; }
+  .hq .go-strip { clip-path: none; }
+}
+@media (prefers-reduced-motion: reduce) { .hq .hq-live { animation: none; } }
+
+/* titres de section des sous-pages : même voix que les panneaux du QG */
+.hq-main h3, .hq-main .card > h2 { font-family: 'Archivo', var(--f); font-style: italic; font-stretch: 74%; font-variation-settings: 'wdth' 74; font-weight: 850; letter-spacing: -.005em; }

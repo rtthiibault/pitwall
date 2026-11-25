@@ -466,3 +466,7 @@ V=$(date -u +%Y%m%d%H%M) && sed -i -E "s#\?v=[0-9]+\"#?v=$V\"#g; s#var BUILD = '
 ## Avatar numéro
 
 Dans la galerie de photos du profil, la tuile « Mon numéro » ouvre un atelier : numéro (0 à 99), typographie d'une des 11 écuries et style (Plaque argentée inclinée, Néon, Couleur), couleur du fond et couleur de la plaque (préréglages ou couleur libre). L'encre réelle du numéro est mesurée dans un canvas annexe : la plaque est toujours centrée sur le chiffre, à sa taille, puis l'ensemble est réduit pour tenir dans le cercle de l'avatar. Le rendu est dessiné dans un canvas (`js/numavatar.js`) à partir des tracés de `numbers.js` / `numbers-teams.js` (police de l'écurie pour un numéro sans dessin), puis enregistré comme photo de profil (JPEG 256 px, 128 px pour le profil en ligne). Le dernier réglage est mémorisé dans le navigateur.
+
+## F1 Manager : direction artistique « box des stands »
+
+Styles dans `css/manager.css`, tous rangés sous `.hq`. En-tête en porte de garage aux couleurs de l'écurie (nom en Archivo italique condensé, numéro du pilote en filigrane dans la typographie de l'écurie, marquage jaune du box et damier au sol), bande de chronométrage pour les compteurs, menu en tour de chronométrage (rangée active claire avec liseré écurie), panneaux à coin coupé sans numérotation, boutons principaux en parallélogramme. Aucune fonctionnalité retirée : seuls l'en-tête, le menu et l'en-tête des panneaux ont changé de balisage.

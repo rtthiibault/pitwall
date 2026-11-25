@@ -1566,10 +1566,21 @@
     const col = ch ? F1.teamColor(ch.id) : '#e10600';
     const hud = [['PitCoins', m.pc < 0 ? `<span class="neg">${fmtPC(m.pc)}</span>` : fmtPC(m.pc)], ['Ligue', `${league.icon} ${esc(league.name)}`], ['Points de ligue', fmt(m.lp)], ['Courses gratuites', `${F1.store.racesLeft()} / ${F1.store.racesPerDay()}`], ['Note voiture', car ? MG().carRating(car) : '—']];
     const debt = m.pc < 0 ? `<div class="notice red" style="margin:0 0 14px">Solde de PitCoins négatif (${fmtPC(m.pc)}) après une pénalité de sponsor : vos achats sont bloqués jusqu'au retour au positif. Les courses, les objectifs du jour et les prochains sponsors vous renflouent.</div>` : '';
-    let h = `<div class="hq" style="--tc:${col}">
-      <div class="hq-top"><div class="hq-id"><span class="hq-live"></span><span class="hq-logo"><svg class="f1-ico" viewBox="-1.5 -0.5 68 23" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4.3 15.8 2.7 13.7 1.7 12V5.7Q1.7 4.7 2.7 4.7H9.7Q10.7 4.7 10.7 5.7V10"/><circle cx="11" cy="16.7" r="5"/><circle cx="50" cy="16.7" r="5"/><path d="M16 20.3H32C34 20.3 35.5 18 37.3 18H44"/><path d="M14.7 8.3C18 6.5 20.5 1.9 24.7 1.9H28.3Q29.7 2 30 4L30.7 6.7"/><path d="M27 8.1 36 6.3Q37.7 6 38.7 7L41.3 9.1"/><path d="M30.7 6.7 31.3 9.3Q32.3 10.3 35 10L42 9.8"/><path d="M41.3 9.1 49.7 9.7Q52.7 9.9 55.3 10.7L62 14.7Q64 15.4 64 16.7V18Q64 20.3 62.3 20.3H58"/></svg></span><div><small>Quartier général</small><h1>F1 Manager</h1></div></div>
-        <div class="hq-hud">${hud.map(([l, v]) => `<div><small>${l}</small><b>${v}</b></div>`).join('')}</div></div>
-      <div class="hq-body"><nav class="hq-rail">${MRAIL.map(([k, ic, l]) => `<a class="${k === tab ? 'on' : ''}" href="#/manager/${k}"><span>${ic}</span>${l}${railPing(k)}</a>`).join('')}</nav><div class="hq-main">${debt}`;
+    // en-tête : la porte du box, aux couleurs de l'écurie, avec le numéro du pilote en filigrane
+    const numTeam = ch ? ch.id : (ctx.drvM && ctx.drvM.teamId) || '';
+    const num = m.number || (ctx.drvM && ctx.drvM.number) || '';
+    const ghost = num ? `<div class="box-ghost" aria-hidden="true">${F1.num.html(num, numTeam, { color: 'currentColor' })}</div>` : '';
+    const crew = ctx.drvM ? `<span class="box-drv">${num ? `<span class="box-num">${F1.num.html(num, numTeam, { color: 'currentColor' })}</span>` : ''}<b>${esc(ctx.drvM.name)}</b></span>${ctx.mate ? `<span class="box-mate">avec <b>${esc(ctx.mate.name)}</b></span>` : ''}` : '<span class="box-mate">Pas encore de pilote</span>';
+    let h = `<div class="hq" style="--tc:${col};--tc-ink:${inkOn(col)}">
+      <header class="box">
+        ${ghost}
+        <div class="box-l"><div class="box-crumb"><span class="hq-live"></span>Quartier général du F1 Manager</div>
+          <h1 class="box-team">${ch ? esc(ch.name) : 'Votre écurie'}</h1>
+          <div class="box-crew">${crew}${leagueBadge(league)}</div></div>
+        <i class="box-line" aria-hidden="true"></i>
+      </header>
+      <div class="hq-hud">${hud.map(([l, v]) => `<div><small>${l}</small><b>${v}</b></div>`).join('')}</div>
+      <div class="hq-body"><nav class="hq-rail" aria-label="Sections du F1 Manager">${MRAIL.map(([k, ic, l]) => `<a class="${k === tab ? 'on' : ''}" href="#/manager/${k}"${k === tab ? ' aria-current="page"' : ''}><span>${ic}</span><em>${l}</em>${railPing(k)}</a>`).join('')}</nav><div class="hq-main">${debt}`;
     if (tab === 'pilotes') h += mgrDrivers(ctx);
     else if (tab === 'chassis') h += mgrChassis(ctx);
     else if (tab === 'transferts') h += mgrTransfers(ctx);
@@ -1584,7 +1595,7 @@
     void race;
     return h + '</div></div></div>';
   }
-  const pnl = (n, title, body, cls = '', link = '') => `<section class="pnl ${cls}"><header class="pnl-h"><i>${n}</i><b>${title}</b>${link}</header><div class="pnl-b">${body}</div></section>`;
+  const pnl = (n, title, body, cls = '', link = '') => `<section class="pnl ${cls}"><header class="pnl-h"><h2>${title}</h2>${link}</header><div class="pnl-b">${body}</div></section>`;
   const pnlLink = (href, txt) => `<a class="pnl-l" href="${href}">${txt}</a>`;
   // Fiche d'expérience d'un pilote (âge, potentiel, progression acquise avec l'écurie)
   function xpBlock(e) {
