@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-25T16:47:25.007Z",
+ "updated": "2026-11-25T17:17:28.791Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-25T17:17:25.007Z",
+ "next": "2026-11-25T17:47:28.791Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 75
+   "n": 76
   },
   {
    "name": "F1i",
@@ -26,6 +26,32 @@
   }
  ],
  "items": [
+  {
+   "id": "news_n0fry",
+   "timestamp": "2026-11-25T17:10:00.000Z",
+   "category": "PADDOCK",
+   "title": "Racing Bulls a 'confiance' en sa F1 avant le Grand Prix du Qatar",
+   "summary": "Racing Bulls a connu une course difficile à Las Vegas, et le Grand Prix du Qatar sera l'occasion de rebondir pour Liam Lawson et Arvid Lindblad, qui partaient pourtant à l'avant de la grille mais ont connu diverses mauvaises fortunes dans le Nevada. A Losail…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/racing-bulls-a-confiance-en-sa-f1-avant-le-grand-prix-du-qatar,213727.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/racingbulls_66_-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-25T17:17:28.791Z"
+  },
+  {
+   "id": "news_1fgslm",
+   "timestamp": "2026-11-25T16:51:53.000Z",
+   "category": "RÈGLEMENT",
+   "title": "Williams et Alpine épinglées pour non-respect du plafond budgétaire 2025",
+   "summary": "Les écuries de F1 Williams et Alpine ont été épinglées pour non-respect du plafond budgétaire 2025 de la Formule 1 et ont conclu un accord de violation reconnue avec la FIA. Williams a écopé d'une sanction sportive pour dépassement du plafond, tandis qu'Alpine…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/williams-alpine-epinglee-non-respect-plafond-budgetaire-2025/10877751/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/6VyKx8GY/s6/carlos-sainz-williams-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-25T17:17:28.791Z"
+  },
   {
    "id": "news_mo1xt7",
    "timestamp": "2026-11-25T16:45:16.000Z",
@@ -841,44 +867,6 @@
    "impact": null,
    "firstSeen": "2026-11-23T15:36:35.718Z",
    "image": "https://cdn-1.motorsport.com/images/amp/6VyK51VY/s6/lewis-hamilton-ferrari.jpg"
-  },
-  {
-   "id": "news_ihho01",
-   "timestamp": "2026-11-23T14:09:00.000Z",
-   "category": "PADDOCK",
-   "title": "'Il perd les pédales' : Russell ne devrait pas s'attaquer à Verstappen",
-   "summary": "Günther Steiner a suggéré que George Russell devrait cesser de provoquer Max Verstappen à l'avenir et se concentrer sur le pilotage plutôt que chercher une confrontation qui ne lui rend pas service. Les deux hommes se sont accrochés pendant le week-end du…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/il-perd-les-pedales-russell-ne-devrait-pas-s-attaquer-a-verstappen,213682.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T15:36:35.718Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/mercedes_4_-7.jpg"
-  },
-  {
-   "id": "news_1nfq1de",
-   "timestamp": "2026-11-23T14:00:00.000Z",
-   "category": "PADDOCK",
-   "title": "Laurent Mekies après la victoire de Verstappen à Las Vegas : « Max vient d’une autre planètre »",
-   "summary": "Quelle est la part des progrès du moteur dans cette victoire, et quelle est celle de Max, plus malin que la concurrence dans le déploiement ? Je pense que Max a clairement été plus malin que la concurrence aujourd’hui, dans la manière dont il a réussi à…",
-   "source": "AutoHebdo",
-   "lang": "fr",
-   "url": "https://www.autohebdo.fr/actualites/f1/laurent-mekies-apres-la-victoire-de-verstappen-a-las-vegas-max-vient-dune-autre-planetre.html",
-   "impact": {
-    "targetType": "driver",
-    "targetIds": [
-     "max_verstappen"
-    ],
-    "managerModifiers": {
-     "powerUnit": 0,
-     "aero": 0,
-     "reliability": 0
-    },
-    "bettingOddsMultiplier": 0.95,
-    "impactLabel": "Cotes -5%",
-    "teamId": "red_bull"
-   },
-   "firstSeen": "2026-11-23T15:36:35.718Z"
   }
  ]
 }
