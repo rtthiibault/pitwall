@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-25T09:46:07.117Z",
+ "updated": "2026-11-25T10:16:13.173Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-25T10:16:07.117Z",
+ "next": "2026-11-25T10:46:13.173Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 80
+   "n": 79
   },
   {
    "name": "F1i",
@@ -26,6 +26,45 @@
   }
  ],
  "items": [
+  {
+   "id": "news_9k9mmy",
+   "timestamp": "2026-11-25T10:09:00.000Z",
+   "category": "PADDOCK",
+   "title": "EXCLUSIF – Ayao Komatsu, directeur d’Haas F1 Team : « Notre seule raison d’exister, c’est de courir »",
+   "summary": "Haas occupe actuellement la 7e place du championnat Constructeurs. Si vous conservez cette position, cela égalera votre meilleur résultat des huit dernières années (2024). Le bilan est-il globalement positif selon vous ? Ce serait un sacré « si », parce…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/exclusif-ayao-komatsu-directeur-dhaas-f1-team-notre-seule-raison-dexister-cest-de-courir.html",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/komatsu-haas.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-25T10:16:13.173Z"
+  },
+  {
+   "id": "news_f1xf3x",
+   "timestamp": "2026-11-25T09:47:36.000Z",
+   "category": "PADDOCK",
+   "title": "Alonso: \"Sur certains circuits...nous perdons plus de deux secondes\"",
+   "summary": "Fernando Alonso estime que Honda accuse \"un retard considérable\" sur ses rivaux en Formule 1. Aston Martin ne peut donc \"pas être compétitive\" avec le moteur japonais, même s'il se montre optimiste pour l'avenir. Depuis le passage de la F1 à des unités de…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/fernando-alonso-certains-circuits-nous-perdons-deux-secondes/10877615/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/6DGgOvVY/s6/fernando-alonso-aston-martin-r.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-25T10:16:13.173Z"
+  },
+  {
+   "id": "news_1vlb80g",
+   "timestamp": "2026-11-25T09:40:00.000Z",
+   "category": "RÈGLEMENT",
+   "title": "Verstappen a joué 'plus de 40h à GTA 6' pendant Vegas... et passe 'en mode économie' sur la F1",
+   "summary": "Max Verstappen semble de plus en plus détaché de l'actualité de la Formule 1 lorsqu'il ne se trouve pas sur les circuits. Le pilote Red Bull Racing a ainsi reconnu à Las Vegas qu'il ignorait tout de la décision de la FIA d'introduire des commissaires sportifs…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-a-joue-plus-de-40h-a-gta-6-pendant-vegas-et-passe-en-mode-economie,213714.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/redbull_9_-14.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-25T10:16:13.173Z"
+  },
   {
    "id": "news_5j71qf",
    "timestamp": "2026-11-25T08:54:00.000Z",
@@ -683,7 +722,7 @@
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455860_hires.jpg",
    "impact": null,
-   "firstSeen": "2026-11-25T09:46:07.117Z"
+   "firstSeen": "2026-11-25T10:16:13.173Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -838,45 +877,6 @@
    "impact": null,
    "firstSeen": "2026-11-23T10:51:02.379Z",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455837_hires.jpg"
-  },
-  {
-   "id": "news_8y4pvx",
-   "timestamp": "2026-11-23T08:16:27.000Z",
-   "category": "PADDOCK",
-   "title": "Vasseur reconnaît que la rivalité entre Leclerc et Hamilton est 'devenue incontrôlable'",
-   "summary": "La crise entre Charles Leclerc et Lewis Hamilton a pris une dimension particulièrement inquiétante chez Ferrari après leur nouvel accrochage au Grand Prix de Las Vegas. Frédéric Vasseur reconnaît désormais que la Scuderia aurait peut-être pris une décision…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/vasseur-reconnait-que-la-rivalite-entre-leclerc-et-hamilton-est-devenue,213674.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1407656_hires.jpg"
-  },
-  {
-   "id": "news_1q9kiv0",
-   "timestamp": "2026-11-23T07:38:00.000Z",
-   "category": "PADDOCK",
-   "title": "Mercedes pourrait devoir sacrifier deux équipes en F1",
-   "summary": "Mercedes F1 pourrait se retrouver face à un choix particulièrement délicat à l'horizon 2030, alors que la Formule 1 envisage de limiter le nombre d'écuries pouvant être motorisées par un même constructeur. Avec le retour annoncé des moteurs V8, une proposition…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/mercedes-pourrait-devoir-sacrifier-deux-equipes-en-f1,213667.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455934_hires.jpg"
-  },
-  {
-   "id": "news_11rldsw",
-   "timestamp": "2026-11-23T07:26:39.000Z",
-   "category": "PADDOCK",
-   "title": "\"J'ai bien aimé\" : Stella défend le coup de gueule de Piastri à Las Vegas",
-   "summary": "Terminer sur le podium derrière le vainqueur Max Verstappen à Las Vegas n'était probablement pas prévu dans les plans de McLaren, après une séance de qualifications compliquée pour Lando Norris et Oscar Piastri. La troisième place semblait particulièrement…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/stella-defend-coup-de-gueule-piastri-las-vegas/10877100/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z",
-   "image": "https://cdn-1.motorsport.com/images/amp/YMXbRO12/s6/oscar-piastri-mclaren-lando-no-3.jpg"
   }
  ]
 }
