@@ -454,3 +454,11 @@ Un clic sur l'avatar en haut à droite ouvre un menu déroulant : Mon profil, Me
 - **Notifications** (`#/notifications`) : demandes d'ami (accepter / refuser), messages non lus, succès à réclamer, prime du week-end, actions du F1 Manager (R&D prête, Pass, sponsors, GP hebdo), solde PC négatif.
 - **Circuits** (`#/circuits`) : les tracés de la saison avec leur décor, lien vers chaque Grand Prix.
 - **Paramètres** (`#/parametres`) : pseudo, photo, préférences d'affichage des courses, sauvegarde et réinitialisation.
+
+## Mise à jour automatique
+
+`index.html` embarque son numéro de version (`BUILD`) et lit `version.txt` sans cache au chargement : si la version en ligne est plus récente (page gardée par le navigateur ou le CDN de GitHub Pages), la page se recharge une fois avec `?v=<version>`. À chaque publication, mettre à jour les trois ensemble :
+
+```bash
+V=$(date -u +%Y%m%d%H%M) && sed -i -E "s#\?v=[0-9]+\"#?v=$V\"#g; s#var BUILD = '[^']*'#var BUILD = '$V'#" index.html && echo $V > version.txt
+```
