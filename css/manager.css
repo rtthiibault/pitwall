@@ -620,3 +620,95 @@ body.on-mgr main { max-width: none; padding-left: clamp(12px, 2.2vw, 36px); padd
 .hq .rd-art { height: 88px !important; }
 .hq .rd-ico { width: 104px !important; height: 91px !important; }
 .hq .rd-art.sm .rd-ico { width: 72px !important; height: 63px !important; }
+
+/* =====================================================================================
+   Bandeau du QG, version 2 : panneau de livrée à gauche, scène éclairée à droite
+   ===================================================================================== */
+.hq .box {
+  min-height: 232px !important; padding: 32px 36px 36px !important; align-items: center !important;
+  background: #0b0e12 !important; border-radius: 6px 6px 0 0;
+}
+/* panneau de livrée : aplat incliné à la couleur de l'écurie, assombri vers la droite, sous le texte */
+.hq .box::before {
+  inset: 0 auto 0 0 !important; width: 58%; z-index: -1; mask-image: none !important;
+  background:
+    repeating-linear-gradient(115deg, rgba(255,255,255,0) 0 22px, rgba(255,255,255,.045) 22px 23px),
+    linear-gradient(100deg, color-mix(in srgb, var(--tc) 88%, #000) 0%, color-mix(in srgb, var(--tc) 62%, #06080b) 70%, color-mix(in srgb, var(--tc) 40%, #06080b) 100%) !important;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 120px) 100%, 0 100%);
+}
+/* liseré clair le long de la coupe du panneau */
+.hq .box::after {
+  inset: 0 auto 0 0 !important; width: 58%; z-index: -1; opacity: 1 !important;
+  background: linear-gradient(100deg, transparent calc(100% - 14px), rgba(255,255,255,.55) calc(100% - 14px), rgba(255,255,255,.55) calc(100% - 10px), transparent calc(100% - 10px)) !important;
+  clip-path: polygon(calc(100% - 4px) 0, 100% 0, calc(100% - 120px) 100%, calc(100% - 124px) 100%);
+  background: rgba(255,255,255,.5) !important;
+}
+.hq .box-l { max-width: 46% !important; gap: 12px !important; }
+.hq .box-crumb { color: rgba(255,255,255,.82) !important; font-size: 13px !important; font-weight: 500 !important; }
+.hq .box-team { font-size: clamp(36px, 4.4vw, 64px) !important; text-shadow: 0 2px 0 rgba(0,0,0,.18) !important; }
+.hq .box-crew { gap: 8px 16px !important; }
+.hq .box .lbadge { background: rgba(0,0,0,.4) !important; border: 1px solid rgba(255,255,255,.18) !important; }
+/* scène de droite */
+.hq .box-r { position: absolute !important; right: 0 !important; top: 0 !important; bottom: 0 !important; width: 52% !important;
+  display: block !important; z-index: 0; pointer-events: none; }
+.hq .box-spot { position: absolute; left: 12%; right: -10%; top: -30%; bottom: -10%;
+  background: radial-gradient(50% 55% at 55% 62%, color-mix(in srgb, var(--tc) 34%, transparent), transparent 70%); }
+.hq .box-bignum { position: absolute !important; right: 10%; top: 10%; height: 72% !important; width: auto;
+  color: transparent; filter: none !important; opacity: 1; display: grid; place-items: center end; }
+.hq .box-bignum .dnum { height: 100% !important; width: auto; font-size: 150px; color: transparent; }
+.hq .box-bignum .dnum path { fill: none !important; stroke: color-mix(in srgb, var(--tc) 70%, #fff); stroke-width: 2.4%; vector-effect: non-scaling-stroke; stroke-width: 2px; opacity: .85; }
+.hq .box-bignum .dnum-t > span { -webkit-text-stroke: 2px color-mix(in srgb, var(--tc) 70%, #fff); color: transparent; }
+.hq .box-car { position: absolute !important; right: 6%; bottom: 14%; width: min(78%, 520px) !important; margin: 0 !important; filter: drop-shadow(0 18px 14px rgba(0,0,0,.55)) !important; }
+.hq .box-floor { position: absolute; left: 8%; right: 0; bottom: 0; height: 26%;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.06), transparent 1px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.045) 0 1px, transparent 1px 56px),
+    linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.45));
+  mask-image: linear-gradient(90deg, transparent, #000 30%); }
+/* filet au sol : couleur d'écurie, damier à droite */
+.hq .box-line { height: 4px !important;
+  background: linear-gradient(90deg, var(--tc) 0 calc(100% - 72px), transparent calc(100% - 72px)), repeating-conic-gradient(#fff 0 25%, #111 0 50%) right bottom / 8px 8px !important; }
+@media (max-width: 1100px) { .hq .box::before, .hq .box::after { width: 66%; } .hq .box-l { max-width: 56% !important; } .hq .box-r { width: 46% !important; } }
+@media (max-width: 760px) {
+  .hq .box { flex-direction: column !important; align-items: stretch !important; padding: 24px 18px 26px !important; }
+  .hq .box::before, .hq .box::after { width: 100%; clip-path: polygon(0 0, 100% 0, 100% 62%, 0 78%); }
+  .hq .box::after { display: none; }
+  .hq .box-l { max-width: 100% !important; }
+  .hq .box-r { position: relative !important; width: 100% !important; height: 120px; margin-top: 16px; }
+  .hq .box-car { right: 4%; bottom: 8%; width: 76% !important; }
+  .hq .box-bignum { right: auto; left: 0; }
+}
+.hq .box-bignum { right: 18% !important; top: 4% !important; height: 88% !important; }
+.hq .box-bignum .dnum path { fill: color-mix(in srgb, var(--tc) 16%, transparent) !important; stroke: color-mix(in srgb, var(--tc) 75%, #fff) !important; opacity: .9; }
+.hq .box-bignum .dnum-t > span { color: color-mix(in srgb, var(--tc) 16%, transparent) !important; }
+.hq .box-car { bottom: 10% !important; }
+
+/* =====================================================================================
+   Garage et muret des stands, version développée
+   ===================================================================================== */
+.hq .garage-scene { border: 1px solid var(--hair) !important; background: #0b0d11 !important; }
+.hq .garage-cap { border-radius: 3px !important; font-size: var(--t-meta); }
+.hq .garage-car2 { bottom: 7% !important; width: min(52%, 640px) !important; }
+.hq .g-lv rect { shape-rendering: crispEdges; }
+.radar-sweep2 { transform-box: view-box; transform-origin: 1068px 168px; animation: sweep 2.4s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .radar-sweep2, .hq .mech { animation: none !important; } }
+
+/* muret : auvent aux couleurs de l'écurie, postes avec bureau et ingénieur */
+.hq .wall2 { border: 1px solid var(--hair) !important; background: linear-gradient(180deg, #0c0f13, #12151a 60%) !important; }
+.hq .wall2-gantry { position: relative; padding: 14px 20px 18px !important; background: linear-gradient(180deg, color-mix(in srgb, var(--tc) 92%, #fff 8%), color-mix(in srgb, var(--tc) 70%, #000)) !important; }
+.hq .wall2-gantry::after { content: ''; position: absolute; left: 0; right: 0; bottom: -10px; height: 10px; background: linear-gradient(180deg, rgba(0,0,0,.45), transparent); }
+.hq .wall2-roof { position: absolute; inset: 0; background: repeating-linear-gradient(90deg, rgba(0,0,0,.12) 0 2px, transparent 2px 80px); pointer-events: none; }
+.hq .wall2-gantry b { position: relative; font-family: 'Archivo', var(--f); font-style: normal !important; font-weight: 900 !important; font-variation-settings: 'wdth' 116; letter-spacing: .02em !important; font-size: 18px !important; }
+.hq .wall2-gantry span { position: relative; font-size: var(--t-sec) !important; font-weight: 600 !important; }
+.hq .wall2-bays { gap: 10px !important; padding: 18px 14px 0 !important; position: relative; }
+/* poteaux de l'auvent */
+.hq .wall2-bays::before { content: ''; position: absolute; left: 14px; right: 14px; top: 0; height: 18px; background: repeating-linear-gradient(90deg, #2a2f38 0 6px, transparent 6px calc(20% - 2px)); opacity: .9; }
+.hq .wbay { padding: 10px 10px 0 !important; background: linear-gradient(180deg, #13171d, #0f1216) !important; }
+.hq .wbay-scr { display: block; }
+.hq .wbay-desk { padding: 8px 0 10px; border-top: 1px solid var(--hair); }
+.hq .wall2-track { height: 200px !important; margin-top: 0 !important; border-top: 0 !important; background: none !important; }
+.hq .wall2-track::after { display: none !important; }
+.hq .wall2-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hq .wall2-car { bottom: 22px !important; width: min(600px, 66%) !important; }
+.hq .wall2-car .car3d { height: 160px !important; }
+@media (max-width: 760px) { .hq .box-r { overflow: hidden; } .hq .box-bignum { top: 0 !important; height: 100% !important; } }

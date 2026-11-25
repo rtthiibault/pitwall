@@ -488,3 +488,7 @@ Passe « goût visuel » (plugin VectorLab UX : anti-slop, typography, spacing, 
 ## Anneau de ligue
 
 Chaque photo de profil est entourée d'un anneau à la couleur de la ligue du F1 Manager (Bronze, Argent, Or, Platine, Diamant, Légende ; lueur légère pour la Légende) : bouton du compte, menu, profil, amis, classements, ligues de pronostics, GP Hebdo. Sa propre ligue vient de l'appareil ; celle des autres joueurs, de la colonne `league` des profils (`migration-manager.sql`).
+
+## Bandeau du QG, garage et muret (illustrations)
+
+`js/scenes.js` : garage en perspective (plafond à poutre et rampes LED, panneau de l'écurie, sol époxy avec marquage du box, équipements dessinés en détail, mécaniciens en combinaison avec trois postures) ; le niveau de chaque équipement s'affiche en jauge de 5 segments. Muret : auvent aux couleurs de l'écurie, bureau et ingénieur au casque radio à chaque poste (chaise vide si le poste est vacant), allée des stands en décor. Bandeau du QG : panneau de livrée incliné à gauche, scène éclairée à droite avec le numéro en contour derrière la monoplace.

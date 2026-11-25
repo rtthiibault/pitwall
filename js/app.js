@@ -1583,7 +1583,8 @@
     const numTeam = ch ? ch.id : (ctx.drvM && ctx.drvM.teamId) || '';
     const num = m.number || (ctx.drvM && ctx.drvM.number) || '';
     // à droite du bandeau : le numéro choisi, en grand, dans la typographie de l'écurie, et la monoplace aux couleurs de la livrée
-    const ghost = (num || ch) ? `<div class="box-r" aria-hidden="true">${num ? `<div class="box-bignum">${F1.num.html(num, numTeam, { color: '#fff' })}</div>` : ''}${ch ? `<div class="box-car">${F1.visuals.car(ch.id, { view: 'side', number: num, numTeam: ch.id, sponsor: livery(m) })}</div>` : ''}</div>` : '';
+    // scène de droite : projecteur, numéro géant derrière la voiture, reflet au sol
+    const ghost = (num || ch) ? `<div class="box-r" aria-hidden="true"><i class="box-spot"></i>${num ? `<div class="box-bignum">${F1.num.html(num, numTeam, { color: 'currentColor' })}</div>` : ''}${ch ? `<div class="box-car">${F1.visuals.car(ch.id, { view: 'side', number: num, numTeam: ch.id, sponsor: livery(m) })}</div>` : ''}<i class="box-floor"></i></div>` : '';
     const crew = ctx.drvM ? `<span class="box-drv">${num ? `<span class="box-num">${F1.num.html(num, numTeam, { color: 'currentColor' })}</span>` : ''}<b>${esc(ctx.drvM.name)}</b></span>${ctx.mate ? `<span class="box-mate">avec <b>${esc(ctx.mate.name)}</b></span>` : ''}` : '<span class="box-mate">Pas encore de pilote</span>';
     let h = `<div class="hq" style="--tc:${col};--tc-ink:${inkOn(col)}">
       <header class="box">
@@ -2228,6 +2229,18 @@
     else c = `<text x="${w / 2}" y="${h / 2 + 8}" text-anchor="middle" font-size="24" font-weight="900" font-style="italic" fill="#2ee59d" class="scr-blink">2.1 s</text>${[[10, 10], [w - 22, 10], [10, h - 20], [w - 22, h - 20]].map(([a, b], i) => `<rect class="scr-blink" style="animation-delay:${i * 0.2}s" x="${a}" y="${b}" width="12" height="10" rx="2" fill="#2ee59d"/>`).join('')}`;
     return g(frame + `<g class="scr-on">${c}</g>`);
   }
+  // bureau du muret : plan de travail, clavier, et l'ingénieur assis de dos avec son casque (chaise vide si le poste est vacant)
+  function wallDesk(on, col, role) {
+    const dk = F1.scenes.shade(col, -0.5);
+    let s = `<path d="M96 62 V70 M104 62 V70" stroke="#3a3f4a" stroke-width="3"/><rect x="0" y="70" width="200" height="9" rx="1" fill="#2a2f38"/><rect x="0" y="70" width="200" height="2" fill="#4a505b"/>
+      <rect x="70" y="73" width="38" height="4" rx="1" fill="#14171c"/><rect x="118" y="73" width="10" height="4" rx="2" fill="#14171c"/>`;
+    // chaise
+    s += `<path d="M78 118 V104 C78 92 84 86 100 86 C116 86 122 92 122 104 V118" fill="#15181d" stroke="#2c313a" stroke-width="1.5"/>`;
+    if (on) s += `<g><path d="M80 118 C80 102 88 94 100 94 C112 94 120 102 120 118 Z" fill="${col}"/><path d="M84 106 C90 101 110 101 116 106" stroke="${dk}" stroke-width="3" fill="none"/>
+        <rect x="96" y="88" width="8" height="8" fill="${dk}"/><circle cx="100" cy="82" r="10" fill="#2a1e17"/><path d="M89 80 A11 11 0 0 1 111 80" fill="none" stroke="#111" stroke-width="3"/>
+        <rect x="86" y="78" width="5" height="9" rx="2" fill="#111"/><rect x="109" y="78" width="5" height="9" rx="2" fill="#111"/>${role === 're' ? '<path d="M88 86 C86 92 92 96 96 96" stroke="#111" stroke-width="1.5" fill="none"/>' : ''}</g>`;
+    return s;
+  }
   function mgrStaff(ctx) {
     const { m, ch, tb } = ctx;
     const col = ch ? F1.teamColor(ch.id) : '#e10600';
@@ -2245,13 +2258,13 @@
     const bays = roles.map((r) => {
       const cur = MG().staffOf(m, r.id), on = !!cur;
       return `<button class="wbay ${r.id === role.id ? 'sel' : ''} ${on ? 'on' : 'off'}" data-action="staff-sel" data-r="${r.id}">
-        <svg class="wbay-scr" viewBox="0 0 200 62" aria-hidden="true">${wallScreen(r.id, 0, 0, 96, 62, on)}${wallScreen(r.id === 'tp' ? 're' : r.id === 'cm' ? 'st' : 'tp', 104, 0, 96, 62, on)}</svg>
+        <svg class="wbay-scr" viewBox="0 0 200 118" aria-hidden="true">${wallScreen(r.id, 0, 0, 96, 62, on)}${wallScreen(r.id === 'tp' ? 're' : r.id === 'cm' ? 'st' : 'tp', 104, 0, 96, 62, on)}${wallDesk(on, col, r.id)}</svg>
         <span class="wbay-desk"><span class="wbay-ico">${ico(r.id)}</span><span class="wbay-txt"><b>${esc(r.name)}</b><small>${on ? esc(cur.name) : 'Poste vacant'}</small>${on ? stars(cur.tier) : '<span class="wbay-plus">+ Recruter</span>'}</span></span></button>`;
     }).join('');
     const scene = `<div class="wall2" style="--tc:${col}">
-      <div class="wall2-gantry"><b>PITWALL</b><span>${ch ? esc(ch.name) : 'Votre écurie'}</span></div>
+      <div class="wall2-gantry"><i class="wall2-roof"></i><b>PIT WALL</b><span>${ch ? esc(ch.name) : 'Votre écurie'}</span></div>
       <div class="wall2-bays">${bays}</div>
-      <div class="wall2-track"><i class="wall2-kerb"></i>${ch ? `<div class="wall2-car">${F1.visuals.car(ch.id, { view: 'side', numTeam: ch.id, number: ctx.m.number ? ctx.m.number : ctx.drvM ? ctx.drvM.number : '', sponsor: livery(m) })}</div>` : ''}</div></div>`;
+      <div class="wall2-track">${F1.scenes.wallTrack(col)}${ch ? `<div class="wall2-car">${F1.visuals.car(ch.id, { view: 'side', numTeam: ch.id, number: ctx.m.number ? ctx.m.number : ctx.drvM ? ctx.drvM.number : '', sponsor: livery(m) })}</div>` : ''}</div></div>`;
     const cur = MG().staffOf(m, role.id);
     const cards = MG().STAFF[role.id].map((x) => {
       const own = cur && cur.id === x.id, refund = cur ? Math.round(cur.price * 0.5) : 0, net = x.price - refund;
@@ -2282,24 +2295,8 @@
     const badge = (id, x, y) => (L(id) ? `<g transform="translate(${x} ${y})"><rect x="-17" y="-10" width="34" height="18" rx="9" fill="#0b0c10" stroke="${col}"/><text y="4" text-anchor="middle" font-size="11" font-weight="900" fill="#fff">N${L(id)}</text></g>` : '');
     const nMech = 2 + L('crew') * 2;
     const spots = [[250, 286, 0.95, 0], [948, 286, 0.95, 1], [356, 300, 1, 1], [842, 300, 1, 0], [150, 280, 0.9, 0], [1046, 280, 0.9, 0], [452, 262, 0.82, 0], [748, 262, 0.82, 1], [60, 300, 1, 0], [1140, 300, 1, 0], [560, 256, 0.78, 0], [640, 256, 0.78, 0]];
-    const scene = `<div class="garage-scene" style="--tc:${col}"><div class="scene-in"><svg viewBox="0 0 1200 460" role="img" aria-label="Garage de l'écurie">
-      <defs><linearGradient id="gfloor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3e47"/><stop offset="1" stop-color="#15171c"/></linearGradient><linearGradient id="gwall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d0f14"/><stop offset="1" stop-color="#1c2029"/></linearGradient></defs>
-      <rect width="1200" height="300" fill="url(#gwall)"/><rect y="300" width="1200" height="160" fill="url(#gfloor)"/>
-      ${Array.from({ length: 8 }, (_, i) => `<rect x="${i * 150 + 4}" y="70" width="142" height="226" rx="4" fill="${i % 2 ? '#181b22' : '#1e222b'}" stroke="rgba(255,255,255,.04)"/>`).join('')}
-      <rect y="150" width="1200" height="26" fill="${col}"/><rect y="176" width="1200" height="5" fill="rgba(0,0,0,.4)"/><text x="600" y="170" text-anchor="middle" font-size="18" font-weight="900" font-style="italic" fill="#fff" letter-spacing="10">PITWALL RACING</text>
-      ${[150, 450, 750, 1050].map((x) => `<rect x="${x - 110}" y="18" width="220" height="12" rx="6" fill="#f4f6fb"/><path d="M${x - 130} 30 L${x - 200} 300 H${x + 200} L${x + 130} 30Z" fill="rgba(255,255,255,.035)"/>`).join('')}
-      <g opacity="${o('gantry')}"><rect x="330" y="40" width="540" height="12" fill="#2c3039"/><rect x="330" y="40" width="10" height="70" fill="#2c3039"/><rect x="860" y="40" width="10" height="70" fill="#2c3039"/><rect x="585" y="52" width="30" height="46" rx="5" fill="#0b0c10" stroke="#3a3f4a"/><circle cx="600" cy="66" r="7" fill="${L('gantry') ? '#e10600' : '#3a1010'}"/><circle cx="600" cy="84" r="7" class="${L('gantry') ? 'g-green' : ''}" fill="#12351f"/>${badge('gantry', 640, 70)}</g>
-      <g opacity="${o('guns')}">${[400, 800].map((x) => `<path d="M${x} 52 q${x < 600 ? 30 : -30} 70 0 120" fill="none" stroke="#e10600" stroke-width="3"/><rect x="${x - 14}" y="168" width="28" height="12" rx="3" fill="#d9dde3"/><rect x="${x - 4}" y="178" width="8" height="16" fill="#8b93a1"/>`).join('')}${badge('guns', 400, 210)}</g>
-      <g opacity="${o('telemetry')}">${[60, 170].map((x) => `<rect x="${x}" y="196" width="96" height="58" rx="4" fill="#05070b" stroke="#3a3f4a"/><polyline class="scr-line" fill="none" stroke="#2ee59d" stroke-width="1.6" points="${Array.from({ length: 10 }, (_, k) => `${x + 8 + k * 9},${226 + Math.sin(k * 1.3 + x) * 12}`).join(' ')}"/>`).join('')}${badge('telemetry', 160, 190)}</g>
-      <g opacity="${o('pitwall')}"><rect x="950" y="196" width="96" height="58" rx="4" fill="#05070b" stroke="#3a3f4a"/>${[0, 1, 2, 3].map((i) => `<rect class="scr-bar" style="animation-delay:${i * 0.3}s" x="958" y="${204 + i * 12}" width="${60 - i * 9}" height="6" fill="#8b93a1"/>`).join('')}${badge('pitwall', 998, 190)}</g>
-      <g opacity="${o('radar')}"><rect x="1060" y="196" width="96" height="58" rx="4" fill="#05070b" stroke="#3a3f4a"/><circle cx="1108" cy="225" r="22" fill="none" stroke="#27b4f4"/><path class="radar-sweep" d="M1108 225 L1108 203" stroke="#27f4d2" stroke-width="2"/><circle cx="1118" cy="216" r="6" fill="rgba(39,180,244,.5)"/>${badge('radar', 1108, 190)}</g>
-      <g opacity="${o('tyrerack')}">${[0, 1, 2].map((i) => `<g transform="translate(${40 + i * 44} 300)"><ellipse cx="0" cy="62" rx="24" ry="6" fill="rgba(0,0,0,.4)"/>${[0, 1, 2, 3].map((k) => `<rect x="-20" y="${44 - k * 17}" width="40" height="15" rx="6" fill="${L('blankets') ? '#c2161c' : '#0c0c0e'}" stroke="#2a2d34"/><rect x="-20" y="${50 - k * 17}" width="40" height="3" fill="${['#e10600', '#ffd400', '#f2f2f2'][i]}"/>`).join('')}</g>`).join('')}${badge('tyrerack', 84, 232)}${L('blankets') ? badge('blankets', 128, 232) : ''}</g>
-      <g opacity="${o('spares')}"><rect x="1010" y="300" width="150" height="72" rx="5" fill="#b0141a"/><rect x="1018" y="310" width="134" height="14" fill="#7c0d12"/><rect x="1018" y="330" width="134" height="14" fill="#7c0d12"/><rect x="1018" y="350" width="134" height="14" fill="#7c0d12"/><circle cx="1030" cy="378" r="7" fill="#0c0c0e"/><circle cx="1140" cy="378" r="7" fill="#0c0c0e"/>${badge('spares', 1085, 292)}</g>
-      <g opacity="${o('fuelrig')}"><rect x="910" y="304" width="46" height="70" rx="6" fill="#d9dde3"/><rect x="918" y="312" width="30" height="20" fill="#0b0c10"/><path d="M956 330 q40 10 20 50" fill="none" stroke="#111" stroke-width="5"/>${badge('fuelrig', 933, 296)}</g>
-      <g opacity="${o('jacks')}"><path d="M360 398 h60 l14 -14" fill="none" stroke="#d9dde3" stroke-width="6" stroke-linecap="round"/><circle cx="366" cy="404" r="6" fill="#0c0c0e"/><path d="M840 398 h-60 l-14 -14" fill="none" stroke="#d9dde3" stroke-width="6" stroke-linecap="round"/><circle cx="834" cy="404" r="6" fill="#0c0c0e"/>${badge('jacks', 330, 392)}</g>
-      <g opacity="${o('rig')}">${[470, 560, 640, 730].map((x) => `<rect x="${x - 9}" y="392" width="18" height="14" rx="2" fill="#3b6fd0"/>`).join('')}${badge('rig', 600, 424)}</g>
-      <g opacity="${o('startsim')}"><rect x="232" y="64" width="70" height="20" rx="4" fill="#0b0c10" stroke="#3a3f4a"/>${[0, 1, 2, 3, 4].map((i) => `<circle cx="${242 + i * 12.5}" cy="74" r="4" class="${L('startsim') ? 'scr-blink' : ''}" style="animation-delay:${i * 0.25}s" fill="#e10600"/>`).join('')}${badge('startsim', 267, 100)}</g>
-      ${spots.slice(0, nMech).map(([x, y, k, p]) => mech(x, y, k, col, p)).join('')}
+    const scene = `<div class="garage-scene" style="--tc:${col}"><div class="scene-in"><svg viewBox="0 0 1200 460" role="img" aria-label="Garage de l'écurie : ${nMech} mécaniciens, équipement ${tot} niveaux sur ${max}">
+      ${F1.scenes.garage({ L, col, nMech, team: esc(ch ? (F1.ref.TEAM_SHORT[ch.id] || ch.name) : 'Votre écurie').toUpperCase() })}
       </svg><div class="garage-car2">${ch ? F1.visuals.car(ch.id, { view: 'side', shadow: false, sponsor: livery(m) }) : ''}</div>
       <div class="garage-cap"><b>${nMech} mécaniciens</b> · équipement ${tot}/${max} niveaux</div></div></div>`;
     const tabs = zones.map((z) => { const it = MG().GARAGE.filter((g) => g.zone === z.id); return `<button class="rd-tab ${z.id === zone.id ? 'on' : ''}" data-action="garage-zone" data-z="${z.id}" style="--cc:${col}"><span>${z.icon}</span>${esc(z.name)}<small>${it.reduce((a, g) => a + L(g.id), 0)}/${it.length * MG().MAX_LV}</small></button>`; }).join('');
