@@ -131,8 +131,8 @@
     { id: 'argent', name: 'Argent', min: 100, mult: 1.3, color: '#c9ced8', icon: '🥈', bot: [1, 3], drv: [77, 85] },
     { id: 'or', name: 'Or', min: 250, mult: 1.7, color: '#ffcc4d', icon: '🥇', bot: [3, 5], drv: [80, 88] },
     { id: 'platine', name: 'Platine', min: 450, mult: 2.2, color: '#7fe3d6', icon: '💠', bot: [5, 7], drv: [83, 91] },
-    { id: 'diamant', name: 'Diamant', min: 700, mult: 3, color: '#8ab4ff', icon: '💎', bot: [7, 9], drv: [86, 94] },
-    { id: 'legende', name: 'Légende', min: 1000, mult: 4, color: '#ff4d6d', icon: '👑', bot: [9, 10], drv: [89, 97] },
+    { id: 'diamant', name: 'Diamant', min: 700, mult: 2.4, color: '#8ab4ff', icon: '💎', bot: [7, 9], drv: [86, 94] },
+    { id: 'legende', name: 'Légende', min: 1000, mult: 2.8, color: '#ff4d6d', icon: '👑', bot: [9, 10], drv: [89, 97] },
   ];
   /* Saison mensuelle du manager : à chaque nouveau mois, prime selon la ligue atteinte (LP de fin de mois),
      puis redescente partielle (on garde 60 % des LP) pour relancer la course aux points. */
@@ -207,7 +207,9 @@
   }
   // Prime du coéquipier : la moitié du barème de PitCoins de la ligue, selon sa position d'arrivée
   const MATE_PC_K = 0.5;
-  const matePC = (pos, dnf, league) => (dnf ? 0 : Math.round((PC_TABLE[pos - 1] ?? 2) * (league ? league.mult : 1) * MATE_PC_K));
+  // prime plafonnée : le coéquipier ne doit pas devenir une source de revenus à part entière en ligues hautes
+  const MATE_PC_CAP = 45;
+  const matePC = (pos, dnf, league) => (dnf ? 0 : Math.min(MATE_PC_CAP, Math.round((PC_TABLE[pos - 1] ?? 2) * (league ? league.mult : 1) * MATE_PC_K)));
   // Points « championnat » d'une course (barème officiel) pour les statistiques du profil
   const F1_POINTS = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
   // valeur d'un pilote tel qu'il est aujourd'hui (objet renvoyé par withExperience)
@@ -472,7 +474,9 @@
   const valueOf = (fx) => Object.entries(fx).reduce((a, [k, v]) => a + (VALUE[k] || 0) * v, 0);
   const TARIF = 80;   // PitCoins par point de performance
   const price = (v) => Math.max(5, Math.round((TARIF * v) / 5) * 5);
-  levelCost = (p, l) => price(valueOf(p.fx) * LV_GAIN[l - 1]);           // coût pour passer au niveau l
+  // coût pour passer au niveau l : les derniers niveaux coûtent bien plus cher (Mk III ×2, Mk IV ×4, Mk V ×7)
+  const LV_COST_K = [1, 1, 2, 4, 7];
+  levelCost = (p, l) => price(valueOf(p.fx) * LV_GAIN[l - 1] * LV_COST_K[l - 1]);
   const garageCost = (g, l) => price(valueOf(g.fx) * G_GAIN[l - 1]);
   const garageLevel = (m, id) => Math.min(MAX_LV, (m && m.garage && m.garage[id]) || 0);
   // Bonus cumulés du personnel et du garage
@@ -1346,7 +1350,7 @@
     WEEKLY_ATTEMPTS, WEEKLY_FIRST_PRIME, isoWeek, weeklyEvent, weeklyBots, fmtRaceTime, fmtGap, weeklyPrize, CIRCUIT_NAME,
     SEASON_PRIZE, SEASON_KEEP, monthKey, TUNNEL_BET_CD, aiLineup, driverPrice, driverLeagueReq, driverValueV1, valueOfDriverV1, PRICE_PTS, SPONSOR_COOLDOWN, rdBuildMs, rushCost, TUNNEL_SLOT2_PC, PASS_TIERS, PASS_XP_TIER, PASS_XP_RACE, PASS_XP_WEEKLY, PASS_CHEST, PASS_LIVERIES, PASS_LIVERY_BY, passReward, passTier,
     SPONSORS, SPONSOR_BY_ID, goalText, sponsorTerms, sponsorAfterRace, SUB_K,
-    TEAM_NAME, TEAM_CODE, GRID, GRID_BY, shortName, newsForm, mateValue, MATE_K, matePC, MATE_PC_K, F1_POINTS, mateEntry, START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, lpScale, AGE_PRICE, driverValue, valueOfDriver, RESALE_K, XP_DIV, PC_TABLE,
+    MATE_PC_CAP, LV_COST_K, TEAM_NAME, TEAM_CODE, GRID, GRID_BY, shortName, newsForm, mateValue, MATE_K, matePC, MATE_PC_K, F1_POINTS, mateEntry, START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, lpScale, AGE_PRICE, driverValue, valueOfDriver, RESALE_K, XP_DIV, PC_TABLE,
     RD_CATS, RD_PARTS, RD_BY_ID, rdBranches, partState, partsBonus,
     market, carStats, withSetup, carScore, bestSetup, compat, circuitProfile, botField, simulate, rewards, hash, TALENT,
   };

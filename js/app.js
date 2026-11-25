@@ -2359,7 +2359,7 @@
       <div class="race-h"><div><div class="muted upper" style="font-size:11px;font-weight:700">${leagueBadge(leagueBefore)} · ${esc(ctx.race.nameFr)}</div><div class="race-lap">Tour <b id="lapN">0</b> / ${LAPS}</div></div>
         <div class="wx-now" id="wxNow"></div>
         <div class="race-ctl">
-          <div class="seg" role="group" aria-label="Vitesse de la course">${[1, 2, 4].map((v) => `<button class="${v === 1 ? 'on' : ''}" data-action="race-speed" data-v="${v}">×${v}</button>`).join('')}</div>
+          <div class="seg" role="group" aria-label="Vitesse de la course">${[1, 2, 4, 8].map((v) => `<button class="${v === 1 ? 'on' : ''}" data-action="race-speed" data-v="${v}">×${v}</button>`).join('')}</div>
           <div class="seg" role="group" aria-label="Style de la carte">${[['anim', 'Animée'], ['flat', '2D épurée']].map(([k, l]) => `<button class="${mapStyle() === k ? 'on' : ''}" data-action="map-style" data-v="${k}">${l}</button>`).join('')}</div>
           <button class="btn sm ghost low-btn ${lowMode() ? 'on' : ''}" data-action="low-mode" title="Désactive les effets visuels lourds et limite la carte à 24 images par seconde">Config basse${lowMode() ? ' ✓' : ''}</button>
           <button class="btn sm ghost" data-rfs="1" title="Plein écran">⛶</button>
@@ -2379,7 +2379,7 @@
         </div>
         <div class="race-side"><div class="tower-h"><span>Classement</span><div class="seg tw-mode"><button class="on" data-tw="gap">Leader</button><button data-tw="int">Intervalle</button></div></div><div class="tower" style="height:${res.field.length * ROW}px;--row:${ROW}px">${tower}</div><div class="feed" id="feed"><div class="ev"><b>Départ</b> — vous partez P${meX.grid} sur la grille, en ${MG().TYRES[meX.tyre].name.toLowerCase()}${res.weather[0].wet > 0.12 ? `, sur piste ${MG().trackState(res.weather[0].wet).toLowerCase()}` : ''}</div></div></div>
       </div></div></div>`;
-    const STEP = 50, LAP_MS = 240000 / LAPS; // une course dure environ 4 minutes en vitesse ×1, quel que soit le nombre de tours
+    const STEP = 50, LAP_MS = 480000 / LAPS; // une course dure environ 8 minutes en vitesse ×1 (4 min en ×2, 2 min en ×4, 1 min en ×8), quel que soit le nombre de tours
     let lap = 0, T = -0.5, flagT = 0, started = false, paused = false, done = false, evI = 0, radioTimer = null; // T < 0 : procédure de départ (5 feux rouges)
     S.raceSpeed = 1;
     MG().stepLap(res); // le tour 1 est calculé d'avance : la carte interpole toujours vers le tour suivant
