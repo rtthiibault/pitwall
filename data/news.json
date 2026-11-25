@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-25T06:45:37.356Z",
+ "updated": "2026-11-25T07:15:42.857Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-25T07:15:37.356Z",
+ "next": "2026-11-25T07:45:42.857Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 84
+   "n": 83
   },
   {
    "name": "F1i",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_1c1lsch",
+   "timestamp": "2026-11-25T06:49:00.000Z",
+   "category": "PADDOCK",
+   "title": "Verstappen étudie une participation aux 24 Heures de Daytona en janvier",
+   "summary": "Max Verstappen pourrait profiter de la trêve hivernale de la Formule 1 pour ajouter une nouvelle épreuve prestigieuse à son programme de compétition en dehors des Grands Prix. Le quadruple champion du monde étudie actuellement la possibilité de participer aux…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-etudie-une-participation-aux-24-heures-de-daytona-en-janvier,213703.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/redbull_9_-13.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-25T07:15:42.857Z"
+  },
   {
    "id": "news_7y7g4g",
    "timestamp": "2026-11-25T06:06:00.000Z",
@@ -631,7 +644,7 @@
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455860_hires.jpg",
    "impact": null,
-   "firstSeen": "2026-11-25T06:45:37.356Z"
+   "firstSeen": "2026-11-25T07:15:42.857Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -864,19 +877,6 @@
    "impact": null,
    "firstSeen": "2026-11-23T10:51:02.379Z",
    "image": "https://cdn-1.motorsport.com/images/amp/6zoD4mk0/s6/george-russell-mercedes-2.jpg"
-  },
-  {
-   "id": "news_1bdgf1c",
-   "timestamp": "2026-11-22T18:41:54.000Z",
-   "category": "PADDOCK",
-   "title": "Haas maintient Rafael Câmara en F1, mettant fin à ses espoirs de titre en F2",
-   "summary": "Le rookie de Haas Rafael Câmara terminera la saison avec l'écurie américaine au Qatar et à Abu Dhabi, mettant de fait un terme à ses chances de titre en F2. Câmara a été officiellement annoncé en octobre comme remplaçant à temps plein d'Esteban Ocon pour 2027…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/haas-maintien-rafael-camara-f1-mettant-fin-espoirs-f2/10877051/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z",
-   "image": "https://cdn-1.motorsport.com/images/amp/YvKBe8e6/s6/rafael-camara-haas.jpg"
   }
  ]
 }
