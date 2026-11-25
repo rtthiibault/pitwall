@@ -1835,3 +1835,16 @@ details.lg-how summary { cursor: pointer; font-weight: 800; } details.lg-how[ope
 .sxt-soon { position: absolute; right: -30px; top: 12px; transform: rotate(32deg); padding: 3px 34px; background: var(--gold); color: #1c1500; font-size: 11px; font-weight: 900; box-shadow: 0 2px 8px rgba(0,0,0,.4); }
 .sxt + .hx, .sxt + .hero { margin-top: 0; border-top-left-radius: 0; }
 @media (max-width: 640px) { .sxt { grid-template-columns: 1fr 1fr; } .sxt-tab { grid-template-columns: 1fr; gap: 4px; padding: 10px 12px; } .sxt-car { width: 90px; height: 26px; } .sxt-txt small { white-space: normal; } }
+
+/* ===================== Accueil : interrupteur Formule 1 / Endurance (compact) ===================== */
+.sxt { display: none; }
+.sxs { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: rgba(0,0,0,.4); border: 1px solid #2a313b; }
+.hx-top .sxs { margin-left: auto; }
+.sxs button { display: inline-flex; align-items: center; gap: 7px; padding: 6px 13px 6px 10px; border: 0; border-radius: 999px; background: transparent; color: #9aa3ae; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; transition: background .15s, color .15s; }
+.sxs button:not(.on):not(.lock):hover { color: #eef0f3; }
+.sxs button.on { background: #e10600; color: #fff; box-shadow: 0 2px 10px rgba(225,6,0,.4); }
+.sxs button.lock { cursor: not-allowed; opacity: .6; }
+.sxs button small { font-size: 10.5px; font-weight: 700; color: var(--gold); }
+.sxs-ic { width: 34px; height: 13px; flex: none; }
+.sxs .f1-ico.sxs-ic { width: 34px; height: 13px; }
+@media (max-width: 1000px) { .hx-top .sxs { margin-left: 0; } }
