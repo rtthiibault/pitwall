@@ -430,3 +430,7 @@ Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectoriel
 - **Hero** : le vrai tracé du prochain circuit (`F1.CIRCUITS`), dessiné au chargement, avec un point aux couleurs de l'écurie du favori qui fait le tour (fixe si l'utilisateur a demandé à réduire les animations). Compte à rebours en feux de départ, programme du week-end en ligne de temps, carte du favori (numéro, cote), météo, sélecteur Formule 1 / Endurance compact.
 - **« Ton week-end »** : jetons (et prime à récupérer), paris en cours, pronostic de ligue (0, 1 ou 2 podiums remplis), F1 Manager (courses gratuites, pièce prête). Ce bandeau remplace les alertes de prime et le bloc de statistiques du bas.
 - **Ordre de la page** : hero, Ton week-end, favoris, À la une, Paddock Wire, dernier podium et classement, saison suivante.
+- **Décor du hero** (`SCENES` dans `js/app.js`) : paysage dessiné autour du tracé selon le circuit. Désert (dunes, palmiers, dromadères), ville (immeubles aux fenêtres éclairées la nuit), mer et yachts, forêts, montagnes, parcs et lacs. Courses de nuit : ciel étoilé, lune et projecteurs.
+- **Favoris** : numéro du pilote en plein, dans la typographie de son écurie.
+- **Paddock Wire** : dépêche à la une illustrée (couleur de l'écurie, numéro du pilote) et fil des 5 dernières.
+- **« Ton week-end »** déplacé en fin de page.

@@ -515,12 +515,17 @@
   // Accueil : les dernières dépêches
   function pwHome() {
     if (!F1.news || S.series === 'wec') return '';
-    // les dépêches qui pèsent en ce moment d'abord, puis les plus récentes
-    const all = F1.news.items(), hot = all.filter((x) => x.impact && F1.news.weight(x) > 0);
-    const it = [...hot.slice(0, 2), ...all.filter((x) => !hot.slice(0, 2).includes(x))].slice(0, 3);
-    if (!it.length) return '';
-    return `<section class="section"><div class="section-h"><h2 class="pdw-h2">${PW_ICON}<span class="pdw-word">Paddock Wire</span></h2><a class="link" href="#/paddock">Toutes les dépêches</a></div>
-      <div class="grid g3 pdw-mini">${it.map((x) => `<a class="pdw-card mini" href="#/paddock"><header class="pdw-meta"><span class="pdw-cat ${(PW_CAT[x.category] || PW_CAT.PADDOCK)[0]}">${(PW_CAT[x.category] || PW_CAT.PADDOCK)[1]}</span><time>${pwAgo(Date.parse(x.timestamp))}</time></header><h3>${esc(x.title)}</h3>${x.impact ? `<span class="pdw-mini-imp ${x.impact.bettingOddsMultiplier > 1 ? 'neg' : 'pos'}">${esc(x.impact.impactLabel)}</span>` : ''}</a>`).join('')}</div></section>`;
+    const items = F1.news.items(); if (!items.length) return '';
+    const recent = items.filter((x) => Date.now() - Date.parse(x.timestamp) < 72 * 36e5);
+    const top = [...(recent.length ? recent : items)].sort((a, b) => pwScore(b) - pwScore(a))[0];
+    const list = items.filter((x) => x !== top).slice(0, 5);
+    const col = pwTeamCol(top), [cc, cl] = PW_CAT[top.category] || PW_CAT.PADDOCK;
+    const feat = `<a class="pwh-feat" href="${esc(top.url)}" target="_blank" rel="noopener noreferrer" style="--tc:${col}"><div class="pwh-vis">${(() => { const dd = pwTags(top).drivers[0] && drv(pwTags(top).drivers[0]); return dd && dd.number ? `<span class="pwh-num">${F1.num.html(dd.number, dd.teamId, { color: 'currentColor' })}</span>` : ''; })()}${pwVisual(top)}</div>
+      <div class="pwh-fb"><div class="pwh-meta"><span class="pwh-live"><i></i>À la une</span><span class="pdw-cat ${cc}">${cl}</span><span>${esc(top.source)}, ${pwAgo(Date.parse(top.timestamp))}</span></div>
+        <h3>${esc(top.title)}</h3>${top.summary ? `<p>${esc(top.summary)}</p>` : ''}<div class="pw-tags">${pwTagChips(top)}</div>${top.impact ? `<span class="pwh-imp">⚡ ${esc(top.impact.impactLabel || 'Impact sur le jeu')}</span>` : ''}</div></a>`;
+    const rows = list.map((x) => { const [c2] = PW_CAT[x.category] || PW_CAT.PADDOCK; return `<a class="pwh-row" href="#/paddock" style="--tc:${pwTeamCol(x)}"><time>${new Date(Date.parse(x.timestamp)).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</time><div><b>${esc(x.title)}</b><span class="pwh-row-m"><i class="pdw-cat ${c2}"></i>${esc(x.source)}${x.impact ? ' · <em>impact sur le jeu</em>' : ''}</span></div></a>`; }).join('');
+    return `<section class="section pwh"><div class="pwh-head"><a class="pwh-brand" href="#/paddock">${PW_ICON}<span class="pdw-word">Paddock Wire</span></a><span class="pwh-sub">L'actualité F1, relevée toutes les 30 minutes. Elle fait bouger les cotes et les monoplaces du F1 Manager.</span><a class="btn sm ghost" href="#/paddock">Toutes les dépêches</a></div>
+      <div class="pwh-grid">${feat}<div class="pwh-list">${rows}</div></div></section>`;
   }
   async function pwSync(btn) {
     if (btn) { btn.disabled = true; btn.textContent = 'Synchro…'; }
@@ -549,7 +554,7 @@
     const s = S.season;
     const nx = s.next;
     const f1Home = S.series !== 'wec' && nx;
-    let h = f1Home ? heroTrack(nx) + yourWeekend(s, nx) : seriesSwitch() + hero(nx);
+    let h = f1Home ? heroTrack(nx) : seriesSwitch() + hero(nx);
     if (s.pending) h += `<div class="notice red" style="margin-top:18px">🏁 <b>${esc(s.pending.nameFr)}</b> : course terminée ou en cours — vos paris seront réglés dès la publication des résultats officiels.</div>`;
     if (S.series !== 'wec' && s.doneCount === 0 && nx && F1.store.canClaimSeason(s)) h += `<div class="notice" style="margin-top:18px">🎆 Nouvelle saison ${s.year} : prime de lancement <b>+${jt(F1.store.SEASON_BONUS)}</b>. <span class="sp"></span><button class="btn sm gold" data-action="claim-season">Récupérer</button></div>`;
     if (s.prev && s.doneCount === 0) { const ch = [...s.prev.drivers.values()].sort((a, b) => b.points - a.points)[0]; if (ch) h += `<div class="notice" style="margin-top:18px">🏆 Saison ${s.prev.year} terminée : <b>${esc(ch.given + ' ' + ch.family)}</b> champion du monde avec ${fmt(ch.points)} points. Les cotes ${s.year} partent de la hiérarchie ${s.prev.year}.</div>`; }
@@ -568,24 +573,96 @@
     h += `<section class="section"><div class="grid g2">${lastPodium()}${miniStandings()}</div></section>`;
     h += upcomingTeaser();
     if (!f1Home) h += homeStats();
+    else h += `<section class="section"><div class="section-h"><h2>Ton week-end</h2><a class="link" href="#/profil">Mon profil</a></div>${yourWeekend(s, nx)}</section>`;
     return h;
   }
 
   /* ---------- Accueil : le tracé du prochain circuit, feux de départ, programme du week-end ---------- */
+  /* ---------- Décor du circuit : paysage dessiné autour du tracé selon le lieu ----------
+     g : sol · items : éléments du décor (pondérés) · night : course de nuit · sea : côté de la mer */
+  const SCENES = {
+    losail: { g: 'sand', items: { palm: 3, camel: 2, dune: 4 }, night: 1 }, bahrain: { g: 'sand', items: { palm: 3, camel: 2, dune: 4, tower: 1 }, night: 1 },
+    jeddah: { g: 'sand', items: { tower: 3, palm: 3, dune: 1 }, night: 1, sea: 'left' }, yas_marina: { g: 'sand', items: { palm: 4, tower: 2, yacht: 2, dune: 1 }, night: 1, sea: 'bottom' },
+    vegas: { g: 'city', items: { tower: 6, cactus: 2, palm: 1 }, night: 1 }, marina_bay: { g: 'city', items: { tower: 6, palm: 2, yacht: 1 }, night: 1, sea: 'bottom' },
+    monaco: { g: 'city', items: { tower: 4, yacht: 3, palm: 2, pine: 1 }, sea: 'bottom' }, baku: { g: 'city', items: { tower: 6, tree: 1 }, sea: 'bottom' },
+    miami: { g: 'city', items: { palm: 5, tower: 3 } }, madring: { g: 'city', items: { tower: 5, tree: 2 } }, shanghai: { g: 'city', items: { tower: 4, tree: 3 } },
+    rodriguez: { g: 'city', items: { tower: 3, tree: 3 } }, interlagos: { g: 'park', items: { tree: 4, tower: 3 } }, albert_park: { g: 'park', items: { tree: 5, tower: 2 }, lake: 1 },
+    villeneuve: { g: 'park', items: { tree: 4, tower: 2 }, lake: 1 }, sepang: { g: 'park', items: { palm: 5, tree: 3 } }, suzuka: { g: 'park', items: { tree: 4, pine: 3, mountain: 1 } },
+    spa: { g: 'forest', items: { pine: 7, tree: 2, mountain: 1 } }, red_bull_ring: { g: 'forest', items: { mountain: 4, pine: 4 } }, imola: { g: 'forest', items: { tree: 5, pine: 2 } },
+    monza: { g: 'forest', items: { tree: 7 } }, silverstone: { g: 'park', items: { tree: 4, field: 3 } }, hungaroring: { g: 'park', items: { tree: 4, field: 2 } },
+    catalunya: { g: 'park', items: { tree: 3, mountain: 2, field: 1 } }, zandvoort: { g: 'sand', items: { dune: 5, pine: 2 }, sea: 'left' }, americas: { g: 'park', items: { tree: 3, field: 3 } },
+    portimao: { g: 'park', items: { tree: 3, mountain: 2 } }, istanbul: { g: 'park', items: { tree: 4, tower: 1 } },
+  };
+  const SCENE_DEFS = `
+    <symbol id="sc-palm" viewBox="0 0 40 50"><path d="M20 50 C19 38 21 28 24 18" stroke="#7d5a37" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+      <g fill="#2f8f63"><path d="M24 18 C16 10 8 12 3 18 C10 14 17 15 24 18Z"/><path d="M24 18 C30 9 38 9 41 15 C35 12 29 14 24 18Z"/><path d="M24 18 C22 8 25 2 31 0 C27 6 26 12 24 18Z"/><path d="M24 18 C16 17 10 22 9 29 C13 23 18 20 24 18Z"/><path d="M24 18 C31 18 36 23 37 30 C33 24 29 20 24 18Z"/></g></symbol>
+    <symbol id="sc-camel" viewBox="0 0 52 40"><path fill="#c48a52" d="M6 14 C4 10 6 6 10 7 C12 8 12 11 11 14 L13 20 C16 13 20 9 25 12 C27 8 32 8 34 13 C38 13 41 17 41 22 L43 22 C45 22 46 25 44 26 L41 26 L40 38 L37 38 L37 28 L33 30 L33 38 L30 38 L30 30 L22 30 L21 38 L18 38 L18 30 L15 29 L14 38 L11 38 L11 26 C10 22 9 18 6 14Z"/></symbol>
+    <symbol id="sc-dune" viewBox="0 0 80 24"><path fill="#d8b06a" d="M0 24 C14 8 30 2 46 6 C58 9 70 16 80 24Z"/><path fill="#b98d4c" d="M46 6 C58 9 70 16 80 24 L54 24 C56 16 52 10 46 6Z"/></symbol>
+    <symbol id="sc-tower" viewBox="0 0 44 70"><rect x="2" y="26" width="13" height="44" fill="#3b4453"/><rect x="15" y="4" width="15" height="66" fill="#4a5466"/><rect x="30" y="18" width="12" height="52" fill="#353d4b"/><rect x="21" y="0" width="3" height="5" fill="#4a5466"/>
+      <g class="sc-win" fill="#ffd46b">${[8, 16, 24, 32, 40, 48, 56].map((y) => `<rect x="18" y="${y}" width="3" height="3"/><rect x="24" y="${y + 4}" width="3" height="3"/>`).join('')}${[30, 40, 50, 60].map((y) => `<rect x="6" y="${y}" width="3" height="3"/><rect x="34" y="${y - 6}" width="3" height="3"/>`).join('')}</g></symbol>
+    <symbol id="sc-tree" viewBox="0 0 30 40"><rect x="13.5" y="24" width="3" height="16" fill="#6b4c30"/><circle cx="15" cy="16" r="12" fill="#3f8a54"/><circle cx="10" cy="13" r="6" fill="#4c9c61"/></symbol>
+    <symbol id="sc-pine" viewBox="0 0 26 44"><rect x="11.5" y="34" width="3" height="10" fill="#5d4229"/><path fill="#2e6e4a" d="M13 0 L24 18 H18 L26 32 H0 L8 18 H2Z"/></symbol>
+    <symbol id="sc-mountain" viewBox="0 0 90 46"><path fill="#4b5668" d="M0 46 L30 6 L44 22 L58 2 L90 46Z"/><path fill="#e8edf3" d="M30 6 L37 16 L31 14 L26 12Z M58 2 L66 13 L59 11 L53 9Z"/></symbol>
+    <symbol id="sc-cactus" viewBox="0 0 24 36"><path fill="#3d8a5a" d="M10 36 V6 C10 2 15 2 15 6 V36Z M10 18 H5 V10 C5 7 8 7 8 10 V15 H10Z M15 22 H20 V13 C20 10 17 10 17 13 V19 H15Z"/></symbol>
+    <symbol id="sc-yacht" viewBox="0 0 50 22"><path fill="#eef0f3" d="M2 14 H48 L42 22 H8Z"/><path fill="#cfd5dd" d="M14 14 V8 H34 L38 14Z"/><rect x="20" y="10" width="10" height="2" fill="#7ab8e8"/></symbol>
+    <symbol id="sc-field" viewBox="0 0 70 30"><path fill="#5d8a4a" d="M0 30 L18 0 H70 L52 30Z"/><path stroke="#7aa65e" stroke-width="2" d="M10 25 L26 3 M22 25 L38 3 M34 25 L50 3 M46 25 L62 3"/></symbol>`;
+  const SC_SIZE = { palm: [46, 58], camel: [52, 40], dune: [96, 30], tower: [52, 82], tree: [34, 44], pine: [30, 50], mountain: [130, 66], cactus: [24, 36], yacht: [50, 22], field: [84, 36] };
+  function sceneLayer(circuitId, pts, box) {
+    const sc = SCENES[circuitId] || { g: 'park', items: { tree: 3 } };
+    let seed = 0; for (const c of circuitId) seed = (seed * 31 + c.charCodeAt(0)) >>> 0;
+    const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+    const [bx, by, bw, bh] = box;
+    const pool = Object.entries(sc.items).flatMap(([k, w]) => Array(w).fill(k));
+    const near = (x, y, r) => pts.some((q, i) => i % 2 === 0 && (q[0] - x) ** 2 + (q[1] - y) ** 2 < r * r);
+    const placed = [];
+    for (let k = 0; k < 320 && placed.length < 24; k++) {
+      const it = pool[Math.floor(rnd() * pool.length)], [w, h] = SC_SIZE[it].map((v) => v * 1.55);
+      const x = bx + rnd() * bw, y = by + rnd() * bh;
+      // eau : les yachts seulement sur la mer, rien d'autre dessus
+      const wet = sc.sea === 'bottom' ? y > by + bh * 0.93 : sc.sea === 'left' ? x < bx + bw * 0.08 : false;
+      if ((it === 'yacht') !== wet) continue;
+      if (near(x, y - h * 0.35, Math.max(w, h) * 0.55 + 22)) continue;
+      if (placed.some((p2) => Math.abs(p2.x - x) < (w + p2.w) * 0.45 && Math.abs(p2.y - y) < (h + p2.h) * 0.4)) continue;
+      placed.push({ it, x, y, w, h, flip: rnd() < 0.5 });
+    }
+    placed.sort((a, b) => a.y - b.y);
+    const items = placed.map((q) => `<use href="#sc-${q.it}" x="${(q.x - q.w / 2).toFixed(0)}" y="${(q.y - q.h).toFixed(0)}" width="${q.w}" height="${q.h}"${q.flip && q.it !== 'tower' ? ` transform="translate(${(2 * q.x).toFixed(0)} 0) scale(-1 1)"` : ''}/>`).join('');
+    // sol : nappe de couleur sous le circuit, texture selon le terrain
+    const G = { sand: ['#c49a58', '#8f6a35'], city: ['#3a4250', '#252b35'], park: ['#4f8a4c', '#2f5a35'], forest: ['#2f6b45', '#1e4630'] }[sc.g];
+    let tex = '';
+    if (sc.g === 'sand') for (let k = 0; k < 14; k++) { const x = bx + rnd() * bw, y = by + rnd() * bh; tex += `<path d="M${x.toFixed(0)} ${y.toFixed(0)} q 40 -14 80 0 t 80 0" stroke="#e6c88c" stroke-width="3" fill="none" opacity=".35"/>`; }
+    if (sc.g === 'city') for (let k = 0; k < 40; k++) { const x = bx + rnd() * bw, y = by + rnd() * bh; if (!near(x, y, 50)) tex += `<rect x="${x.toFixed(0)}" y="${y.toFixed(0)}" width="${(30 + rnd() * 40).toFixed(0)}" height="${(30 + rnd() * 40).toFixed(0)}" rx="4" fill="#4a5363" opacity=".55"/>`; }
+    if (sc.g === 'park' || sc.g === 'forest') for (let k = 0; k < 10; k++) { const x = bx + rnd() * bw, y = by + rnd() * bh; tex += `<ellipse cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" rx="${(60 + rnd() * 80).toFixed(0)}" ry="${(30 + rnd() * 40).toFixed(0)}" fill="#6aa65f" opacity=".18"/>`; }
+    const cx = bx + bw / 2, cy = by + bh / 2;
+    const water = sc.sea === 'bottom' ? `<path d="M${bx - 200} ${by + bh * 0.9} C ${cx - 200} ${by + bh * 0.8}, ${cx + 200} ${by + bh}, ${bx + bw + 200} ${by + bh * 0.86} V ${by + bh + 300} H ${bx - 200}Z" fill="url(#sc-sea)"/>`
+      : sc.sea === 'left' ? `<path d="M${bx - 300} ${by - 200} H ${bx + bw * 0.1} C ${bx + bw * 0.18} ${cy - 100}, ${bx + bw * 0.04} ${cy + 120}, ${bx + bw * 0.12} ${by + bh + 200} H ${bx - 300}Z" fill="url(#sc-sea)"/>`
+      : sc.lake ? `<ellipse cx="${(cx + bw * 0.05).toFixed(0)}" cy="${(cy + bh * 0.04).toFixed(0)}" rx="${(bw * 0.16).toFixed(0)}" ry="${(bh * 0.1).toFixed(0)}" fill="url(#sc-sea)" opacity=".9"/>` : '';
+    let sky = '';
+    if (sc.night) { for (let k = 0; k < 40; k++) sky += `<circle cx="${(bx - 120 + rnd() * (bw + 240)).toFixed(0)}" cy="${(by - 120 + rnd() * (bh * 0.5)).toFixed(0)}" r="${(1 + rnd() * 2.4).toFixed(1)}" fill="#fff" opacity="${(0.3 + rnd() * 0.6).toFixed(2)}"/>`; sky += `<g transform="translate(${(bx + bw - 30).toFixed(0)} ${(by - 30).toFixed(0)})"><circle r="34" fill="#f5efd8"/><circle cx="14" cy="-8" r="30" fill="#141a22"/></g>`; }
+    return { defs: `${SCENE_DEFS}<radialGradient id="sc-ground" cx=".5" cy=".5" r=".55"><stop offset="0" stop-color="${G[0]}" stop-opacity=".55"/><stop offset=".7" stop-color="${G[1]}" stop-opacity=".35"/><stop offset="1" stop-color="${G[1]}" stop-opacity="0"/></radialGradient><linearGradient id="sc-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f6f9c"/><stop offset="1" stop-color="#0d3550"/></linearGradient>`,
+      back: `${sky}<ellipse cx="${cx}" cy="${cy}" rx="${bw * 0.72}" ry="${bh * 0.7}" fill="url(#sc-ground)"/>${water}${tex}`, front: items, night: !!sc.night, ground: sc.g };
+  }
   function trackSvg(circuitId, color) {
     const raw = F1.CIRCUITS && F1.CIRCUITS[circuitId];
     if (!raw) return '';
     const pts = raw.split(' ').map((q) => q.split(',').map(Number)).map(([x, y]) => [x, 1000 - y]);
     const xs = pts.map((q) => q[0]), ys = pts.map((q) => q[1]);
-    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), pad = 60;
+    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), pad = 110;
     const d = 'M' + pts.map((q) => q.join(' ')).join(' L') + ' Z';
     const [sx, sy] = pts[0], [nx2, ny2] = pts[3] || pts[1];
     const ang = (Math.atan2(ny2 - sy, nx2 - sx) * 180) / Math.PI;
     const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    return `<svg class="hx-track" viewBox="${x0 - pad} ${y0 - pad} ${x1 - x0 + pad * 2} ${y1 - y0 + pad * 2}" role="img" aria-label="Tracé du circuit">
-      <path class="hx-t-glow" d="${d}" style="stroke:${color}"/><path class="hx-t-asphalt" d="${d}"/><path class="hx-t-line" id="hxTrk" d="${d}" pathLength="1"/>
-      <g transform="translate(${sx} ${sy}) rotate(${ang})"><rect x="-4" y="-26" width="8" height="52" fill="url(#hxChk)"/></g>
-      <defs><pattern id="hxChk" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff"/><rect width="4" height="4" fill="#111"/><rect x="4" y="4" width="4" height="4" fill="#111"/></pattern></defs>
+    const box = [x0 - pad, y0 - pad, x1 - x0 + pad * 2, y1 - y0 + pad * 2];
+    const sc = sceneLayer(circuitId, pts, box);
+    // projecteurs le long du tracé pour les courses de nuit
+    const lights = sc.night ? pts.filter((_, i) => i % Math.max(8, Math.round(pts.length / 14)) === 0).map((q) => `<circle cx="${q[0]}" cy="${q[1]}" r="34" fill="url(#sc-flood)"/>`).join('') : '';
+    return `<svg class="hx-track g-${sc.ground} ${sc.night ? 'night' : ''}" viewBox="${box.join(' ')}" role="img" aria-label="Tracé du circuit et son décor">
+      <defs>${sc.defs}<radialGradient id="sc-flood"><stop offset="0" stop-color="#fff6d0" stop-opacity=".55"/><stop offset="1" stop-color="#fff6d0" stop-opacity="0"/></radialGradient>
+        <pattern id="hxChk" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff"/><rect width="4" height="4" fill="#111"/><rect x="4" y="4" width="4" height="4" fill="#111"/></pattern></defs>
+      <g class="hx-scene">${sc.back}</g>${lights}
+      <path class="hx-t-glow" d="${d}" style="stroke:${color}"/><path class="hx-t-kerb" d="${d}"/><path class="hx-t-asphalt" d="${d}"/><path class="hx-t-line" id="hxTrk" d="${d}" pathLength="1"/>
+      <g transform="translate(${sx} ${sy}) rotate(${ang})"><rect x="-4" y="-22" width="8" height="44" fill="url(#hxChk)"/></g>
+      <g class="hx-scene-front">${sc.front}</g>
       ${still ? '' : `<circle class="hx-car" r="13" style="fill:${color}"><animateMotion dur="14s" repeatCount="indefinite" rotate="auto"><mpath href="#hxTrk"/></animateMotion></circle>`}</svg>`;
   }
   function heroTrack(nx) {
@@ -671,7 +748,7 @@
   }
   function favCard(x, m, i) {
     const d = drv(x.driverId); const t = team(d.teamId);
-    return `<div class="fav" style="--tc:${t.color}"><div class="bignum">${d.number ? F1.num.html(d.number, d.teamId, { color: 'currentColor' }) : ''}</div>${F1.visuals.portrait(d.id) ? `<img class="fav-photo" src="${esc(F1.visuals.portrait(d.id).img)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<div style="position:relative"><div class="rank">Favori n°${i + 1}</div><div class="fname">${flag(d.iso, 'sm')} ${esc(d.model || d.given)}</div><div class="lname">${esc(d.family)}</div><div class="team">${d.crewTxt ? esc(d.crewTxt) : esc(t.short)} · ${fmt(d.points)} pts</div></div>
+    return `<div class="fav" style="--tc:${t.color}">${F1.visuals.portrait(d.id) ? `<img class="fav-photo" src="${esc(F1.visuals.portrait(d.id).img)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<div style="position:relative"><div class="fav-numrow">${d.number ? `<span class="fav-num">${F1.num.html(d.number, d.teamId, { color: 'currentColor' })}</span>` : ''}<span class="rank">Favori n°${i + 1}</span></div><div class="fname">${flag(d.iso, 'sm')} ${esc(d.model || d.given)}</div><div class="lname">${esc(d.family)}</div><div class="team">${d.crewTxt ? esc(d.crewTxt) : esc(t.short)} · ${fmt(d.points)} pts</div></div>
       <div>${oddBtn(x, m, { label: `<span>Victoire</span><span class="prob">${pct(x.prob)}</span>` })}</div></div>`;
   }
   function lastPodium() {
