@@ -443,3 +443,4 @@ Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectoriel
 - **Durée des courses** : environ 8 minutes en ×1 (deux fois plus lent qu'avant), avec ×2, ×4 et ×8.
 - **Pass de saison progressif** (`passCost`) : 250 XP pour le 1er palier, +19 XP par palier (687 XP pour le 24e), 11 244 XP en tout. Joueur régulier (6 courses/jour) : Pass terminé vers le 18e jour ; occasionnel (3/jour) : environ 22 paliers sur le mois ; assidu (9/jour) : vers le 12e jour.
 - **Choix du championnat** : interrupteur compact dans le haut du hero (`seriesTabs`), pictogramme du F1 Manager pour la Formule 1 et Hypercar pour l'Endurance (marquée « bientôt » tant qu'elle est verrouillée).
+- **Solde négatif** : une pénalité de sponsor est prélevée en entier, même si le solde de PitCoins passe sous zéro. Tant qu'il est négatif, les achats sont bloqués, et un bandeau au QG ainsi que le solde en rouge le signalent.

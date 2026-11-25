@@ -1858,3 +1858,4 @@ details.lg-how summary { cursor: pointer; font-weight: 800; } details.lg-how[ope
 .hx-map:has(.g-park) { --gr: rgba(78, 138, 78, .22); }
 .hx-map:has(.g-forest) { --gr: rgba(44, 104, 68, .30); }
 @media (max-width: 1000px) { .hx-map { background: linear-gradient(180deg, transparent 0, var(--gr) 14%, var(--gr) 100%); } }
+.pcw.neg #pcBal, .hq-hud .neg, .hq-hud .neg b { color: var(--lose) !important; }
