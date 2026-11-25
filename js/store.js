@@ -415,7 +415,7 @@
 
   /* ---------- Pass de saison ---------- */
   const pass = () => { const m = mgr(); if (!m.pass) m.pass = blankPass(); return m.pass; };
-  function addPassXp(n) { const MG = F1.manager; if (!MG) return 0; const p = pass(); p.xp = Math.min(MG.PASS_TIERS * MG.PASS_XP_TIER, (p.xp || 0) + n); return n; }
+  function addPassXp(n) { const MG = F1.manager; if (!MG) return 0; const p = pass(); p.xp = Math.min(MG.PASS_XP_MAX, (p.xp || 0) + n); return n; }
   function claimPass(tier) {
     const MG = F1.manager, p = pass();
     tier = +tier;

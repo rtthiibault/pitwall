@@ -1304,7 +1304,14 @@
 
   /* ---------- Passe de saison : 24 paliers ----------
      +100 XP par course de campagne, +150 XP par tentative au GP Hebdomadaire, 125 XP par palier (≈ un palier toutes les 1 à 1,5 courses). */
-  const PASS_TIERS = 24, PASS_XP_TIER = 125, PASS_XP_RACE = 100, PASS_XP_WEEKLY = 150;
+  const PASS_TIERS = 24, PASS_XP_RACE = 100, PASS_XP_WEEKLY = 150;
+  /* Paliers progressifs : 250 XP pour le 1er, +19 XP à chaque palier (687 XP pour le 24e), 11 244 XP au total.
+     Joueur régulier (6 courses par jour, ~640 XP/jour) : Pass terminé vers le 17e-18e jour ; occasionnel (3/jour) : ~22 paliers sur le mois. */
+  const passCost = (t) => 250 + 19 * (t - 1);
+  const passCum = (t) => { let s = 0; for (let i = 1; i <= t; i++) s += passCost(i); return s; };
+  const PASS_XP_MAX = passCum(PASS_TIERS);
+  // progression dans le palier en cours : { tier atteint, xp dans le palier suivant, xp nécessaire }
+  function passProgress(xp) { const t = passTier(xp); return t >= PASS_TIERS ? { tier: t, cur: passCost(PASS_TIERS), need: passCost(PASS_TIERS) } : { tier: t, cur: (xp || 0) - passCum(t), need: passCost(t + 1) }; }
   // coffres mystères : contenu tiré au hasard à l'ouverture (fourchette de PitCoins selon le coffre)
   const PASS_CHEST = { s: { name: 'Coffre Standard', pc: 15, min: 8, max: 22 }, m: { name: 'Coffre Avancé', pc: 35, min: 22, max: 48 }, l: { name: 'Coffre Prestige', pc: 80, min: 55, max: 105 } };
   const PASS_LIVERIES = [
@@ -1320,7 +1327,7 @@
     const size = tier % 5 === 0 ? 'l' : tier % 2 === 0 ? 'm' : 's';
     return { kind: 'chest', size, pc: PASS_CHEST[size].pc, min: PASS_CHEST[size].min, max: PASS_CHEST[size].max, name: PASS_CHEST[size].name };
   }
-  const passTier = (xp) => Math.min(PASS_TIERS, Math.floor((xp || 0) / PASS_XP_TIER));
+  const passTier = (xp) => { let t = 0; while (t < PASS_TIERS && passCum(t + 1) <= (xp || 0)) t++; return t; };
 
   /* ---------- Objectifs du jour ---------- */
   const OBJECTIVES = [
@@ -1348,7 +1355,7 @@
     forecastLaps, trend, ruleOk, RULE_PENALTY, tyreStatus, MODES, redoLap, dryFor, FUEL_LOAD, MIX, ERS, ENG_CRIT, TYRE_LO, TYRE_HI, fuelDelta, KG,
     CLIMATE, climateOf, trackState, forecast, TYRES, isSlick, tyreDelta, DILEMMA_LAPS, dilemmaLaps, lapsOf, RACE_LAPS, planFor, REFILL_H, createRace, stepLap, dilemmaFor, applyChoice, RADIO,
     WEEKLY_ATTEMPTS, WEEKLY_FIRST_PRIME, isoWeek, weeklyEvent, weeklyBots, fmtRaceTime, fmtGap, weeklyPrize, CIRCUIT_NAME,
-    SEASON_PRIZE, SEASON_KEEP, monthKey, TUNNEL_BET_CD, aiLineup, driverPrice, driverLeagueReq, driverValueV1, valueOfDriverV1, PRICE_PTS, SPONSOR_COOLDOWN, rdBuildMs, rushCost, TUNNEL_SLOT2_PC, PASS_TIERS, PASS_XP_TIER, PASS_XP_RACE, PASS_XP_WEEKLY, PASS_CHEST, PASS_LIVERIES, PASS_LIVERY_BY, passReward, passTier,
+    passCost, passCum, passProgress, PASS_XP_MAX, SEASON_PRIZE, SEASON_KEEP, monthKey, TUNNEL_BET_CD, aiLineup, driverPrice, driverLeagueReq, driverValueV1, valueOfDriverV1, PRICE_PTS, SPONSOR_COOLDOWN, rdBuildMs, rushCost, TUNNEL_SLOT2_PC, PASS_TIERS, PASS_XP_RACE, PASS_XP_WEEKLY, PASS_CHEST, PASS_LIVERIES, PASS_LIVERY_BY, passReward, passTier,
     SPONSORS, SPONSOR_BY_ID, goalText, sponsorTerms, sponsorAfterRace, SUB_K,
     MATE_PC_CAP, LV_COST_K, TEAM_NAME, TEAM_CODE, GRID, GRID_BY, shortName, newsForm, mateValue, MATE_K, matePC, MATE_PC_K, F1_POINTS, mateEntry, START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, lpScale, AGE_PRICE, driverValue, valueOfDriver, RESALE_K, XP_DIV, PC_TABLE,
     RD_CATS, RD_PARTS, RD_BY_ID, rdBranches, partState, partsBonus,

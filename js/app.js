@@ -2043,8 +2043,7 @@
     return livSwatch(MG().PASS_LIVERY_BY.get(r.id));
   }
   function mgrPass(ctx) {
-    const P = F1.store.pass(), M = MG(), T = M.PASS_TIERS, XT = M.PASS_XP_TIER, tier = M.passTier(P.xp);
-    const inTier = tier >= T ? XT : P.xp - tier * XT;
+    const P = F1.store.pass(), M = MG(), T = M.PASS_TIERS, pg = M.passProgress(P.xp), tier = pg.tier, inTier = pg.cur, XT = pg.need;
     const ready = [];
     for (let t = 1; t <= tier; t++) if (!P.claimed[t]) ready.push(t);
     const complete = F1.store.passComplete();
@@ -2054,7 +2053,7 @@
       return `<div class="ps-t ${got ? 'got' : can ? 'ready' : 'lock'} ${cur ? 'cur' : ''} ${r.kind === 'livery' ? 'star' : ''} k-${r.kind}">
         <div class="ps-n">${t}</div><div class="ps-art">${passArt(r)}</div>
         <div class="ps-name">${esc(r.name)}</div><small class="ps-sub">${sub}</small>
-        ${got ? '<span class="ps-ok">✓ Réclamé</span>' : can ? `<button class="btn sm" data-action="ps-claim" data-t="${t}">Réclamer</button>` : `<span class="ps-xp">${fmt(t * XT)} XP</span>`}
+        ${got ? '<span class="ps-ok">✓ Réclamé</span>' : can ? `<button class="btn sm" data-action="ps-claim" data-t="${t}">Réclamer</button>` : `<span class="ps-xp">${fmt(M.passCum(t))} XP</span>`}
         ${cur ? `<div class="ps-cur"><i style="width:${(inTier / XT) * 100}%"></i></div>` : ''}</div>`;
     }).join('');
     const done = (P.done || []).map((d) => `<span class="ps-season" title="Terminée le ${new Date(d.at).toLocaleDateString('fr-FR')}">🎟️ Saison ${d.season}</span>`).join('');
@@ -2063,7 +2062,7 @@
         <div class="ps-hl"><small>Pass de saison</small><h2>Saison ${P.season}</h2>
           <div class="ps-earn"><span>🏁 Course de campagne <b>+${M.PASS_XP_RACE} XP</b></span><span>🌐 Tentative GP Hebdo <b>+${M.PASS_XP_WEEKLY} XP</b></span></div></div>
         <div class="ps-hr"><div class="ps-lvl"><b>${tier}</b><small>/ ${T}</small></div>
-          <div class="ps-prog"><div class="ps-bar"><i style="width:${(P.xp / (T * XT)) * 100}%"></i></div>
+          <div class="ps-prog"><div class="ps-bar"><i style="width:${(P.xp / M.PASS_XP_MAX) * 100}%"></i></div>
             <small class="muted">${tier >= T ? 'Tous les paliers sont atteints' : `${inTier} / ${XT} XP vers le palier ${tier + 1} · ${fmt(P.xp)} XP au total`}</small></div></div></section>
       <div class="ps-inv">
         <div><small>Jetons de tentative</small><b>🎟️ ${P.tokens || 0}</b><span class="muted">Une 3ᵉ tentative au GP Hebdo (une par semaine)</span></div>
@@ -2086,7 +2085,7 @@
           <b>${esc(o.name)}</b><small>${on ? '✓ Équipée' : own ? esc(o.desc || '') : `🔒 Palier ${o.tier} du Pass`}</small></button>`;
       }).join('')}</div></section>`;
   }
-  const passChip = (xp) => { const P = F1.store.pass(), t = MG().passTier(P.xp), XT = MG().PASS_XP_TIER, inT = t >= MG().PASS_TIERS ? XT : P.xp - t * XT; return `<a class="db-pass" href="#/manager/passe"><span>🎟️ Pass de saison <b>+${xp} XP</b></span><div class="bar"><i style="width:${(inT / XT) * 100}%"></i></div><small class="muted">Palier ${t} / ${MG().PASS_TIERS}${t < MG().PASS_TIERS ? ` · ${inT}/${XT} XP vers le palier ${t + 1}` : ''}</small></a>`; };
+  const passChip = (xp) => { const P = F1.store.pass(), pg = MG().passProgress(P.xp), t = pg.tier, XT = pg.need, inT = pg.cur; return `<a class="db-pass" href="#/manager/passe"><span>🎟️ Pass de saison <b>+${xp} XP</b></span><div class="bar"><i style="width:${(inT / XT) * 100}%"></i></div><small class="muted">Palier ${t} / ${MG().PASS_TIERS}${t < MG().PASS_TIERS ? ` · ${inT}/${XT} XP vers le palier ${t + 1}` : ''}</small></a>`; };
 
   // Mise à jour partielle de la page R&D (sans recharger la voiture 3D) puis zoom sur la pièce
   function rdRefresh() {

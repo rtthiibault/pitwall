@@ -441,3 +441,4 @@ Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectoriel
 - **Prime du coéquipier** plafonnée à 45 PC par course (`MATE_PC_CAP`).
 - **Coût de la R&D** par niveau (`LV_COST_K`) : Mk I et Mk II inchangés, Mk III ×2, Mk IV ×4, Mk V ×7.
 - **Durée des courses** : environ 8 minutes en ×1 (deux fois plus lent qu'avant), avec ×2, ×4 et ×8.
+- **Pass de saison progressif** (`passCost`) : 250 XP pour le 1er palier, +19 XP par palier (687 XP pour le 24e), 11 244 XP en tout. Joueur régulier (6 courses/jour) : Pass terminé vers le 18e jour ; occasionnel (3/jour) : environ 22 paliers sur le mois ; assidu (9/jour) : vers le 12e jour.
