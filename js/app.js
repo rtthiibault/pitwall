@@ -544,6 +544,18 @@
   /* =================== Accueil =================== */
   // Sélecteur de championnat (pictogrammes originaux, pas les logos officiels)
   // Endurance (WEC) : page conservée mais pas encore ouverte au public
+  // Choix du championnat : deux onglets accrochés au hero, avec la silhouette de chaque voiture
+  function seriesTabs() {
+    const f1car = '<svg class="sxt-car" viewBox="0 0 140 40" aria-hidden="true"><path d="M3 18 H14 V30 H5Z" class="b"/><path d="M14 27 L22 23 L40 22 L52 14 L64 13 L70 19 L104 21 L120 23 L134 28 L136 31 L14 31Z" class="b"/><path d="M58 14 C60 8 68 8 70 13Z" class="c"/><path d="M120 29 H138 V32 H118Z" class="c"/><path d="M40 25 H100" class="l"/><circle cx="28" cy="31" r="8" class="w"/><circle cx="108" cy="31" r="7.5" class="w"/><circle cx="28" cy="31" r="3" class="h"/><circle cx="108" cy="31" r="3" class="h"/></svg>';
+    const wecar = '<svg class="sxt-car" viewBox="0 0 140 40" aria-hidden="true"><path d="M6 30 C8 21 18 17 32 15 C46 8 66 6 84 9 C98 11 110 16 120 21 L134 25 L136 31 L6 31Z" class="b"/><path d="M60 9 C66 2 82 2 88 9Z" class="c"/><path d="M6 14 H20 L22 22 H8Z" class="c"/><path d="M48 14 C58 10 76 10 86 13 L80 18 L50 19Z" class="g"/><path d="M30 25 H118" class="l"/><circle cx="32" cy="31" r="8" class="w"/><circle cx="110" cy="31" r="8" class="w"/><circle cx="32" cy="31" r="3" class="h"/><circle cx="110" cy="31" r="3" class="h"/></svg>';
+    const tab = (k, name, sub, car) => {
+      const on = S.series === k, lock = k === 'wec' && (WEC_LOCKED || !S.wec);
+      return `<button class="sxt-tab ${on ? 'on' : ''} ${lock ? 'lock' : ''} k-${k}" role="tab" aria-selected="${on}" ${lock ? 'disabled title="Endurance : bientôt disponible"' : `data-action="series" data-s="${k}"`}>
+        ${car}<span class="sxt-txt"><b>${name}</b><small>${sub}</small></span>${lock ? '<span class="sxt-soon">Bientôt</span>' : ''}</button>`;
+    };
+    const f1 = S.f1, nf = f1 ? f1.races.length : 0;
+    return `<nav class="sxt" role="tablist" aria-label="Championnat">${tab('f1', 'Formule 1', f1 ? `Saison ${f1.year}, ${nf} Grands Prix` : 'Saison en cours', f1car)}${tab('wec', 'Endurance', WEC_LOCKED ? 'Le Mans et le WEC, bientôt' : S.wec ? `Saison ${S.wec.year}` : 'Indisponible', wecar)}</nav>`;
+  }
   function seriesSwitch() {
     const tile = (k, name, sub, svg) => { const lock = k === 'wec' && WEC_LOCKED; return `<button class="series-tile ${S.series === k ? 'on' : ''} ${lock ? 'soon' : ''}" data-action="series" data-s="${k}" ${k === 'wec' && (!S.wec || lock) ? 'disabled' : ''} ${lock ? 'title="Endurance : bientôt disponible"' : ''} aria-pressed="${S.series === k}"><span class="series-ic ${k}">${lock ? '<i class="soon-band">Coming soon</i>' : ''}${svg}${S.series === k ? '<i class="series-ck">✓</i>' : ''}</span><b>${name}</b><small>${lock ? 'Bientôt disponible' : sub}</small></button>`; };
     const f1 = '<svg viewBox="0 0 64 64"><path d="M8 44 L20 24 H44 L40 31 H25 L22 36 H36 L32 43 H18 L17.5 44Z M46 24 H58 L46 44 H34Z" fill="#fff"/><path d="M8 50 H50" stroke="#fff" stroke-width="2.5" stroke-dasharray="7 4" opacity=".65"/></svg>';
@@ -554,7 +566,7 @@
     const s = S.season;
     const nx = s.next;
     const f1Home = S.series !== 'wec' && nx;
-    let h = f1Home ? heroTrack(nx) : seriesSwitch() + hero(nx);
+    let h = seriesTabs() + (f1Home ? heroTrack(nx) : hero(nx));
     if (s.pending) h += `<div class="notice red" style="margin-top:18px">🏁 <b>${esc(s.pending.nameFr)}</b> : course terminée ou en cours — vos paris seront réglés dès la publication des résultats officiels.</div>`;
     if (S.series !== 'wec' && s.doneCount === 0 && nx && F1.store.canClaimSeason(s)) h += `<div class="notice" style="margin-top:18px">🎆 Nouvelle saison ${s.year} : prime de lancement <b>+${jt(F1.store.SEASON_BONUS)}</b>. <span class="sp"></span><button class="btn sm gold" data-action="claim-season">Récupérer</button></div>`;
     if (s.prev && s.doneCount === 0) { const ch = [...s.prev.drivers.values()].sort((a, b) => b.points - a.points)[0]; if (ch) h += `<div class="notice" style="margin-top:18px">🏆 Saison ${s.prev.year} terminée : <b>${esc(ch.given + ' ' + ch.family)}</b> champion du monde avec ${fmt(ch.points)} points. Les cotes ${s.year} partent de la hiérarchie ${s.prev.year}.</div>`; }
@@ -671,14 +683,13 @@
     const w = S.weather;
     const favW = S.markets.find((m) => m.kind === 'win'), favS = favW && favW.selections[0], favD = favS && drv(favS.driverId);
     const tc = favD ? team(favD.teamId).color : '#d7261e';
-    const sw = `<div class="hx-series">${[['f1', 'Formule 1'], ['wec', 'Endurance']].map(([k, l]) => { const lock = k === 'wec' && WEC_LOCKED; return `<button class="${S.series === k ? 'on' : ''}" ${lock ? 'disabled title="Bientôt disponible"' : `data-action="series" data-s="${k}"`}>${l}${lock ? ' <small>bientôt</small>' : ''}</button>`; }).join('')}</div>`;
     const lights = `<div class="hx-lights" data-cd="${nx.date.getTime()}" aria-label="Compte à rebours avant le départ">${['jours', 'heures', 'min', 's'].map((u, i) => `<div class="hx-pod"><i></i><b data-u="${i}">--</b><small>${u}</small></div>`).join('')}</div>`;
     const rail = `<ol class="hx-rail">${nx.sessions.map((x) => { const st = x.date.getTime() < now ? 'done' : x === nextSess ? 'next' : ''; return `<li class="${st}"><span>${esc(x.label)}</span><b>${WD.format(x.date)} ${HM.format(x.date)}</b></li>`; }).join('')}</ol>`;
     const tags = [nx.sprint ? 'Week-end sprint' : '', nx.street ? 'Circuit urbain' : ''].filter(Boolean).map((t) => `<span class="hx-tag">${t}</span>`).join('');
     const wx = w ? `<span>${w.rain >= 50 ? '🌧️' : w.rain >= 25 ? '🌦️' : w.code <= 1 ? '☀️' : '⛅'} ${w.temp} °C, pluie ${w.rain} %, vent ${w.wind} km/h</span>` : '';
     return `<section class="hx" style="--tc:${tc}">
       <div class="hx-l">
-        <div class="hx-top">${flag(nx.iso, 'lg')}<span class="hx-round">Manche ${nx.round} sur ${s.races.length}</span>${tags}${sw}</div>
+        <div class="hx-top">${flag(nx.iso, 'lg')}<span class="hx-round">Manche ${nx.round} sur ${s.races.length}</span>${tags}</div>
         <h1 class="hx-title">${esc(nx.nameFr)}</h1>
         <p class="hx-place">${esc(nx.circuit)}, ${esc(nx.locality)}. Départ ${DAYL.format(nx.date)} à ${HM.format(nx.date)}.</p>
         ${lights}${rail}

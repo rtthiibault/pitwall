@@ -1813,3 +1813,25 @@ details.lg-how summary { cursor: pointer; font-weight: 800; } details.lg-how[ope
 .pwh-row-m .pdw-cat { width: 8px; height: 8px; padding: 0; border-radius: 50%; font-size: 0; border: 0; background: currentColor; }
 @media (max-width: 900px) { .pwh-grid { grid-template-columns: 1fr; } .pwh-feat { grid-template-rows: 180px auto; } }
 .pwh-num { position: absolute; left: 22px; top: 22px; height: 110px; color: #fff; opacity: .9; filter: drop-shadow(0 4px 14px rgba(0,0,0,.4)); } .pwh-num .dnum { height: 110px; } .pwh-num .dnum-t { font-size: 110px; }
+
+/* ===================== Accueil : onglets Formule 1 / Endurance ===================== */
+.sxt { display: grid; grid-template-columns: repeat(2, minmax(0, 340px)); gap: 6px; margin-top: 6px; position: relative; z-index: 1; }
+.sxt-tab { position: relative; display: grid; grid-template-columns: 112px minmax(0, 1fr); align-items: center; gap: 12px; padding: 12px 18px 12px 14px; overflow: hidden;
+  border: 1px solid #232932; border-bottom: 0; border-radius: 14px 14px 0 0; background: #12151a; color: #8f98a4; font: inherit; text-align: left; cursor: pointer; transition: background .15s, color .15s; }
+.sxt-tab:not(.on):not(.lock):hover { background: #171b21; color: #dfe3e8; }
+.sxt-tab.on { background: #171b21; color: #f6f7f9; margin-bottom: -1px; padding-bottom: 13px; }
+.sxt-tab.on::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: #e10600; }
+.sxt-car { width: 112px; height: 32px; }
+.sxt-car .b { fill: #4a525e; } .sxt-car .c { fill: #353c46; } .sxt-car .g { fill: #6b7785; } .sxt-car .l { stroke: #6b7380; stroke-width: 1.5; fill: none; }
+.sxt-car .w { fill: #0b0d10; stroke: #3a414b; stroke-width: 2; } .sxt-car .h { fill: #5a626e; }
+.sxt-tab.on.k-f1 .sxt-car .b { fill: #e10600; } .sxt-tab.on.k-f1 .sxt-car .c { fill: #1b1e24; } .sxt-tab.on .sxt-car .l { stroke: #fff; } .sxt-tab.on .sxt-car .h { fill: #d7dbe1; }
+.sxt-tab.on.k-wec .sxt-car .b { fill: #2e7dd7; } .sxt-tab.on.k-wec .sxt-car .c { fill: #1b1e24; } .sxt-tab.on.k-wec .sxt-car .g { fill: #9fd3ff; }
+.sxt-tab.on .sxt-car { filter: drop-shadow(0 4px 10px rgba(225,6,0,.45)); }
+.sxt-txt { display: grid; gap: 2px; min-width: 0; } .sxt-txt b { font-size: 17px; font-weight: 900; font-variation-settings: 'wdth' 110; color: inherit; }
+.sxt-txt small { font-size: 12.5px; color: #8f98a4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sxt-tab.on .sxt-txt small { color: #b9c0ca; }
+.sxt-tab.lock { cursor: not-allowed; background: repeating-linear-gradient(135deg, #12151a 0 14px, #161a1f 14px 28px); }
+.sxt-tab.lock .sxt-car { opacity: .55; }
+.sxt-soon { position: absolute; right: -30px; top: 12px; transform: rotate(32deg); padding: 3px 34px; background: var(--gold); color: #1c1500; font-size: 11px; font-weight: 900; box-shadow: 0 2px 8px rgba(0,0,0,.4); }
+.sxt + .hx, .sxt + .hero { margin-top: 0; border-top-left-radius: 0; }
+@media (max-width: 640px) { .sxt { grid-template-columns: 1fr 1fr; } .sxt-tab { grid-template-columns: 1fr; gap: 4px; padding: 10px 12px; } .sxt-car { width: 90px; height: 26px; } .sxt-txt small { white-space: normal; } }
