@@ -1942,3 +1942,24 @@ button.avatar { position: relative; border: 0; cursor: pointer; font: inherit; p
 .set-tg input:checked + i { background: var(--red); } .set-tg input:checked + i::after { transform: translateX(18px); }
 .set-tg input:focus-visible + i { outline: 2px solid var(--gold); outline-offset: 2px; }
 @media (max-width: 800px) { .set-grid { grid-template-columns: 1fr; } }
+
+/* Avatar numéro : tuile de la galerie et atelier */
+.pf-av.num { background: linear-gradient(135deg, #1b3a8a, #0b1430); display: grid; place-items: center; }
+.pf-av-n { display: grid; place-items: center; width: 62%; height: 46%; } .pf-av-n .dnum { width: 100%; height: 100%; font-size: 26px; color: #fff; }
+.modal-box:has(.nav-av) { width: min(860px, 94vw); max-width: 94vw; }
+.nav-av-g { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; margin-top: 12px; }
+.nav-av-prev { display: grid; gap: 12px; }
+.nav-av-prev > canvas { width: 100%; aspect-ratio: 1; border-radius: 14px; border: 1px solid var(--line2); background: #0b0e13; }
+.nav-av-mini { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12.5px; }
+.nav-av-mini span { width: 48px; height: 48px; border-radius: 50%; overflow: hidden; border: 1px solid var(--line2); flex: none; } .nav-av-mini canvas { width: 100%; height: 100%; display: block; }
+.nav-av-f { display: grid; gap: 8px; align-content: start; }
+.nav-av-l { display: grid; gap: 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-top: 4px; }
+.nav-av-l .field { font-size: 22px; font-weight: 800; letter-spacing: .04em; text-transform: none; width: 110px; }
+.nav-av-teams { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.nav-av-t { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 9px; border: 1px solid var(--line); background: #171b21; color: var(--text); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; text-align: left; }
+.nav-av-t i { width: 10px; height: 10px; border-radius: 3px; background: var(--tc); flex: none; }
+.nav-av-t:hover { border-color: var(--line2); } .nav-av-t.on { border-color: var(--tc); background: color-mix(in srgb, var(--tc) 14%, #171b21); }
+.nav-av-st { display: flex; gap: 6px; }
+.nav-av-st button { flex: 1; padding: 8px; border-radius: 9px; border: 1px solid var(--line); background: #171b21; color: var(--text); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.nav-av-st button.on { border-color: var(--red2); background: rgba(215, 38, 30, .14); }
+@media (max-width: 680px) { .nav-av-g { grid-template-columns: 1fr; } .nav-av-prev > canvas { max-width: 300px; justify-self: center; } }

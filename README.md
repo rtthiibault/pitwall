@@ -462,3 +462,7 @@ Un clic sur l'avatar en haut à droite ouvre un menu déroulant : Mon profil, Me
 ```bash
 V=$(date -u +%Y%m%d%H%M) && sed -i -E "s#\?v=[0-9]+\"#?v=$V\"#g; s#var BUILD = '[^']*'#var BUILD = '$V'#" index.html && echo $V > version.txt
 ```
+
+## Avatar numéro
+
+Dans la galerie de photos du profil, la tuile « Mon numéro » ouvre un atelier : numéro (0 à 99), typographie d'une des 11 écuries et style (Plaque argentée inclinée, Néon, Couleur). Le rendu est dessiné dans un canvas (`js/numavatar.js`) à partir des tracés de `numbers.js` / `numbers-teams.js` (police de l'écurie pour un numéro sans dessin), puis enregistré comme photo de profil (JPEG 256 px, 128 px pour le profil en ligne). Le dernier réglage est mémorisé dans le navigateur.

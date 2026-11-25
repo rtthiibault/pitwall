@@ -3194,6 +3194,46 @@
       toast('🪪', 'Photo de profil importée', 'win');
     } catch (e) { toast('⚠️', esc(e.message), 'err'); }
   }
+  /* ---------- Avatar « numéro de pilote » : numéro + typographie d'écurie + style ---------- */
+  const NUMAV_KEY = 'pitwall:numav';
+  function numAvCfg() {
+    let c = null; try { c = JSON.parse(localStorage.getItem(NUMAV_KEY)); } catch (e) { /* stockage indisponible */ }
+    const m = F1.store.mgr();
+    return Object.assign({ n: m.number || '3', team: (m.chassis && F1.num.tkey(m.chassis.id)) || 'red_bull', style: 'plaque' }, c || {});
+  }
+  function numAvSave(c) { try { localStorage.setItem(NUMAV_KEY, JSON.stringify(c)); } catch (e) { /* stockage indisponible */ } }
+  function numAvOpen() {
+    const c = numAvCfg(), NA = F1.numAvatar;
+    if (!NA.TEAMS.includes(c.team)) c.team = 'red_bull';
+    const SHORT = F1.ref.TEAM_SHORT;
+    modal(`<div class="nav-av"><h2>Avatar numéro</h2><p class="muted" style="margin-top:0">Ton numéro de course dans la typographie de l'écurie de ton choix.</p>
+      <div class="nav-av-g"><div class="nav-av-prev"><canvas id="naCv" width="512" height="512" aria-label="Aperçu de l'avatar"></canvas><div class="nav-av-mini"><span><canvas id="naMini" width="96" height="96"></canvas></span><small>Aperçu dans le menu</small></div></div>
+        <div class="nav-av-f">
+          <label class="nav-av-l">Numéro<input class="field" id="naN" inputmode="numeric" maxlength="2" value="${esc(c.n)}" autocomplete="off"></label>
+          <div class="nav-av-l">Typographie</div><div class="nav-av-teams">${NA.TEAMS.map((t) => `<button type="button" class="nav-av-t ${t === c.team ? 'on' : ''}" data-action="na-team" data-t="${t}" style="--tc:${F1.teamColor(t)}"><i></i>${esc(SHORT[t] || t)}</button>`).join('')}</div>
+          <div class="nav-av-l">Style</div><div class="nav-av-st">${NA.STYLES.map(([k, l]) => `<button type="button" class="${k === c.style ? 'on' : ''}" data-action="na-style" data-s="${k}">${l}</button>`).join('')}</div>
+          <button class="btn" data-action="na-use" style="margin-top:16px;width:100%">Utiliser comme photo de profil</button>
+        </div></div></div>`);
+    S.numAv = c; numAvDraw();
+  }
+  let naSeq = 0;
+  async function numAvDraw() {
+    const cv = $('#naCv'); if (!cv || !S.numAv) return;
+    const my = ++naSeq; const off = document.createElement('canvas');
+    await F1.numAvatar.render(off, S.numAv);
+    if (my !== naSeq || !$('#naCv')) return;
+    const x = $('#naCv').getContext('2d'); x.clearRect(0, 0, 512, 512); x.drawImage(off, 0, 0);
+    const mi = $('#naMini'); if (mi) { const y = mi.getContext('2d'); y.imageSmoothingQuality = 'high'; y.clearRect(0, 0, 96, 96); y.drawImage(off, 0, 0, 96, 96); }
+  }
+  async function numAvUse() {
+    const c = S.numAv; if (!c || !F1.num.clean(c.n)) return toast('⚠️', 'Entre un numéro entre 0 et 99', 'err');
+    const off = await F1.numAvatar.render(document.createElement('canvas'), c);
+    F1.store.setAvatar(F1.numAvatar.exportJpeg(off, 256, 0.9), F1.numAvatar.exportJpeg(off, 128, 0.82));
+    numAvSave(c); S.pfAva = false; closeModal(); F1.social.sync(true); showAchievements(); route();
+    toast('🪪', `Avatar n°${esc(F1.num.clean(c.n))} enregistré`, 'win');
+  }
+  document.addEventListener('input', (e) => { if (e.target && e.target.id === 'naN' && S.numAv) { const v = F1.num.clean(e.target.value); e.target.value = v; if (v) { S.numAv.n = v; numAvDraw(); } } });
+
   /* =================== Compte : menu de l'avatar, notifications, messagerie, circuits, paramètres =================== */
   // tout ce qui attend le joueur : demandes d'amis, messages, succès, F1 Manager, primes
   function notifItems() {
@@ -3376,7 +3416,7 @@
         <div class="pf-id"><small class="muted">Profil joueur</small><h1>${esc(name)} <button class="pf-edit" data-action="profile" title="Changer de pseudo">✏️ Modifier</button></h1><div class="row" style="gap:6px;flex-wrap:wrap">${leagueBadge(L)}${m.number && m.chassis ? `<span class="chip pf-num" style="color:${F1.teamColor(m.chassis.id)}" title="Votre numéro de course">${F1.num.html(m.number, m.chassis.id)}</span>` : ''}<span class="chip">${Object.keys(p.ach).length} succès</span>${((m.pass && m.pass.done) || []).map((d) => `<span class="chip ps-badge" title="Pass de saison complété">🎟️ Saison ${d.season} complétée</span>`).join('')}${so.me ? '<span class="chip green">Profil en ligne</span>' : '<span class="chip">Profil local</span>'}</div></div>
         <div class="pf-wallets"><div><small>Jetons</small><b>${jt(p.balance)}</b></div><div><small>PitCoins</small><b>${fmtPC(m.pc || 0)}</b></div><button class="btn sm ghost" data-action="profile">⚙ Pseudo & sauvegarde</button></div></div>
       <div class="pf-gallery ${S.pfAva ? 'open' : ''}" id="pfGallery"><div class="pf-gh"><b>Choisissez votre photo de profil</b><button class="btn sm ghost" data-action="pf-ava">Fermer</button></div>
-        <div class="pf-avs">${AVATARS.map((src) => `<button class="pf-av ${p.avatar === src ? 'on' : ''}" data-action="pf-ava-set" data-src="${src}"><img src="${src}" alt="" loading="lazy"></button>`).join('')}<label class="pf-av up ${p.avatar && /^data:/.test(p.avatar) ? 'on' : ''}" title="Importer ma photo">${p.avatar && /^data:/.test(p.avatar) ? `<img src="${esc(p.avatar)}" alt="">` : '<span>＋</span>'}<small>Ma photo</small><input type="file" accept="image/*" id="pfUpload" hidden></label><button class="pf-av none ${!p.avatar ? 'on' : ''}" data-action="pf-ava-set" data-src=""><span>${esc(name.slice(0, 1).toUpperCase())}</span><small>Initiale</small></button></div></div>
+        <div class="pf-avs">${AVATARS.map((src) => `<button class="pf-av ${p.avatar === src ? 'on' : ''}" data-action="pf-ava-set" data-src="${src}"><img src="${src}" alt="" loading="lazy"></button>`).join('')}<label class="pf-av up ${p.avatar && /^data:/.test(p.avatar) ? 'on' : ''}" title="Importer ma photo">${p.avatar && /^data:/.test(p.avatar) ? `<img src="${esc(p.avatar)}" alt="">` : '<span>＋</span>'}<small>Ma photo</small><input type="file" accept="image/*" id="pfUpload" hidden></label><button class="pf-av num" data-action="numav" title="Créer un avatar avec mon numéro"><span class="pf-av-n">${F1.num.html(numAvCfg().n, numAvCfg().team, { color: '#fff' })}</span><small>Mon numéro</small></button><button class="pf-av none ${!p.avatar ? 'on' : ''}" data-action="pf-ava-set" data-src=""><span>${esc(name.slice(0, 1).toUpperCase())}</span><small>Initiale</small></button></div></div>
       <div class="pf-grid">
         <div class="card pf-block"><div class="pf-bh"><h3>F1 Manager</h3>${ring(winrate(ms.wins || 0, ms.races || 0), 'var(--red2)', 'victoires')}</div>
           <div class="pf-kpis">${kpi('Victoires', fmt(ms.wins || 0), '', 'up')}${kpi('Défaites', fmt(mgrLoss), 'courses non gagnées')}${kpi('Podiums', fmt(ms.podiums || 0))}${kpi('Meilleure position', ms.best && ms.best < 99 ? 'P' + ms.best : '—')}${kpi('Points', fmt(ms.points || 0), 'barème F1')}${kpi('PitCoins gagnés', fmtPC(ms.pcEarned || 0))}</div>
@@ -3526,6 +3566,10 @@
       case 'claim-season': { const g = F1.store.claimSeason(S.season); if (g) { toast('🎆', `+${jt(g)} pour la saison ${S.season.year} !`, 'win'); confetti(160); route(); } break; }
       case 'rescue': { const g = F1.store.rescue(S.season, S.season.next); if (g) { toast('⛽', `Ravitaillement : +${jt(g)}`, 'win'); route(); } break; }
       case 'profile': profile(); break;
+      case 'numav': numAvOpen(); break;
+      case 'na-team': { S.numAv.team = a.dataset.t; $$('.nav-av-t').forEach((b) => b.classList.toggle('on', b === a)); numAvDraw(); break; }
+      case 'na-style': { S.numAv.style = a.dataset.s; $$('.nav-av-st button').forEach((b) => b.classList.toggle('on', b === a)); numAvDraw(); break; }
+      case 'na-use': numAvUse(); break;
       case 'pf-ava': { S.pfAva = !S.pfAva; const gal = $('#pfGallery'); if (gal) gal.classList.toggle('open', !!S.pfAva); break; }
       case 'pf-ava-set': { F1.store.setAvatar(a.dataset.src || null); S.pfAva = false; F1.social.sync(true); showAchievements(); route(); toast('🪪', 'Photo de profil mise à jour', 'win'); break; }
       case 'ach-cat': S.achCat = a.dataset.c; route(); break;
