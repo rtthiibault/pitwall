@@ -599,6 +599,38 @@
     catalunya: { g: 'park', items: { tree: 3, mountain: 2, field: 1 } }, zandvoort: { g: 'sand', items: { dune: 5, pine: 2 }, sea: 'left' }, americas: { g: 'park', items: { tree: 3, field: 3 } },
     portimao: { g: 'park', items: { tree: 3, mountain: 2 } }, istanbul: { g: 'park', items: { tree: 4, tower: 1 } },
   };
+  /* Lieux emblématiques : n = nom, f = position sur le tour (0 à 1 depuis la ligne), paint = virage peint (couleurs),
+     tunnel = passage couvert (f à f2), icon = monument dessiné à côté du tracé */
+  const LANDMARKS = {
+    spa: [{ n: 'Eau Rouge · Raidillon', f: 0.055, f2: 0.1, paint: ['#ffd400', '#e10600'] }, { n: 'Pouhon', f: 0.5 }, { n: 'Blanchimont', f: 0.86 }],
+    monaco: [{ n: 'Casino', f: 0.2, icon: 'casino' }, { n: 'Tunnel', f: 0.39, f2: 0.47, tunnel: 1 }, { n: 'Épingle du Fairmont', f: 0.31 }, { n: 'Piscine', f: 0.7 }],
+    monza: [{ n: 'Parabolica', f: 0.9 }, { n: 'Lesmo', f: 0.45 }, { n: 'Ascari', f: 0.62 }, { n: 'Anneau de vitesse', f: 0.2, icon: 'banking' }],
+    silverstone: [{ n: 'Maggotts · Becketts', f: 0.19, f2: 0.27, paint: ['#2e6be6', '#f4f4f2'] }, { n: 'Copse', f: 0.1 }, { n: 'Stowe', f: 0.5 }, { n: 'The Wing', f: 0.0, icon: 'wing' }],
+    suzuka: [{ n: '130R', f: 0.86 }, { n: 'Les S', f: 0.14 }, { n: 'Pont du huit', f: 0.4 }, { n: 'Grande roue', f: 0.03, icon: 'ferris' }],
+    marina_bay: [{ n: 'Marina Bay Sands', f: 0.55, icon: 'mbs' }, { n: 'Anderson Bridge', f: 0.32 }],
+    vegas: [{ n: 'Sphere', f: 0.13, icon: 'sphere' }, { n: 'Le Strip', f: 0.6, f2: 0.78, paint: ['#ff2bd6', '#22f0ff'] }],
+    yas_marina: [{ n: 'Yas Hotel', f: 0.6, icon: 'yas' }, { n: 'Marina', f: 0.75 }],
+    bahrain: [{ n: 'Tour de Sakhir', f: 0.02, icon: 'tower' }, { n: 'Virage 4', f: 0.2 }],
+    jeddah: [{ n: 'Corniche', f: 0.45 }, { n: 'Virage 27', f: 0.97 }],
+    losail: [{ n: 'Ligne droite de 1 km', f: 0.98 }, { n: 'Virage 1', f: 0.06 }],
+    albert_park: [{ n: 'Lakeside', f: 0.55 }, { n: 'Virage 1', f: 0.05 }],
+    villeneuve: [{ n: 'Mur des Champions', f: 0.97, paint: ['#e10600', '#f4f4f2'], f2: 0.995 }, { n: 'Épingle', f: 0.6 }],
+    interlagos: [{ n: 'S de Senna', f: 0.03, f2: 0.09, paint: ['#ffd400', '#1e9e4a'] }, { n: 'Junção', f: 0.84 }],
+    rodriguez: [{ n: 'Foro Sol', f: 0.86, icon: 'stadium' }, { n: 'Virage 1', f: 0.2 }],
+    americas: [{ n: 'Virage 1 en côte', f: 0.03 }, { n: 'Tour d\'observation', f: 0.62, icon: 'tower' }],
+    red_bull_ring: [{ n: 'Taureau', f: 0.02, icon: 'bull' }, { n: 'Remus', f: 0.27 }],
+    zandvoort: [{ n: 'Arie Luyendyk (relevé)', f: 0.93, f2: 0.99, paint: ['#ff7a00', '#f4f4f2'] }, { n: 'Hugenholtz', f: 0.14 }],
+    hungaroring: [{ n: 'Virage 1', f: 0.06 }, { n: 'Virage 4', f: 0.3 }],
+    imola: [{ n: 'Tamburello', f: 0.12 }, { n: 'Rivazza', f: 0.82 }],
+    catalunya: [{ n: 'Virage 3', f: 0.22 }, { n: 'La Caixa', f: 0.48 }],
+    baku: [{ n: 'Vieille ville', f: 0.42, icon: 'castle' }, { n: 'Ligne droite de 2 km', f: 0.88 }],
+    shanghai: [{ n: 'L\'escargot', f: 0.04 }, { n: 'Longue ligne droite', f: 0.7 }],
+    miami: [{ n: 'Hard Rock Stadium', f: 0.4, icon: 'stadium' }, { n: 'Marina', f: 0.15 }],
+    madring: [{ n: 'La Monumental', f: 0.5 }, { n: 'IFEMA', f: 0.1 }],
+    sepang: [{ n: 'Virage 15', f: 0.9 }, { n: 'Tribunes en feuille', f: 0.02, icon: 'leaf' }],
+    portimao: [{ n: 'Montagnes russes', f: 0.45 }],
+    istanbul: [{ n: 'Virage 8', f: 0.38 }],
+  };
   const SCENE_DEFS = `
     <symbol id="sc-palm" viewBox="0 0 40 50"><path d="M20 50 C19 38 21 28 24 18" stroke="#7d5a37" stroke-width="3.2" fill="none" stroke-linecap="round"/>
       <g fill="#2f8f63"><path d="M24 18 C16 10 8 12 3 18 C10 14 17 15 24 18Z"/><path d="M24 18 C30 9 38 9 41 15 C35 12 29 14 24 18Z"/><path d="M24 18 C22 8 25 2 31 0 C27 6 26 12 24 18Z"/><path d="M24 18 C16 17 10 22 9 29 C13 23 18 20 24 18Z"/><path d="M24 18 C31 18 36 23 37 30 C33 24 29 20 24 18Z"/></g></symbol>
@@ -611,9 +643,21 @@
     <symbol id="sc-mountain" viewBox="0 0 90 46"><path fill="#4b5668" d="M0 46 L30 6 L44 22 L58 2 L90 46Z"/><path fill="#e8edf3" d="M30 6 L37 16 L31 14 L26 12Z M58 2 L66 13 L59 11 L53 9Z"/></symbol>
     <symbol id="sc-cactus" viewBox="0 0 24 36"><path fill="#3d8a5a" d="M10 36 V6 C10 2 15 2 15 6 V36Z M10 18 H5 V10 C5 7 8 7 8 10 V15 H10Z M15 22 H20 V13 C20 10 17 10 17 13 V19 H15Z"/></symbol>
     <symbol id="sc-yacht" viewBox="0 0 50 22"><path fill="#eef0f3" d="M2 14 H48 L42 22 H8Z"/><path fill="#cfd5dd" d="M14 14 V8 H34 L38 14Z"/><rect x="20" y="10" width="10" height="2" fill="#7ab8e8"/></symbol>
+    <symbol id="lm-casino" viewBox="0 0 60 44"><rect x="6" y="18" width="48" height="26" fill="#e8dcc0"/><path d="M2 18 H58 L30 6Z" fill="#c9b48a"/><rect x="25" y="0" width="10" height="10" rx="5" fill="#7ea8a0"/><rect x="8" y="2" width="6" height="16" fill="#e8dcc0"/><rect x="46" y="2" width="6" height="16" fill="#e8dcc0"/>${[12, 22, 34, 44].map((x) => `<rect x="${x}" y="26" width="5" height="10" fill="#6b5a3a"/>`).join('')}</symbol>
+    <symbol id="lm-ferris" viewBox="0 0 50 56"><circle cx="25" cy="22" r="20" fill="none" stroke="#e8edf3" stroke-width="2.5"/>${[0, 45, 90, 135].map((a) => `<path d="M25 22 l${(20 * Math.cos((a * Math.PI) / 180)).toFixed(1)} ${(20 * Math.sin((a * Math.PI) / 180)).toFixed(1)} M25 22 l${(-20 * Math.cos((a * Math.PI) / 180)).toFixed(1)} ${(-20 * Math.sin((a * Math.PI) / 180)).toFixed(1)}" stroke="#aab4c0" stroke-width="1.2"/>`).join('')}${[0, 45, 90, 135, 180, 225, 270, 315].map((a) => `<circle cx="${(25 + 20 * Math.cos((a * Math.PI) / 180)).toFixed(1)}" cy="${(22 + 20 * Math.sin((a * Math.PI) / 180)).toFixed(1)}" r="3" fill="${['#e10600', '#ffd400', '#2e6be6', '#2ec4b6'][a / 45 % 4]}"/>`).join('')}<path d="M25 22 L14 56 M25 22 L36 56" stroke="#e8edf3" stroke-width="2.5"/></symbol>
+    <symbol id="lm-mbs" viewBox="0 0 70 56"><rect x="8" y="14" width="12" height="42" fill="#c9d2dc"/><rect x="29" y="14" width="12" height="42" fill="#c9d2dc"/><rect x="50" y="14" width="12" height="42" fill="#c9d2dc"/><path d="M2 14 C20 8 50 8 68 12 L66 15 C48 12 22 12 3 17Z" fill="#8a96a5"/><g class="sc-win" fill="#ffd46b">${[20, 28, 36, 44].map((y) => `<rect x="11" y="${y}" width="6" height="2"/><rect x="32" y="${y}" width="6" height="2"/><rect x="53" y="${y}" width="6" height="2"/>`).join('')}</g></symbol>
+    <symbol id="lm-sphere" viewBox="0 0 50 50"><defs><radialGradient id="lmSph" cx=".35" cy=".35"><stop offset="0" stop-color="#ffe36b"/><stop offset=".45" stop-color="#ff7a00"/><stop offset="1" stop-color="#a1127a"/></radialGradient></defs><circle cx="25" cy="24" r="22" fill="url(#lmSph)"/><circle cx="18" cy="18" r="4" fill="#fff" opacity=".5"/><rect x="10" y="44" width="30" height="6" fill="#3b4453"/></symbol>
+    <symbol id="lm-stadium" viewBox="0 0 70 40"><ellipse cx="35" cy="24" rx="33" ry="15" fill="#5a6474"/><ellipse cx="35" cy="22" rx="25" ry="10" fill="#3f8a54"/><path d="M14 22 H56" stroke="#e8edf3" stroke-width="1"/><ellipse cx="35" cy="22" rx="25" ry="10" fill="none" stroke="#c9d2dc" stroke-width="2"/></symbol>
+    <symbol id="lm-bull" viewBox="0 0 60 40"><path fill="#c7cdd6" d="M6 14 C2 10 4 4 9 6 L12 10 C18 8 30 8 40 10 L48 12 C54 12 58 16 56 22 L52 24 L50 36 H46 L45 26 L32 26 L30 36 H26 L25 26 C20 26 16 24 14 20 L10 18 Z"/><path d="M8 7 C4 2 6 0 9 2 M12 9 C10 3 13 1 15 4" stroke="#e8edf3" stroke-width="2" fill="none"/><rect x="18" y="36" width="34" height="4" fill="#3b4453"/></symbol>
+    <symbol id="lm-yas" viewBox="0 0 80 40"><path d="M4 30 C14 6 66 6 76 30" fill="none" stroke="#9fd3ff" stroke-width="5"/><path d="M10 30 C20 12 60 12 70 30" fill="none" stroke="#6f8aa8" stroke-width="2"/><rect x="4" y="28" width="12" height="12" fill="#c9d2dc"/><rect x="64" y="28" width="12" height="12" fill="#c9d2dc"/></symbol>
+    <symbol id="lm-tower" viewBox="0 0 30 64"><rect x="11" y="16" width="8" height="48" fill="#c9d2dc"/><rect x="5" y="6" width="20" height="12" rx="2" fill="#8a96a5"/><rect x="8" y="9" width="14" height="5" fill="#9fd3ff"/><rect x="14" y="0" width="2" height="6" fill="#e10600"/></symbol>
+    <symbol id="lm-castle" viewBox="0 0 70 40"><path fill="#c9a874" d="M0 40 V16 H6 V10 H12 V16 H18 V10 H24 V16 H30 V4 H40 V16 H46 V10 H52 V16 H58 V10 H64 V16 H70 V40Z"/><rect x="31" y="26" width="8" height="14" rx="4" fill="#6b4c30"/></symbol>
+    <symbol id="lm-leaf" viewBox="0 0 70 34"><path fill="#e8edf3" d="M2 30 C10 6 26 2 34 10 C42 2 60 6 68 30Z"/><path d="M34 10 V30" stroke="#aab4c0" stroke-width="2"/><rect x="4" y="30" width="62" height="4" fill="#5a6474"/></symbol>
+    <symbol id="lm-wing" viewBox="0 0 90 30"><path fill="#c9d2dc" d="M0 30 V18 C20 10 70 6 90 12 V30Z"/><path d="M0 18 C20 10 70 6 90 12" stroke="#e10600" stroke-width="2" fill="none"/></symbol>
+    <symbol id="lm-banking" viewBox="0 0 90 34"><path d="M2 32 C20 4 70 4 88 32" fill="none" stroke="#7a828e" stroke-width="10"/><path d="M2 32 C20 4 70 4 88 32" fill="none" stroke="#a7aeb8" stroke-width="2" stroke-dasharray="4 5"/></symbol>
     <symbol id="sc-field" viewBox="0 0 70 30"><path fill="#5d8a4a" d="M0 30 L18 0 H70 L52 30Z"/><path stroke="#7aa65e" stroke-width="2" d="M10 25 L26 3 M22 25 L38 3 M34 25 L50 3 M46 25 L62 3"/></symbol>`;
   const SC_SIZE = { palm: [46, 58], camel: [52, 40], dune: [96, 30], tower: [52, 82], tree: [34, 44], pine: [30, 50], mountain: [130, 66], cactus: [24, 36], yacht: [50, 22], field: [84, 36] };
-  function sceneLayer(circuitId, pts, box) {
+  function sceneLayer(circuitId, pts, box, avoid = []) {
     const sc = SCENES[circuitId] || { g: 'park', items: { tree: 3 } };
     let seed = 0; for (const c of circuitId) seed = (seed * 31 + c.charCodeAt(0)) >>> 0;
     const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
@@ -628,6 +672,7 @@
       const wet = sc.sea === 'bottom' ? y > by + bh * 0.93 : sc.sea === 'left' ? x < bx + bw * 0.08 : false;
       if ((it === 'yacht') !== wet) continue;
       if (near(x, y - h * 0.35, Math.max(w, h) * 0.55 + 22)) continue;
+      if (avoid.some((a) => (a[0] - x) ** 2 + (a[1] - y + h * 0.4) ** 2 < 110 * 110)) continue;
       if (placed.some((p2) => Math.abs(p2.x - x) < (w + p2.w) * 0.45 && Math.abs(p2.y - y) < (h + p2.h) * 0.4)) continue;
       placed.push({ it, x, y, w, h, flip: rnd() < 0.5 });
     }
@@ -659,16 +704,32 @@
     const ang = (Math.atan2(ny2 - sy, nx2 - sx) * 180) / Math.PI;
     const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const box = [x0 - pad, y0 - pad, x1 - x0 + pad * 2, y1 - y0 + pad * 2];
-    const sc = sceneLayer(circuitId, pts, box);
+    // longueur cumulée : position d'un lieu emblématique à une fraction du tour
+    const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+    const tot = cum[cum.length - 1] || 1;
+    const idxAt = (f) => { const dd = ((f % 1) + 1) % 1 * tot; let i = cum.findIndex((v) => v >= dd); return i < 0 ? pts.length - 1 : i; };
+    const ccx = (x0 + x1) / 2, ccy = (y0 + y1) / 2;
+    const lms = (LANDMARKS[circuitId] || []).map((l) => { const q = pts[idxAt(l.f)]; let vx = q[0] - ccx, vy = q[1] - ccy; const n = Math.hypot(vx, vy) || 1; vx /= n; vy /= n; return { ...l, q, vx, vy }; });
+    const seg = (a, b) => { const i = idxAt(a), j = idxAt(b), sel = i <= j ? pts.slice(i, j + 1) : [...pts.slice(i), ...pts.slice(0, j + 1)]; return 'M' + sel.map((q) => q.join(' ')).join(' L'); };
+    const paints = lms.filter((l) => l.paint).map((l) => `<path d="${seg(l.f, l.f2)}" fill="none" stroke="${l.paint[0]}" stroke-width="58" stroke-linecap="round" stroke-linejoin="round"/><path d="${seg(l.f, l.f2)}" fill="none" stroke="${l.paint[1]}" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>`).join('');
+    const tunnels = lms.filter((l) => l.tunnel).map((l) => `<path d="${seg(l.f, l.f2)}" fill="none" stroke="#0b0d10" stroke-width="40" stroke-linecap="round" opacity=".85"/><path d="${seg(l.f, l.f2)}" fill="none" stroke="#ffd46b" stroke-width="3" stroke-dasharray="6 10" opacity=".9"/>`).join('');
+    const [bx0, by0, bw0, bh0] = box, clampX = (x, w) => Math.max(bx0 + 8, Math.min(bx0 + bw0 - w - 8, x)), clampY = (y, h) => Math.max(by0 + 8, Math.min(by0 + bh0 - h - 8, y));
+    const icons = lms.filter((l) => l.icon).map((l) => { const w = 130, h = 100, x = clampX(l.q[0] + l.vx * 110 - w / 2, w), y = clampY(l.q[1] + l.vy * 110 - h / 2, h); return `<use href="#lm-${l.icon}" x="${x.toFixed(0)}" y="${y.toFixed(0)}" width="${w}" height="${h}" class="hx-lm-ic"/>`; }).join('');
+    const labels = lms.map((l) => {
+      const off = l.icon ? 175 : 70, tw = l.n.length * 15.5 + 30, lx = l.q[0] + l.vx * off, ly = clampY(l.q[1] + l.vy * off + (l.icon ? 30 : 0) - 22, 44) + 22;
+      const ax = clampX(l.vx < -0.35 ? lx - tw : l.vx > 0.35 ? lx : lx - tw / 2, tw);
+      return `<g class="hx-lm"><path d="M${l.q[0]} ${l.q[1]} L${lx.toFixed(0)} ${ly.toFixed(0)}" stroke="#fff" stroke-width="2" stroke-dasharray="3 4" opacity=".7"/><circle cx="${l.q[0]}" cy="${l.q[1]}" r="7" fill="#fff"/><rect x="${ax.toFixed(0)}" y="${(ly - 22).toFixed(0)}" width="${tw.toFixed(0)}" height="42" rx="21" fill="rgba(10,12,16,.85)" stroke="rgba(255,255,255,.28)"/><text x="${(ax + tw / 2).toFixed(0)}" y="${(ly + 8).toFixed(0)}" text-anchor="middle">${esc(l.n)}</text></g>`;
+    }).join('');
+    const sc = sceneLayer(circuitId, pts, box, lms.flatMap((l) => [[l.q[0] + l.vx * 96, l.q[1] + l.vy * 96], [l.q[0] + l.vx * (l.icon ? 150 : 64), l.q[1] + l.vy * (l.icon ? 150 : 64)]]));
     // projecteurs le long du tracé pour les courses de nuit
     const lights = sc.night ? pts.filter((_, i) => i % Math.max(8, Math.round(pts.length / 14)) === 0).map((q) => `<circle cx="${q[0]}" cy="${q[1]}" r="34" fill="url(#sc-flood)"/>`).join('') : '';
     return `<svg class="hx-track g-${sc.ground} ${sc.night ? 'night' : ''}" viewBox="${box.join(' ')}" role="img" aria-label="Tracé du circuit et son décor">
       <defs>${sc.defs}<radialGradient id="sc-flood"><stop offset="0" stop-color="#fff6d0" stop-opacity=".55"/><stop offset="1" stop-color="#fff6d0" stop-opacity="0"/></radialGradient>
         <pattern id="hxChk" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff"/><rect width="4" height="4" fill="#111"/><rect x="4" y="4" width="4" height="4" fill="#111"/></pattern></defs>
       <g class="hx-scene">${sc.back}</g>${lights}
-      <path class="hx-t-glow" d="${d}" style="stroke:${color}"/><path class="hx-t-kerb" d="${d}"/><path class="hx-t-asphalt" d="${d}"/><path class="hx-t-line" id="hxTrk" d="${d}" pathLength="1"/>
+      <path class="hx-t-glow" d="${d}" style="stroke:${color}"/>${paints}<path class="hx-t-kerb" d="${d}"/><path class="hx-t-asphalt" d="${d}"/><path class="hx-t-line" id="hxTrk" d="${d}" pathLength="1"/>${tunnels}
       <g transform="translate(${sx} ${sy}) rotate(${ang})"><rect x="-4" y="-22" width="8" height="44" fill="url(#hxChk)"/></g>
-      <g class="hx-scene-front">${sc.front}</g>
+      <g class="hx-scene-front">${sc.front}</g><g class="hx-lms">${icons}${labels}</g>
       ${still ? '' : `<circle class="hx-car" r="13" style="fill:${color}"><animateMotion dur="14s" repeatCount="indefinite" rotate="auto"><mpath href="#hxTrk"/></animateMotion></circle>`}</svg>`;
   }
   function heroTrack(nx) {
