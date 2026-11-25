@@ -646,7 +646,7 @@
     let sky = '';
     if (sc.night) { for (let k = 0; k < 40; k++) sky += `<circle cx="${(bx - 120 + rnd() * (bw + 240)).toFixed(0)}" cy="${(by - 120 + rnd() * (bh * 0.5)).toFixed(0)}" r="${(1 + rnd() * 2.4).toFixed(1)}" fill="#fff" opacity="${(0.3 + rnd() * 0.6).toFixed(2)}"/>`; sky += `<g transform="translate(${(bx + bw - 30).toFixed(0)} ${(by - 30).toFixed(0)})"><circle r="34" fill="#f5efd8"/><circle cx="14" cy="-8" r="30" fill="#141a22"/></g>`; }
     return { defs: `${SCENE_DEFS}<radialGradient id="sc-ground" cx=".5" cy=".5" r=".55"><stop offset="0" stop-color="${G[0]}" stop-opacity=".55"/><stop offset=".7" stop-color="${G[1]}" stop-opacity=".35"/><stop offset="1" stop-color="${G[1]}" stop-opacity="0"/></radialGradient><linearGradient id="sc-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f6f9c"/><stop offset="1" stop-color="#0d3550"/></linearGradient>`,
-      back: `${sky}<ellipse cx="${cx}" cy="${cy}" rx="${bw * 0.72}" ry="${bh * 0.7}" fill="url(#sc-ground)"/>${water}${tex}`, front: items, night: !!sc.night, ground: sc.g };
+      back: `${sky}${water}${tex}`, front: items, night: !!sc.night, ground: sc.g };
   }
   function trackSvg(circuitId, color) {
     const raw = F1.CIRCUITS && F1.CIRCUITS[circuitId];

@@ -1851,3 +1851,10 @@ details.lg-how summary { cursor: pointer; font-weight: 800; } details.lg-how[ope
 .hx-top .sxs { margin-right: 32px; } @media (max-width: 1000px) { .hx-top .sxs { margin-right: 0; } }
 .hx-top .sxs { margin-right: 72px; }
 @media (max-width: 1000px) { .hx-top .sxs { margin-right: 0; } }
+/* sol du décor : uniforme sur toute la zone du circuit, fondu doux côté texte (plus de cercle) */
+.hx-map { --gr: transparent; background: linear-gradient(90deg, transparent 0, var(--gr) 22%, var(--gr) 100%); }
+.hx-map:has(.g-sand) { --gr: rgba(168, 128, 66, .30); }
+.hx-map:has(.g-city) { --gr: rgba(72, 82, 98, .34); }
+.hx-map:has(.g-park) { --gr: rgba(78, 138, 78, .22); }
+.hx-map:has(.g-forest) { --gr: rgba(44, 104, 68, .30); }
+@media (max-width: 1000px) { .hx-map { background: linear-gradient(180deg, transparent 0, var(--gr) 14%, var(--gr) 100%); } }
