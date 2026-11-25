@@ -1887,7 +1887,9 @@
     sim: '<rect x="10" y="14" width="60" height="34" rx="3"/><path d="M30 60 H50 M40 48 V60"/><path d="M18 40 L30 28 L40 34 L52 22 L62 26"/>',
     hydraulic: '<path d="M14 30 H50 C60 30 60 46 50 46 H30 C20 46 20 58 30 58 H66"/><circle cx="14" cy="30" r="5"/><circle cx="66" cy="58" r="5"/>',
   };
-  const rdIcon = (k, col) => `<svg viewBox="0 0 80 70" class="rd-ico" fill="none" stroke="${col}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${RD_ICON[k] || RD_ICON.chip}</svg>`;
+  // icône d'une pièce : son croquis technique (js/rdart.js), sinon le pictogramme de sa famille
+  const rdIcon = (k, col) => { const part = MG().RD_BY_ID.get(k), art = F1.RD_ART && F1.RD_ART[k];
+    return `<svg viewBox="0 0 80 70" class="rd-ico" fill="none" stroke="${col}" style="color:${col}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${art || RD_ICON[(part && part.icon) || k] || RD_ICON.chip}</svg>`; };
   const FX_LBL = { speed: '⚡ Vitesse', df: '🌀 Appui', rel: '🔧 Fiabilité', launch: '🚦 Départ', tyre: '🛞 Pneus', push: '🔋 Dépassement', pit: '🔧 Stand', sc: '📻 Stratégie SC', drv: '🎮 Pilote', wx: '🌧️ Réaction météo', pc: '💰 PitCoins', rd: '🔬 Coût R&D', tunnel: '🌬️ Soufflerie', races: '🏁 Courses/jour' };
   const fxVal = (k, v) => (['speed', 'df', 'rel'].includes(k) ? `+${fmt(v, Math.abs(v % 1) > 0.01 ? 1 : 0)}` : k === 'races' ? `+${v}` : k === 'rd' ? `−${Math.round(v * 100)} %` : k === 'pc' || k === 'tunnel' ? `+${Math.round(v * 100)} %` : `+${Math.round(v * 40)} %`);
   // ce que fait concrètement chaque bonus (infobulle au survol)
@@ -1950,7 +1952,7 @@
         return `<button class="rd-card ${st} ${max ? 'max' : ''} ${inJob ? 'job' : ''} ${sel && sel.id === p.id ? 'sel' : ''} ${reco && reco.id === p.id ? 'reco' : ''}" data-action="rd-sel" data-p="${p.id}" style="--cc:${cat.color}"><span class="rd-idx">${String(idx + 1).padStart(2, '0')}</span>
           ${inJob ? `<span class="rd-badge job">⏳ ${MG().LV_NAME[inJob.lv]}</span>` : max ? '<span class="rd-badge ok">MAX</span>' : lv ? `<span class="rd-badge ok">${MG().LV_NAME[lv]}</span>` : st === 'locked' ? '<span class="rd-badge">🔒</span>' : reco && reco.id === p.id ? '<span class="rd-badge reco">Conseillé</span>' : ''}
           ${!max && lv && reco && reco.id === p.id ? '<span class="rd-badge reco" style="top:38px">Conseillé</span>' : ''}
-          <div class="rd-art">${unknown ? '<div class="rd-q">?</div>' : rdIcon(p.icon, lv ? '#cfe9ff' : st === 'available' ? '#ffffff' : 'rgba(255,255,255,.45)')}</div>
+          <div class="rd-art">${unknown ? '<div class="rd-q">?</div>' : rdIcon(p.id, lv ? '#cfe9ff' : st === 'available' ? '#ffffff' : 'rgba(255,255,255,.45)')}</div>
           <div class="rd-name">${unknown ? 'Amélioration inconnue' : esc(p.name)}</div>
           <div class="rd-cat">${unknown ? `${cat.icon} ${esc(cat.name)}` : pips(lv)}</div>
           <div class="rd-foot">${max ? '<span class="muted">Spécification max</span>' : unknown || st === 'locked' ? '<span class="muted">—</span>' : `<b class="${can ? '' : 'muted'}">${pcoin}${cost}</b><small class="muted"> → ${MG().LV_NAME[lv + 1]}</small>`}</div></button>`;
@@ -1964,7 +1966,7 @@
     if (sel) {
       const st = MG().partState(sel, owned);
       const g = gainOf(sel);
-      detail = `<div class="rd-detail" style="--cc:${cat.color}"><div class="row" style="flex-wrap:nowrap;align-items:start"><div class="rd-art sm">${rdIcon(sel.icon, '#fff')}</div>
+      detail = `<div class="rd-detail" style="--cc:${cat.color}"><div class="row" style="flex-wrap:nowrap;align-items:start"><div class="rd-art sm">${rdIcon(sel.id, '#fff')}</div>
           <div style="flex:1;min-width:0"><div class="muted upper" style="font-size:11px;font-weight:700">${cat.icon} ${esc(cat.name)} · ${esc(sel.br)}</div><h3 style="font-size:20px;margin:2px 0 6px">${st === 'unknown' ? 'Amélioration inconnue' : esc(sel.name)}</h3>
           <div class="muted" style="font-size:14px">${st === 'unknown' ? 'Développez les pièces précédentes de cette branche pour la découvrir.' : esc(sel.desc)}</div></div>
           <button class="rd-close" data-action="rd-sel" data-p="" aria-label="Vue d'ensemble">✕</button></div>
@@ -2011,7 +2013,7 @@
     let streams = '';
     for (let i = 0; i < 16; i++) streams += `<i style="top:${6 + i * 5.8}%;animation-delay:${(i * 0.137) % 0.9}s;animation-duration:${0.55 + (i % 4) * 0.12}s"></i>`;
     ov.innerHTML = `<div class="tunnel-box" style="--cc:${cat.color}"><div class="tunnel-h">🌬️ Soufflerie · ${Math.round(res.chance * 100)} % de réussite</div>
-      <div class="tunnel"><div class="air">${streams}</div><div class="tunnel-part">${rdIcon(p.icon, '#fff')}</div></div>
+      <div class="tunnel"><div class="air">${streams}</div><div class="tunnel-part">${rdIcon(p.id, '#fff')}</div></div>
       <div class="gauge"><div class="gauge-zone" style="width:${res.chance * 100}%"></div><div class="needle"></div></div>
       <div class="tunnel-res">Mesures en cours…</div></div>`;
     document.body.appendChild(ov);
@@ -2057,7 +2059,7 @@
         const p = MG().RD_BY_ID.get(j.pid), cat = p && MG().RD_CATS.find((c) => c.id === p.cat), left = j.end - now, ready = left <= 0;
         const pct = ready ? 100 : Math.max(0, Math.min(100, (1 - left / (j.end - j.start)) * 100));
         cells.push(`<div class="tj ${ready ? 'ready' : 'run'}" data-start="${j.start}" data-end="${j.end}" style="--cc:${cat ? cat.color : '#2ad1c9'}">
-          <div class="tj-art">${p ? rdIcon(p.icon, '#fff') : ''}<span class="tj-air"><i></i><i></i><i></i></span></div>
+          <div class="tj-art">${p ? rdIcon(p.id, '#fff') : ''}<span class="tj-air"><i></i><i></i><i></i></span></div>
           <div class="tj-body"><div class="tj-h"><small>${ready ? 'Fabrication terminée' : 'Soufflerie en cours'}</small><b>${p ? esc(p.name) : '?'} <em>${MG().LV_NAME[j.lv]}</em></b>${j.mode === 'tunnel' ? `<span class="tj-bet">🎲 Pari · ${Math.round(j.chance * 100)} %</span>` : ''}</div>
             <div class="tj-bar"><i style="width:${pct}%"></i></div>
             <div class="tj-foot"><span class="tj-cd num">${ready ? 'Prête' : hms(left)}</span>

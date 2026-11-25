@@ -1,0 +1,134 @@
+/* =====================================================================================
+   PITWALL — système visuel commun (codes de la F1, même ADN que le site)
+   Signature : le vibreur rouge et blanc, sous les titres de page et sous l'onglet actif.
+   Voix : titres en Archivo très large (comme « Grand Prix du Qatar » de l'accueil),
+   données en chiffres tabulaires, tableaux en tour de chronométrage.
+   Surfaces : L0 asphalte, L1 panneau, L2 carte, trait 1 px et reflet haut — pas de dégradés décoratifs.
+   Échelle : 12 · 14 · 16 · 18 · 22 · 28 · 40 px ; graisses 400 / 500 / 600, grands titres 900.
+   Tout est préfixé par « main » ou la barre du haut : le F1 Manager (.hq, chargé après) garde ses règles.
+   ===================================================================================== */
+:root {
+  --l0: #0f1216; --l1: #161a20; --l2: #1c2128; --l3: #232932;
+  --hair: rgba(255,255,255,.07); --hair-2: rgba(255,255,255,.12); --lift: inset 0 1px 0 rgba(255,255,255,.05);
+  --kerb: repeating-linear-gradient(90deg, var(--red) 0 14px, #eef0f3 14px 28px);
+  --t-meta: 12px; --t-sec: 14px; --t-body: 16px; --t-sub: 18px; --t-h3: 22px; --t-h2: 28px; --t-h1: 40px;
+}
+
+/* ---------- barre du haut ---------- */
+.topbar .nav a { border-radius: 0 !important; background: none !important; box-shadow: none !important; font-weight: 500 !important; font-size: 14px !important; letter-spacing: 0 !important; }
+.topbar .nav a:hover { color: #fff !important; }
+.topbar .nav a.active { color: #fff !important; font-weight: 600 !important; }
+.topbar .nav a.active::after { display: none !important; }
+.topbar .nav-ind { height: 3px !important; border-radius: 0 !important; background: var(--kerb) !important; box-shadow: none !important; }
+.topbar .wallet, .topbar .mgr-btn, .topbar .pw-btn { border-radius: 4px !important; }
+
+/* ---------- titres de page : voix de l'accueil + vibreur ---------- */
+main .market-head { position: relative; margin-bottom: 24px !important; padding-bottom: 16px; }
+main .market-head::after { content: ''; position: absolute; left: 0; bottom: 0; width: 84px; height: 4px; background: var(--kerb); }
+main .market-head h1 {
+  font-family: 'Archivo', var(--f) !important; font-style: normal !important; text-transform: none !important; font-weight: 900 !important;
+  font-variation-settings: 'wdth' 116 !important; font-stretch: 116%; letter-spacing: -.025em !important; line-height: 1.02 !important;
+  font-size: clamp(30px, 4vw, var(--t-h1)) !important; text-shadow: none !important; color: #f6f7f9;
+}
+main .market-head .muted { font-size: var(--t-sec) !important; max-width: 72ch; line-height: 1.55; }
+/* titres de section : trait incliné rouge, sans lueur ni texte dégradé */
+main .section-h { margin-bottom: 16px !important; }
+main .section-h h2 {
+  font-family: 'Archivo', var(--f); font-style: normal !important; text-transform: none !important; font-weight: 600 !important;
+  font-variation-settings: 'wdth' 112; letter-spacing: -.015em !important; font-size: var(--t-h3) !important; line-height: 1.2;
+  background: none !important; -webkit-background-clip: border-box !important; background-clip: border-box !important; color: #f2f3f5 !important;
+}
+main .section-h h2::before { width: 5px !important; height: 20px !important; background: var(--red) !important; box-shadow: none !important; animation: none !important; }
+main :is(.card, .db-card) > h3, main .card h3 { font-family: 'Archivo', var(--f); font-weight: 600; font-variation-settings: 'wdth' 110; letter-spacing: -.01em; }
+
+/* ---------- surfaces ---------- */
+main .card, main .db-card, main .notice {
+  border-radius: 4px !important; border: 1px solid var(--hair) !important; background: var(--l1) !important; box-shadow: var(--lift) !important;
+}
+main .card::before, main .card::after { opacity: 0; }
+main .notice { background: var(--l2) !important; box-shadow: inset 3px 0 0 var(--gold), var(--lift) !important; }
+main .notice.red { box-shadow: inset 3px 0 0 var(--lose), var(--lift) !important; }
+main .field { border-radius: 4px !important; background: var(--l0) !important; border: 1px solid var(--hair-2) !important; }
+main .field:focus { border-color: var(--red2) !important; outline: none; box-shadow: 0 0 0 3px rgba(215,38,30,.18) !important; }
+
+/* ---------- onglets : soulignés, comme une barre de chronométrage ---------- */
+main .tabs { border-radius: 0 !important; background: none !important; border: 0 !important; border-bottom: 1px solid var(--hair) !important; padding: 0 !important; gap: 0 !important; }
+main .tab { border-radius: 0 !important; background: none !important; box-shadow: inset 0 -3px 0 transparent !important; padding: 12px 16px !important; font-weight: 500 !important; color: var(--muted) !important; }
+main .tab:hover { color: #fff !important; }
+main .tab.on { color: #fff !important; background: none !important; box-shadow: inset 0 -3px 0 var(--red) !important; font-weight: 600 !important; }
+main .tab .cnt { font-size: var(--t-meta) !important; }
+main .seg { border-radius: 4px !important; background: var(--l1) !important; border: 1px solid var(--hair) !important; backdrop-filter: none !important; }
+main .seg button, main .seg a { border-radius: 2px !important; font-weight: 500 !important; }
+main .seg .on { background: var(--l3) !important; color: #fff !important; box-shadow: inset 0 -2px 0 var(--red) !important; }
+
+/* ---------- boutons : plaque inclinée pour l'action principale ---------- */
+main .btn { font-weight: 600 !important; white-space: nowrap; }
+main .btn:not(.ghost):not(.sm):not(.block):not(.gold) { border-radius: 0 !important; clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%); padding-left: 22px !important; padding-right: 22px !important; }
+main .btn:not(.ghost) { background-image: none !important; box-shadow: none !important; }
+main .btn.ghost { border-radius: 4px !important; border-color: var(--hair-2) !important; background: transparent !important; font-weight: 500 !important; }
+main .btn.ghost:hover { background: var(--l2) !important; border-color: rgba(255,255,255,.2) !important; }
+main .btn.sm { border-radius: 4px !important; }
+main .btn:focus-visible { clip-path: none; outline: 2px solid #ffd23f; outline-offset: 2px; }
+
+/* ---------- étiquettes : contour simple, jamais de pastille décorative ---------- */
+main .chip { border-radius: 3px !important; background: transparent !important; border: 1px solid var(--hair-2) !important; font-size: var(--t-meta) !important; font-weight: 600 !important; box-shadow: none !important; }
+main .chip.green { color: var(--win) !important; border-color: rgba(60,191,110,.4) !important; }
+main .chip.gold { color: var(--gold) !important; border-color: rgba(233,190,62,.4) !important; }
+
+/* ---------- tableaux : tour de chronométrage ---------- */
+main .table-wrap { border: 1px solid var(--hair); border-radius: 4px; background: var(--l1); }
+main .tbl { border-collapse: collapse; }
+main .tbl thead th { font-size: var(--t-meta) !important; font-weight: 500 !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--muted) !important; background: var(--l0) !important; border-bottom: 1px solid var(--hair-2) !important; padding-top: 10px; padding-bottom: 10px; }
+main .tbl td { border-bottom: 1px solid var(--hair) !important; font-variant-numeric: tabular-nums; }
+main .tbl tbody tr:last-child td { border-bottom: 0 !important; }
+main .tbl tbody tr:hover td { background: var(--l2) !important; }
+main .tbl .pos, main .tbl td.pos { font-family: 'Archivo', var(--f); font-weight: 600 !important; font-variation-settings: 'wdth' 110; font-size: var(--t-body); }
+main .tbl tr.me-row td { background: rgba(215,38,30,.08) !important; }
+main .tbl tr.me-row td:first-child { box-shadow: inset 3px 0 0 var(--red); }
+
+/* ---------- typographie : échelle et graisses ---------- */
+main :is(b, strong, th, .num) { font-weight: 600; }
+main :is(small) { font-size: max(12px, .85em); }
+main [style*="font-size:10px"], main [style*="font-size:10.5px"], main [style*="font-size:11px"], main [style*="font-size:11.5px"] { font-size: var(--t-meta) !important; }
+main [style*="font-weight:900"]:not(h1):not(h2), main [style*="font-weight:800"]:not(h1):not(h2) { font-weight: 600 !important; }
+
+/* ---------- pied de page ---------- */
+footer#footer { background: var(--l0) !important; border-top: 0 !important; }
+footer#footer::before { left: 0 !important; right: 0 !important; height: 4px !important; background: var(--kerb) !important; opacity: .9; }
+footer#footer, footer#footer * { font-size: var(--t-meta); }
+footer#footer .foot-logo { font-size: var(--t-sub) !important; }
+
+@media (prefers-reduced-motion: reduce) { main *, .topbar * { transition: none !important; } }
+
+/* ---------- passe de détail : plancher 12 px, graisses 600 max hors grands titres ---------- */
+main :is(.pw-tag, .pdw-cat, .pw-sep, .pdw-k, .pwt-imp, .pdw-live, .pwr-time small, .pdw-st small, .pwt-meta span, .pwt-meta time, .pw-day-h span,
+  .pd-drv small, .odd-mv, .pd-step, .lgd-k small, .lgd-k span, .lgd-score small, .cd-box small, .hx-fav-o small, .pf-kpi small, .pf-kpi span, .pf-ring small, .pf-av small, .amt, .tbl th) { font-size: var(--t-meta) !important; }
+main :is(.pw-tag, .pdw-cat, .pdw-k, .pwt-imp, .pdw-live, .odd-mv, .lgd-k small, .lgd-score small, .odd .o, .rank, .who, .yw-go, .more, .amt, .pf-edit, .lbadge, .old, .bl, .pdw-tgt, .pw-day-h,
+  .pwr-main h3, .pwt-b h3, time, .muted.upper) { font-weight: 600 !important; }
+/* pastilles des dépêches : étiquettes à contour, pas d'aplat */
+main .pw-tag { border-radius: 3px !important; }
+main .pdw-cat { border-radius: 2px !important; }
+/* chiffres d'heure des dépêches : tabulaires */
+main time { font-variant-numeric: tabular-nums; }
+/* derniers écarts : monogrammes, noms, flous et dégradés */
+main :is(.ava i, .odd .n, .row .n, .h2h .vs, .rname, .pd-gp-name, .lgx-h h2, .cir-tag, .hx-round, .pf-ava i, .pf-av small) { font-weight: 600 !important; }
+main :is(.rname, .odd .n, .row .n, .pd-gp-name) { font-family: 'Archivo', var(--f); font-variation-settings: 'wdth' 110; letter-spacing: -.01em; }
+main .tabs, main .hx-fav { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+main .tabs { background: var(--bg) !important; }
+main .hx-fav { background: rgba(10,12,15,.92) !important; }
+main .lgx-q.hot { background-image: none !important; background-color: rgba(215,38,30,.14) !important; }
+main .pf-av.num { background: #12224f !important; }
+main .lbadge { border-radius: 3px !important; }
+/* vibreur collé au titre (et non sous les onglets du bandeau) */
+main .market-head::after { display: none; }
+main .market-head h1 { background: var(--kerb) left bottom / 84px 4px no-repeat !important; padding-bottom: 16px !important; }
+main .market-head { padding-bottom: 0; }
+/* filtres en ligne : petits segments, pas de pastilles */
+main .chips button, main .chips a { border-radius: 3px !important; font-weight: 500 !important; }
+main .chips button.on, main .chips a.on { background: var(--l3) !important; color: #fff !important; border-color: var(--hair-2) !important; box-shadow: inset 0 -2px 0 var(--red) !important; }
+/* libellés : casse normale, sans espacement de lettres */
+main small, main .muted.upper, main .upper, main .ssn-h small, main th { text-transform: none !important; letter-spacing: 0 !important; }
+/* filtres Succès / Paddock Wire : segments à contour, l'actif souligné de rouge */
+main .pdw-chip { border-radius: 3px !important; background: transparent !important; border: 1px solid var(--hair-2) !important; color: #c3cad3 !important; font-weight: 500 !important; box-shadow: none !important; }
+main .pdw-chip.on { background: var(--l3) !important; color: #fff !important; box-shadow: inset 0 -2px 0 var(--red) !important; }
+main .pdw-chip .num { opacity: .7; }

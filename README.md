@@ -476,3 +476,11 @@ Mise à jour : titres du Manager dans la voix du titre de l'accueil (Archivo tr�
 R&D « bureau d'études » : fiches de pièces numérotées dans leur branche, rail Mk I→V, coût en pied de fiche, branches à l'horizontale avec barre d'avancement, onglets soulignés, compteurs en bande de chronométrage, fiche de spécification pour la pièce choisie. Bandeau du Manager : monoplace en rendu 3D vue de profil (`F1.visuals.car(id, { view: 'side' })`). Garage, Muret, Pass, GP Hebdo, Ligues et QG : surfaces à plat, liserés écurie, onglets soulignés.
 
 Passe « goût visuel » (plugin VectorLab UX : anti-slop, typography, spacing, colour-palette, ux-audit) : échelle 12/14/16/18/22/28/40 px, graisses 400/500/600 (grands titres ≥ 28 px en Archivo large 900, voix de l'accueil), surfaces L0–L3 bordées d'un trait 1 px avec reflet haut, listes en panneau avec séparateurs, chips sans fond, aucun flou ni bouton en dégradé, grille 8 px, aucun débordement à 375 px, transitions coupées en mouvement réduit.
+
+## Icônes de la R&D
+
+`js/rdart.js` : un croquis technique par pièce (67), sur une grille 80 × 70 : silhouette au trait 2,2, détails au trait fin atténué, flux d'air en pointillés. Pignons générés à dents réelles (`gear()`), perçages et roulements en couronne (`ring()`). `rdIcon(id)` utilise ce croquis, sinon le pictogramme de la famille (`RD_ICON`).
+
+## Système visuel commun
+
+`css/site.css` (chargé avant `manager.css`) : titres de page dans la voix de l'accueil avec vibreur rouge et blanc, sections à trait incliné, onglets soulignés, tableaux en tour de chronométrage, boutons principaux en plaque inclinée, chips à contour, échelle 12–40 px, graisses 400/500/600, pas de flou ni de dégradé sur les boutons, vibreur sur le pied de page.

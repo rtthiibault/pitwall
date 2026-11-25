@@ -616,3 +616,7 @@ body.on-mgr main { max-width: none; padding-left: clamp(12px, 2.2vw, 36px); padd
   .hq .rd-view button { flex: 1; padding: 6px 8px !important; font-size: var(--t-meta) !important; white-space: nowrap; }
   .hq .rd-stage .car3d-fb { padding: 56px 6% 48px; }
 }
+/* icônes de pièces : croquis plus grands dans la fiche */
+.hq .rd-art { height: 88px !important; }
+.hq .rd-ico { width: 104px !important; height: 91px !important; }
+.hq .rd-art.sm .rd-ico { width: 72px !important; height: 63px !important; }
