@@ -1111,7 +1111,10 @@
   }
   function uava(p, cls = '') {
     const c = p.team ? tcol(p.team) : 'var(--red)';
-    const img = p.avatar && AVA_OK.test(p.avatar) ? `<img src="${esc(p.avatar)}" alt="" loading="lazy">` : '';
+    // sa propre ligne : la photo de cet appareil (même si le serveur ne l'a pas encore, ou ne l'accepte pas)
+    const u = SO().user, mine = p.isMe || (u && p.id === u.id), loc = mine ? F1.store.get().avatar : null;
+    const src = (loc && AVA_OK.test(loc)) ? loc : p.avatar;
+    const img = src && AVA_OK.test(src) ? `<img src="${esc(src)}" alt="" loading="lazy">` : '';
     return `<span class="ava ${cls}" style="--tc:${c}">${img}<i>${esc((p.username || '?').slice(0, 2).toUpperCase())}</i></span>`;
   }
   function relBtn(p) {
@@ -3447,6 +3450,7 @@
       <div class="pf-hero"><button class="pf-ava" data-action="pf-ava" title="Changer de photo">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : `<span>${esc(name.slice(0, 1).toUpperCase())}</span>`}<i>Changer</i></button>
         <div class="pf-id"><small class="muted">Profil joueur</small><h1>${esc(name)} <button class="pf-edit" data-action="profile" title="Changer de pseudo">✏️ Modifier</button></h1><div class="row" style="gap:6px;flex-wrap:wrap">${leagueBadge(L)}${m.number && m.chassis ? `<span class="chip pf-num" style="color:${F1.teamColor(m.chassis.id)}" title="Votre numéro de course">${F1.num.html(m.number, m.chassis.id)}</span>` : ''}<span class="chip">${Object.keys(p.ach).length} succès</span>${((m.pass && m.pass.done) || []).map((d) => `<span class="chip ps-badge" title="Pass de saison complété">🎟️ Saison ${d.season} complétée</span>`).join('')}${so.me ? '<span class="chip green">Profil en ligne</span>' : '<span class="chip">Profil local</span>'}</div></div>
         <div class="pf-wallets"><div><small>Jetons</small><b>${jt(p.balance)}</b></div><div><small>PitCoins</small><b>${fmtPC(m.pc || 0)}</b></div><button class="btn sm ghost" data-action="profile">⚙ Pseudo & sauvegarde</button></div></div>
+      ${so.avatarShared === false && p.avatar && /^data:/.test(p.avatar) ? `<div class="notice" style="margin-top:10px">Ta photo est visible sur cet appareil, mais pas encore chez les autres joueurs : le serveur ne l'accepte pas. Le propriétaire du site doit exécuter <code>supabase/${so.avatarWhy === 'profile-v2' ? 'migration-profile-v2.sql puis migration-avatar-upload.sql' : 'migration-avatar-upload.sql'}</code> dans Supabase. En attendant, les photos de la galerie sont partagées.</div>` : ''}
       <div class="pf-gallery ${S.pfAva ? 'open' : ''}" id="pfGallery"><div class="pf-gh"><b>Choisissez votre photo de profil</b><button class="btn sm ghost" data-action="pf-ava">Fermer</button></div>
         <div class="pf-avs">${AVATARS.map((src) => `<button class="pf-av ${p.avatar === src ? 'on' : ''}" data-action="pf-ava-set" data-src="${src}"><img src="${src}" alt="" loading="lazy"></button>`).join('')}<label class="pf-av up ${p.avatar && /^data:/.test(p.avatar) ? 'on' : ''}" title="Importer ma photo">${p.avatar && /^data:/.test(p.avatar) ? `<img src="${esc(p.avatar)}" alt="">` : '<span>＋</span>'}<small>Ma photo</small><input type="file" accept="image/*" id="pfUpload" hidden></label><button class="pf-av num" data-action="numav" title="Créer un avatar avec mon numéro"><span class="pf-av-n">${F1.num.html(numAvCfg().n, numAvCfg().team, { color: '#fff' })}</span><small>Mon numéro</small></button><button class="pf-av none ${!p.avatar ? 'on' : ''}" data-action="pf-ava-set" data-src=""><span>${esc(name.slice(0, 1).toUpperCase())}</span><small>Initiale</small></button></div></div>
       <div class="pf-grid">

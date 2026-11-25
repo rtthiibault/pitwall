@@ -90,12 +90,12 @@
     let r = await S.client.from('profiles').update(mgrCols ? { ...row, ...mgrRow() } : row).eq('id', S.user.id);
     // colonnes détaillées absentes (migration-profile-v2.sql pas encore exécutée) : on renvoie sans elles
     if (r.error && v2Cols && mgrCols && /column|schema cache|PGRST204/i.test((r.error.message || '') + (r.error.code || ''))) {
-      v2Cols = false;
+      v2Cols = false; S.avatarShared = false; S.avatarWhy = 'profile-v2';
       r = await S.client.from('profiles').update({ ...row, ...mgrRow() }).eq('id', S.user.id);
     }
     // photo importée refusée par la contrainte du serveur : on garde la synchro sans elle
     if (r.error && customAvatar && (r.error.code === '23514' || /avatar/i.test(r.error.message || ''))) {
-      customAvatar = false;
+      customAvatar = false; S.avatarShared = false; S.avatarWhy = 'avatar-upload';
       r = await S.client.from('profiles').update(mgrCols ? { ...row, ...mgrRow() } : row).eq('id', S.user.id);
     }
     if (r.error && mgrCols && /column|schema cache|PGRST204/i.test((r.error.message || '') + (r.error.code || ''))) {
