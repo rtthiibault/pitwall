@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-25T16:17:21.092Z",
+ "updated": "2026-11-25T16:47:25.007Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-25T16:47:21.092Z",
+ "next": "2026-11-25T17:17:25.007Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 76
+   "n": 75
   },
   {
    "name": "F1i",
@@ -26,6 +26,45 @@
   }
  ],
  "items": [
+  {
+   "id": "news_mo1xt7",
+   "timestamp": "2026-11-25T16:45:16.000Z",
+   "category": "PADDOCK",
+   "title": "Arthur Leclerc et Lilou Wadoux feront équipe aux 24 Heures de Daytona",
+   "summary": "L’écurie italienne AF Corse a annoncé ses équipages pour les prochaines 24 Heures de Daytona, où elle engagera deux Ferrari 296 GT3 Evo, l’une en GTD Pro, l’autre en GTD. Dans la catégorie GTD Pro, la n°21 verra à son volant Simon Mann, Alec Udell, Tommaso…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/endurance/arthur-leclerc-et-lilou-wadoux-feront-equipe-aux-24-heures-de-daytona.html",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/AF_Corse_IMSA_2027_50_1200x800.png",
+   "impact": null,
+   "firstSeen": "2026-11-25T16:47:25.007Z"
+  },
+  {
+   "id": "news_ulayfw",
+   "timestamp": "2026-11-25T16:35:12.000Z",
+   "category": "RÈGLEMENT",
+   "title": "La FIA rend son rapport des budgets capés 2025, Alpine et Williams épinglés",
+   "summary": "Depuis 2021, chaque écurie de Formule 1 est tenue de respecter un plafond budgétaire, afin d’équilibrer les dépenses entre les différentes écuries de la grille. Pour la cinquième année donc, la FIA a publié les résultats de l’enquête menée par une…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/la-fia-rend-son-rapport-des-budgets-capes-2025-alpine-et-williams-epingles.html",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/DPPI_00125027_1778-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-25T16:47:25.007Z"
+  },
+  {
+   "id": "news_6y2hef",
+   "timestamp": "2026-11-25T16:23:00.000Z",
+   "category": "RÈGLEMENT",
+   "title": "Officiel : Williams F1 sanctionnée pour avoir dépassé le plafond budgétaire en 2025, Alpine également épinglée par la FIA !",
+   "summary": "La FIA a annoncé avoir achevé son processus d'examen des comptes des écuries de Formule 1 et des motoristes pour la saison 2025, révélant des infractions au règlement financier de la part de Williams et Alpine F1. Si l'écurie française a uniquement commis une…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/officiel-williams-f1-sanctionnee-pour-avoir-depasse-le-plafond-budgetaire-en,213733.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/williams_30_-8.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-25T16:47:25.007Z"
+  },
   {
    "id": "news_11jhcmb",
    "timestamp": "2026-11-25T15:48:00.000Z",
@@ -839,44 +878,6 @@
     "impactLabel": "Cotes -5%",
     "teamId": "red_bull"
    },
-   "firstSeen": "2026-11-23T15:36:35.718Z"
-  },
-  {
-   "id": "news_1n9i7xf",
-   "timestamp": "2026-11-23T13:38:00.000Z",
-   "category": "PADDOCK",
-   "title": "Critiqué dès ses débuts, le Madring confirme des changements dès le GP d'Espagne 2027",
-   "summary": "Le Grand Prix d'Espagne de Formule 1 va faire évoluer son nouveau circuit de Madrid dès 2027. Après une première édition marquée par de nombreuses critiques concernant le tracé du Madring, les organisateurs ont annoncé un programme d'améliorations destiné à…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/critique-des-ses-debuts-le-madring-confirme-des-changements-des-le-gp-d-espagne,213681.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T15:36:35.718Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/mclaren0_82_.jpg"
-  },
-  {
-   "id": "news_1lvgbzd",
-   "timestamp": "2026-11-23T13:03:00.000Z",
-   "category": "PADDOCK",
-   "title": "Des pneus 'constants' et pas de graining : Pirelli a apprécié son week-end à Las Vegas",
-   "summary": "Pirelli a apprécié une course intense à Las Vegas, mais le manufacturier a surtout noté que les pneus amenés dans le Nevada, les trois composés les plus tendres de la gamme, ont fait leur travail à la perfection, de la manière dont l'entreprise le souhaitait…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455860_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T16:17:21.092Z"
-  },
-  {
-   "id": "news_1ya8qqd",
-   "timestamp": "2026-11-23T13:00:00.000Z",
-   "category": "PADDOCK",
-   "title": "Le programme du Grand Prix du Qatar 2026 de Formule 1",
-   "summary": "Après les néons du Strip, la Formule 1 met le cap sur le Moyen-Orient pour la deuxième étape de son triplé de fin de saison. Le circuit de Lusail accueille ce week-end l’avant-dernière manche du championnat, sans enjeu pour la couronne : Andrea Kimi Antonelli…",
-   "source": "AutoHebdo",
-   "lang": "fr",
-   "url": "https://www.autohebdo.fr/actualites/f1/le-programme-du-grand-prix-de-qatar-2026-de-formule-1.html",
-   "impact": null,
    "firstSeen": "2026-11-23T15:36:35.718Z"
   }
  ]
