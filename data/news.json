@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-25T11:46:27.081Z",
+ "updated": "2026-11-25T12:16:46.306Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-25T12:16:27.081Z",
+ "next": "2026-11-25T12:46:46.306Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 79
+   "n": 81
   },
   {
    "name": "F1i",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_1c8dils",
+   "timestamp": "2026-11-25T11:57:00.000Z",
+   "category": "RÈGLEMENT",
+   "title": "La FIA et les pilotes de F1 ont déjà validé des modifications du circuit de Madrid",
+   "summary": "Les modifications envisagées sur le circuit du Madring en vue du Grand Prix d'Espagne 2027 auraient déjà reçu l'approbation de la FIA et du GPDA, l'association des pilotes de Formule 1. Luis García Abad, responsable de l'épreuve madrilène, a confirmé que…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/la-fia-et-les-pilotes-de-f1-ont-deja-valide-des-modifications-du-circuit-de,213719.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/mclaren3_92_.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-25T12:16:46.306Z"
+  },
   {
    "id": "news_m1r2sd",
    "timestamp": "2026-11-25T11:08:00.000Z",
@@ -774,7 +787,7 @@
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455860_hires.jpg",
    "impact": null,
-   "firstSeen": "2026-11-25T11:46:27.081Z"
+   "firstSeen": "2026-11-25T12:16:46.306Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -864,19 +877,6 @@
    "impact": null,
    "firstSeen": "2026-11-23T12:35:31.503Z",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456187_hires.jpg"
-  },
-  {
-   "id": "news_1wi299s",
-   "timestamp": "2026-11-23T10:12:00.000Z",
-   "category": "PADDOCK",
-   "title": "Verstappen et Russell se déchirent, mais Wolff adore leurs provocations !",
-   "summary": "La rivalité entre Max Verstappen et George Russell a connu un nouvel épisode particulièrement tendu au Grand Prix de Las Vegas, avec un accrochage en essais libres, des accusations et plusieurs déclarations incendiaires. Pourtant, Toto Wolff ne semble pas…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-et-russell-se-dechirent-mais-wolff-adore-leurs-provocations,213675.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T12:35:31.503Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455997_hires.jpg"
   }
  ]
 }
