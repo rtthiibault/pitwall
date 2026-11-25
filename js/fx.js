@@ -216,8 +216,12 @@
      Les barres glissent le long de leur propre inclinaison (vers le haut à droite), comme des lignes de vitesse.
      Seul un transform est modifié à chaque image (pas de mise en page) ; à l'arrêt de l'onglet, rien ne tourne. */
   function stripes() {
+    // Le calque des traits est un vrai élément : on déplace son transform directement. (Écrire des variables CSS sur
+    // <html> à chaque image forçait le recalcul des styles de toute la page, très coûteux sur les pages chargées.)
+    let layer = document.querySelector('.bg-stripes');
+    if (!layer) { layer = document.createElement('div'); layer.className = 'bg-stripes'; layer.setAttribute('aria-hidden', 'true'); document.body.prepend(layer); }
     if (reduce || low || stripes.on) return; stripes.on = true;
-    const root = document.documentElement, SLOPE = 0.62;
+    const bar = () => document.querySelector('.topbar'), SLOPE = 0.62;
     let t = 0, last = performance.now(), lastY = scrollY, v = 0;
     const tile = () => (innerWidth <= 760 ? [1100, 690] : [1600, 1000]);
     const mod = (a, m) => ((a % m) + m) % m;
@@ -228,9 +232,8 @@
       v += (Math.abs(dy) / Math.max(dt, 0.001) - v) * 0.12;
       t += (14 + Math.min(v, 2600) * 0.16) * dt;
       const [tw, th] = tile();
-      root.style.setProperty('--stx', (mod(t * SLOPE, tw)).toFixed(1) + 'px');
-      root.style.setProperty('--sty', (-mod(t, th)).toFixed(1) + 'px');
-      root.style.setProperty('--tbx', (-(t * 1.6) % 1400).toFixed(1) + 'px');
+      layer.style.transform = `translate3d(${mod(t * SLOPE, tw).toFixed(1)}px, ${(-mod(t, th)).toFixed(1)}px, 0)`;
+      const tb = bar(); if (tb) tb.style.backgroundPositionX = (-(t * 1.6) % 1400).toFixed(1) + 'px';
       if (low) { stripes.on = false; return; } // config basse : les bandes s'arrêtent là où elles sont
       requestAnimationFrame(frame);
     };

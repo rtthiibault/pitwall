@@ -3319,7 +3319,8 @@
     const cards = s.races.map((r) => {
       const done = !!(r.results && r.results.length), win = done && drv(r.results[0].driverId), isNext = nx && nx.round === r.round;
       const col = win ? team(win.teamId).color : isNext ? '#e10600' : '#5d6674';
-      const svg = trackSvg(r.circuitId, col, true);
+      // identifiants propres à chaque carte : sinon les 23 tracés se partagent les dégradés et symboles de la première
+      const pre = `c${r.round}-`, svg = trackSvg(r.circuitId, col, true).replace(/\bid="([^"]+)"/g, `id="${pre}$1"`).replace(/(href="#|url\(#)([^")]+)/g, `$1${pre}$2`);
       return `<a class="cir ${isNext ? 'next' : ''} ${done ? 'done' : ''}" href="#/gp/${r.round}" style="--tc:${col}"><div class="cir-map">${svg || '<div class="muted" style="padding:40px;text-align:center">Tracé indisponible</div>'}</div>
         <div class="cir-b"><div class="cir-top">${flag(r.iso, 'sm')}<span>Manche ${r.round}</span>${isNext ? '<span class="cir-tag">Prochain</span>' : ''}${r.sprint ? '<span class="cir-tag sp">Sprint</span>' : ''}</div><b>${esc(r.nameFr)}</b><small>${esc(r.circuit)}, ${esc(r.locality)}</small>
         <span class="cir-res">${done ? `Vainqueur : <b>${esc(win ? win.given + ' ' + win.family : '—')}</b>` : DAYL.format(r.date)}</span></div></a>`;
