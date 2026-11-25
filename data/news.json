@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-25T08:45:56.457Z",
+ "updated": "2026-11-25T09:16:02.773Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-25T09:15:56.457Z",
+ "next": "2026-11-25T09:46:02.773Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 79
+   "n": 80
   },
   {
    "name": "F1i",
@@ -26,6 +26,32 @@
   }
  ],
  "items": [
+  {
+   "id": "news_5j71qf",
+   "timestamp": "2026-11-25T08:54:00.000Z",
+   "category": "PADDOCK",
+   "title": "Russell a proposé un pacte à Verstappen en pleine course à Las Vegas",
+   "summary": "Malgré la guerre des mots qui oppose George Russell à Max Verstappen depuis plusieurs semaines, le pilote Mercedes F1 a proposé une forme de pacte de non-agression à son rival lors de leur intense bataille pour la victoire au Grand Prix de Las Vegas…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/russell-a-propose-un-pacte-a-verstappen-en-pleine-course-a-las-vegas,213712.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/mercedes_52_-7.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-25T09:16:02.773Z"
+  },
+  {
+   "id": "news_1d93qi",
+   "timestamp": "2026-11-25T08:13:29.000Z",
+   "category": "PADDOCK",
+   "title": "Conflit Hamilton - Leclerc : le directeur général de Ferrari renvoie Vasseur à ses responsabilités",
+   "summary": "La pression continue de s'accentuer sur Frédéric Vasseur chez Ferrari après le nouvel accrochage entre Charles Leclerc et Lewis Hamilton lors du Grand Prix de Las Vegas. Alors que la presse italienne réclame de plus en plus ouvertement une intervention de la…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/conflit-hamilton-leclerc-le-directeur-general-de-ferrari-renvoie-vasseur-a-ses,213709.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1445318_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-25T09:16:02.773Z"
+  },
   {
    "id": "news_2s8gfr",
    "timestamp": "2026-11-25T07:34:00.000Z",
@@ -657,7 +683,7 @@
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455860_hires.jpg",
    "impact": null,
-   "firstSeen": "2026-11-25T08:45:56.457Z"
+   "firstSeen": "2026-11-25T09:16:02.773Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -851,32 +877,6 @@
    "impact": null,
    "firstSeen": "2026-11-23T10:51:02.379Z",
    "image": "https://cdn-1.motorsport.com/images/amp/YMXbRO12/s6/oscar-piastri-mclaren-lando-no-3.jpg"
-  },
-  {
-   "id": "news_12az6q7",
-   "timestamp": "2026-11-23T06:51:00.000Z",
-   "category": "PADDOCK",
-   "title": "'Hamilton a fait de Ferrari son équipe' : la grande erreur de Leclerc selon Villeneuve",
-   "summary": "Jacques Villeneuve estime que Charles Leclerc a commis une erreur majeure en laissant Lewis Hamilton prendre progressivement le contrôle de Ferrari depuis son arrivée à Maranello. Selon le champion du monde 1997, le Britannique aurait profité de sa première…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hamilton-a-fait-de-ferrari-son-equipe-la-grande-erreur-de-leclerc-selon,213665.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455871_hires.jpg"
-  },
-  {
-   "id": "news_1plm0ta",
-   "timestamp": "2026-11-23T06:10:00.000Z",
-   "category": "PADDOCK",
-   "title": "Norris raconte un GP passé à 'appuyer sur neuf boutons par tour'",
-   "summary": "C'est une 2e place inattendue qu'a pu signer hier Lando Norris pour McLaren F1 : le champion du monde s'attendait à souffrir en lignes droites à Las Vegas, mais son rythme de course aura été supérieur aux attentes. En toute fin d'épreuve, il a aussi, bien sûr…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/norris-raconte-un-gp-passe-a-appuyer-sur-neuf-boutons-par-tour,213654.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456174_hires.jpg"
   }
  ]
 }
