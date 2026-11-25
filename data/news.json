@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-25T13:46:59.776Z",
+ "updated": "2026-11-25T14:17:02.866Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-25T14:16:59.776Z",
+ "next": "2026-11-25T14:47:02.866Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 80
+   "n": 79
   },
   {
    "name": "F1i",
@@ -26,6 +26,32 @@
   }
  ],
  "items": [
+  {
+   "id": "news_1ld0iea",
+   "timestamp": "2026-11-25T13:47:00.000Z",
+   "category": "PADDOCK",
+   "title": "Grand Prix de Las Vegas – McLaren, la mise est doublée",
+   "summary": "Las Vegas, Baby ! Ici, tout peut arriver, tout est imprévisible, on y perd quand on devrait gagner, et on y gagne quand on devrait perdre. C’est justement ce qui est arrivé à Lando Norris et Oscar Piastri. Pénalisés par le mal endémique qu’est le manque de…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/grand-prix-de-las-vegas-mclaren-la-mise-est-doublee.html",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/mclaren-las-vegas.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-25T14:17:02.866Z"
+  },
+  {
+   "id": "news_3hd294",
+   "timestamp": "2026-11-25T13:32:00.000Z",
+   "category": "TECHNIQUE",
+   "title": "Aston Martin F1 fait son autocritique au milieu des propos contre Honda",
+   "summary": "Aston Martin F1 a vécu un enfer à Las Vegas, avec des longues lignes droites qui coûtaient à elles seules près de deux secondes au tour, la faute à un moteur Honda toujours anémique. Fernando Alonso est rentré au stand avant l'arrivée, prétextant un moteur…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/aston-martin-f1-fait-son-autocritique-au-milieu-des-propos-contre-honda,213722.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/astonmartin3_26_-14.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-25T14:17:02.866Z"
+  },
   {
    "id": "news_11owcgc",
    "timestamp": "2026-11-25T12:46:00.000Z",
@@ -800,7 +826,7 @@
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455860_hires.jpg",
    "impact": null,
-   "firstSeen": "2026-11-25T13:46:59.776Z"
+   "firstSeen": "2026-11-25T14:17:02.866Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -852,31 +878,6 @@
    "impact": null,
    "firstSeen": "2026-11-23T15:36:35.718Z",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455995_hires.jpg"
-  },
-  {
-   "id": "news_1ftl3wp",
-   "timestamp": "2026-11-23T12:00:00.000Z",
-   "category": "PADDOCK",
-   "title": "À Las Vegas, Verstappen maîtrise la folie et rafle le jackpot",
-   "summary": "Dans ce lieu sans pareil qu’est Las Vegas flotte un parfum particulier, celui d’une liberté totale, mêlé au sentiment qu’aucune barrière n’est infranchissable. La plus grande ville du Nevada est la capitale mondiale de la démesure, de ses centaines de machines…",
-   "source": "AutoHebdo",
-   "lang": "fr",
-   "url": "https://www.autohebdo.fr/actualites/f1/a-las-vegas-verstappen-maitrise-la-folie-et-rafle-le-jackpot.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T12:35:31.503Z"
-  },
-  {
-   "id": "news_i1sb72",
-   "timestamp": "2026-11-23T11:36:00.000Z",
-   "category": "PADDOCK",
-   "title": "La Formule 1 a-t-elle offert sa meilleure course... ou la plus artificielle ?",
-   "summary": "Avec 352 dépassements et 35 changements de leader, le Grand Prix de Las Vegas a offert un spectacle rarement vu en Formule 1. Pourtant, derrière ces statistiques impressionnantes, les pilotes sont profondément divisés sur la qualité réelle des affrontements…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/la-formule-1-a-t-elle-offert-sa-meilleure-course-ou-la-plus-artificielle,213666.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T12:35:31.503Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455751_hires.jpg"
   }
  ]
 }
