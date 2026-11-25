@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-25T18:17:51.369Z",
+ "updated": "2026-11-25T18:47:54.905Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-25T18:47:51.369Z",
+ "next": "2026-11-25T19:17:54.905Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_1b924nn",
+   "timestamp": "2026-11-25T18:27:00.000Z",
+   "category": "PADDOCK",
+   "title": "Les Wallabies en immersion chez Alpine à Enstone",
+   "summary": "Le XV australien a troqué le ballon ovale contre le volant le temps d’une journée. Lundi, en marge de sa tournée européenne dans le cadre du Championnat des Nations, dont l’épilogue se nouera ce week-end à Twickenham, l’équipe d’Australie de rugby a envoyé…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/les-wallabies-en-immersion-chez-alpine-a-enstone.html",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/wallabies-alpine.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-25T18:47:54.905Z"
+  },
   {
    "id": "news_1q291nz",
    "timestamp": "2026-11-25T18:03:00.000Z",
@@ -854,19 +867,6 @@
    "impact": null,
    "firstSeen": "2026-11-23T16:36:43.989Z",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456226_hires.jpg"
-  },
-  {
-   "id": "news_vt47of",
-   "timestamp": "2026-11-23T14:47:00.000Z",
-   "category": "PADDOCK",
-   "title": "Hamilton déplore un déficit 'brutal' en vitesse de pointe, mais la réalité le contredit",
-   "summary": "Lewis Hamilton, affirme que le déficit de vitesse de pointe de la Ferrari SF-26 a été encore plus coûteux dans les longues lignes droites de Las Vegas. Une double élimination en Q2 et des septième et dixième places à l'arrivée pourraient laisser penser que le…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hamilton-deplore-un-deficit-brutal-en-vitesse-de-pointe-mais-la-realite-le,213684.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T15:36:35.718Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/ferrari_41_-6.jpg"
   }
  ]
 }
