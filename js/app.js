@@ -1571,7 +1571,7 @@
     const numTeam = ch ? ch.id : (ctx.drvM && ctx.drvM.teamId) || '';
     const num = m.number || (ctx.drvM && ctx.drvM.number) || '';
     // à droite du bandeau : le numéro choisi, en grand, dans la typographie de l'écurie, et la monoplace aux couleurs de la livrée
-    const ghost = (num || ch) ? `<div class="box-r" aria-hidden="true">${num ? `<div class="box-bignum">${F1.num.html(num, numTeam, { color: '#fff' })}</div>` : ''}${ch ? `<div class="box-car">${F1.visuals.svgCar(ch.id, { number: num, numTeam: ch.id, sponsor: livery(m) })}</div>` : ''}</div>` : '';
+    const ghost = (num || ch) ? `<div class="box-r" aria-hidden="true">${num ? `<div class="box-bignum">${F1.num.html(num, numTeam, { color: '#fff' })}</div>` : ''}${ch ? `<div class="box-car">${F1.visuals.car(ch.id, { view: 'side', number: num, numTeam: ch.id, sponsor: livery(m) })}</div>` : ''}</div>` : '';
     const crew = ctx.drvM ? `<span class="box-drv">${num ? `<span class="box-num">${F1.num.html(num, numTeam, { color: 'currentColor' })}</span>` : ''}<b>${esc(ctx.drvM.name)}</b></span>${ctx.mate ? `<span class="box-mate">avec <b>${esc(ctx.mate.name)}</b></span>` : ''}` : '<span class="box-mate">Pas encore de pilote</span>';
     let h = `<div class="hq" style="--tc:${col};--tc-ink:${inkOn(col)}">
       <header class="box">
@@ -1938,13 +1938,13 @@
       const list = all.filter((p) => p.cat === cat.id && p.br === br);
       const nd = list.reduce((a, p) => a + LV(p), 0);
       const pk = MG().branchPackage(cat.id, br, owned);
-      const cards = list.map((p) => {
+      const cards = list.map((p, idx) => {
         const st = MG().partState(p, owned);
         const unknown = st === 'unknown', lv = LV(p), max = lv >= MG().MAX_LV;
         const cost = nextCost(p);
         const can = (st === 'available' || st === 'done') && !max && cost <= m.pc + 1e-9;
         const inJob = F1.store.jobOf(p.id);
-        return `<button class="rd-card ${st} ${max ? 'max' : ''} ${inJob ? 'job' : ''} ${sel && sel.id === p.id ? 'sel' : ''} ${reco && reco.id === p.id ? 'reco' : ''}" data-action="rd-sel" data-p="${p.id}" style="--cc:${cat.color}">
+        return `<button class="rd-card ${st} ${max ? 'max' : ''} ${inJob ? 'job' : ''} ${sel && sel.id === p.id ? 'sel' : ''} ${reco && reco.id === p.id ? 'reco' : ''}" data-action="rd-sel" data-p="${p.id}" style="--cc:${cat.color}"><span class="rd-idx">${String(idx + 1).padStart(2, '0')}</span>
           ${inJob ? `<span class="rd-badge job">⏳ ${MG().LV_NAME[inJob.lv]}</span>` : max ? '<span class="rd-badge ok">MAX</span>' : lv ? `<span class="rd-badge ok">${MG().LV_NAME[lv]}</span>` : st === 'locked' ? '<span class="rd-badge">🔒</span>' : reco && reco.id === p.id ? '<span class="rd-badge reco">Conseillé</span>' : ''}
           ${!max && lv && reco && reco.id === p.id ? '<span class="rd-badge reco" style="top:38px">Conseillé</span>' : ''}
           <div class="rd-art">${unknown ? '<div class="rd-q">?</div>' : rdIcon(p.icon, lv ? '#cfe9ff' : st === 'available' ? '#ffffff' : 'rgba(255,255,255,.45)')}</div>
@@ -1954,7 +1954,7 @@
       }).join('<span class="rd-link"></span>');
       const pkTxt = pk.minL >= MG().MAX_LV ? `📦 Package ${MG().LV_NAME[pk.minL]} complet · ${FX_LBL[pk.key]} ${fxVal(pk.key, pk.bonus)}`
         : `📦 Package ${MG().LV_NAME[pk.minL + 1]} : toutes les pièces ${MG().LV_NAME[pk.minL + 1]} → ${FX_LBL[pk.key]} ${fxVal(pk.key, pk.next)}${pk.bonus ? ` <span class="muted">(actuel ${fxVal(pk.key, pk.bonus)})</span>` : ''}`;
-      return `<div class="rd-row"><div class="rd-branch"><b>${esc(br)}</b><small>${nd}/${list.length * MG().MAX_LV}</small></div><div><div class="rd-pkg ${pk.minL ? 'on' : ''}" style="--cc:${cat.color}">${pkTxt}</div><div class="rd-cards">${cards}</div></div></div>`;
+      return `<div class="rd-row"><div class="rd-branch"><b>${esc(br)}</b><small>${nd}/${list.length * MG().MAX_LV}</small><span class="rd-branch-bar"><i style="width:${(nd / (list.length * MG().MAX_LV)) * 100}%"></i></span></div><div><div class="rd-pkg ${pk.minL ? 'on' : ''}" style="--cc:${cat.color}">${pkTxt.replace('📦 ', '')}</div><div class="rd-cards">${cards}</div></div></div>`;
     }).join('');
 
     let detail;
