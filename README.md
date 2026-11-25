@@ -484,3 +484,7 @@ Passe « goût visuel » (plugin VectorLab UX : anti-slop, typography, spacing, 
 ## Système visuel commun
 
 `css/site.css` (chargé avant `manager.css`) : titres de page dans la voix de l'accueil avec vibreur rouge et blanc, sections à trait incliné, onglets soulignés, tableaux en tour de chronométrage, boutons principaux en plaque inclinée, chips à contour, échelle 12–40 px, graisses 400/500/600, pas de flou ni de dégradé sur les boutons, vibreur sur le pied de page.
+
+## Anneau de ligue
+
+Chaque photo de profil est entourée d'un anneau à la couleur de la ligue du F1 Manager (Bronze, Argent, Or, Platine, Diamant, Légende ; lueur légère pour la Légende) : bouton du compte, menu, profil, amis, classements, ligues de pronostics, GP Hebdo. Sa propre ligue vient de l'appareil ; celle des autres joueurs, de la colonne `league` des profils (`migration-manager.sql`).

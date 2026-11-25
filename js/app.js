@@ -1109,13 +1109,22 @@
     if (!b) return;
     b.textContent = n; b.style.display = n ? '' : 'none';
   }
+  // anneau de ligue autour d'une photo de profil : « --lr » porte la couleur, « ring » active le liseré
+  const LG_BY = () => Object.fromEntries(MG().LEAGUES.map((l) => [l.id, l]));
+  function leagueOfUser(p) {
+    const u = SO().user, mine = p && (p.isMe || (u && p.id === u.id));
+    if (mine) return MG().leagueOf(F1.store.mgr().lp);
+    return (p && p.league && LG_BY()[p.league]) || (p && p.lp != null ? MG().leagueOf(p.lp) : null);
+  }
+  const ringAttr = (L) => (L ? ` data-lg="${L.id}" style="--lr:${L.color}"` : '');
   function uava(p, cls = '') {
     const c = p.team ? tcol(p.team) : 'var(--red)';
     // sa propre ligne : la photo de cet appareil (même si le serveur ne l'a pas encore, ou ne l'accepte pas)
     const u = SO().user, mine = p.isMe || (u && p.id === u.id), loc = mine ? F1.store.get().avatar : null;
     const src = (loc && AVA_OK.test(loc)) ? loc : p.avatar;
     const img = src && AVA_OK.test(src) ? `<img src="${esc(src)}" alt="" loading="lazy">` : '';
-    return `<span class="ava ${cls}" style="--tc:${c}">${img}<i>${esc((p.username || '?').slice(0, 2).toUpperCase())}</i></span>`;
+    const L = leagueOfUser(p);
+    return `<span class="ava ${cls}${L ? ' ring' : ''}" style="--tc:${c}${L ? `;--lr:${L.color}` : ''}"${L ? ` data-lg="${L.id}" title="Ligue ${esc(L.name)}"` : ''}>${img}<i>${esc((p.username || '?').slice(0, 2).toUpperCase())}</i></span>`;
   }
   function relBtn(p) {
     const rel = F1.social.relation(p.id), l = F1.social.linkWith(p.id);
@@ -1390,7 +1399,7 @@
       const rows = members.map((p) => ({ p, ...pickStats(pickFrom(picks, p.id, y, p.id === me), done) })).sort((a, b) => b.total - a.total || (b.last ? b.last.pts : 0) - (a.last ? a.last.pts : 0));
       const i = rows.findIndex((x) => x.p.id === me), mine = rows[i], lead = rows[0];
       const el2 = document.querySelector(`.lg-card-x[data-lg="${l.id}"]`); if (!el2) return;
-      const av = (x) => `<span class="lgc-av" title="${esc(x.p.username)} · ${x.total} pts">${x.p.avatar && AVA_OK.test(x.p.avatar) ? `<img src="${esc(x.p.avatar)}" alt="">` : esc((x.p.username || '?')[0].toUpperCase())}</span>`;
+      const av = (x) => `<span class="lgc-av${leagueOfUser(x.p) ? ' ring' : ''}"${ringAttr(leagueOfUser(x.p))} title="${esc(x.p.username)} · ${x.total} pts">${x.p.avatar && AVA_OK.test(x.p.avatar) ? `<img src="${esc(x.p.avatar)}" alt="">` : esc((x.p.username || '?')[0].toUpperCase())}</span>`;
       el2.innerHTML = `<div class="lgc-rank"><b>${i + 1}<sup>${i === 0 ? 'er' : 'e'}</sup></b><small>sur ${rows.length}</small></div>
         <div class="lgc-info"><div><small>Mes points</small><b>${mine ? mine.total : 0}</b></div><div><small>${i === 0 ? 'Avance' : 'Retard'}</small><b class="${i === 0 ? 'up' : 'down'}">${i === 0 ? (rows[1] ? `+${mine.total - rows[1].total}` : '—') : `−${lead.total - (mine ? mine.total : 0)}`}</b></div><div><small>Leader</small><b>${esc(lead.p.username)}</b></div></div>
         <div class="lgc-pod">${rows.slice(0, 3).map((x, k) => `<div class="lgc-step s${k}">${av(x)}<span>${k + 1}</span></div>`).join('')}</div>`;
@@ -3318,7 +3327,7 @@
     const nN = notifCount(), nM = so.unread || 0, nF = (so.incoming || []).length;
     const item = (href, ic, label, n, sub) => `<a class="um-i" href="${href}" role="menuitem"><span class="um-ic" style="--ic:${UM_IC[ic][0]}">${UM_IC[ic][1]}</span><span class="um-l">${label}${sub ? `<small>${sub}</small>` : ''}</span>${n ? `<b class="um-n">${n > 9 ? '9+' : n}</b>` : ''}</a>`;
     el = document.createElement('div'); el.id = 'umenu'; el.className = 'umenu'; el.setAttribute('role', 'menu');
-    el.innerHTML = `<a class="um-head" href="#/profil"><span class="um-av">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : esc(name.slice(0, 1).toUpperCase())}</span><span><b>${esc(name)}</b><small>${esc(MG().leagueOf(m.lp).name)} · ${fmtJ(p.balance)} jetons</small></span></a>
+    el.innerHTML = `<a class="um-head" href="#/profil"><span class="um-av ring"${ringAttr(MG().leagueOf(m.lp))}>${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : esc(name.slice(0, 1).toUpperCase())}</span><span><b>${esc(name)}</b><small>${esc(MG().leagueOf(m.lp).name)} · ${fmtJ(p.balance)} jetons</small></span></a>
       ${item('#/profil', 'profil', 'Mon profil', 0, 'Statistiques et photo')}
       ${item('#/messagerie', 'msg', 'Messagerie', nM, so.me ? (nM ? 'Nouveaux messages' : 'Discuter avec tes amis') : 'Profil en ligne requis')}
       ${item('#/notifications', 'notif', 'Notifications', nN)}
@@ -3449,7 +3458,7 @@
     const best = F1.store.ACH.filter((a) => p.ach[a.id]).sort((a, b) => b.reward - a.reward).slice(0, 6);
     const L = MG().leagueOf(m.lp || 0);
     return `<section class="pf-page">
-      <div class="pf-hero"><button class="pf-ava" data-action="pf-ava" title="Changer de photo">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : `<span>${esc(name.slice(0, 1).toUpperCase())}</span>`}<i>Changer</i></button>
+      <div class="pf-hero"><button class="pf-ava ring"${ringAttr(MG().leagueOf(F1.store.mgr().lp))} data-action="pf-ava" title="Changer de photo">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : `<span>${esc(name.slice(0, 1).toUpperCase())}</span>`}<i>Changer</i></button>
         <div class="pf-id"><small class="muted">Profil joueur</small><h1>${esc(name)} <button class="pf-edit" data-action="profile" title="Changer de pseudo">✏️ Modifier</button></h1><div class="row" style="gap:6px;flex-wrap:wrap">${leagueBadge(L)}${m.number && m.chassis ? `<span class="chip pf-num" style="color:${F1.teamColor(m.chassis.id)}" title="Votre numéro de course">${F1.num.html(m.number, m.chassis.id)}</span>` : ''}<span class="chip">${Object.keys(p.ach).length} succès</span>${((m.pass && m.pass.done) || []).map((d) => `<span class="chip ps-badge" title="Pass de saison complété">🎟️ Saison ${d.season} complétée</span>`).join('')}${so.me ? '<span class="chip green">Profil en ligne</span>' : '<span class="chip">Profil local</span>'}</div></div>
         <div class="pf-wallets"><div><small>Jetons</small><b>${jt(p.balance)}</b></div><div><small>PitCoins</small><b>${fmtPC(m.pc || 0)}</b></div><button class="btn sm ghost" data-action="profile">⚙ Pseudo & sauvegarde</button></div></div>
       ${so.avatarShared === false && p.avatar && /^data:/.test(p.avatar) ? `<div class="notice" style="margin-top:10px">Ta photo est visible sur cet appareil, mais pas encore chez les autres joueurs : le serveur ne l'accepte pas. Le propriétaire du site doit exécuter <code>supabase/${so.avatarWhy === 'profile-v2' ? 'migration-profile-v2.sql puis migration-avatar-upload.sql' : 'migration-avatar-upload.sql'}</code> dans Supabase. En attendant, les photos de la galerie sont partagées.</div>` : ''}
@@ -3475,6 +3484,7 @@
     const el = $('#balance');
     const target = p.balance;
     const av = $('#avatar');
+    { const L = MG().leagueOf(F1.store.mgr().lp); av.classList.add('ring'); av.dataset.lg = L.id; av.style.setProperty('--lr', L.color); av.title = `Mon compte · ligue ${L.name}`; }
     if (p.avatar) { if (!av.querySelector('img') || av.querySelector('img').getAttribute('src') !== p.avatar) av.innerHTML = `<img src="${esc(p.avatar)}" alt="">`; }
     else av.textContent = (p.name || '?').slice(0, 1).toUpperCase();
     achBadge(); avatarBadge();

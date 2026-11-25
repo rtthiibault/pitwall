@@ -59,7 +59,7 @@
 
   async function loadMe() {
     // la photo de profil n'est lue que si la colonne existe (supabase/migration-profile-v2.sql)
-    if (!avatarProbed) { avatarProbed = true; const t = await S.client.from('profiles').select('avatar').limit(1); if (!t.error) COLS += ',avatar'; }
+    if (!avatarProbed) { avatarProbed = true; const t = await S.client.from('profiles').select('avatar').limit(1); if (!t.error) COLS += ',avatar'; const l = await S.client.from('profiles').select('league').limit(1); if (!l.error) COLS += ',league'; }
     const r = await S.client.from('profiles').select(COLS).eq('id', S.user.id).maybeSingle();
     fail(r.error);
     S.me = r.data || null;
@@ -198,7 +198,7 @@
     weekErr(r.error);
     const rows = r.data || [], ids = rows.map((x) => x.user_id);
     if (!ids.length) return [];
-    const p = await S.client.from('profiles').select('id,username,team').in('id', ids);
+    const p = await S.client.from('profiles').select(COLS.includes('league') ? 'id,username,team,league,avatar' : 'id,username,team').in('id', ids);
     fail(p.error);
     const byId = new Map((p.data || []).map((x) => [x.id, x]));
     return rows.map((x) => ({ ...x, p: byId.get(x.user_id) || { id: x.user_id, username: '?' } }));
