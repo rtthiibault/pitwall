@@ -445,3 +445,12 @@ Les emojis du site sont remplacés à l'affichage par un jeu d'icônes vectoriel
 - **Choix du championnat** : interrupteur compact dans le haut du hero (`seriesTabs`), pictogramme du F1 Manager pour la Formule 1 et Hypercar pour l'Endurance (marquée « bientôt » tant qu'elle est verrouillée).
 - **Solde négatif** : une pénalité de sponsor est prélevée en entier, même si le solde de PitCoins passe sous zéro. Tant qu'il est négatif, les achats sont bloqués, et un bandeau au QG ainsi que le solde en rouge le signalent.
 - **Lieux emblématiques** (`LANDMARKS`) : sur le tracé du hero, virages peints (Eau Rouge, Maggotts-Becketts, S de Senna, le Strip en néon…), tunnel de Monaco, monuments dessinés (Casino, grande roue de Suzuka, Marina Bay Sands, Sphere, Yas Hotel, taureau du Red Bull Ring, Foro Sol…) et étiquettes des virages célèbres. Positions en fraction du tour depuis la ligne de départ.
+
+## Menu du compte (avatar)
+
+Un clic sur l'avatar en haut à droite ouvre un menu déroulant : Mon profil, Messagerie, Notifications, Circuits, Amis et Paramètres. Une pastille rouge sur l'avatar compte ce qui attend le joueur.
+
+- **Messagerie** (`#/messagerie`) : discussion privée entre amis, rafraîchie toutes les 8 s, accusé « lu ». Nécessite `supabase/migration-messages.sql` (table `messages`, RLS : on n'écrit qu'à un ami accepté, seul le destinataire peut marquer lu).
+- **Notifications** (`#/notifications`) : demandes d'ami (accepter / refuser), messages non lus, succès à réclamer, prime du week-end, actions du F1 Manager (R&D prête, Pass, sponsors, GP hebdo), solde PC négatif.
+- **Circuits** (`#/circuits`) : les tracés de la saison avec leur décor, lien vers chaque Grand Prix.
+- **Paramètres** (`#/parametres`) : pseudo, photo, préférences d'affichage des courses, sauvegarde et réinitialisation.

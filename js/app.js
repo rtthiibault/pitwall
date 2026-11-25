@@ -51,7 +51,7 @@
     await lights.finish();
     F1.store.onChange(updateWallet);
     F1.store.onChange(() => F1.social.sync());
-    F1.social.onChange(() => { friendsBadge(); if (/^#\/amis/.test(location.hash) && !document.activeElement.closest('#friendSearch')) route(); if (/^#\/ligues/.test(location.hash) && !$('#lgList') && !document.activeElement.closest('.lg-form')) route(); });
+    F1.social.onChange(() => { friendsBadge(); avatarBadge(); if (/^#\/amis/.test(location.hash) && !document.activeElement.closest('#friendSearch')) route(); if (/^#\/ligues/.test(location.hash) && !$('#lgList') && !document.activeElement.closest('.lg-form')) route(); });
     F1.social.init().then((so) => { if (so.incoming.length) toast('👋', `${so.incoming.length} demande${so.incoming.length > 1 ? 's' : ''} d'ami en attente`, 'win', 5000); });
     updateWallet();
     route();
@@ -213,6 +213,10 @@
       case 'paddock': html = pagePaddock(); F1.store.noteStat('pwVisits'); break;
       case 'succes': html = pageAch(); break;
       case 'profil': html = pageProfile(); break;
+      case 'messagerie': html = pageMessages(parts); break;
+      case 'notifications': html = pageNotifs(); break;
+      case 'circuits': html = pageCircuits(); break;
+      case 'parametres': html = pageSettings(); break;
       default: html = pageHome();
     }
     app.innerHTML = sourceNotice() + html;
@@ -259,6 +263,7 @@
   function afterRender(r, parts) {
     if (r === 'classements') mountChart();
     if (r === 'paddock') pwApply();
+    if (r === 'messagerie') mountMessages(parts);
     if (r === 'gp' && S.gpTab === 'quali') {
       const race = S.season.races.find((x) => x.round === +parts[1]);
       if (race && !race.qualifying) F1.data.loadQualifying(S.season, race).then((q) => { if (q) route(); });
@@ -693,7 +698,7 @@
     return { defs: `${SCENE_DEFS}<radialGradient id="sc-ground" cx=".5" cy=".5" r=".55"><stop offset="0" stop-color="${G[0]}" stop-opacity=".55"/><stop offset=".7" stop-color="${G[1]}" stop-opacity=".35"/><stop offset="1" stop-color="${G[1]}" stop-opacity="0"/></radialGradient><linearGradient id="sc-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f6f9c"/><stop offset="1" stop-color="#0d3550"/></linearGradient>`,
       back: `${sky}${water}${tex}`, front: items, night: !!sc.night, ground: sc.g };
   }
-  function trackSvg(circuitId, color) {
+  function trackSvg(circuitId, color, fixed = false) {
     const raw = F1.CIRCUITS && F1.CIRCUITS[circuitId];
     if (!raw) return '';
     const pts = raw.split(' ').map((q) => q.split(',').map(Number)).map(([x, y]) => [x, 1000 - y]);
@@ -702,7 +707,7 @@
     const d = 'M' + pts.map((q) => q.join(' ')).join(' L') + ' Z';
     const [sx, sy] = pts[0], [nx2, ny2] = pts[3] || pts[1];
     const ang = (Math.atan2(ny2 - sy, nx2 - sx) * 180) / Math.PI;
-    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const still = fixed || matchMedia('(prefers-reduced-motion: reduce)').matches;
     const box = [x0 - pad, y0 - pad, x1 - x0 + pad * 2, y1 - y0 + pad * 2];
     // longueur cumulée : position d'un lieu emblématique à une fraction du tour
     const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
@@ -3189,6 +3194,158 @@
       toast('🪪', 'Photo de profil importée', 'win');
     } catch (e) { toast('⚠️', esc(e.message), 'err'); }
   }
+  /* =================== Compte : menu de l'avatar, notifications, messagerie, circuits, paramètres =================== */
+  // tout ce qui attend le joueur : demandes d'amis, messages, succès, F1 Manager, primes
+  function notifItems() {
+    const so = SO(), out = [], s = S.season, nx = s && s.next;
+    (so.incoming || []).forEach((x) => out.push({ ic: '👋', t: `${esc(x.p.username)} veut devenir ton ami`, sub: 'Demande d\'ami', act: `<button class="btn sm" data-action="f-accept" data-id="${x.link.id}">Accepter</button><button class="btn sm ghost" data-action="f-remove" data-id="${x.link.id}">Refuser</button>` }));
+    Object.entries(so.unreadBy || {}).forEach(([id, n]) => { const f = (so.friends || []).find((x) => x.p.id === id); out.push({ ic: '💬', t: `${n} nouveau${n > 1 ? 'x' : ''} message${n > 1 ? 's' : ''} de ${esc(f ? f.p.username : 'un ami')}`, sub: 'Messagerie', href: `#/messagerie/${id}` }); });
+    const ach = F1.store.achClaimable(); if (ach.length) out.push({ ic: '🏅', t: `${ach.length} succès à récupérer`, sub: `+${fmt(ach.reduce((a, x) => a + x.reward, 0))} jetons`, href: '#/succes' });
+    if (nx && S.series !== 'wec') { if (F1.store.canClaim(s, nx)) out.push({ ic: '🎁', t: 'Prime du week-end disponible', sub: `+${fmt(F1.store.WEEKLY)} jetons pour le ${esc(nx.nameFr)}`, act: '<button class="btn sm gold" data-action="claim">Récupérer</button>' }); }
+    const m = F1.store.mgr();
+    if (m.driver && m.chassis) {
+      const add = (k, ic, t, href) => { const n = railCount(k); if (n) out.push({ ic, t: t(n), sub: 'F1 Manager', href }); };
+      add('rd', '🔧', (n) => `${n} pièce${n > 1 ? 's' : ''} prête${n > 1 ? 's' : ''} à installer`, '#/manager/rd');
+      add('passe', '🎟️', (n) => `${n} palier${n > 1 ? 's' : ''} du Pass à réclamer`, '#/manager/passe');
+      add('ecurie', '🎯', (n) => `${n} objectif${n > 1 ? 's' : ''} du jour à récupérer`, '#/manager');
+      add('sponsors', '💼', (n) => `${n} contrat${n > 1 ? 's' : ''} de sponsor terminé${n > 1 ? 's' : ''}`, '#/manager/sponsors');
+      add('hebdo', '🌐', () => 'Prime du GP Hebdo à récupérer', '#/manager/hebdo');
+      if (m.pc < 0) out.push({ ic: '⚠️', t: 'Solde de PitCoins négatif', sub: 'Achats bloqués jusqu\'au retour au positif', href: '#/manager' });
+    }
+    return out;
+  }
+  const notifCount = () => notifItems().length;
+  // pastille sur l'avatar : notifications + messages
+  function avatarBadge() {
+    const av = $('#avatar'); if (!av) return;
+    const n = notifCount();
+    let b = av.querySelector('.av-badge');
+    if (!n) { if (b) b.remove(); return; }
+    if (!b) { b = document.createElement('i'); b.className = 'av-badge'; av.appendChild(b); }
+    b.textContent = n > 9 ? '9+' : n;
+  }
+  function userMenu(open) {
+    let el = $('#umenu');
+    if (!open) { if (el) el.remove(); const av = $('#avatar'); if (av) av.setAttribute('aria-expanded', 'false'); return; }
+    const p = F1.store.get(), so = SO(), name = (so.me && so.me.username) || p.name || 'Joueur', m = F1.store.mgr();
+    const nN = notifCount(), nM = so.unread || 0, nF = (so.incoming || []).length;
+    const item = (href, ic, label, n, sub) => `<a class="um-i" href="${href}" role="menuitem"><span class="um-ic">${ic}</span><span class="um-l">${label}${sub ? `<small>${sub}</small>` : ''}</span>${n ? `<b class="um-n">${n > 9 ? '9+' : n}</b>` : ''}</a>`;
+    el = document.createElement('div'); el.id = 'umenu'; el.className = 'umenu'; el.setAttribute('role', 'menu');
+    el.innerHTML = `<a class="um-head" href="#/profil"><span class="um-av">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : esc(name.slice(0, 1).toUpperCase())}</span><span><b>${esc(name)}</b><small>${esc(MG().leagueOf(m.lp).name)} · ${fmtJ(p.balance)} jetons</small></span></a>
+      ${item('#/profil', '👤', 'Mon profil', 0, 'Statistiques et photo')}
+      ${item('#/messagerie', '💬', 'Messagerie', nM, so.me ? (nM ? 'Nouveaux messages' : 'Discuter avec tes amis') : 'Profil en ligne requis')}
+      ${item('#/notifications', '🔔', 'Notifications', nN)}
+      ${item('#/circuits', '🗺️', 'Circuits', 0, 'Tous les tracés de la saison')}
+      ${item('#/amis', '👥', 'Amis', nF, nF ? 'Demandes en attente' : '')}
+      <div class="um-sep"></div>${item('#/parametres', '⚙️', 'Paramètres', 0)}`;
+    document.body.appendChild(el);
+    const av = $('#avatar'), r = av.getBoundingClientRect();
+    el.style.top = `${r.bottom + 10}px`; el.style.right = `${Math.max(8, innerWidth - r.right)}px`;
+    av.setAttribute('aria-expanded', 'true');
+  }
+  document.addEventListener('click', (e) => { const el = $('#umenu'); if (!el) return; if (e.target.closest('#umenu a')) { userMenu(false); return; } if (!e.target.closest('#umenu') && !e.target.closest('#avatar')) userMenu(false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#umenu')) userMenu(false); });
+  window.addEventListener('hashchange', () => userMenu(false));
+  window.addEventListener('resize', () => userMenu(false));
+
+  function pageNotifs() {
+    const list = notifItems();
+    return `<section class="ntf"><div class="market-head"><div><h1>Notifications</h1><div class="muted" style="margin-top:6px">Tout ce qui t'attend sur PITWALL, au même endroit.</div></div></div>
+      ${list.length ? `<div class="ntf-list">${list.map((x) => `<div class="ntf-i">${x.href ? `<a class="ntf-a" href="${x.href}"></a>` : ''}<span class="ntf-ic">${x.ic}</span><div class="ntf-b"><b>${x.t}</b>${x.sub ? `<small>${x.sub}</small>` : ''}</div>${x.act ? `<div class="ntf-act">${x.act}</div>` : x.href ? '<span class="ntf-go">Voir</span>' : ''}</div>`).join('')}</div>`
+        : '<div class="card lg-empty"><b>Rien de neuf pour l\'instant</b><span class="muted">Les demandes d\'amis, les messages, les succès et les récompenses du F1 Manager s\'afficheront ici.</span></div>'}</section>`;
+  }
+
+  /* ---------- Messagerie entre amis ---------- */
+  let msgPoll = null;
+  function pageMessages(parts) {
+    const so = SO();
+    const head = '<div class="market-head"><div><h1>Messagerie</h1><div class="muted" style="margin-top:6px">Discute avec tes amis. Les messages ne sont visibles que par vous deux.</div></div></div>';
+    if (!so.enabled) return head + '<div class="notice">La messagerie utilise la base de données en ligne, qui n\'est pas encore activée sur ce site.</div>';
+    if (so.error) return head + `<div class="notice red">⚠️ Connexion impossible : ${esc(so.error)}</div>`;
+    if (!so.ready) return head + '<div class="skeleton" style="height:300px"></div>';
+    if (!so.me) return head + '<div class="notice">Crée ton profil joueur (onglet Amis ou Mes ligues) pour écrire à tes amis.</div>';
+    const friends = so.friends || [];
+    if (!friends.length) return head + '<div class="card lg-empty"><b>Pas encore d\'amis</b><span class="muted">Ajoute des amis pour leur écrire.</span><a class="btn sm" href="#/amis" style="justify-self:start;margin-top:8px">Trouver des amis</a></div>';
+    const sel = parts[1] && friends.find((x) => x.p.id === parts[1]) ? parts[1] : friends[0].p.id;
+    return head + `<div class="msg" data-sel="${esc(sel)}"><aside class="msg-side" id="msgSide">${friends.map((x) => `<a class="msg-f ${x.p.id === sel ? 'on' : ''}" href="#/messagerie/${x.p.id}" data-f="${x.p.id}"><span class="msg-av">${x.p.avatar && AVA_OK.test(x.p.avatar) ? `<img src="${esc(x.p.avatar)}" alt="">` : esc(x.p.username[0].toUpperCase())}</span><span class="msg-fn"><b>${esc(x.p.username)}</b><small class="msg-prev">…</small></span><i class="msg-dot" hidden></i></a>`).join('')}</aside>
+      <section class="msg-main"><header class="msg-h"><b>${esc(friends.find((x) => x.p.id === sel).p.username)}</b></header><div class="msg-thread" id="msgThread"><div class="skeleton" style="height:120px"></div></div>
+        <form class="msg-form" data-action="msg-send-form" onsubmit="return false"><textarea class="field" id="msgIn" rows="1" maxlength="1000" placeholder="Écris un message…"></textarea><button class="btn" data-action="msg-send">Envoyer</button></form></section></div>`;
+  }
+  async function mountMessages() {
+    clearInterval(msgPoll);
+    const box = $('.msg'); if (!box) return;
+    const sel = box.dataset.sel, me = SO().me.id;
+    const load = async (first) => {
+      if (!$('.msg') || $('.msg').dataset.sel !== sel) { clearInterval(msgPoll); return; }
+      try {
+        const [ib, th] = await Promise.all([F1.social.inbox(), F1.social.thread(sel)]);
+        $$('.msg-f').forEach((a) => { const l = ib.last[a.dataset.f], n = ib.unread[a.dataset.f] || 0; const pv = a.querySelector('.msg-prev'); pv.textContent = l ? (l.from_id === me ? 'Toi : ' : '') + l.body : 'Aucun message'; const d = a.querySelector('.msg-dot'); d.hidden = !n || a.dataset.f === sel; d.textContent = n; });
+        const t = $('#msgThread'); if (!t) return;
+        const atEnd = first || t.scrollHeight - t.scrollTop - t.clientHeight < 40;
+        let lastDay = '';
+        t.innerHTML = th.length ? th.map((mm) => { const d = new Date(mm.created_at), day = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }); const sep = day !== lastDay ? `<div class="msg-day">${esc(day)}</div>` : ''; lastDay = day;
+          return `${sep}<div class="msg-b ${mm.from_id === me ? 'me' : ''}"><p>${esc(mm.body)}</p><time>${d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}${mm.from_id === me && mm.read_at ? ' · lu' : ''}</time></div>`; }).join('') : '<div class="msg-empty">Aucun message. Écris le premier !</div>';
+        if (atEnd) t.scrollTop = t.scrollHeight;
+        if (ib.unread[sel]) { await F1.social.markRead(sel); avatarBadge(); }
+      } catch (e) {
+        const t = $('#msgThread'); if (t) t.innerHTML = e.missing ? '<div class="notice" style="margin:12px">La messagerie n\'est pas encore activée : le propriétaire du site doit exécuter <code>supabase/migration-messages.sql</code> dans Supabase.</div>' : `<div class="notice red" style="margin:12px">⚠️ ${esc(e.message)}</div>`;
+        clearInterval(msgPoll);
+      }
+    };
+    await load(true);
+    msgPoll = setInterval(() => { if (!document.hidden) load(false); }, 8000);
+  }
+  async function sendMsg() {
+    const box = $('.msg'), inp = $('#msgIn'); if (!box || !inp) return;
+    const v = inp.value.trim(); if (!v) return;
+    inp.disabled = true;
+    try { await F1.social.sendMessage(box.dataset.sel, v); inp.value = ''; await mountMessages(); } catch (e) { toast('⚠️', esc(e.message), 'err'); }
+    inp.disabled = false; inp.focus();
+  }
+
+  /* ---------- Circuits de la saison ---------- */
+  function pageCircuits() {
+    const s = S.f1 || S.season, nx = s.next;
+    const cards = s.races.map((r) => {
+      const done = !!(r.results && r.results.length), win = done && drv(r.results[0].driverId), isNext = nx && nx.round === r.round;
+      const col = win ? team(win.teamId).color : isNext ? '#e10600' : '#5d6674';
+      const svg = trackSvg(r.circuitId, col, true);
+      return `<a class="cir ${isNext ? 'next' : ''} ${done ? 'done' : ''}" href="#/gp/${r.round}" style="--tc:${col}"><div class="cir-map">${svg || '<div class="muted" style="padding:40px;text-align:center">Tracé indisponible</div>'}</div>
+        <div class="cir-b"><div class="cir-top">${flag(r.iso, 'sm')}<span>Manche ${r.round}</span>${isNext ? '<span class="cir-tag">Prochain</span>' : ''}${r.sprint ? '<span class="cir-tag sp">Sprint</span>' : ''}</div><b>${esc(r.nameFr)}</b><small>${esc(r.circuit)}, ${esc(r.locality)}</small>
+        <span class="cir-res">${done ? `Vainqueur : <b>${esc(win ? win.given + ' ' + win.family : '—')}</b>` : DAYL.format(r.date)}</span></div></a>`;
+    }).join('');
+    return `<section class="cirs"><div class="market-head"><div><h1>Circuits ${s.year}</h1><div class="muted" style="margin-top:6px">Les ${s.races.length} tracés de la saison, avec leur décor et leurs lieux emblématiques. Touchez un circuit pour voir son Grand Prix.</div></div></div><div class="cir-grid">${cards}</div></section>`;
+  }
+
+  /* ---------- Paramètres ---------- */
+  function pageSettings() {
+    const p = F1.store.get(), so = SO(), name = (so.me && so.me.username) || p.name || '';
+    const tg = (k, on, label, sub) => `<label class="set-tg"><span><b>${label}</b><small>${sub}</small></span><input type="checkbox" data-pref="${k}" ${on ? 'checked' : ''}><i></i></label>`;
+    return `<section class="set"><div class="market-head"><div><h1>Paramètres</h1></div></div>
+      <div class="set-grid">
+        <div class="card set-c"><h3>Compte</h3>
+          <label class="muted" style="font-size:13px;font-weight:700">Pseudo</label><div class="row" style="flex-wrap:nowrap;gap:6px"><input class="field" id="nameIn" maxlength="24" value="${esc(name)}"><button class="btn sm" data-action="rename">Enregistrer</button></div>
+          <small class="muted">${so.me ? 'Affiché dans tes ligues et les classements.' : 'Il servira de pseudo en ligne quand tu créeras ton profil joueur.'}</small>
+          <a class="btn sm ghost" href="#/profil" style="justify-self:start">Changer de photo de profil</a></div>
+        <div class="card set-c"><h3>Courses du F1 Manager</h3>
+          ${tg('low', lowMode(), 'Mode économie', 'Moins d\'effets visuels pendant les courses, pour les appareils modestes')}
+          ${tg('mapFlat', mapStyle() === 'flat', 'Carte 2D épurée', 'Tracé simple, sans animation de décor')}
+          ${tg('mapTele', getPref('mapTele') === '1', 'Télémétrie affichée au départ', 'Ouvre la télémétrie de ta voiture sur la carte')}</div>
+        <div class="card set-c"><h3>Sauvegarde</h3><p class="muted" style="font-size:13px;margin:0">Tes données restent dans ce navigateur. Copie ce code pour les transférer sur un autre appareil.</p>
+          <textarea class="field" id="expCode" readonly rows="3">${esc(F1.store.exportCode())}</textarea><button class="btn sm ghost" data-action="copy-code" style="justify-self:start">📋 Copier le code</button>
+          <textarea class="field" id="impCode" rows="2" placeholder="Colle ici un code de sauvegarde…"></textarea><button class="btn sm ghost" data-action="import" style="justify-self:start">⬆️ Importer</button></div>
+        <div class="card set-c danger"><h3>Réinitialiser</h3><p class="muted" style="font-size:13px;margin:0">Efface tes paris et repart avec ${fmt(F1.store.START)} jetons. Ton F1 Manager est aussi remis à zéro.</p><button class="btn sm" data-action="reset" style="justify-self:start">Tout réinitialiser</button></div>
+      </div></section>`;
+  }
+  document.addEventListener('change', (e) => {
+    const k = e.target && e.target.dataset && e.target.dataset.pref; if (!k) return;
+    const on = e.target.checked;
+    if (k === 'low') setPref('low', on ? '1' : '');
+    else if (k === 'mapFlat') setPref('mapStyle', on ? 'flat' : '');
+    else if (k === 'mapTele') setPref('mapTele', on ? '1' : '');
+    toast('⚙️', 'Préférence enregistrée');
+  });
+
   function pageProfile() {
     const p = F1.store.get(), st = F1.store.stats(), m = p.manager || {}, ms = m.stats || {}, so = SO();
     const name = (so.me && so.me.username) || p.name || 'Joueur';
@@ -3231,7 +3388,7 @@
     const av = $('#avatar');
     if (p.avatar) { if (!av.querySelector('img') || av.querySelector('img').getAttribute('src') !== p.avatar) av.innerHTML = `<img src="${esc(p.avatar)}" alt="">`; }
     else av.textContent = (p.name || '?').slice(0, 1).toUpperCase();
-    achBadge();
+    achBadge(); avatarBadge();
     if ($('#pcBal')) { const v = Math.round(p.manager ? p.manager.pc : 0); $('#pcBal').textContent = fmt(v); $('#pcWallet') && $('#pcWallet').classList.toggle('neg', v < 0); }
     if (shownBal === null) { shownBal = target; el.textContent = fmtJ(target); return; }
     if (Math.abs(shownBal - target) < 0.005) return;
@@ -3471,6 +3628,8 @@
       case 'import': try { F1.store.importCode($('#impCode').value); closeModal(); shownBal = null; updateWallet(); route(); toast('✅', 'Sauvegarde importée', 'win'); } catch (err) { toast('⚠️', 'Code de sauvegarde invalide', 'err'); } break;
       case 'reset': if (confirm('Effacer tous vos paris et repartir avec ' + F1.store.START + ' jetons ?')) { F1.store.reset(); closeModal(); route(); toast('↺', 'Partie réinitialisée'); } break;
       case 'close-modal': closeModal(); break;
+      case 'umenu': { e.preventDefault(); userMenu(!$('#umenu')); break; }
+      case 'msg-send': { e.preventDefault(); sendMsg(); break; }
       case 'scroll-to': { const t = $(a.dataset.to); if (t) window.scrollTo({ top: t.getBoundingClientRect().top + scrollY - 80, behavior: 'smooth' }); break; }
       case 'np-open': openNumberPicker(false); break;
       case 'np-pick': { const i = $('#npIn'); if (i) { i.value = a.dataset.n; i.dispatchEvent(new Event('input')); } break; }
@@ -3485,6 +3644,7 @@
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') { if ($('#modal').innerHTML && F1.store.get().name) closeModal(); else if (S.slipOpen) { S.slipOpen = false; renderSlip(); } }
+    if (e.key === 'Enter' && !e.shiftKey && e.target.id === 'msgIn') { e.preventDefault(); sendMsg(); return; }
     if (e.key === 'Enter' && e.target.id === 'nameIn') ($('[data-action="rename"]') || $('[data-action="save-name"]')).click();
     if (e.key === 'Enter' && e.target.id === 'claimName' && $('[data-action="f-claim"]')) $('[data-action="f-claim"]').click();
   });

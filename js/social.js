@@ -48,7 +48,7 @@
       await loadMe();
       if (S.me) await refresh(false);
       S.ready = true;
-      if (S.me) sync(true);
+      if (S.me) { sync(true); inbox().then(emit).catch(() => {}); }
     } catch (e) {
       S.error = e.message || String(e);
       console.warn('[PITWALL] amis :', S.error);
@@ -299,8 +299,45 @@
     await refresh();
   }
 
-  // Rafraîchissement périodique des demandes (toutes les 60 s quand l'onglet est visible)
-  setInterval(() => { if (S.ready && S.me && !document.hidden) refresh().catch(() => {}); }, 60000);
+  /* ---------- Messagerie entre amis (supabase/migration-messages.sql) ---------- */
+  const MSG_MISSING = /messages|does not exist|schema cache|42P01|PGRST20[02]/i;
+  const msgErr = (e) => { if (e && MSG_MISSING.test((e.message || '') + (e.code || ''))) { const x = new Error('MESSAGES_MISSING'); x.missing = true; throw x; } fail(e); };
+  S.unread = 0; S.unreadBy = {};
+  // derniers messages de chaque conversation et non-lus par ami
+  async function inbox() {
+    const r = await S.client.from('messages').select('id,from_id,to_id,body,created_at,read_at').or(`from_id.eq.${S.user.id},to_id.eq.${S.user.id}`).order('created_at', { ascending: false }).limit(300);
+    msgErr(r.error);
+    const last = {}, unread = {};
+    for (const m of r.data || []) {
+      const o = m.from_id === S.user.id ? m.to_id : m.from_id;
+      if (!last[o]) last[o] = m;
+      if (m.to_id === S.user.id && !m.read_at) unread[o] = (unread[o] || 0) + 1;
+    }
+    S.unreadBy = unread; S.unread = Object.values(unread).reduce((a, v) => a + v, 0);
+    return { last, unread };
+  }
+  async function thread(other) {
+    const r = await S.client.from('messages').select('id,from_id,to_id,body,created_at,read_at')
+      .or(`and(from_id.eq.${S.user.id},to_id.eq.${other}),and(from_id.eq.${other},to_id.eq.${S.user.id})`).order('created_at', { ascending: true }).limit(200);
+    msgErr(r.error);
+    return r.data || [];
+  }
+  async function sendMessage(to, body) {
+    const b = String(body || '').trim().slice(0, 1000);
+    if (!b) throw new Error('Message vide');
+    const r = await S.client.from('messages').insert({ from_id: S.user.id, to_id: to, body: b }).select().maybeSingle();
+    if (r.error && /row-level|policy|42501/i.test((r.error.message || '') + (r.error.code || ''))) throw new Error('Vous ne pouvez écrire qu\'à vos amis');
+    msgErr(r.error);
+    return r.data;
+  }
+  async function markRead(other) {
+    const r = await S.client.from('messages').update({ read_at: new Date().toISOString() }).eq('to_id', S.user.id).eq('from_id', other).is('read_at', null);
+    if (r.error && !MSG_MISSING.test((r.error.message || '') + (r.error.code || ''))) fail(r.error);
+    delete S.unreadBy[other]; S.unread = Object.values(S.unreadBy).reduce((a, v) => a + v, 0);
+  }
 
-  F1.social = { state: S, submitWeekly, weeklyBoard, weeklyRank, savePodium, podiumPicks, officialBoard, myLeagues, leagueBoard, createLeague, joinLeague, leaveLeague, leaderboard, init, claim, sync, search, byUsername, refresh, relation, linkWith, request, accept, remove, onChange: (f) => listeners.push(f), cleanName, USER_RE };
+  // Rafraîchissement périodique des demandes (toutes les 60 s quand l'onglet est visible)
+  setInterval(() => { if (S.ready && S.me && !document.hidden) { refresh().catch(() => {}); inbox().then(emit).catch(() => {}); } }, 60000);
+
+  F1.social = { inbox, thread, sendMessage, markRead, state: S, submitWeekly, weeklyBoard, weeklyRank, savePodium, podiumPicks, officialBoard, myLeagues, leagueBoard, createLeague, joinLeague, leaveLeague, leaderboard, init, claim, sync, search, byUsername, refresh, relation, linkWith, request, accept, remove, onChange: (f) => listeners.push(f), cleanName, USER_RE };
 })(globalThis.F1 = globalThis.F1 || {});
