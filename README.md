@@ -470,3 +470,5 @@ Dans la galerie de photos du profil, la tuile « Mon numéro » ouvre un atelier
 ## F1 Manager : direction artistique « box des stands »
 
 Styles dans `css/manager.css`, tous rangés sous `.hq`. En-tête en porte de garage aux couleurs de l'écurie (nom en Archivo italique condensé, numéro du pilote en filigrane dans la typographie de l'écurie, marquage jaune du box et damier au sol), bande de chronométrage pour les compteurs, menu en tour de chronométrage (rangée active claire avec liseré écurie), panneaux à coin coupé sans numérotation, boutons principaux en parallélogramme. Aucune fonctionnalité retirée : seuls l'en-tête, le menu et l'en-tête des panneaux ont changé de balisage.
+
+Mise à jour : titres du Manager dans la voix du titre de l'accueil (Archivo très large, graisse 900, droite), page en pleine largeur (`body.on-mgr`), numéro choisi et monoplace à droite du bandeau, tête d'onglet (titre + une phrase), explications longues repliées dans des blocs « mode d'emploi » (`howto()`), sections `mg-sec` avec trait de piste, cartes pilote/équipe/sponsor en fiches à coin coupé, marché des transferts en tour de chronométrage.

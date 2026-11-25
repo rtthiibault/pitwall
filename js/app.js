@@ -226,6 +226,7 @@
     // 3. fond du mode manager teinté aux couleurs du châssis équipé
     const mch = r === 'manager' ? F1.store.mgr().chassis : null;
     document.body.classList.toggle('mgr-bg', !!mch);
+    document.body.classList.toggle('on-mgr', r === 'manager');
     if (mch) document.body.style.setProperty('--mgr', F1.teamColor(mch.id));
     afterRender(r, parts);
     if (S.series === 'wec' && r !== 'manager') wecText(app);
@@ -1549,9 +1550,9 @@
     return `<div class="sp-top">
         <div class="sp-car">${ch ? F1.visuals.car(ch.id, { view: 'side', shadow: false, sponsor: livery(m) }) : '<div class="muted">Choisissez une équipe pour afficher votre livrée.</div>'}<small class="muted">Les sponsors sous contrat apparaissent sur votre monoplace : principal sur les pontons et le nez, secondaire sur l'aileron arrière.</small></div>
         <div class="sp-slots">${slot('main', 'Sponsor principal', 'pontons et nez')}${slot('sub', 'Sponsor secondaire', 'aileron arrière · prime et pénalité ×0,6')}</div></div>
-      <div class="muted" style="font-size:13px;margin:14px 0 4px">Un contrat se juge course après course. Le contrat court toujours jusqu'à son échéance, même si l'objectif est rempli plus tôt : la prime est versée à la fin du contrat. Échéance sans objectif atteint : pénalité en PitCoins. Un contrat terminé (réussi ou non) bloque ce sponsor pendant ${MG().SPONSOR_COOLDOWN} courses, en principal comme en secondaire.</div>
-      ${TIERS.map(([t, name, sub]) => `<div class="sp-tier"><div class="sp-tier-h"><b>${name}</b><small>${sub}</small></div><div class="sp-grid">${MG().SPONSORS.filter((s) => s.tier === t).map(card).join('')}</div></div>`).join('')}
-      ${log ? `<div class="sp-tier"><div class="sp-tier-h"><b>Contrats terminés</b></div><div class="sp-logs">${log}</div></div>` : ''}`;
+      ${howto('Comment fonctionne un contrat', `Un contrat se juge course après course. Le contrat court toujours jusqu'à son échéance, même si l'objectif est rempli plus tôt : la prime est versée à la fin du contrat. Échéance sans objectif atteint : pénalité en PitCoins. Un contrat terminé (réussi ou non) bloque ce sponsor pendant ${MG().SPONSOR_COOLDOWN} courses, en principal comme en secondaire.`)}
+      ${TIERS.map(([t, name, sub]) => `<div class="sp-tier"><div class="mg-sec"><h2>${name}</h2><span>${sub}</span></div><div class="sp-grid">${MG().SPONSORS.filter((s) => s.tier === t).map(card).join('')}</div></div>`).join('')}
+      ${log ? `<div class="sp-tier"><div class="mg-sec"><h2>Contrats terminés</h2></div><div class="sp-logs">${log}</div></div>` : ''}`;
   }
   /* ---------- QG de l'écurie : coque (bandeau, rail de navigation) et tableau de bord ---------- */
   // parcours d'un directeur d'écurie : le QG, l'équipe et ses pilotes, le personnel et la technique, les finances, puis la compétition et les récompenses
@@ -1569,7 +1570,8 @@
     // en-tête : la porte du box, aux couleurs de l'écurie, avec le numéro du pilote en filigrane
     const numTeam = ch ? ch.id : (ctx.drvM && ctx.drvM.teamId) || '';
     const num = m.number || (ctx.drvM && ctx.drvM.number) || '';
-    const ghost = num ? `<div class="box-ghost" aria-hidden="true">${F1.num.html(num, numTeam, { color: 'currentColor' })}</div>` : '';
+    // à droite du bandeau : le numéro choisi, en grand, dans la typographie de l'écurie, et la monoplace aux couleurs de la livrée
+    const ghost = (num || ch) ? `<div class="box-r" aria-hidden="true">${num ? `<div class="box-bignum">${F1.num.html(num, numTeam, { color: '#fff' })}</div>` : ''}${ch ? `<div class="box-car">${F1.visuals.svgCar(ch.id, { number: num, numTeam: ch.id, sponsor: livery(m) })}</div>` : ''}</div>` : '';
     const crew = ctx.drvM ? `<span class="box-drv">${num ? `<span class="box-num">${F1.num.html(num, numTeam, { color: 'currentColor' })}</span>` : ''}<b>${esc(ctx.drvM.name)}</b></span>${ctx.mate ? `<span class="box-mate">avec <b>${esc(ctx.mate.name)}</b></span>` : ''}` : '<span class="box-mate">Pas encore de pilote</span>';
     let h = `<div class="hq" style="--tc:${col};--tc-ink:${inkOn(col)}">
       <header class="box">
@@ -1580,7 +1582,7 @@
         <i class="box-line" aria-hidden="true"></i>
       </header>
       <div class="hq-hud">${hud.map(([l, v]) => `<div><small>${l}</small><b>${v}</b></div>`).join('')}</div>
-      <div class="hq-body"><nav class="hq-rail" aria-label="Sections du F1 Manager">${MRAIL.map(([k, ic, l]) => `<a class="${k === tab ? 'on' : ''}" href="#/manager/${k}"${k === tab ? ' aria-current="page"' : ''}><span>${ic}</span><em>${l}</em>${railPing(k)}</a>`).join('')}</nav><div class="hq-main">${debt}`;
+      <div class="hq-body"><nav class="hq-rail" aria-label="Sections du F1 Manager">${MRAIL.map(([k, ic, l]) => `<a class="${k === tab ? 'on' : ''}" href="#/manager/${k}"${k === tab ? ' aria-current="page"' : ''}><span>${ic}</span><em>${l}</em>${railPing(k)}</a>`).join('')}</nav><div class="hq-main">${debt}${mgHead(tab)}`;
     if (tab === 'pilotes') h += mgrDrivers(ctx);
     else if (tab === 'chassis') h += mgrChassis(ctx);
     else if (tab === 'transferts') h += mgrTransfers(ctx);
@@ -1595,6 +1597,18 @@
     void race;
     return h + '</div></div></div>';
   }
+  // mode d'emploi replié : le texte reste accessible sans encombrer l'onglet
+  const howto = (summary, body) => `<details class="howto"><summary><span class="howto-i" aria-hidden="true">i</span>${summary}</summary><div class="howto-b">${body}</div></details>`;
+  const MG_HEAD = {
+    chassis: ['Équipe', 'La monoplace que vous dirigez : vitesse, appui, fiabilité et livrée.'],
+    pilotes: ['Pilotes', 'Votre titulaire et le marché : note, potentiel et valeur.'],
+    transferts: ['Transferts', 'Votre coéquipier et le marché des transferts, au prix du jour.'],
+    muret: ['Muret des stands', 'Le personnel qui vous entoure le dimanche.'],
+    garage: ['Garage', 'Équipements du box, mécaniciens et livrées de la monoplace.'],
+    sponsors: ['Sponsors', 'Deux emplacements sur la voiture, des objectifs à tenir course après course.'],
+    ligues: ['Ligues', 'Votre saison, l\'échelle des ligues et le classement des managers.'],
+  };
+  const mgHead = (tab) => { const h = MG_HEAD[tab]; return h ? `<header class="mg-head"><h1>${h[0]}</h1><p>${h[1]}</p></header>` : ''; };
   const pnl = (n, title, body, cls = '', link = '') => `<section class="pnl ${cls}"><header class="pnl-h"><h2>${title}</h2>${link}</header><div class="pnl-b">${body}</div></section>`;
   const pnlLink = (href, txt) => `<a class="pnl-l" href="${href}">${txt}</a>`;
   // Fiche d'expérience d'un pilote (âge, potentiel, progression acquise avec l'écurie)
@@ -1726,7 +1740,7 @@
   function mgrDrivers(ctx) {
     const { m, mk } = ctx;
     const res = resaleD(ctx);
-    return `<div class="notice" style="margin-bottom:16px">💰 Prix = valeur marchande : surtout la note actuelle (chaque point au-dessus de 80 coûte cher), un peu la marge de progression selon l'âge. 📈 Un pilote gagne de l'expérience à chaque course terminée avec vous : les jeunes progressent vite et loin, les vétérans presque plus. La progression acquise est conservée si vous le reprenez plus tard. ${m.driver ? `Revendre <b>${esc(m.driver.name)}</b> vous rapporte ${fmtPC(res)} (78 % de sa valeur marchande actuelle : formez un jeune et revendez-le au sommet).` : ''}</div>
+    return `${howto('Comment sont fixés les prix et la progression', `Prix = valeur marchande : surtout la note actuelle (chaque point au-dessus de 80 coûte cher), un peu la marge de progression selon l'âge. Un pilote gagne de l'expérience à chaque course terminée avec vous : les jeunes progressent vite et loin, les vétérans presque plus. La progression acquise est conservée si vous le reprenez plus tard. ${m.driver ? `Revendre <b>${esc(m.driver.name)}</b> vous rapporte ${fmtPC(res)} (78 % de sa valeur marchande actuelle : formez un jeune et revendez-le au sommet).` : ''}`)}
       <div class="mgrid">${mk.drivers.map((d) => {
         const own = m.driver && m.driver.id === d.id;
         const p = F1.visuals.portrait(d.id);
@@ -1734,7 +1748,7 @@
         const val = MG().driverPrice(x), net = val - (own ? 0 : res), lock = own ? null : lockOf(ctx, d.id);
         return `<div class="mcard ${own ? 'own' : ''}" style="--tc:${tcol(d.teamId)}"><div class="row" style="flex-wrap:nowrap;align-items:start">
           <div class="gphoto" style="width:64px;height:64px">${p ? `<img src="${esc(p.img)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<i>${esc(d.code)}</i>${dnum(d.number, d.teamId, 'gnum', '#fff')}</div>
-          <div style="min-width:0;flex:1"><div class="muted" style="font-size:12px">${flag(d.iso, 'sm')} ${esc(d.team || MG().TEAM_NAME[d.teamId] || '')}${d.reserve ? ' · réserviste' : ''} · ${e.age} ans</div><div style="font-weight:900;font-style:italic;text-transform:uppercase;font-size:17px;line-height:1.1">${esc(d.family)}</div>
+          <div style="min-width:0;flex:1"><div class="muted" style="font-size:12px">${flag(d.iso, 'sm')} ${esc(d.team || MG().TEAM_NAME[d.teamId] || '')}${d.reserve ? ' · réserviste' : ''} · ${e.age} ans</div><div class="mc-name">${esc(d.family)}</div>
           <div class="row" style="gap:4px;margin-top:4px"><span class="chip ${e.mult >= 1.6 ? 'gold' : ''}" title="Vitesse d'apprentissage : XP ×${e.mult} · progression maximale +${e.cap}">📈 ${esc(e.label)}</span>${own ? '<span class="chip green">Votre pilote</span>' : ''}</div></div>
           <div class="rating-big sm">${x.rating}</div></div>
           <div style="display:grid;gap:6px;margin:12px 0">${statBar('Rythme', x.pace, d.pace, tcol(d.teamId))}${statBar('Combativité', x.craft, d.craft, tcol(d.teamId))}${statBar('Régularité', x.cons, d.cons, tcol(d.teamId))}</div>
@@ -1791,7 +1805,7 @@
     const res = resaleC(ctx);
     const NM = F1.news ? F1.news.teamMods() : {};
     const lbl = { speed: 'Vitesse', df: 'Appui', rel: 'Fiabilité' };
-    return `${myNumberBar(ctx)}<div class="notice" style="margin-bottom:16px">🏎️ Choisissez l'équipe que vous dirigez : sa monoplace (vitesse, appui, fiabilité), sa livrée et l'effet de l'actualité Paddock Wire sur ses performances. Changer d'équipe <b>conserve la moitié de vos niveaux de R&D</b> (chaque pièce garde la moitié de ses niveaux). ${m.chassis ? `Départ de l'équipe actuelle : ${fmtPC(res)} récupérés (70 % de son prix).` : ''}</div>
+    return `${myNumberBar(ctx)}${howto('Changer d\'équipe : ce que vous gardez', `Choisissez l'équipe que vous dirigez : sa monoplace (vitesse, appui, fiabilité), sa livrée et l'effet de l'actualité Paddock Wire sur ses performances. Changer d'équipe <b>conserve la moitié de vos niveaux de R&D</b> (chaque pièce garde la moitié de ses niveaux). ${m.chassis ? `Départ de l'équipe actuelle : ${fmtPC(res)} récupérés (70 % de son prix).` : ''}`)}
       <div class="mgrid wide">${mk.chassis.map((c) => {
         const own = m.chassis && m.chassis.id === c.id;
         const net = c.price - (own ? 0 : res);
@@ -1832,9 +1846,9 @@
         <div class="tr-price"><small>Prix</small><b>${fmtPC(price)}</b>${dp ? `<i class="${dp > 0 ? 'up' : 'dn'}" title="Effet Paddock Wire sur la valeur">${dp > 0 ? '▲' : '▼'} ${Math.abs(dp)}</i>` : ''}</div>
         <div class="tr-act">${own ? '<span class="chip green">Coéquipier</span>' : lock ? `<span class="chip lk" title="Les meilleurs pilotes ne signent qu'avec un manager confirmé">🔒 Ligue ${lock.icon} ${esc(lock.name)}</span>` : `<button class="btn sm" data-action="mate-buy" data-id="${esc(d.id)}" ${net > m.pc + 1e-9 || dayLock ? 'disabled' : ''} ${dayLock ? 'title="Un seul changement de coéquipier par jour"' : ''}>${m.mate ? `Transférer (${net >= 0 ? '−' : '+'}${Math.abs(net)})` : 'Recruter'}</button>`}</div></div>`;
     }).join('');
-    return `${F1.store.mateLocked() ? '<div class="notice" style="margin-bottom:12px">⏳ Vous avez déjà changé de coéquipier aujourd\'hui : le prochain recrutement, transfert ou départ sera possible demain.</div>' : '<div class="muted" style="font-size:12.5px;margin-bottom:10px">Un seul changement de coéquipier par jour. À la revente, le pilote vaut son prix du jour : une bonne actualité le valorise, une mauvaise vous fait perdre un peu (10 % au plus).</div>'}${cur}
+    return `${F1.store.mateLocked() ? '<div class="notice" style="margin-bottom:12px">⏳ Vous avez déjà changé de coéquipier aujourd\'hui : le prochain recrutement, transfert ou départ sera possible demain.</div>' : howto('Règles des transferts', 'Un seul changement de coéquipier par jour. À la revente, le pilote vaut son prix du jour : une bonne actualité le valorise, une mauvaise vous fait perdre un peu (10 % au plus).')}${cur}
       <div class="card tr-info"><div><b>Prime du coéquipier</b><small class="muted">PitCoins versés selon sa position d'arrivée (ligue ${esc(league.name)}), en plus de vos propres gains</small></div><div class="tr-pc">${pcRow}</div></div>
-      <div class="section-h" style="margin-top:18px"><h2>🤝 Marché des transferts</h2><span class="muted" style="font-size:13px">Prix et cotes suivent l'actualité Paddock Wire : ▲ bonne nouvelle, ▼ blessure, pénalité ou difficultés</span></div>
+      <div class="mg-sec"><h2>Marché des transferts</h2><span>Prix et cotes suivent l'actualité Paddock Wire : ▲ bonne nouvelle, ▼ blessure, pénalité ou difficultés</span></div>
       <div class="tr-list">${list}</div>`;
   }
 
@@ -2233,7 +2247,7 @@
         <div class="row" style="justify-content:space-between;margin-top:14px"><b style="font-size:18px">${x.price ? fmtPC(x.price) : 'Gratuit'}</b>${own ? '<span class="chip green">En poste</span>' : `<button class="btn sm" data-action="staff-hire" data-r="${role.id}" data-id="${x.id}" ${net > m.pc + 1e-9 ? 'disabled' : ''}>${cur ? `Remplacer (${net >= 0 ? '−' : '+'}${Math.abs(net)})` : 'Recruter'}</button>`}</div></div>`;
     }).join('');
     const sum = Object.entries(tb).filter(([k, v]) => v > 0.001 && FX_LBL[k]).map(([k, v]) => `<span class="chip" data-tip="${esc(fxTip(k, v))}">${FX_LBL[k]} ${fxVal(k, v)}</span>`).join('');
-    return `${scene}<div class="notice" style="margin:16px 0">🎧 Cliquez sur un poste du muret pour voir les candidats. Remplacer quelqu'un vous rembourse 50 % de son prix. ${sum ? `<div class="row" style="gap:6px;margin-top:8px"><span class="muted" style="font-size:12px">Bonus actuels (personnel + garage) :</span>${sum}</div>` : ''}</div>
+    return `${scene}<div class="mg-tip">Cliquez sur un poste du muret pour voir les candidats. Remplacer quelqu'un vous rembourse 50 % de son prix.</div>${sum ? `<div class="mg-bonus"><span>Bonus actuels (personnel + garage)</span>${sum}</div>` : ''}
       <div class="section-h" style="margin-top:8px"><h2>${role.icon} ${esc(role.name)}</h2><span class="muted" style="font-size:13px;max-width:560px">${esc(role.desc)}</span></div><div class="mgrid">${cards}</div>`;
   }
 
@@ -2283,7 +2297,7 @@
         <div class="row" style="justify-content:space-between;margin-top:14px">${maxed ? '<span class="chip green">Niveau maximal</span>' : `<b style="font-size:18px">${fmtPC(cost)}</b><button class="btn sm" data-action="garage-up" data-id="${g.id}" ${cost > m.pc + 1e-9 ? 'disabled' : ''}>${l ? `Niveau ${l + 1}` : 'Installer'}</button>`}</div></div>`;
     }).join('');
     const sum = Object.entries(tb).filter(([k, v]) => v > 0.001 && FX_LBL[k]).map(([k, v]) => `<span class="chip" data-tip="${esc(fxTip(k, v))}">${FX_LBL[k]} ${fxVal(k, v)}</span>`).join('');
-    return `${scene}${liveryPicker(ctx)}${sum ? `<div class="notice" style="margin:16px 0"><div class="row" style="gap:6px"><span class="muted" style="font-size:12px">Bonus actuels (personnel + garage) :</span>${sum}</div></div>` : '<div class="notice" style="margin:16px 0">🧰 Chaque équipement a 5 niveaux. Les éléments installés apparaissent dans le garage, et chaque niveau de « Mécaniciens » ajoute deux personnes à l\'équipe.</div>'}
+    return `${scene}${liveryPicker(ctx)}${sum ? `<div class="mg-bonus"><span>Bonus actuels (personnel + garage)</span>${sum}</div>` : ''}${howto('Équipements et mécaniciens', 'Chaque équipement a 5 niveaux. Les éléments installés apparaissent dans le garage, et chaque niveau de « Mécaniciens » ajoute deux personnes à l\'équipe.')}
       <div class="rd-tabs" style="margin-bottom:16px">${tabs}</div><div class="mgrid">${cards}</div>`;
   }
 

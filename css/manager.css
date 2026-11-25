@@ -17,15 +17,17 @@
   --tc-ink: #fff;
   font-feature-settings: 'tnum';
 }
-/* titres : Archivo italique, chasse étroite */
-.hq .box-team, .hq .pnl-h h2, .hq-main h1, .hq-main h2, .hq-main > h3, .hq .section-h h2, .hq .section-h h3, .hq .hq-name, .hq .go-l h2 {
-  font-family: 'Archivo', var(--f); font-style: italic; font-stretch: 72%; font-variation-settings: 'wdth' 72;
+/* titres : la voix du titre de l'accueil (« Grand Prix du Qatar ») : Archivo très large, graisse 900, droite, approche serré */
+.hq .box-team, .hq .pnl-h h2, .hq-main h1, .hq-main h2, .hq-main h3, .hq .section-h h2, .hq .section-h h3, .hq .go-l h2, .hq .mg-sec h2 {
+  font-family: 'Archivo', var(--f) !important; font-style: normal !important; font-weight: 900 !important;
+  font-stretch: 116%; font-variation-settings: 'wdth' 116 !important; letter-spacing: -.025em; text-transform: none !important; text-wrap: balance;
 }
+.hq .hq-name, .hq .rating-big, .hq .hq-hud b { font-family: 'Archivo', var(--f); font-style: normal !important; font-variation-settings: 'wdth' 108 !important; letter-spacing: -.02em; }
 
 /* ---------- Porte du box ---------- */
 .hq .box {
   position: relative; overflow: hidden; isolation: isolate;
-  min-height: 168px; padding: 26px 30px 34px; display: flex; align-items: flex-end;
+  min-height: 200px; padding: 28px 32px 38px; display: flex; align-items: flex-end;
   border-radius: 10px 10px 0 0;
   background:
     linear-gradient(105deg, color-mix(in srgb, var(--tc) 92%, #000) 0%, color-mix(in srgb, var(--tc) 62%, #05070a) 42%, #0b0d11 78%);
@@ -42,18 +44,20 @@
   content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background: repeating-linear-gradient(180deg, rgba(255,255,255,.035) 0 1px, transparent 1px 14px);
 }
-.hq .box-ghost {
-  position: absolute; right: 3%; top: 8%; bottom: 8%; z-index: -1;
-  width: 46%; display: grid; place-items: center end;
-  color: #fff; opacity: .14; pointer-events: none;
+.hq .box-r {
+  position: absolute; right: 26px; top: 14px; bottom: 18px; z-index: 0; width: min(54%, 720px);
+  display: flex; align-items: center; justify-content: flex-end; gap: 4px; pointer-events: none;
 }
-.hq .box-ghost .dnum { height: 100%; width: auto; max-width: 100%; font-size: 150px; line-height: 1; }
-.hq .box-l { position: relative; display: grid; gap: 8px; min-width: 0; max-width: 72%; }
+.hq .box-bignum { flex: none; height: 78%; display: grid; place-items: center; filter: drop-shadow(0 6px 18px rgba(0,0,0,.35)); }
+.hq .box-bignum .dnum { height: 100%; width: auto; font-size: 120px; line-height: 1; color: #fff; }
+.hq .box-car { flex: 0 1 430px; min-width: 0; align-self: flex-end; margin-bottom: -6px; filter: drop-shadow(0 14px 14px rgba(0,0,0,.45)); }
+.hq .box-car svg { width: 100%; height: auto; display: block; }
+.hq .box-l { position: relative; z-index: 1; display: grid; gap: 10px; min-width: 0; max-width: 50%; }
 .hq .box-crumb { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: color-mix(in srgb, var(--tc-ink) 78%, transparent); }
 .hq .box-crumb .hq-live { width: 8px; height: 8px; box-shadow: 0 0 0 3px rgba(46,229,157,.25); }
 .hq .box-team {
-  margin: 0; font-size: clamp(34px, 5.2vw, 66px); font-weight: 900; line-height: .9; letter-spacing: -.01em;
-  text-transform: uppercase; color: #fff; text-shadow: 0 2px 18px rgba(0,0,0,.35);
+  margin: 0; font-size: clamp(32px, 4.6vw, 70px); line-height: .92;
+  color: #fff; text-shadow: 0 2px 18px rgba(0,0,0,.35);
   overflow-wrap: anywhere;
 }
 .hq .box-crew { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; font-size: 14px; color: rgba(255,255,255,.86); }
@@ -185,7 +189,6 @@
 @media (max-width: 760px) {
   .hq .box { min-height: 136px; padding: 20px 18px 26px; }
   .hq .box-l { max-width: 100%; }
-  .hq .box-ghost { opacity: .12; right: -14%; }
   .hq .hq-body { grid-template-columns: minmax(0, 1fr) !important; }
   .hq .hq-rail { flex-direction: row !important; overflow-x: auto; padding: 8px 8px 0 !important; border-radius: 0 !important; scrollbar-width: none; }
   .hq .hq-rail a { grid-template-columns: auto auto auto; flex: none; padding: 8px 14px 8px 10px !important; }
@@ -197,5 +200,93 @@
 }
 @media (prefers-reduced-motion: reduce) { .hq .hq-live { animation: none; } }
 
-/* titres de section des sous-pages : même voix que les panneaux du QG */
-.hq-main h3, .hq-main .card > h2 { font-family: 'Archivo', var(--f); font-style: italic; font-stretch: 74%; font-variation-settings: 'wdth' 74; font-weight: 850; letter-spacing: -.005em; }
+
+/* =====================================================================================
+   Pleine largeur et intérieur des onglets
+   ===================================================================================== */
+body.on-mgr main { max-width: none; padding-left: clamp(12px, 2.2vw, 36px); padding-right: clamp(12px, 2.2vw, 36px); }
+
+/* tête d'onglet : grand titre, une phrase */
+.hq .mg-head { display: grid; gap: 6px; margin: 2px 0 18px; padding-bottom: 14px; border-bottom: 1px solid var(--tarmac-3); }
+.hq .mg-head h1 { margin: 0; font-size: clamp(30px, 3.4vw, 46px); line-height: .95; color: var(--chalk); }
+.hq .mg-head p { margin: 0; font-size: 15px; color: var(--muted); max-width: 70ch; }
+
+/* sections internes : titre large + note à droite, trait de piste dessous */
+.hq .mg-sec { display: flex; align-items: baseline; justify-content: space-between; gap: 6px 16px; flex-wrap: wrap; margin: 26px 0 12px; padding-bottom: 8px;
+  background: linear-gradient(90deg, var(--tc) 0 44px, var(--tarmac-3) 44px) bottom / 100% 2px no-repeat; }
+.hq .mg-sec h2 { margin: 0; font-size: 22px; line-height: 1.05; color: var(--chalk); }
+.hq .mg-sec span { font-size: 13px; color: var(--muted); }
+
+/* mode d'emploi replié */
+.hq .howto { margin: 0 0 16px; border-left: 3px solid var(--pit); background: var(--tarmac); }
+.hq .howto summary { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; font-size: 14px; font-weight: 600; color: #d3d8df; list-style: none; }
+.hq .howto summary::-webkit-details-marker { display: none; }
+.hq .howto summary::after { content: ''; margin-left: auto; width: 8px; height: 8px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); transition: transform .15s; }
+.hq .howto[open] summary::after { transform: rotate(-135deg); }
+.hq .howto summary:hover { color: #fff; }
+.hq .howto summary:focus-visible { outline: 2px solid var(--pit); outline-offset: -2px; }
+.hq .howto-i { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--pit); color: #111; font-size: 12px; font-weight: 900; font-style: normal; flex: none; }
+.hq .howto-b { padding: 0 14px 14px 44px; font-size: 14px; line-height: 1.55; color: #b9c0c9; max-width: 92ch; }
+.hq .mg-tip { margin: 14px 0 0; font-size: 14px; color: var(--muted); }
+.hq .mg-bonus { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 12px 0 0; padding: 10px 14px; background: var(--tarmac); }
+.hq .mg-bonus > span { font-size: 13px; color: var(--muted); margin-right: 4px; }
+
+/* cartes pilote / équipe : fiche technique avec bandeau couleur et chiffres larges */
+.hq .mgrid { gap: 12px; }
+.hq .mcard { position: relative; border: 0 !important; border-radius: 0 !important; background: var(--tarmac) !important; padding: 16px 16px 14px !important; box-shadow: inset 0 3px 0 var(--tc);
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%); transition: background .15s; }
+.hq .mcard:hover { background: var(--tarmac-2) !important; }
+.hq .mcard.own { background: linear-gradient(180deg, color-mix(in srgb, var(--tc) 16%, var(--tarmac)), var(--tarmac) 70%) !important; box-shadow: inset 0 3px 0 var(--tc), inset 0 0 0 1px color-mix(in srgb, var(--tc) 45%, transparent); }
+.hq .mcard .rating-big { font-size: 34px !important; line-height: .9; }
+.hq .mcard .sbar-h { font-size: 12px; } .hq .mcard .sbar-t { height: 4px; }
+.hq .mcard .gphoto { border-radius: 0; clip-path: polygon(0 0, 100% 0, 100% 100%, 8px 100%, 0 calc(100% - 8px)); }
+.hq .mcard > .row:last-child { margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--tarmac-3); }
+.hq .mcard .chip.lk { border-radius: 2px; }
+
+/* marché des transferts : lignes de la tour de chronométrage */
+.hq .tr-list { gap: 3px !important; }
+.hq .tr-row { border-radius: 0 !important; border: 0 !important; background: var(--tarmac) !important; box-shadow: inset 4px 0 0 var(--tc, var(--tarmac-3)); }
+.hq .tr-row:nth-child(even) { background: #1a1e25 !important; }
+.hq .tr-row:hover { background: var(--tarmac-2) !important; }
+.hq .tr-cur, .hq .tr-info { border-radius: 0 !important; border: 0 !important; background: var(--tarmac) !important; }
+.hq .tr-cur { box-shadow: inset 4px 0 0 var(--tc); }
+
+/* sponsors : contrats comme des écussons de carrosserie */
+.hq .sp-grid { gap: 12px; }
+.hq .sp-card, .hq .sp-slot { border-radius: 0 !important; border: 0 !important; background: var(--tarmac) !important; }
+.hq .sp-card { box-shadow: inset 0 3px 0 var(--sc, var(--tarmac-3)); clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%); }
+.hq .sp-top { gap: 14px; }
+.hq .sp-car { border-radius: 0 !important; border: 0 !important; background: radial-gradient(90% 80% at 50% 70%, color-mix(in srgb, var(--tc) 18%, var(--tarmac)), var(--tarmac)) !important; }
+.hq .sp-badge { border-radius: 2px; }
+
+/* équipes, personnel, garage, ligues, pass, GP Hebdo : mêmes surfaces sans cadre */
+.hq .tm-card, .hq .stf, .hq .card.tr-info, .hq .wk-card, .hq .lg-step, .hq .ps-kpi, .hq .ps-tile { border-radius: 0 !important; }
+.hq .hq-main .card { border-radius: 0 !important; border: 0 !important; }
+.hq .hq-main .notice { border-radius: 0 !important; background: var(--tarmac) !important; }
+
+/* R&D : le titre maison prend la même voix que les autres onglets */
+.hq .rd-team h1, .hq .rd-team .rd-title { color: var(--chalk) !important; }
+.hq .rd-tab { border-radius: 0 !important; clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%); }
+
+@media (max-width: 1100px) {
+  .hq .box-r { width: 46%; opacity: .9; }
+  .hq .box-l { max-width: 58%; }
+}
+@media (max-width: 760px) {
+  .hq .box { min-height: 0; padding-bottom: 30px; flex-direction: column; align-items: stretch; }
+  .hq .box-r { position: relative; inset: auto; order: 2; width: 100%; height: 84px; margin-top: 14px; justify-content: flex-start; gap: 10px; }
+  .hq .box-bignum { height: 100%; }
+  .hq .box-car { flex: 1 1 auto; max-width: 240px; margin-bottom: 0; }
+  .hq .box-l { max-width: 100%; }
+  .hq .mg-head h1 { font-size: 30px; }
+  .hq .howto-b { padding-left: 14px; }
+}
+.hq .mc-name { font-family: 'Archivo', var(--f); font-weight: 900; font-size: 19px; line-height: 1.05; font-variation-settings: 'wdth' 112; letter-spacing: -.02em; color: var(--chalk); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* anciens titres en italique majuscule : même voix que le reste du Manager */
+.hq .tm-name, .hq .tr-cur-n, .hq .tj-head h3, .hq .ps-hl h2, .hq .lv-h h3, .hq .tunnel-h, .hq .hq-name, .hq .rd-tab b, .hq .rd-tab {
+  font-family: 'Archivo', var(--f) !important; font-style: normal !important; text-transform: none !important;
+  font-variation-settings: 'wdth' 112 !important; letter-spacing: -.015em !important; font-weight: 850 !important;
+}
+.hq .tm-name, .hq .tr-cur-n { font-size: 20px !important; }
+.hq-main [style*="font-style:italic"] { font-style: normal !important; }
