@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-25T15:47:17.182Z",
+ "updated": "2026-11-25T16:17:21.092Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-25T16:17:17.182Z",
+ "next": "2026-11-25T16:47:21.092Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 77
+   "n": 76
   },
   {
    "name": "F1i",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_11jhcmb",
+   "timestamp": "2026-11-25T15:48:00.000Z",
+   "category": "PADDOCK",
+   "title": "McLaren F1 révèle les défauts de conception qui pénalisent sa MCL40 en ligne droite",
+   "summary": "Malgré son double podium au Grand Prix de Las Vegas, McLaren F1 a de nouveau été confrontée à un important déficit de vitesse de pointe, qui a notamment compromis le début de course de Lando Norris. Andrea Stella a révélé que ces difficultés étaient…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/mclaren-f1-revele-les-defauts-de-conception-qui-penalisent-sa-mcl40-en-ligne,213724.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/mclaren3_163_-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-25T16:17:21.092Z"
+  },
   {
    "id": "news_gtr7pu",
    "timestamp": "2026-11-25T15:05:00.000Z",
@@ -852,7 +865,7 @@
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455860_hires.jpg",
    "impact": null,
-   "firstSeen": "2026-11-25T15:47:17.182Z"
+   "firstSeen": "2026-11-25T16:17:21.092Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -865,19 +878,6 @@
    "url": "https://www.autohebdo.fr/actualites/f1/le-programme-du-grand-prix-de-qatar-2026-de-formule-1.html",
    "impact": null,
    "firstSeen": "2026-11-23T15:36:35.718Z"
-  },
-  {
-   "id": "news_6etg37",
-   "timestamp": "2026-11-23T12:59:37.000Z",
-   "category": "PADDOCK",
-   "title": "Verstappen fait confiance à la F1, mais préférerait rester chez lui",
-   "summary": "Après avoir informé Imola qu'il était inutile de préparer davantage le plan B, la F1 est désormais pleinement engagée à terminer sa saison 2026 au Moyen-Orient. Si elle a toujours assuré qu'elle prendrait \"la bonne décision\" en cas de dégradation de la…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/verstappen-confiance-securite-f1-qatar-abu-dhabi/10877205/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "impact": null,
-   "firstSeen": "2026-11-23T15:36:35.718Z",
-   "image": "https://cdn-1.motorsport.com/images/amp/6n7bvLA0/s6/max-verstappen-red-bull-racing-2.jpg"
   }
  ]
 }
