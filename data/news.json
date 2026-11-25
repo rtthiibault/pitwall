@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-25T12:16:46.306Z",
+ "updated": "2026-11-25T12:46:50.995Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-25T12:46:46.306Z",
+ "next": "2026-11-25T13:16:50.995Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_11owcgc",
+   "timestamp": "2026-11-25T12:46:00.000Z",
+   "category": "PADDOCK",
+   "title": "Verstappen peut-il reprendre la couronne mondiale à Antonelli dès 2027 ?",
+   "summary": "Helmut Marko s'attend à une lutte pour le titre mondial bien différente en 2027, avec un Max Verstappen en mesure de défier directement le nouveau champion du monde de Formule 1, Kimi Antonelli. L'ancien conseiller de Red Bull estime que la montée en puissance…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-peut-il-reprendre-la-couronne-mondiale-a-antonelli-des-2027,213716.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455472_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-25T12:46:50.995Z"
+  },
   {
    "id": "news_1c8dils",
    "timestamp": "2026-11-25T11:57:00.000Z",
@@ -787,7 +800,7 @@
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455860_hires.jpg",
    "impact": null,
-   "firstSeen": "2026-11-25T12:16:46.306Z"
+   "firstSeen": "2026-11-25T12:46:50.995Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -864,19 +877,6 @@
    "impact": null,
    "firstSeen": "2026-11-23T12:35:31.503Z",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455751_hires.jpg"
-  },
-  {
-   "id": "news_xo87iu",
-   "timestamp": "2026-11-23T10:53:00.000Z",
-   "category": "PADDOCK",
-   "title": "Mercedes F1 regrette 'des détails infimes' qui ont fait basculer la course",
-   "summary": "Pour Mercedes F1, le Grand Prix de Las Vegas a tourné à la frustration et à la déception dans les derniers instants. Tout avait pourtant parfaitement commencé sous les lumières du Strip, où George Russell et Kimi Antonelli ont animé les avant-postes et lutté…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/mercedes-f1-regrette-des-details-infimes-qui-ont-fait-basculer-la-course,213661.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T12:35:31.503Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456187_hires.jpg"
   }
  ]
 }
