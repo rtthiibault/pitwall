@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-25T10:46:17.808Z",
+ "updated": "2026-11-25T11:16:22.438Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-25T11:16:17.808Z",
+ "next": "2026-11-25T11:46:22.438Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 79
+   "n": 80
   },
   {
    "name": "F1i",
@@ -26,6 +26,32 @@
   }
  ],
  "items": [
+  {
+   "id": "news_m1r2sd",
+   "timestamp": "2026-11-25T11:08:00.000Z",
+   "category": "PADDOCK",
+   "title": "Rosberg regrette sa relation avec Hamilton, une amitié brisée à jamais par la F1",
+   "summary": "Dix ans après avoir décroché le titre mondial de Formule 1 face à Lewis Hamilton, Nico Rosberg regrette profondément le prix personnel qu'il a dû payer pour parvenir au sommet de sa discipline. L'ancien pilote Mercedes a notamment confié que la disparition de…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/rosberg-regrette-sa-relation-avec-hamilton-une-amitie-brisee-a-jamais-par-la-f1,213721.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_857569_hires-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-25T11:16:22.438Z"
+  },
+  {
+   "id": "news_1xuiyln",
+   "timestamp": "2026-11-25T11:00:00.000Z",
+   "category": "PADDOCK",
+   "title": "VIDÉO – Les enjeux du Grand Prix de F1 du Qatar",
+   "summary": "Ce week-end, la Formule 1 se rend au Qatar pour l’avant-dernier Grand Prix de la saison ! La situation reste tendue chez Ferrari après un nouvel incident entre Lewis Hamilton et Charles Leclerc à Las Vegas. On s’étend sur les scenari envisageables pour…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/video-les-enjeux-du-grand-prix-de-f1-du-qatar.html",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/minia-qatar-article.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-25T11:16:22.438Z"
+  },
   {
    "id": "news_d500sm",
    "timestamp": "2026-11-25T10:40:19.000Z",
@@ -748,7 +774,7 @@
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/des-pneus-constants-et-pas-de-graining-pirelli-a-apprecie-son-week-end-a-las,213662.html",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455860_hires.jpg",
    "impact": null,
-   "firstSeen": "2026-11-25T10:46:17.808Z"
+   "firstSeen": "2026-11-25T11:16:22.438Z"
   },
   {
    "id": "news_1ya8qqd",
@@ -851,32 +877,6 @@
    "impact": null,
    "firstSeen": "2026-11-23T12:35:31.503Z",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455997_hires.jpg"
-  },
-  {
-   "id": "news_1r6cvep",
-   "timestamp": "2026-11-23T09:53:00.000Z",
-   "category": "PADDOCK",
-   "title": "Après le baquet Cadillac F1 raté, Colton Herta quitte aussi la F2",
-   "summary": "L'aventure de Colton Herta en Formule 2 s'achève prématurément. Le pilote américain ne disputera pas les deux dernières manches de la saison 2026 avec Hitech, l'équipe britannique ayant décidé, d'un commun accord avec lui, de confier sa monoplace à Roman…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/apres-le-baquet-cadillac-f1-rate-colton-herta-quitte-aussi-la-f2,213680.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T12:35:31.503Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/cadillac_4_-9.jpg"
-  },
-  {
-   "id": "news_w3cs28",
-   "timestamp": "2026-11-23T09:30:00.000Z",
-   "category": "PADDOCK",
-   "title": "Ocon chez Aston Martin F1 ? Le Français sème de nouveaux indices !",
-   "summary": "Esteban Ocon pourrait avoir trouvé une porte de sortie en Formule 1 pour 2027. Écarté de Haas au profit de Rafael Câmara, le Français alimente désormais les rumeurs d'une arrivée chez Aston Martin dans un rôle de pilote de réserve, avec la possibilité de…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/ocon-chez-aston-martin-f1-le-francais-seme-de-nouveaux-indices,213673.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T10:51:02.379Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/haas0_20_-6.jpg"
   }
  ]
 }
