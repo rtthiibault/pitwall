@@ -145,7 +145,9 @@
      Tant qu'elle n'est pas payée, on court dans la dernière ligue payée et les LP ne redescendent plus
      sous le seuil atteint : on peut payer à tout moment. Les licences se prennent dans l'ordre. */
   const LICENCE = [0, 250, 600, 1500, 3000, 5000];   // PitCoins : Bronze (offerte), Argent, Or, Platine, Diamant, Légende
-  const licOf = (m) => (m && m.lic != null ? m.lic : LEAGUES.indexOf(leagueOf((m && m.lp) || 0)));
+  // la Carrière n'a pas de licences : on y monte de ligue avec les LP seuls
+  const inCareer = () => !!(F1.store && F1.store.getMode && F1.store.getMode() === 'career');
+  const licOf = (m) => (inCareer() ? LEAGUES.length - 1 : m && m.lic != null ? m.lic : LEAGUES.indexOf(leagueOf((m && m.lp) || 0)));
   const leagueFor = (m) => LEAGUES[Math.min(licOf(m), LEAGUES.indexOf(leagueOf((m && m.lp) || 0)))];
   // licence à payer (ligue suivante déjà atteinte en LP), sinon null
   const licenceDue = (m) => { const i = licOf(m) + 1, L = LEAGUES[i]; return L && ((m && m.lp) || 0) >= L.min ? { league: L, index: i, cost: LICENCE[i] } : null; };
