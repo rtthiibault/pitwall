@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T14:51:10.621Z",
+ "updated": "2026-11-26T15:21:14.036Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T15:21:10.621Z",
+ "next": "2026-11-26T15:51:14.036Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 78
+   "n": 77
   },
   {
    "name": "F1i",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_14c9fm1",
+   "timestamp": "2026-11-26T14:49:00.000Z",
+   "category": "PADDOCK",
+   "title": "Norris 'souhaitait une meilleure saison' mais se félicite de sa propre performance",
+   "summary": "Lando Norris estime que la saison 2026 n'a pas été à la hauteur des attentes pour lui et McLaren F1, qui sortaient d'une année précédente durant laquelle ils avaient remporté les deux titres mondiaux. Mais un manque de performance en début d'année a coûté la…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/norris-souhaitait-une-meilleure-saison-mais-se-felicite-de-sa-propre,213759.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456381_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T15:21:14.036Z"
+  },
   {
    "id": "news_ph6n1u",
    "timestamp": "2026-11-26T14:16:00.000Z",
@@ -828,19 +841,6 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/audi-f1-veut-arracher-la-septieme-place-du-championnat-a-haas,213700.html",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/audi3_2_-3.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-24T14:11:57.210Z"
-  },
-  {
-   "id": "news_195at68",
-   "timestamp": "2026-11-24T13:16:00.000Z",
-   "category": "PADDOCK",
-   "title": "Dix ans après son sacre, Rosberg raconte les derniers jours de sa carrière en F1",
-   "summary": "Près de dix ans après avoir décroché son unique titre de champion du monde de Formule 1 face à Lewis Hamilton, Nico Rosberg est revenu sur l'immense pression qui l'avait accompagné à l'approche du Grand Prix décisif d'Abu Dhabi en 2016. L'Allemand a révélé…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/dix-ans-apres-son-sacre-rosberg-raconte-les-derniers-jours-de-sa-carriere-en-f1,213697.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/rosberg-2016_2_.jpg",
    "impact": null,
    "firstSeen": "2026-11-24T14:11:57.210Z"
   }
