@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T07:50:00.618Z",
+ "updated": "2026-11-26T08:20:05.660Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T08:20:00.618Z",
+ "next": "2026-11-26T08:50:05.660Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 76
+   "n": 75
   },
   {
    "name": "F1i",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_1pphori",
+   "timestamp": "2026-11-26T07:45:00.000Z",
+   "category": "PADDOCK",
+   "title": "McLaren F1 se prépare à prendre des 'risques' spécifiques au GP du Qatar",
+   "summary": "McLaren F1 se rend au Moyen-Orient pour le Grand Prix du Qatar 2026, qui constitue la deuxième des trois escales du dernier triplé de courses de la saison 2026 de Formule 1. Entre le Grand Prix de Las Vegas et la finale de la saison à Abu Dhabi, Losail marque…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/mclaren-f1-se-prepare-a-prendre-des-risques-specifiques-au-gp-du-qatar,213729.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/mclaren2_118_-3.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T08:20:05.660Z"
+  },
   {
    "id": "news_xypkka",
    "timestamp": "2026-11-26T07:25:34.000Z",
@@ -841,32 +854,6 @@
    "impact": null,
    "firstSeen": "2026-11-23T18:06:54.493Z",
    "image": "https://cdn-1.motorsport.com/images/amp/68VwB9x2/s6/max-verstappen-red-bull-racing-2.jpg"
-  },
-  {
-   "id": "news_lcmlia",
-   "timestamp": "2026-11-23T17:18:00.000Z",
-   "category": "TECHNIQUE",
-   "title": "Comment Ford a aidé Red Bull à créer l'un des meilleurs moteurs de la F1",
-   "summary": "Le retour de Ford en Formule 1 aux côtés de Red Bull s'est transformé en réussite technique et sportive dès sa première saison. Alors que le groupe américain avait initialement été soupçonné de se contenter d'apposer son logo sur un moteur développé à Milton…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/comment-ford-a-aide-red-bull-a-creer-l-un-des-meilleurs-moteurs-de-la-f1,213470.html",
-   "impact": {
-    "targetType": "engine",
-    "targetIds": [
-     "red_bull",
-     "rb"
-    ],
-    "managerModifiers": {
-     "powerUnit": 2,
-     "aero": 0,
-     "reliability": 0
-    },
-    "bettingOddsMultiplier": 0.92,
-    "impactLabel": "Moteur +2 pts | Cotes -8%"
-   },
-   "firstSeen": "2026-11-23T18:37:00.937Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/redbull_104_.jpg"
   }
  ]
 }
