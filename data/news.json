@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T20:52:18.091Z",
+ "updated": "2026-11-26T21:22:40.246Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T21:22:18.091Z",
+ "next": "2026-11-26T21:52:40.246Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -11,8 +11,8 @@
   },
   {
    "name": "Nextgen-Auto",
-   "ok": true,
-   "n": 88
+   "ok": false,
+   "err": "HTTP 415"
   },
   {
    "name": "F1i",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_1olbyh4",
+   "timestamp": "2026-11-26T21:17:13.000Z",
+   "category": "PADDOCK",
+   "title": "Max Verstappen sans Gianpiero Lambiase à Losail, Tom Hart le remplace",
+   "summary": "Max Verstappen sera privé de son bras droit habituel Gianpiero Lambiase ce week-end sur le circuit international de Losail. Red Bull avait déjà opté pour un système de rotation pour la dernière partie de cette saison de Formule 1, principalement afin de…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/max-verstappen-sans-gianpiero-lambiase-au-gp-du-qatar-tom-hart-le-remplace/10878051/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/YBVj7QzY/s6/max-verstappen-red-bull-racing.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T21:22:40.246Z"
+  },
   {
    "id": "news_17eq9fo",
    "timestamp": "2026-11-26T20:18:27.000Z",
@@ -854,19 +867,6 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/rosberg-regrette-sa-relation-avec-hamilton-une-amitie-brisee-a-jamais-par-la-f1,213721.html",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_857569_hires-2.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T11:16:22.438Z"
-  },
-  {
-   "id": "news_1xuiyln",
-   "timestamp": "2026-11-25T11:00:00.000Z",
-   "category": "PADDOCK",
-   "title": "VIDÉO – Les enjeux du Grand Prix de F1 du Qatar",
-   "summary": "Ce week-end, la Formule 1 se rend au Qatar pour l’avant-dernier Grand Prix de la saison ! La situation reste tendue chez Ferrari après un nouvel incident entre Lewis Hamilton et Charles Leclerc à Las Vegas. On s’étend sur les scenari envisageables pour…",
-   "source": "AutoHebdo",
-   "lang": "fr",
-   "url": "https://www.autohebdo.fr/actualites/f1/video-les-enjeux-du-grand-prix-de-f1-du-qatar.html",
-   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/minia-qatar-article.jpg",
    "impact": null,
    "firstSeen": "2026-11-25T11:16:22.438Z"
   }
