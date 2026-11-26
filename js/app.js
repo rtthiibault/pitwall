@@ -200,6 +200,8 @@
     document.body.classList.toggle('on-home', r === '' && S.series !== 'wec');
     S.sel.clear();
     $$('[data-r]').forEach((a) => a.classList.toggle('active', a.dataset.r === (r === 'gp' ? 'calendrier' : r)));
+    // barre du bas (mobile) : « Manager » reste actif en Carrière
+    if (r === 'carriere') $$('.nav-mgr:not(.mgr-btn)').forEach((x) => x.classList.add('active'));
     $('#friendsBtn').classList.toggle('active', r === 'amis');
     if (F1.car3d) F1.car3d.disposeAll();
     const app = $('#app');
@@ -782,7 +784,12 @@
       const ready = F1.store.tunnel().jobs.filter((j) => j.end <= Date.now()).length, left = F1.store.racesLeft();
       mgr = tile(ready || left ? 'todo' : '', F1_ICON, 'F1 Manager', `${left} course${left > 1 ? 's' : ''} gratuite${left > 1 ? 's' : ''}`, ready ? `${ready} pièce${ready > 1 ? 's' : ''} prête${ready > 1 ? 's' : ''} à installer` : `Ligue ${esc(MG().leagueOf(m.lp).name)}, ${fmt(m.lp)} LP`, '<a class="yw-go" href="#/manager">Ouvrir</a>');
     }
-    return `<section class="yw" aria-label="Ton week-end">${wallet}${bets}${picks}${mgr}</section>`;
+    // Carrière : lue directement dans sa sauvegarde (le mode actif reste le classique sur l'accueil)
+    const cr = F1.store.get().career, crC = cr && cr.cal, N = s.races.length;
+    const crPos = crC ? F1.store.careerStandings().findIndex((x) => x.id === 'me') + 1 : 0;
+    const crr = !cr || !cr.driver || !cr.chassis ? tile('crr', CUP_ICO, 'Carrière', 'Une saison, GP par GP', '3 courses par Grand Prix, un championnat', '<a class="yw-go" href="#/carriere">Commencer</a>')
+      : tile('crr', CUP_ICO, `Carrière · saison ${crC.season}`, crC.over ? 'Saison terminée' : `GP ${crC.gp + 1} sur ${N}`, crC.over ? 'Lancez la saison suivante' : `Course ${crC.run + 1} sur ${F1.store.RUNS_PER_GP} · ${crPos ? 'P' + crPos + ' au championnat' : 'championnat à lancer'}`, '<a class="yw-go" href="#/carriere">Continuer</a>');
+    return `<section class="yw" aria-label="Ton week-end">${wallet}${bets}${picks}${mgr}${crr}</section>`;
   }
 
   function hero(nx) {
@@ -1496,6 +1503,7 @@
     if (F1.store.getMode() === 'career') { const c = F1.store.career().cal; return s.races[Math.min(c.gp, s.races.length - 1)]; }
     return s.next || s.pending || s.lastDone || s.races[0];
   }
+  const CUP_ICO = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0Z"/><path d="M8 6H5v1a3 3 0 0 0 3 3M16 6h3v1a3 3 0 0 1-3 3"/><path d="M12 13v4M8.5 20h7M10 17h4v3h-4Z"/></svg>';
   const MB = () => (F1.store.getMode() === 'career' ? '#/carriere' : '#/manager');
   const isCareer = () => F1.store.getMode() === 'career';
   function mgrCtx() {
@@ -1588,7 +1596,7 @@
     const { m, league, ch, car, race } = ctx;
     const nl = MG().nextLeague(m.lp);
     const col = ch ? F1.teamColor(ch.id) : '#e10600';
-    const hud = [['PitCoins', m.pc < 0 ? `<span class="neg">${fmtPC(m.pc)}</span>` : fmtPC(m.pc)], ['Ligue', `${league.icon} ${esc(league.name)}`], ['Points de ligue', fmt(m.lp)], ['Courses gratuites', `${F1.store.racesLeft()} / ${F1.store.racesPerDay()}`], ['Note voiture', car ? MG().carRating(car) : '—']];
+    const hud = isCareer() ? careerHud(m, car) : [['PitCoins', m.pc < 0 ? `<span class="neg">${fmtPC(m.pc)}</span>` : fmtPC(m.pc)], ['Ligue', `${league.icon} ${esc(league.name)}`], ['Points de ligue', fmt(m.lp)], ['Courses gratuites', `${F1.store.racesLeft()} / ${F1.store.racesPerDay()}`], ['Note voiture', car ? MG().carRating(car) : '—']];
     const debt = m.pc < 0 ? `<div class="notice red" style="margin:0 0 14px">Solde de PitCoins négatif (${fmtPC(m.pc)}) après une pénalité de sponsor : vos achats sont bloqués jusqu'au retour au positif. Les courses, les objectifs du jour et les prochains sponsors vous renflouent.</div>` : '';
     // en-tête : la porte du box, aux couleurs de l'écurie, avec le numéro du pilote en filigrane
     const numTeam = ch ? ch.id : (ctx.drvM && ctx.drvM.teamId) || '';
@@ -1597,7 +1605,10 @@
     // scène de droite : projecteur, numéro géant derrière la voiture, reflet au sol
     const ghost = (num || ch) ? `<div class="box-r" aria-hidden="true"><i class="box-spot"></i>${num ? `<div class="box-bignum">${F1.num.html(num, numTeam, { color: 'currentColor' })}</div>` : ''}${ch ? `<div class="box-car">${F1.visuals.car(ch.id, { view: 'side', number: num, numTeam: ch.id, sponsor: livery(m) })}</div>` : ''}<i class="box-floor"></i></div>` : '';
     const crew = ctx.drvM ? `<span class="box-drv">${num ? `<span class="box-num">${F1.num.html(num, numTeam, { color: 'currentColor' })}</span>` : ''}<b>${esc(ctx.drvM.name)}</b></span>${ctx.mate ? `<span class="box-mate">avec <b>${esc(ctx.mate.name)}</b></span>` : ''}` : '<span class="box-mate">Pas encore de pilote</span>';
-    let h = `<div class="hq" style="--tc:${col};--tc-ink:${inkOn(col)}">
+    const cc = isCareer() ? F1.store.career().cal : null;
+    let h = `<div class="hq ${cc ? 'is-career' : ''}" style="--tc:${col};--tc-ink:${inkOn(col)}">`;
+    if (cc) h += `<div class="crr-band"><span class="crr-tag">${CUP_ICO}Mode Carrière</span><b>Saison ${cc.over ? cc.over.season : cc.season}</b><span>${cc.over ? 'Saison terminée' : `Grand Prix ${cc.gp + 1} sur ${(S.f1 || S.season).races.length} · course ${cc.run + 1} sur ${F1.store.RUNS_PER_GP}`}</span><a href="#/carriere/championnat">Voir le championnat</a></div>`;
+    h += `
       <header class="box">
         ${ghost}
         <div class="box-l"><nav class="mode-sw" aria-label="Mode de jeu"><a href="#/manager" class="${isCareer() ? '' : 'on'}"${isCareer() ? '' : ' aria-current="page"'}><b>Classique</b><small>Ligues en ligne</small></a><a href="#/carriere" class="${isCareer() ? 'on' : ''}"${isCareer() ? ' aria-current="page"' : ''}><b>Carrière</b><small>Saison GP par GP</small></a></nav>
@@ -1606,7 +1617,7 @@
         <i class="box-line" aria-hidden="true"></i>
       </header>
       <div class="hq-hud">${hud.map(([l, v]) => `<div><small>${l}</small><b>${v}</b></div>`).join('')}</div>
-      <div class="hq-body"><nav class="hq-rail" aria-label="Sections du F1 Manager">${(isCareer() ? MRAIL.filter(([k]) => k !== 'hebdo' && k !== 'ligues').concat([['championnat', '🏆', 'Championnat']]) : MRAIL).map(([k, ic, l]) => `<a class="${k === tab ? 'on' : ''}" href="#/manager/${k}"${k === tab ? ' aria-current="page"' : ''}><span>${ic}</span><em>${l}</em>${railPing(k)}</a>`).join('')}</nav><div class="hq-main">${debt}${mgHead(tab)}`;
+      <div class="hq-body"><nav class="hq-rail" aria-label="Sections du F1 Manager">${isCareer() ? '<span class="rail-h">Saison</span>' : ''}${(isCareer() ? [['championnat', '🏆', 'Championnat'], ['ecurie', '🏁', 'Prochaine course'], ['__', '', 'Écurie']].concat(MRAIL.filter(([k]) => !['hebdo', 'ligues', 'ecurie'].includes(k))) : MRAIL).map(([k, ic, l]) => k === '__' ? `<span class="rail-h">${l}</span>` : `<a class="${k === tab ? 'on' : ''}" href="#/manager/${k}"${k === tab ? ' aria-current="page"' : ''}><span>${ic}</span><em>${l}</em>${railPing(k)}</a>`).join('')}</nav><div class="hq-main">${debt}${mgHead(tab)}`;
     if (tab === 'pilotes') h += mgrDrivers(ctx);
     else if (tab === 'chassis') h += mgrChassis(ctx);
     else if (tab === 'transferts') h += mgrTransfers(ctx);
@@ -1690,6 +1701,11 @@
   }
   function refreshWeekend() { const el = $('.p-week .pnl-b'); if (el) { el.innerHTML = weekendBody(mgrCtx()); bindSetup(); } }
   /* ---------- Carrière : progression dans le calendrier, championnat ---------- */
+  function careerHud(m, car) {
+    const c = F1.store.career().cal, N = (S.f1 || S.season).races.length, st = F1.store.careerStandings(), me = st.findIndex((x) => x.id === 'me') + 1;
+    return [['PitCoins', m.pc < 0 ? `<span class="neg">${fmtPC(m.pc)}</span>` : fmtPC(m.pc)], ['Championnat', me ? 'P' + me : '—'], ['Points', fmt(c.pts.me || 0)],
+      ['Grand Prix', c.over ? 'Saison finie' : `${c.gp + 1} / ${N}`], ['Course', c.over ? '—' : `${c.run + 1} / ${F1.store.RUNS_PER_GP}`]];
+  }
   function careerStrip(ctx) {
     const c = F1.store.career().cal, s = S.f1 || S.season, N = s.races.length, R = F1.store.RUNS_PER_GP;
     const st = F1.store.careerStandings(), myPos = st.findIndex((x) => x.id === 'me') + 1, lead = st[0];

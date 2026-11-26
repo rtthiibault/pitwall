@@ -1756,7 +1756,7 @@ details.lg-how summary { cursor: pointer; font-weight: 800; } details.lg-how[ope
 }
 
 /* ===================== Accueil : « Ton week-end » ===================== */
-.yw { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 14px 0 6px; }
+.yw { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 14px 0 6px; }
 .yw-t { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; align-items: center; padding: 14px 16px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); min-width: 0; }
 .yw-ic { grid-row: span 2; width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--bg2); font-size: 20px; color: #eef0f3; }
 .yw-ic .coin, .yw-ic svg { width: 24px; height: 24px; } .yw-ic .f1-ico { width: 30px; height: auto; }
@@ -1767,6 +1767,7 @@ details.lg-how summary { cursor: pointer; font-weight: 800; } details.lg-how[ope
 .yw-go:hover { border-color: var(--red); }
 .yw-t.hot { border-color: color-mix(in srgb, var(--gold) 60%, var(--line)); background: linear-gradient(135deg, rgba(233,190,62,.12), var(--card) 60%); }
 .yw-t.todo::after { content: ''; position: absolute; top: 12px; right: 12px; width: 8px; height: 8px; border-radius: 50%; background: var(--red2); box-shadow: 0 0 0 4px rgba(239,58,49,.18); }
+@media (max-width: 1200px) { .yw { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 1000px) { .yw { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 520px) { .yw { grid-template-columns: 1fr; } }
 .hx-t-kerb { fill: none; stroke: #d7261e; stroke-width: 36; stroke-dasharray: 10 10; stroke-linejoin: round; opacity: .55; }
