@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T10:20:40.044Z",
+ "updated": "2026-11-26T10:50:43.460Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T10:50:40.044Z",
+ "next": "2026-11-26T11:20:43.460Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 74
+   "n": 75
   },
   {
    "name": "F1i",
@@ -26,6 +26,32 @@
   }
  ],
  "items": [
+  {
+   "id": "news_1a650sy",
+   "timestamp": "2026-11-26T10:32:00.000Z",
+   "category": "PADDOCK",
+   "title": "Vettel pointe les maux profonds de Ferrari : un manque de courage pour changer",
+   "summary": "Alors que Ferrari traverse une nouvelle crise interne en raison des tensions entre Lewis Hamilton et Charles Leclerc, Sebastian Vettel est revenu sur les faiblesses structurelles qui avaient compromis les ambitions de la Scuderia durant ses six saisons à…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/vettel-pointe-les-maux-profonds-de-ferrari-un-manque-de-courage-pour-changer,213742.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/ferrari_41_-7.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T10:50:43.460Z"
+  },
+  {
+   "id": "news_1opeytw",
+   "timestamp": "2026-11-26T10:29:51.000Z",
+   "category": "PADDOCK",
+   "title": "Exclusif – Théophile Naël : « Red Bull a toujours été mon choix n°1 depuis que je suis tout petit »",
+   "summary": "Bonjour Théophile, tout d’abord félicitations pour cette nomination ! Quelle émotion prédomine après l’annonce officielle de votre arrivée au sein du Red Bull Junior Team ? C’est un sentiment vraiment incroyable. Je sors tout juste d’une journée complète de…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/monoplace/formule-2/exclusif-theophile-nael-red-bull-a-toujours-ete-mon-choix-n1-depuis-que-je-suis-tout-petit.html",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/09/DPPI_03326020_150.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T10:50:43.460Z"
+  },
   {
    "id": "news_1fl2hy3",
    "timestamp": "2026-11-26T09:51:00.000Z",
@@ -803,32 +829,6 @@
    "impact": null,
    "firstSeen": "2026-11-24T09:11:02.535Z",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/mercedes_16_-7.jpg"
-  },
-  {
-   "id": "news_mzp7zc",
-   "timestamp": "2026-11-24T08:27:57.000Z",
-   "category": "PADDOCK",
-   "title": "Piastri évoque ses projets de management après sa séparation avec Mark Webber",
-   "summary": "Le pilote McLaren indique que sa future structure de management n'est pas encore définie, après avoir mis fin à son partenariat avec ses managers Ann et Mark Webber. Le 9 novembre, Piastri a publié un communiqué commun dans lequel il indiquait que les deux…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/oscar-piastri-evoque-projets-management-apres-separation-mark-webber/10877356/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "impact": null,
-   "firstSeen": "2026-11-24T08:40:59.181Z",
-   "image": "https://cdn-1.motorsport.com/images/amp/6zoDBPe0/s6/oscar-piastri-mclaren-2.jpg"
-  },
-  {
-   "id": "news_eeyuj3",
-   "timestamp": "2026-11-24T08:09:00.000Z",
-   "category": "PADDOCK",
-   "title": "Bearman ferme la porte à Alpine F1, un désaccord salarial bloque son contrat",
-   "summary": "Oliver Bearman a catégoriquement démenti les rumeurs selon lesquelles il pourrait quitter Haas pour rejoindre une autre écurie de Formule 1 en 2027, alors que l'officialisation de son contrat pour la saison prochaine se fait toujours attendre. Si les récentes…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/bearman-ferme-la-porte-a-alpine-f1-un-desaccord-salarial-bloque-son-contrat,213693.html",
-   "impact": null,
-   "firstSeen": "2026-11-24T08:10:40.205Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/haas0_15_-4.jpg"
   }
  ]
 }
