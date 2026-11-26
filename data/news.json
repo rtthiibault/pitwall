@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T12:20:53.915Z",
+ "updated": "2026-11-26T12:50:57.535Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T12:50:53.915Z",
+ "next": "2026-11-26T13:20:57.535Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 75
+   "n": 76
   },
   {
    "name": "F1i",
@@ -26,6 +26,32 @@
   }
  ],
  "items": [
+  {
+   "id": "news_72lm08",
+   "timestamp": "2026-11-26T12:13:00.000Z",
+   "category": "PADDOCK",
+   "title": "Vibreurs agressifs et limites de piste : Williams F1 détaille les défis du Qatar",
+   "summary": "Williams F1 a marqué quatre points à Las Vegas grâce à la huitième place de Carlos Sainz, mais le Grand Prix du Qatar ce week-end devrait être bien plus compliqué pour l'équipe de Grove. En effet, les deux circuits sont totalement différents, et le positif…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/vibreurs-agressifs-et-limites-de-piste-williams-f1-detaille-les-defis-du-qatar,213725.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/williams_13_-3.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T12:50:57.535Z"
+  },
+  {
+   "id": "news_i2fy8n",
+   "timestamp": "2026-11-26T11:48:00.000Z",
+   "category": "PADDOCK",
+   "title": "Vesti révèle avoir effectué un travail 'jamais vu auparavant en F1' chez Mercedes",
+   "summary": "Frederik Vesti reste convaincu que son rêve de devenir titulaire en Formule 1 peut encore se concrétiser, malgré la décision de Cadillac de conserver Valtteri Bottas pour la saison 2027. Le pilote de réserve de Mercedes a notamment révélé avoir joué un rôle…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/vesti-revele-avoir-effectue-un-travail-jamais-vu-auparavant-en-f1-chez-mercedes,213744.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/mercedes_19_-11.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T12:50:57.535Z"
+  },
   {
    "id": "news_tqrpp2",
    "timestamp": "2026-11-26T11:01:32.000Z",
@@ -817,32 +843,6 @@
    "impact": null,
    "firstSeen": "2026-11-24T11:11:19.505Z",
    "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/DPPI_00126024_2575-2.jpg"
-  },
-  {
-   "id": "news_16csvjp",
-   "timestamp": "2026-11-24T10:20:33.000Z",
-   "category": "PADDOCK",
-   "title": "Hadjar frustré : ce qui s'est vraiment passé à la radio chez Red Bull à Las Vegas",
-   "summary": "Isack Hadjar s'est élancé du quatrième rang sur la grille de départ du Grand Prix de Las Vegas de Formule 1. Dès le quatrième tour, il occupait déjà la deuxième place, juste derrière son coéquipier chez Red Bull, Max Verstappen. Et comme le Grand Prix s'était…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/isack-hadjar-frustre-vraiment-passe-radio-chez-red-bull-las-vegas/10877387/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "impact": null,
-   "firstSeen": "2026-11-24T10:41:14.453Z",
-   "image": "https://cdn-1.motorsport.com/images/amp/0qgKkjkY/s6/isack-hadjar-red-bull-racing.jpg"
-  },
-  {
-   "id": "news_1pxqvdw",
-   "timestamp": "2026-11-24T10:14:00.000Z",
-   "category": "PADDOCK",
-   "title": "Polémique sur la biométrie en F1 : 'aux pilotes de décider' selon les patrons",
-   "summary": "La décision de la Formule 1 de diffuser à partir de 2027 certaines données physiologiques des pilotes pendant les Grands Prix fait débat. Alors que Max Verstappen a déjà clairement annoncé son refus de partager son rythme cardiaque ou d'autres informations…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/polemique-sur-la-biometrie-en-f1-aux-pilotes-de-decider-selon-les-patrons,213570.html",
-   "impact": null,
-   "firstSeen": "2026-11-24T11:11:19.505Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/mclaren1_132_-3.jpg"
   }
  ]
 }
