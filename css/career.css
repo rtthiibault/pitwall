@@ -207,3 +207,55 @@ body.on-mgr:has(.crx) { background: radial-gradient(120% 60% at 50% -10%, #1a244
 .crp-quotes { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 10px; } .crp-quotes q { display: block; font-style: italic; font-size: 14px; } .crp-quotes small { color: var(--mist); font-size: 12px; }
 .crp-vis { position: absolute; inset: 0; display: grid; place-items: center; } .crp-vis .pw-car { width: 86%; } .crp-vis .pw-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .crx-press .pwr-vis, .crx-press .pwt-vis, .crx-press .pwb-vis { position: relative; }
+
+/* =====================================================================================
+   Carrière v3 : fond noir, affiche avec la monoplace, fiches pilote, revue de presse
+   ===================================================================================== */
+body.on-career { background: #000 !important; }
+body.on-career .bg-stripes, body.on-career .skids, body.on-career .skid-car { display: none !important; }
+body.on-career::before, body.on-career::after { display: none !important; }
+body.on-mgr.on-career:has(.crx) { background: #000 !important; }
+.hq.crx { --night: #0b0b0f; --night-2: #121218; --night-3: #1b1b24; --ink: #000; }
+
+/* affiche : la monoplace de l'écurie en grand, à droite */
+.crx-head { min-height: 260px; background: radial-gradient(80% 140% at 85% 30%, color-mix(in srgb, var(--tc) 34%, transparent), transparent 62%), linear-gradient(160deg, #111117, #050507 75%) !important; }
+.crx-head-car { position: absolute; right: -2%; top: 8px; width: min(54%, 720px); opacity: .95; pointer-events: none; filter: drop-shadow(0 22px 22px rgba(0,0,0,.7)); }
+.crx-head-car .car3d { height: auto; aspect-ratio: 3 / 1; } .crx-head-car img, .crx-head-car svg { width: 100%; height: auto; display: block; }
+.crx-head > .crx-id, .crx-head > .crx-stats { position: relative; z-index: 1; }
+.crx-head { grid-template-columns: 1fr; align-content: end; } .crx-stats { justify-content: flex-start; }
+.crx-stat, .crx-ring { background: rgba(0,0,0,.6) !important; backdrop-filter: none; }
+
+/* fiches pilote */
+.crx-line { gap: 16px; }
+.cpc { position: relative; overflow: hidden; isolation: isolate; display: grid; gap: 4px; padding: 22px 24px 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,.08);
+  background: radial-gradient(90% 120% at 100% 0%, color-mix(in srgb, var(--dc) 26%, transparent), transparent 62%), linear-gradient(180deg, #121218, #08080b); }
+.cpc-num { position: absolute; right: -6px; top: -14px; height: 210px; z-index: -1; color: color-mix(in srgb, var(--dc) 55%, transparent); opacity: .55; font-size: 210px; line-height: 1; }
+.cpc-num .dnum { height: 100%; width: auto; font-size: 210px; }
+.cpc-stripe { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--dc); }
+.cpc-h { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; align-items: center; gap: 14px; }
+.cpc-ph { position: relative; display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; overflow: hidden; background: color-mix(in srgb, var(--dc) 40%, #111); border: 2px solid var(--dc); }
+.cpc-ph i { font-style: normal; font-weight: 800; font-size: 14px; color: #fff; } .cpc-ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; }
+.cpc-id { display: grid; gap: 2px; min-width: 0; } .cpc-id small { font-size: 12px; color: var(--mist); }
+.cpc-id > b { font-size: 18px; font-weight: 400; color: var(--ivory); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cpc-id > b strong { font-family: 'Archivo', var(--f); font-weight: 900; font-variation-settings: 'wdth' 112; text-transform: uppercase; letter-spacing: -.01em; font-size: 22px; }
+.cpc-form { width: max-content; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; } .cpc-form.up { background: rgba(94,224,143,.15); color: #5ee08f; } .cpc-form.down { background: rgba(255,122,122,.15); color: #ff7a7a; }
+.cpc-plate { display: grid; place-items: center; height: 44px; min-width: 56px; padding: 0 10px; border-radius: 8px; background: var(--dc); color: var(--di); font-size: 34px; line-height: 1; }
+.cpc-plate .dnum { height: 30px; width: auto; font-size: 30px; }
+.cpc-car { width: 86%; margin: 6px auto -6px; filter: drop-shadow(0 16px 14px rgba(0,0,0,.6)); } .cpc-car .car3d { height: auto; aspect-ratio: 3 / 1; } .cpc-car img, .cpc-car svg { width: 100%; height: auto; display: block; }
+.cpc-f { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; align-items: end; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.08); }
+.cpc-bars { display: grid; gap: 6px; }
+.cpc-bar { display: grid; grid-template-columns: 92px minmax(0, 1fr) 28px; align-items: center; gap: 10px; font-size: 12px; } .cpc-bar small { color: var(--mist); font-size: 12px; }
+.cpc-bar span { height: 6px; border-radius: 999px; background: rgba(255,255,255,.08); overflow: hidden; } .cpc-bar i { display: block; height: 100%; border-radius: 999px; background: var(--dc); }
+.cpc-bar b { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.cpc-grid { display: grid; justify-items: end; } .cpc-grid small { color: var(--mist); font-size: 12px; }
+.cpc-grid b { font-family: 'Archivo', var(--f); font-weight: 900; font-variation-settings: 'wdth' 112; font-size: 44px; line-height: 1; color: var(--gold-2); }
+
+/* revue de presse du week-end */
+.crx-popl { display: block; margin: 6px 0 10px; font-size: 12px; }
+.crx-news { list-style: none; padding: 0; margin: 0; display: grid; gap: 0; }
+.crx-news li { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 12px; padding: 12px 0; border-top: 1px solid rgba(255,255,255,.06); }
+.crx-news li b { display: block; font-size: 14px; font-weight: 600; line-height: 1.35; } .crx-news li small { display: block; margin-top: 4px; font-size: 12px; color: var(--mist); }
+.crx-news li q { display: block; margin-top: 6px; padding-left: 10px; border-left: 2px solid var(--gold); font-style: italic; font-size: 13px; color: #d9d3c2; }
+.crx-news-c { align-self: start; text-align: center; padding: 2px 6px; border-radius: 4px; font-size: 11.5px; font-weight: 700; border: 1px solid; }
+.crx-news-c.c-presse { color: #3cbf6e; } .crx-news-c.c-qualif { color: #27b4f4; } .crx-news-c.c-course { color: #c66bff; } .crx-news-c.c-rumeur { color: #e9be3e; }
+@media (max-width: 1000px) { .crx-head-car { position: relative; right: auto; top: auto; width: 100%; margin: -10px 0 8px; } }

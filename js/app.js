@@ -231,6 +231,7 @@
     const mch = isMgr ? F1.store.mgr().chassis : null;
     document.body.classList.toggle('mgr-bg', !!mch);
     document.body.classList.toggle('on-mgr', isMgr);
+    document.body.classList.toggle('on-career', r === 'carriere');
     if (mch) document.body.style.setProperty('--mgr', F1.teamColor(mch.id));
     afterRender(r, parts);
     if (S.series === 'wec' && r !== 'manager') wecText(app);
@@ -1732,7 +1733,7 @@
     const formTxt = (f) => (f >= 2 ? 'En feu' : f >= 1 ? 'Confiant' : f <= -2 ? 'Sous pression' : f <= -1 ? 'Tendu' : 'Neutre');
     const pop = c.pop || 40;
     const ring = (v, lbl, sub) => `<div class="crx-ring" style="--v:${v}"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="19" class="t"/><circle cx="22" cy="22" r="19" class="v" pathLength="100" stroke-dasharray="${v} 100"/></svg><b>${v}</b><span><small>${lbl}</small>${sub}</span></div>`;
-    const head = `<header class="crx-head" style="--tc:${col}">
+    const head = `<header class="crx-head" style="--tc:${col}">${ch ? `<div class="crx-head-car" aria-hidden="true">${F1.visuals.car(ch.id, { view: 'side', shadow: false, number: m.number || (drvM && drvM.number), numTeam: ch.id, sponsor: livery(m) })}</div>` : ''}
         <div class="crx-id"><span class="crx-kicker">${crIco('<path d="M8 4h8v5a4 4 0 0 1-8 0Z"/><path d="M12 13v4M8.5 20h7"/>')}Carrière · saison ${c.over ? c.over.season : c.season}</span>
           <h1>${ch ? esc(ch.name) : 'Nouvelle écurie'}</h1>
           ${drvM ? `<div class="crx-drivers">${crDrvChip(drvM, m.number || drvM.number, ch, 'Pilote')}${mate ? crDrvChip(mate, mate.number, ch, 'Coéquipier') : ''}</div>` : '<p>Signez une écurie et deux pilotes pour lancer la saison.</p>'}</div>
@@ -1773,13 +1774,34 @@
     const map = race.circuitId ? trackSvg(race.circuitId, F1.teamColor(ctx.ch.id), true) : '';
     return `<section class="crx-gp"><div class="crx-gp-l"><small>Grand Prix ${c.gp + 1} sur ${N} · ${esc(race.circuit || '')}</small><h2>${flag(race.iso, 'lg')} ${esc(race.nameFr)}</h2>${steps}</div>
         <figure class="crx-gp-map hx-map">${map}</figure></section>
-      <div class="crx-line">${[[ctx.drvM, F1.store.mgr().number || ctx.drvM.number, 'Votre pilote', q && q.myPos], [ctx.mate, ctx.mate && ctx.mate.number, 'Coéquipier', q && q.matePos]].filter((x) => x[0]).map(([d, n, role, gp]) => { const pt = F1.visuals.portrait(d.id); return `<div class="crx-car" style="--dc:${F1.teamColor(ctx.ch.id)}"><div class="crx-car-n">${n ? F1.num.html(n, ctx.ch.id, { color: 'currentColor' }) : ''}</div><div class="crx-car-v">${F1.visuals.car(ctx.ch.id, { view: 'side', shadow: false, number: n, numTeam: ctx.ch.id, sponsor: livery(F1.store.mgr()) })}</div>
-        <div class="crx-car-b"><span class="crx-dc-ph sm"><i>${esc(d.code || '')}</i>${pt ? `<img src="${esc(pt.img)}" alt="" onerror="this.remove()">` : ''}</span><div><small>${role}</small><b>${esc(d.name)}</b></div><span class="crx-car-g">${gp ? `Grille <b>P${gp}</b>` : `Note <b>${d.rating}</b>`}</span></div></div>`; }).join('')}</div>
+      <div class="crx-line">${crPilotCard(ctx, ctx.drvM, F1.store.mgr().number || ctx.drvM.number, 'Votre pilote', q && q.myPos, true)}${ctx.mate ? crPilotCard(ctx, ctx.mate, ctx.mate.number, 'Coéquipier', q && q.matePos, false) : ''}</div>
       <div class="crx-runs">${runs}</div>
       <div class="crx-two"><section class="crx-card">${crDuelMini(ctx)}</section><section class="crx-card">${crPressLog(c)}</section></div>
       <section class="crx-card crx-prep"><header><h3>Préparation de la course</h3><span>Réglage aéro, pneus et stratégie : ils s'appliquent aux qualifs et à la course</span></header><div class="p-week"><div class="pnl-b">${weekendBody(ctx)}</div></div></section>`;
   }
+  // fiche pilote : numéro géant dans la typographie de l'écurie, photo, monoplace, jauges et place sur la grille
+  function crPilotCard(ctx, d, n, role, gridPos, mine) {
+    const team = ctx.ch.id, col = F1.teamColor(team), pt = F1.visuals.portrait(d.id), c = F1.store.career().cal;
+    const bar = (l, v) => `<div class="cpc-bar"><small>${l}</small><span><i style="width:${Math.max(4, Math.min(100, (v - 50) * 2))}%"></i></span><b>${Math.round(v)}</b></div>`;
+    const form = mine && c.form ? `<span class="cpc-form ${c.form > 0 ? 'up' : 'down'}">Forme ${c.form > 0 ? '+' : ''}${c.form}</span>` : '';
+    return `<article class="cpc" style="--dc:${col};--di:${inkOn(col)}">
+      <div class="cpc-num" aria-hidden="true">${n ? F1.num.html(n, team, { color: 'currentColor' }) : ''}</div>
+      <div class="cpc-stripe" aria-hidden="true"></div>
+      <header class="cpc-h"><span class="cpc-ph"><i>${esc(d.code || '')}</i>${pt ? `<img src="${esc(pt.img)}" alt="" onerror="this.remove()">` : ''}</span>
+        <div class="cpc-id"><small>${role} · ${esc(ctx.ch.name)}</small><b>${esc(d.given || '')} <strong>${esc(d.family || d.name)}</strong></b>${form}</div>
+        ${n ? `<span class="cpc-plate">${F1.num.html(n, team, { color: 'currentColor' })}</span>` : ''}</header>
+      <div class="cpc-car">${F1.visuals.car(team, { view: 'side', shadow: false, number: n, numTeam: team, sponsor: livery(F1.store.mgr()) })}</div>
+      <div class="cpc-f"><div class="cpc-bars">${bar('Rythme', d.pace)}${bar('Combativité', d.craft)}${bar('Régularité', d.cons)}</div>
+        <div class="cpc-grid"><small>${gridPos ? 'Grille' : 'Note'}</small><b>${gridPos ? 'P' + gridPos : d.rating}</b></div></div></article>`;
+  }
+  // revue de presse du week-end : les dernières dépêches, dont celles qui citent le pilote
   function crPressLog(c) {
+    const items = (c.news || []).slice(0, 5), CAT = { presse: 'Presse', qualif: 'Qualifs', course: 'Course', rumeur: 'Rumeur' };
+    return `<header><h3>Revue de presse</h3><a href="#/carriere/presse">Toutes les dépêches</a></header><div class="crx-pop"><i style="width:${c.pop}%"></i></div><small class="muted crx-popl">Popularité ${c.pop} / 100</small>
+      ${items.length ? `<ul class="crx-news">${items.map((x) => `<li class="${x.quote ? 'q' : ''}"><span class="crx-news-c c-${x.cat}">${CAT[x.cat] || 'Presse'}</span><div><b>${esc(x.title)}</b>${x.quote ? `<q>${esc(x.quote)}</q>` : ''}<small>${esc(x.src)} · ${pwAgo(x.t)}</small></div></li>`).join('')}</ul>`
+        : '<p class="muted">Aucune dépêche pour l\'instant : répondez aux médias pour faire parler de vous.</p>'}`;
+  }
+  function crPressLogOld(c) {
     const last = c.media.slice(0, 4);
     return `<header><h3>Revue de presse</h3><span>Popularité ${c.pop} / 100</span></header><div class="crx-pop"><i style="width:${c.pop}%"></i></div>
       ${last.length ? `<ul class="crx-press">${last.map((x) => `<li><span>Saison ${x.season} · GP ${x.gp + 1}</span><b class="${x.pop >= 0 ? 'up' : 'down'}">${x.pop >= 0 ? '+' : ''}${x.pop} popularité</b><b class="${x.form >= 0 ? 'up' : 'down'}">forme ${x.form >= 0 ? '+' : ''}${x.form}</b></li>`).join('')}</ul>` : '<p class="muted">Aucune conférence de presse pour l\'instant.</p>'}
@@ -1806,6 +1828,9 @@
     const T = tot >= 4 ? ['« {citation} » : {nom} galvanise le paddock avant le {gp}', '{nom} crève l\'écran en conférence de presse', 'Le ton monte chez {ecurie} : {nom} affiche ses ambitions']
       : tot >= 0 ? ['{nom} reste mesuré avant le {gp}', 'Conférence sans fausse note pour {nom}', '« {citation} » : le message de {nom} avant le {gp}']
       : ['Malaise en conférence : {nom} agace les journalistes', '{nom} sur la défensive avant le {gp}', 'Réponses glaciales : le clan {ecurie} sous tension'];
+    const others = answers.filter((x) => x !== best && x.t);
+    if (others.length) { const o = pick(others); v.c2 = o.t; crNewsPost('presse', fill(pick(['Ce qu\'il faut retenir de la conférence de {nom}', 'Décryptage : le message de {nom} à {ecurie}', '« {c2} » : {nom} se confie avant le {gp}']), v), `Autre moment de la conférence : à la question « ${o.q} », ${v.pilote} a répondu « ${o.t} ».`, { quote: o.t }); }
+    if (Math.random() < 0.7) crNewsPost('rumeur', fill(pick(tot >= 0 ? ['Le paddock salue la confiance de {nom}', 'Les mots de {nom} font le tour du paddock', '{equipier} réagit aux déclarations de {nom}'] : ['Les propos de {nom} passent mal chez {ecurie}', '{equipier} recadre {nom} après la conférence', 'Le patron de {ecurie} temporise après les déclarations de {nom}']), v), pick(['Plusieurs membres de l\'équipe ont réagi en coulisses.', 'Les réseaux sociaux se sont emparés de la séquence.', 'Une réaction attendue avant le début des essais.']));
     crNewsPost('presse', fill(pick(T), v), `Interrogé avant le ${v.gp}, ${v.pilote} a répondu à trois questions. ${answers.map((x) => x.q ? `À « ${x.q} », il a répondu : « ${x.t} »` : '').filter(Boolean).join(' ')}`, { quote: best.t, hot: Math.abs(tot) >= 5 });
   }
   function crNewsQuali(q) {
