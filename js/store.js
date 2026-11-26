@@ -83,6 +83,8 @@
   }
   function normMgr(m) {
     if (!m.parts) m.parts = {};
+    // licences : les ligues déjà atteintes avant leur arrivée restent acquises
+    if (m.lic == null && F1.manager && F1.manager.LEAGUES) m.lic = F1.manager.LEAGUES.indexOf(F1.manager.leagueOf(m.lp || 0));
     // anciennes sauvegardes : une pièce développée (horodatage) devient Mk I
     for (const k in m.parts) if (m.parts[k] > 5) m.parts[k] = 1;
     if (!m.fails) m.fails = {};
@@ -536,7 +538,7 @@
     const m = mgr(), MG = F1.manager; if (!MG) return null;
     if (!m.mseason) m.mseason = { key: curMonth(), peak: m.lp || 0 };
     if (m.mseason.key === curMonth()) return null;
-    const L = MG.leagueOf(m.lp), li = MG.LEAGUES.indexOf(L), prize = MG.SEASON_PRIZE[li] || 0;
+    const L = MG.leagueFor(m), li = MG.LEAGUES.indexOf(L), prize = MG.SEASON_PRIZE[li] || 0;
     const lpAfter = Math.round(m.lp * MG.SEASON_KEEP);
     const rec = { key: m.mseason.key, lp: m.lp, peak: Math.max(m.mseason.peak || 0, m.lp), league: L.id, prize, lpAfter, races: (m.stats && m.stats.races) || 0, t: Date.now() };
     if (prize) addPC(prize, `Fin de saison ${m.mseason.key} : ligue ${L.name}`);
@@ -607,11 +609,21 @@
     d.paid = (d.paid || 0) + 1; save();
     return { paid: cost };
   }
+  function buyLicence() {
+    const m = mgr(), due = F1.manager.licenceDue(m);
+    if (!due) throw new Error('Aucune licence à payer : atteignez d\'abord les LP de la ligue suivante');
+    if (m.pc < due.cost) throw new Error(`Il vous manque ${Math.ceil(due.cost - m.pc)} PitCoins pour la licence ${due.league.name}`);
+    addPC(-due.cost, `Licence ${due.league.name}`);
+    m.lic = due.index; save();
+    return due;
+  }
   function recordRace(r) {
     const m = mgr();
     m.next = { seed: (Math.random() * 4294967296) >>> 0, tyre: m.next.tyre, plan: m.next.plan };   // nouvelle météo pour la course suivante
     const before = m.lp;
     m.lp = Math.max(0, m.lp + r.lp);
+    // licence pas encore payée : les LP ne redescendent pas sous le seuil de la ligue suivante
+    { const due = F1.manager.LEAGUES[F1.manager.licOf(m) + 1]; if (due && before >= due.min) m.lp = Math.max(m.lp, due.min); }
     m.best = Math.max(m.best, m.lp);
     addPC(r.pc, `Course : P${r.pos}${r.dnf ? ' (abandon)' : ''}`);
     m.races.unshift({ ...r, t: Date.now(), lpBefore: before, lpAfter: m.lp }); if (m.races.length > 30) m.races.pop();
@@ -664,7 +676,7 @@
     if (other && other.id === id) throw new Error('Ce sponsor est déjà sur votre voiture');
     const wait = sponsorCooldown(id);
     if (wait > 0) throw new Error(`${s.name} ne re-signe pas tout de suite : encore ${wait} course${wait > 1 ? 's' : ''} à disputer`);
-    const L = MG.LEAGUES.findIndex((l) => l.id === MG.leagueOf(m.lp).id);
+    const L = MG.LEAGUES.findIndex((l) => l.id === MG.leagueFor(m).id);
     if (L < s.league) throw new Error(`Ce sponsor ne signe qu'à partir de la ligue ${MG.LEAGUES[s.league].name}`);
     const t = MG.sponsorTerms(s, slot);
     m.sponsors[slot] = { id, done: 0, hits: 0, t: Date.now() };
@@ -755,5 +767,5 @@
   function reset() { const n = get().name; state = blank(); state.name = n; save(); }
   const popUnlocked = () => unlocked.splice(0);
 
-  F1.store = { careerNewsAdd, careerOpen, careerMedia, careerSetQuali, careerQualiFor, setMode, getMode, career, careerStandings, careerNewSeason, careerReset, RUNS_PER_GP, seasonRoll, passNextOpen, curMonth, betWait, mateLocked, setNumber, installPart, rushJob, unlockSlot2, jobOf, tunnel, pass, claimPass, passComplete, nextSeason, setSkin, weeklyMax, sponsorCooldown, achProgress, claimAch, achClaimable, noteStat, setAvatar, ACH_BY, buyMate, releaseMate, weeklyGP, useWeeklyAttempt, recordWeekly, claimWeeklyGP, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
+  F1.store = { buyLicence, careerNewsAdd, careerOpen, careerMedia, careerSetQuali, careerQualiFor, setMode, getMode, career, careerStandings, careerNewSeason, careerReset, RUNS_PER_GP, seasonRoll, passNextOpen, curMonth, betWait, mateLocked, setNumber, installPart, rushJob, unlockSlot2, jobOf, tunnel, pass, claimPass, passComplete, nextSeason, setSkin, weeklyMax, sponsorCooldown, achProgress, claimAch, achClaimable, noteStat, setAvatar, ACH_BY, buyMate, releaseMate, weeklyGP, useWeeklyAttempt, recordWeekly, claimWeeklyGP, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
 })(globalThis.F1 = globalThis.F1 || {});

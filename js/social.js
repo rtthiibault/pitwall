@@ -77,7 +77,7 @@
   function mgrRow() {
     const m = F1.store.get().manager;
     if (!m || !F1.manager) return {};
-    const base = { lp: m.lp, league: F1.manager.leagueOf(m.lp).id, mgr_driver: m.driver ? m.driver.id : null, mgr_team: m.chassis ? m.chassis.id : null };
+    const base = { lp: m.lp, league: F1.manager.leagueFor(m).id, mgr_driver: m.driver ? m.driver.id : null, mgr_team: m.chassis ? m.chassis.id : null };
     if (!v2Cols) return base;
     const st = m.stats || {}, p = F1.store.get();
     // statistiques détaillées et photo de profil (supabase/migration-profile-v2.sql)

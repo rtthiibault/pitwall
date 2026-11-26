@@ -830,7 +830,7 @@
   /* ---------- Accueil : hub de jeu (modes, défis du jour, Pass, profil) ---------- */
   function gameHub(s, nx) {
     const p = F1.store.get(), st = F1.store.stats(), m = F1.store.mgr(), MGx = MG();
-    const L = MGx.leagueOf(m.lp), nl = MGx.nextLeague(m.lp);
+    const L = MGx.leagueFor(m), nl = MGx.nextLeague(m.lp);
     const name = (SO().me && SO().me.username) || p.name || 'Pilote';
     const ach = Object.keys(p.ach || {}).length;
     const bonus = F1.store.canClaimSeason(s) && s.doneCount === 0 ? { act: 'claim-season', v: F1.store.SEASON_BONUS, l: `Prime de lancement ${s.year}` }
@@ -1057,7 +1057,7 @@
     if (!m.driver || !m.chassis) mgr = tile('', F1_ICON, 'F1 Manager', 'Écurie à monter', 'Recrutez un pilote et choisissez une équipe', '<a class="yw-go" href="#/manager">Commencer</a>');
     else {
       const ready = F1.store.tunnel().jobs.filter((j) => j.end <= Date.now()).length, left = F1.store.racesLeft();
-      mgr = tile(ready || left ? 'todo' : '', F1_ICON, 'F1 Manager', `${left} course${left > 1 ? 's' : ''} gratuite${left > 1 ? 's' : ''}`, ready ? `${ready} pièce${ready > 1 ? 's' : ''} prête${ready > 1 ? 's' : ''} à installer` : `Ligue ${esc(MG().leagueOf(m.lp).name)}, ${fmt(m.lp)} LP`, '<a class="yw-go" href="#/manager">Ouvrir</a>');
+      mgr = tile(ready || left ? 'todo' : '', F1_ICON, 'F1 Manager', `${left} course${left > 1 ? 's' : ''} gratuite${left > 1 ? 's' : ''}`, ready ? `${ready} pièce${ready > 1 ? 's' : ''} prête${ready > 1 ? 's' : ''} à installer` : `Ligue ${esc(MG().leagueFor(m).name)}, ${fmt(m.lp)} LP`, '<a class="yw-go" href="#/manager">Ouvrir</a>');
     }
     // Carrière : lue directement dans sa sauvegarde (le mode actif reste le classique sur l'accueil)
     const cr = F1.store.get().career, crC = cr && cr.cal, N = s.races.length;
@@ -1400,7 +1400,7 @@
   const LG_BY = () => Object.fromEntries(MG().LEAGUES.map((l) => [l.id, l]));
   function leagueOfUser(p) {
     const u = SO().user, mine = p && (p.isMe || (u && p.id === u.id));
-    if (mine) return MG().leagueOf(F1.store.mgr().lp);
+    if (mine) return MG().leagueFor(F1.store.mgr());
     return (p && p.league && LG_BY()[p.league]) || (p && p.lp != null ? MG().leagueOf(p.lp) : null);
   }
   const ringAttr = (L) => (L ? ` data-lg="${L.id}" style="--lr:${L.color}"` : '');
@@ -1797,7 +1797,7 @@
     const tb = MG().teamBonus(m);
     const car = ch ? MG().carStats(ch, m.ups, m.parts, tb) : null;
     const fc = MG().forecast(m.next.seed, race);
-    const league = MG().leagueOf(m.lp);
+    const league = MG().leagueFor(m);
     const mate = m.mate ? mk.byDriver.get(m.mate.id) || null : null;
     // sauvegardes d'avant la hausse des prix : la revente des pilotes déjà achetés reste calée sur l'ancien barème
     if (m.ecoV !== 2) {
@@ -1878,7 +1878,9 @@
     const nl = MG().nextLeague(m.lp);
     const col = ch ? F1.teamColor(ch.id) : '#e10600';
     const hud = isCareer() ? careerHud(m, car) : [['PitCoins', m.pc < 0 ? `<span class="neg">${fmtPC(m.pc)}</span>` : fmtPC(m.pc)], ['Ligue', `${league.icon} ${esc(league.name)}`], ['Points de ligue', fmt(m.lp)], ['Courses gratuites', `${F1.store.racesLeft()} / ${F1.store.racesPerDay()}`], ['Note voiture', car ? MG().carRating(car) : '—']];
-    const debt = m.pc < 0 ? `<div class="notice red" style="margin:0 0 14px">Solde de PitCoins négatif (${fmtPC(m.pc)}) après une pénalité de sponsor : vos achats sont bloqués jusqu'au retour au positif. Les courses, les objectifs du jour et les prochains sponsors vous renflouent.</div>` : '';
+    const due = MG().licenceDue(m);
+    const licB = due ? `<div class="lic-due" style="--lc:${due.league.color}"><span class="lic-ic">${due.league.icon}</span><div><b>Licence ${esc(due.league.name)} disponible</b><small>Tu as atteint les ${due.league.min} LP. Paie ta licence pour courir en ${esc(due.league.name)} (gains ×${due.league.mult}). En attendant, tu restes en ${esc(league.name)} et tes LP ne redescendent pas sous ${due.league.min}.</small></div><button class="btn" data-action="m-licence" ${m.pc < due.cost ? 'disabled' : ''}>Payer ${fmtPC(due.cost)}</button>${m.pc < due.cost ? `<em>Il te manque ${fmt(Math.ceil(due.cost - m.pc))} PC</em>` : ''}</div>` : '';
+    const debt = licB + (m.pc < 0 ? `<div class="notice red" style="margin:0 0 14px">Solde de PitCoins négatif (${fmtPC(m.pc)}) après une pénalité de sponsor : vos achats sont bloqués jusqu'au retour au positif. Les courses, les objectifs du jour et les prochains sponsors vous renflouent.</div>` : '');
     // en-tête : la porte du box, aux couleurs de l'écurie, avec le numéro du pilote en filigrane
     const numTeam = ch ? ch.id : (ctx.drvM && ctx.drvM.teamId) || '';
     const num = m.number || (ctx.drvM && ctx.drvM.number) || '';
@@ -3044,7 +3046,7 @@
   }
   function mgrLeagues(ctx, nl) {
     const { m, league } = ctx;
-    const ladder = MG().LEAGUES.map((L) => `<div class="lrow ${L === league ? 'cur' : ''} ${m.lp >= L.min ? 'reached' : ''}" style="--lc:${L.color}"><span class="lic">${L.icon}</span><div style="flex:1"><b>${L.name}</b><small>dès ${L.min} LP · gains ×${L.mult} · adversaires ${['débutants', 'confirmés', 'solides', 'experts', 'élite', 'légendaires'][MG().LEAGUES.indexOf(L)]}</small></div>${L === league ? '<span class="chip">Vous êtes ici</span>' : ''}</div>`).reverse().join('');
+    const ladder = MG().LEAGUES.map((L) => `<div class="lrow ${L === league ? 'cur' : ''} ${m.lp >= L.min ? 'reached' : ''}" style="--lc:${L.color}"><span class="lic">${L.icon}</span><div style="flex:1"><b>${L.name}</b><small>dès ${L.min} LP${MG().LICENCE[MG().LEAGUES.indexOf(L)] ? ` + licence ${fmt(MG().LICENCE[MG().LEAGUES.indexOf(L)])} PC` : ''} · gains ×${L.mult} · adversaires ${['débutants', 'confirmés', 'solides', 'experts', 'élite', 'légendaires'][MG().LEAGUES.indexOf(L)]}</small></div>${L === league ? '<span class="chip">Vous êtes ici</span>' : MG().LEAGUES.indexOf(L) <= MG().licOf(m) ? '<span class="chip green">Licence ✓</span>' : ''}</div>`).reverse().join('');
     const table = `<table class="tbl" style="font-size:13px"><thead><tr><th>Position</th>${[1, 2, 3, 4, 5, 6, 8, 10, 15, 20].map((p) => `<th class="c">P${p}</th>`).join('')}<th class="c">AB</th></tr></thead><tbody>
       <tr><td>LP</td>${[1, 2, 3, 4, 5, 6, 8, 10, 15, 20].map((p) => { const v = MG().lpScale(league).t[p - 1]; return `<td class="c"><span class="gain ${v > 0 ? 'up' : v < 0 ? 'down' : ''}">${v > 0 ? '+' : ''}${v}</span></td>`; }).join('')}<td class="c">${(() => { const v = MG().lpScale(league).dnf; return `<span class="gain ${v < 0 ? 'down' : ''}">${v}</span>`; })()}</td></tr>
       <tr><td>PitCoins</td>${[1, 2, 3, 4, 5, 6, 8, 10, 15, 20].map((p) => `<td class="c num">${Math.round(MG().PC_TABLE[p - 1] * league.mult)}</td>`).join('')}<td class="c num">${Math.round(league.mult)}</td></tr></tbody></table>`;
@@ -3357,7 +3359,7 @@
       if (silent || !$('#raceEnd')) { showAchievements(); return; }
       T = LAPS; paused = false; $('#radio').classList.remove('on'); render(LAPS); renderWall(LAPS); renderTele();
       const m = F1.store.mgr();
-      const Lnow = MG().leagueOf(m.lp);
+      const Lnow = MG().leagueFor(m);
       const promo = Lnow.min > leagueBefore.min, demo = Lnow.min < leagueBefore.min;
       // Débriefing d'après-course : classement, progression du pilote, bilan financier, ligue et sponsors
       if (S.raceMap) { S.raceMap.dispose(); S.raceMap = null; }
@@ -3389,6 +3391,7 @@
           <section class="db-card"><header><span>Bilan financier et ligue</span></header>
             <div class="db-money"><div><small>PitCoins (course${rec.sponsors && rec.sponsors.some((x) => x.amount) ? ' + sponsors' : ''})</small><b class="${pcNet >= 0 ? 'up' : 'down'}">${pcNet >= 0 ? '+' : '−'}${fmtPC(Math.abs(pcNet))}</b></div><div><small>Points de ligue</small><b class="${rw.lp > 0 ? 'up' : rw.lp < 0 ? 'down' : ''}">${rw.lp > 0 ? '+' : ''}${rw.lp} LP</b></div><div><small>Ligue</small><b>${Lnow.icon} ${esc(Lnow.name)}</b></div></div>
             <div class="db-lp"><div class="bar"><i style="width:${Math.max(0, Math.min(100, lpPct))}%"></i></div><small class="muted">${fmt(m.lp)} LP${lpNext ? ` · ${lpNext.min - m.lp} LP avant la ligue ${lpNext.icon} ${lpNext.name}` : ' · ligue maximale'}</small></div>
+            ${!promo && MG().licenceDue(m) && Lnow === leagueBefore && m.lp >= MG().licenceDue(m).league.min && (m.races[0] || {}).lpBefore < MG().licenceDue(m).league.min ? `<div class="promo">Seuil de la ligue ${MG().licenceDue(m).league.icon} ${MG().licenceDue(m).league.name} atteint ! Paie ta licence (${fmt(MG().licenceDue(m).cost)} PC) depuis le QG pour y courir.</div>` : ''}
             ${promo ? `<div class="promo">🎉 Promotion ! Bienvenue en ligue ${Lnow.icon} ${Lnow.name} (gains ×${Lnow.mult})</div>` : demo ? `<div class="promo down">Relégation en ligue ${Lnow.icon} ${Lnow.name}.</div>` : ''}
             ${rec.passXp ? passChip(rec.passXp) : ''}
             ${spRows ? `<div class="db-sps"><small class="muted">Objectifs sponsors</small>${spRows}</div>` : '<div class="muted" style="font-size:12px">Aucun sponsor sous contrat : signez-en un dans l\'onglet Sponsors.</div>'}</section>
@@ -4028,7 +4031,7 @@
     const here = '#/' + (location.hash.replace(/^#\/?/, '').split('/')[0] || '');
     const item = (href, ic, label, n, sub) => `<a class="um-i${href === here ? ' on' : ''}" href="${href}" role="menuitem"${href === here ? ' aria-current="page"' : ''}><span class="um-ic" style="--ic:${UM_IC[ic][0]}">${UM_IC[ic][1]}</span><span class="um-l">${label}${sub ? `<small>${sub}</small>` : ''}</span>${n ? `<b class="um-n">${n > 9 ? '9+' : n}</b>` : ''}</a>`;
     el = document.createElement('div'); el.id = 'umenu'; el.className = 'umenu'; el.setAttribute('role', 'menu');
-    el.innerHTML = `<a class="um-head" href="#/profil"><span class="um-av ring"${ringAttr(MG().leagueOf(m.lp))}>${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : esc(name.slice(0, 1).toUpperCase())}</span><span><b>${esc(name)}</b><small>${esc(MG().leagueOf(m.lp).name)} · ${fmtJ(p.balance)} jetons</small></span></a>
+    el.innerHTML = `<a class="um-head" href="#/profil"><span class="um-av ring"${ringAttr(MG().leagueFor(m))}>${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : esc(name.slice(0, 1).toUpperCase())}</span><span><b>${esc(name)}</b><small>${esc(MG().leagueFor(m).name)} · ${fmtJ(p.balance)} jetons</small></span></a>
       ${item('#/profil', 'profil', 'Mon profil', 0, 'Statistiques et photo')}
       ${item('#/messagerie', 'msg', 'Messagerie', nM, so.me ? (nM ? 'Nouveaux messages' : 'Discuter avec tes amis') : 'Profil en ligne requis')}
       ${item('#/notifications', 'notif', 'Notifications', nN)}
@@ -4162,9 +4165,9 @@
     const bets = p.bets.filter((b) => b.status === 'won' || b.status === 'lost').slice(-8).map((b) => ({ t: b.settledAt || b.placedAt, html: `<span class="pf-tag bet">Pari</span><b class="${b.status === 'won' ? 'up' : 'down'}">${b.status === 'won' ? 'Gagné' : 'Perdu'}</b><span class="muted">${esc(b.legs.length > 1 ? `Combiné × ${b.legs.length}` : b.legs[0].label + ' · ' + b.legs[0].mtitle)}</span><span class="${b.status === 'won' ? 'up' : 'down'}">${b.status === 'won' ? '+' + jt(b.payout - b.stake) : '−' + jt(b.stake)}</span>` }));
     const hist = [...races, ...bets].sort((a, b) => b.t - a.t).slice(0, 10);
     const best = F1.store.ACH.filter((a) => p.ach[a.id]).sort((a, b) => b.reward - a.reward).slice(0, 6);
-    const L = MG().leagueOf(m.lp || 0);
+    const L = MG().leagueFor(m);
     return `<section class="pf-page">
-      <div class="pf-hero"><button class="pf-ava ring"${ringAttr(MG().leagueOf(F1.store.mgr().lp))} data-action="pf-ava" title="Changer de photo">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : `<span>${esc(name.slice(0, 1).toUpperCase())}</span>`}<i>Changer</i></button>
+      <div class="pf-hero"><button class="pf-ava ring"${ringAttr(MG().leagueFor(F1.store.mgr()))} data-action="pf-ava" title="Changer de photo">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : `<span>${esc(name.slice(0, 1).toUpperCase())}</span>`}<i>Changer</i></button>
         <div class="pf-id"><small class="muted">Profil joueur</small><h1>${esc(name)} <button class="pf-edit" data-action="profile" title="Changer de pseudo">✏️ Modifier</button></h1><div class="row" style="gap:6px;flex-wrap:wrap">${leagueBadge(L)}${m.number && m.chassis ? `<span class="chip pf-num" style="color:${F1.teamColor(m.chassis.id)}" title="Votre numéro de course">${F1.num.html(m.number, m.chassis.id)}</span>` : ''}<span class="chip">${Object.keys(p.ach).length} succès</span>${((m.pass && m.pass.done) || []).map((d) => `<span class="chip ps-badge" title="Pass de saison complété">🎟️ Saison ${d.season} complétée</span>`).join('')}${so.me ? '<span class="chip green">Profil en ligne</span>' : '<span class="chip">Profil local</span>'}</div></div>
         <div class="pf-wallets"><div><small>Jetons</small><b>${jt(p.balance)}</b></div><div><small>PitCoins</small><b>${fmtPC(m.pc || 0)}</b></div><button class="btn sm ghost" data-action="profile">⚙ Pseudo & sauvegarde</button></div></div>
       ${so.avatarShared === false && p.avatar && /^data:/.test(p.avatar) ? `<div class="notice" style="margin-top:10px">Ta photo est visible sur cet appareil, mais pas encore chez les autres joueurs : le serveur ne l'accepte pas. Le propriétaire du site doit exécuter <code>supabase/${so.avatarWhy === 'profile-v2' ? 'migration-profile-v2.sql puis migration-avatar-upload.sql' : 'migration-avatar-upload.sql'}</code> dans Supabase. En attendant, les photos de la galerie sont partagées.</div>` : ''}
@@ -4190,7 +4193,7 @@
     const el = $('#balance');
     const target = p.balance;
     const av = $('#avatar');
-    { const L = MG().leagueOf(F1.store.mgr().lp); av.classList.add('ring'); av.dataset.lg = L.id; av.style.setProperty('--lr', L.color); av.title = `Mon compte · ligue ${L.name}`; }
+    { const L = MG().leagueFor(F1.store.mgr()); av.classList.add('ring'); av.dataset.lg = L.id; av.style.setProperty('--lr', L.color); av.title = `Mon compte · ligue ${L.name}`; }
     if (p.avatar) { if (!av.querySelector('img') || av.querySelector('img').getAttribute('src') !== p.avatar) av.innerHTML = `<img src="${esc(p.avatar)}" alt="">`; }
     else av.textContent = (p.name || '?').slice(0, 1).toUpperCase();
     achBadge(); avatarBadge();
@@ -4388,6 +4391,7 @@
       case 'obj-claim': { try { const pc = F1.store.claimObjective(a.dataset.id, mgrCtx().league.mult); toast('🎯', `Objectif rempli : +${fmtPC(pc)}`, 'win'); confetti(60); showAchievements(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'm-up': { const k = a.dataset.k; const lvl = F1.store.mgr().ups[k] || 0; try { F1.store.upgrade(k, MG().upCost(lvl)); const st = MG().STATS.find((x) => x.k === k); toast('🔬', `${st.icon} ${esc(st.label)} : niveau ${lvl + 1} !`, 'win'); showAchievements(); route(); } catch (err) { toast('⚠️', esc(err.message), 'err'); } break; }
       case 'm-race': startRace(); break;
+      case 'm-licence': try { const d = F1.store.buyLicence(); toast(d.league.icon, `Licence ${esc(d.league.name)} payée : bienvenue en ligue ${esc(d.league.name)} !`, 'win'); confetti(80); route(); } catch (e) { toast('⚠️', esc(e.message), 'err'); } break;
       case 'm-again': closeModal(); setTimeout(startRace, 50); break;
       case 'm-qg': closeModal(); if (location.hash !== MB()) location.hash = MB(); else route(); break;
       case 'cr-media': crMediaOpen(); break;

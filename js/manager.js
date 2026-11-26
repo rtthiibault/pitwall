@@ -141,6 +141,14 @@
   const monthKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
   const leagueOf = (lp) => [...LEAGUES].reverse().find((l) => lp >= l.min) || LEAGUES[0];
   const nextLeague = (lp) => LEAGUES.find((l) => l.min > lp) || null;
+  /* Licences : atteindre les LP d'une ligue ne suffit pas, il faut payer sa licence (une fois, en PitCoins).
+     Tant qu'elle n'est pas payée, on court dans la dernière ligue payée et les LP ne redescendent plus
+     sous le seuil atteint : on peut payer à tout moment. Les licences se prennent dans l'ordre. */
+  const LICENCE = [0, 250, 600, 1500, 3000, 5000];   // PitCoins : Bronze (offerte), Argent, Or, Platine, Diamant, Légende
+  const licOf = (m) => (m && m.lic != null ? m.lic : LEAGUES.indexOf(leagueOf((m && m.lp) || 0)));
+  const leagueFor = (m) => LEAGUES[Math.min(licOf(m), LEAGUES.indexOf(leagueOf((m && m.lp) || 0)))];
+  // licence à payer (ligue suivante déjà atteinte en LP), sinon null
+  const licenceDue = (m) => { const i = licOf(m) + 1, L = LEAGUES[i]; return L && ((m && m.lp) || 0) >= L.min ? { league: L, index: i, cost: LICENCE[i] } : null; };
   // Points de ligue (LP) et PitCoins selon la position finale
   const LP_TABLE = [30, 22, 16, 12, 8, 5, 3, 1, 0, -2, -3, -4, -5, -6, -7, -8, -8, -9, -9, -10];
   // les PitCoins ne viennent plus que des courses : même le fond de grille rapporte de quoi progresser
@@ -1360,7 +1368,7 @@
     WEEKLY_ATTEMPTS, WEEKLY_FIRST_PRIME, isoWeek, weeklyEvent, weeklyBots, fmtRaceTime, fmtGap, weeklyPrize, CIRCUIT_NAME,
     passCost, passCum, passProgress, PASS_XP_MAX, SEASON_PRIZE, SEASON_KEEP, monthKey, TUNNEL_BET_CD, aiLineup, driverPrice, driverLeagueReq, driverValueV1, valueOfDriverV1, PRICE_PTS, SPONSOR_COOLDOWN, rdBuildMs, rushCost, TUNNEL_SLOT2_PC, PASS_TIERS, PASS_XP_RACE, PASS_XP_WEEKLY, PASS_CHEST, PASS_LIVERIES, PASS_LIVERY_BY, passReward, passTier,
     SPONSORS, SPONSOR_BY_ID, goalText, sponsorTerms, sponsorAfterRace, SUB_K,
-    MATE_PC_CAP, LV_COST_K, TEAM_NAME, TEAM_CODE, GRID, GRID_BY, shortName, newsForm, mateValue, MATE_K, matePC, MATE_PC_K, F1_POINTS, mateEntry, START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LP_TABLE, lpScale, AGE_PRICE, driverValue, valueOfDriver, RESALE_K, XP_DIV, PC_TABLE,
+    MATE_PC_CAP, LV_COST_K, TEAM_NAME, TEAM_CODE, GRID, GRID_BY, shortName, newsForm, mateValue, MATE_K, matePC, MATE_PC_K, F1_POINTS, mateEntry, START_PC, RACES_PER_DAY, FIELD, LAPS, STATS, UP_STEP, UP_MAX, upCost, LEAGUES, leagueOf, nextLeague, LICENCE, leagueFor, licenceDue, licOf, LP_TABLE, lpScale, AGE_PRICE, driverValue, valueOfDriver, RESALE_K, XP_DIV, PC_TABLE,
     RD_CATS, RD_PARTS, RD_BY_ID, rdBranches, partState, partsBonus,
     market, carStats, withSetup, carScore, bestSetup, compat, circuitProfile, botField, simulate, rewards, hash, TALENT,
   };
