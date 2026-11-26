@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T14:21:07.315Z",
+ "updated": "2026-11-26T14:51:10.621Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T14:51:07.315Z",
+ "next": "2026-11-26T15:21:10.621Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 77
+   "n": 78
   },
   {
    "name": "F1i",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_ph6n1u",
+   "timestamp": "2026-11-26T14:16:00.000Z",
+   "category": "PADDOCK",
+   "title": "Alpine F1 doit s'attendre à un dur retour à la réalité au Qatar",
+   "summary": "Après avoir savouré la possibilité de se battre avec les écuries de pointe lors du Grand Prix de Las Vegas, Franco Colapinto s'attend à un retour à la réalité pour Alpine F1 ce week-end au Qatar. Le pilote argentin, qui a égalé son meilleur résultat en Formule…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/alpine-f1-doit-s-attendre-a-un-dur-retour-a-la-realite-au-qatar,213757.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/alpine_12_-6.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T14:51:10.621Z"
+  },
   {
    "id": "news_17olqf0",
    "timestamp": "2026-11-26T13:53:10.000Z",
@@ -830,19 +843,6 @@
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/rosberg-2016_2_.jpg",
    "impact": null,
    "firstSeen": "2026-11-24T14:11:57.210Z"
-  },
-  {
-   "id": "news_xqsfwp",
-   "timestamp": "2026-11-24T12:30:00.000Z",
-   "category": "PADDOCK",
-   "title": "La valeur des écuries de F1 explose : Ferrari atteint 8,74 milliards d'euros !",
-   "summary": "La valeur des écuries de Formule 1 continue de connaître une croissance spectaculaire. Selon le classement 2026 publié par le magazine économique Forbes, la valorisation moyenne des équipes du championnat du monde a bondi de 47% en l'espace d'un an, passant de…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/la-valeur-des-ecuries-de-f1-explose-ferrari-atteint-8-74-milliards-d-euros,213698.html",
-   "impact": null,
-   "firstSeen": "2026-11-24T13:11:33.770Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/ambiance-pirelli3_10_-5.jpg"
   }
  ]
 }
