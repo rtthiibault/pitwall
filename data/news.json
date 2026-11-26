@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T07:19:56.622Z",
+ "updated": "2026-11-26T07:50:00.618Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T07:49:56.622Z",
+ "next": "2026-11-26T08:20:00.618Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_xypkka",
+   "timestamp": "2026-11-26T07:25:34.000Z",
+   "category": "PADDOCK",
+   "title": "5 choses à suivre au Grand Prix du Qatar de Formule 1",
+   "summary": "La saison 2026 de Formule 1 approche de son terme, avec le Grand Prix du Qatar ce week-end, avant la finale d'Abu Dhabi la semaine prochaine. Les deux titres sont déjà attribués, Kimi Antonelli et Mercedes ayant décroché les couronnes pilotes et constructeurs…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/gp-qatar-f1-2026-5-choses-a-suivre/10877733/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/YMX3X1v2/s6/des-membres-de-red-bull-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T07:50:00.618Z"
+  },
   {
    "id": "news_1p690eq",
    "timestamp": "2026-11-26T07:04:00.000Z",
@@ -854,19 +867,6 @@
    },
    "firstSeen": "2026-11-23T18:37:00.937Z",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/redbull_104_.jpg"
-  },
-  {
-   "id": "news_rnblpl",
-   "timestamp": "2026-11-23T17:00:00.000Z",
-   "category": "PADDOCK",
-   "title": "Rien ne va plus chez Ferrari après le Grand Prix de Las Vegas",
-   "summary": "Quand on porte le rouge de Ferrari, on attire forcément davantage les regards que n’importe quelle autre équipe. Arborer fièrement le Cheval cabré sur sa poitrine est un honneur auquel aspirent tous les pilotes. Après tout, « tout le monde est fan de Ferrari…",
-   "source": "AutoHebdo",
-   "lang": "fr",
-   "url": "https://www.autohebdo.fr/actualites/f1/rien-ne-va-plus-chez-ferrari-apres-le-grand-prix-de-las-vegas.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T17:06:47.563Z",
-   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/Ferrari-Las-Vegas.jpg"
   }
  ]
 }
