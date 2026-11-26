@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T18:21:54.899Z",
+ "updated": "2026-11-26T18:51:59.868Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T18:51:54.899Z",
+ "next": "2026-11-26T19:21:59.868Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 82
+   "n": 84
   },
   {
    "name": "F1i",
@@ -26,6 +26,32 @@
   }
  ],
  "items": [
+  {
+   "id": "news_lxamug",
+   "timestamp": "2026-11-26T18:31:00.000Z",
+   "category": "PADDOCK",
+   "title": "Leclerc reconnaît les limites de sa cohabitation actuelle avec Hamilton... à régler pour 2027",
+   "summary": "Charles Leclerc reste convaincu qu'une cohabitation harmonieuse avec Lewis Hamilton est possible chez Ferrari, malgré les tensions inhérentes à la présence de deux pilotes particulièrement ambitieux au sein d'une même équipe. Le Monégasque estime que la…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/leclerc-reconnait-les-limites-de-sa-cohabitation-actuelle-avec-hamilton-a,213770.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456573_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T18:51:59.868Z"
+  },
+  {
+   "id": "news_128e8du",
+   "timestamp": "2026-11-26T18:17:00.000Z",
+   "category": "PADDOCK",
+   "title": "Lawson est 'très heureux' de son bilan et attend 2027 avec 'enthousiasme'",
+   "summary": "Racing Bulls semble avoir assuré la cinquième place du championnat des constructeurs malgré ls 18 points marqués par Alpine F1 au GP de Las Vegas, et Liam Lawson est satisfait de son bilan personnel avant le Grand Prix du Qatar, lui qui a un bilan personnel…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/lawson-est-tres-heureux-de-son-bilan-et-attend-2027-avec-enthousiasme,213751.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456311_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T18:51:59.868Z"
+  },
   {
    "id": "news_1nybnuo",
    "timestamp": "2026-11-26T18:05:00.000Z",
@@ -843,32 +869,6 @@
    "image": "https://cdn-1.motorsport.com/images/amp/6DGgOvVY/s6/fernando-alonso-aston-martin-r.jpg",
    "impact": null,
    "firstSeen": "2026-11-25T10:16:13.173Z"
-  },
-  {
-   "id": "news_1vlb80g",
-   "timestamp": "2026-11-25T09:40:00.000Z",
-   "category": "RÈGLEMENT",
-   "title": "Verstappen a joué 'plus de 40h à GTA 6' pendant Vegas... et passe 'en mode économie' sur la F1",
-   "summary": "Max Verstappen semble de plus en plus détaché de l'actualité de la Formule 1 lorsqu'il ne se trouve pas sur les circuits. Le pilote Red Bull Racing a ainsi reconnu à Las Vegas qu'il ignorait tout de la décision de la FIA d'introduire des commissaires sportifs…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-a-joue-plus-de-40h-a-gta-6-pendant-vegas-et-passe-en-mode-economie,213714.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/redbull_9_-14.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T10:16:13.173Z"
-  },
-  {
-   "id": "news_5j71qf",
-   "timestamp": "2026-11-25T08:54:00.000Z",
-   "category": "PADDOCK",
-   "title": "Russell a proposé un pacte à Verstappen en pleine course à Las Vegas",
-   "summary": "Malgré la guerre des mots qui oppose George Russell à Max Verstappen depuis plusieurs semaines, le pilote Mercedes F1 a proposé une forme de pacte de non-agression à son rival lors de leur intense bataille pour la victoire au Grand Prix de Las Vegas…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/russell-a-propose-un-pacte-a-verstappen-en-pleine-course-a-las-vegas,213712.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/mercedes_52_-7.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T09:16:02.773Z"
   }
  ]
 }
