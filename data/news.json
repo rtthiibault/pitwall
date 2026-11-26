@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T19:52:09.299Z",
+ "updated": "2026-11-26T20:22:13.728Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T20:22:09.299Z",
+ "next": "2026-11-26T20:52:13.728Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 86
+   "n": 87
   },
   {
    "name": "F1i",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_1j13l6i",
+   "timestamp": "2026-11-26T19:41:00.000Z",
+   "category": "PADDOCK",
+   "title": "'C'est facile de perdre la concentration' : Antonelli raconte une fin de saison sans enjeu",
+   "summary": "Kimi Antonelli n'a plus rien à gagner cette saison, avec le titre mondial des pilotes, celui des constructeurs pour Mercedes F1, 16 podiums dont neuf victoires, sept pole positions et huit meilleurs tours. Le pilote italien a reconnu en marge du Grand Prix du…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/c-est-facile-de-perdre-la-concentration-antonelli-raconte-une-fin-de-saison,213774.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456559_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T20:22:13.728Z"
+  },
   {
    "id": "news_1tim479",
    "timestamp": "2026-11-26T19:04:00.000Z",
@@ -854,19 +867,6 @@
    "lang": "fr",
    "url": "https://fr.motorsport.com/f1/news/zak-brown-ecarte-idee-programme-moteur-2030/10877565/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
    "image": "https://cdn-1.motorsport.com/images/amp/YBVj9M7Y/s6/oscar-piastri-mclaren-2.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T10:46:17.808Z"
-  },
-  {
-   "id": "news_1h8rtmp",
-   "timestamp": "2026-11-25T10:23:00.000Z",
-   "category": "PADDOCK",
-   "title": "Alonso refuse de terminer sa carrière en F1 sur un échec : 'personne ne m'est supérieur en piste'",
-   "summary": "Surnommé le \"maître du chaos\" par Oscar Piastri, Fernando Alonso n'a manifestement rien perdu de son appétit pour la compétition après 25 années de carrière en Formule 1. Malgré une saison 2026 particulièrement difficile avec Aston Martin F1, l'Espagnol reste…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/alonso-refuse-de-terminer-sa-carriere-en-f1-sur-un-echec-personne-ne-m-est,213715.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/astonmartin3_13_-9.jpg",
    "impact": null,
    "firstSeen": "2026-11-25T10:46:17.808Z"
   }
