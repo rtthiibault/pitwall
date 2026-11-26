@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T16:51:40.233Z",
+ "updated": "2026-11-26T17:21:44.404Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T17:21:40.233Z",
+ "next": "2026-11-26T17:51:44.404Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 78
+   "n": 80
   },
   {
    "name": "F1i",
@@ -27,6 +27,32 @@
  ],
  "items": [
   {
+   "id": "news_1xshvlg",
+   "timestamp": "2026-11-26T17:17:13.000Z",
+   "category": "PADDOCK",
+   "title": "Hamilton apaise les tensions avec Leclerc : \"On va trouver une solution\"",
+   "summary": "Lewis Hamilton se dit convaincu que son coéquipier Charles Leclerc et lui vont \"trouver une solution\" après leur dernier accrochage en piste, survenu lors du Grand Prix de Las Vegas la semaine dernière. Deux semaines après un incident coûteux en piste alors…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/hamilton-apaise-tensions-leclerc-trouver-solution-ferrari/10877991/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/27NojvR0/s6/charles-leclerc-ferrari-lewis-.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T17:21:44.404Z"
+  },
+  {
+   "id": "news_1hse1yb",
+   "timestamp": "2026-11-26T17:03:37.000Z",
+   "category": "PADDOCK",
+   "title": "Gasly veut lutter avec les top teams 'beaucoup plus souvent' en 2027",
+   "summary": "Alpine F1 a enregistré un excellent résultat à Las Vegas, avec la cinquième place de Pierre Gasly et la sixième de Franco Colapinto. Les deux pilotes ont roulé dans le groupe de tête et ont dû reculer dans la hiérarchie à cause d'un problème de surchauffe qui…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/gasly-veut-lutter-avec-les-top-teams-beaucoup-plus-souvent-en-2027,213760.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456396_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T17:21:44.404Z"
+  },
+  {
    "id": "news_1e0wrqp",
    "timestamp": "2026-11-26T16:42:02.000Z",
    "category": "PADDOCK",
@@ -38,6 +64,19 @@
    "image": "https://cdn-1.motorsport.com/images/amp/6zoD4aJ0/s6/charles-leclerc-ferrari-2.jpg",
    "impact": null,
    "firstSeen": "2026-11-26T16:51:40.233Z"
+  },
+  {
+   "id": "news_1222enl",
+   "timestamp": "2026-11-26T16:42:00.000Z",
+   "category": "PADDOCK",
+   "title": "Hamilton tend la main à Leclerc mais ne change pas de position sur les règles d'engagement",
+   "summary": "Lewis Hamilton a révélé avoir eu des discussions positives avec Charles Leclerc en marge du Grand Prix du Qatar, quelques jours après leur nouvel accrochage lors du Grand Prix de Las Vegas. Le septuple champion du monde reste convaincu que les deux pilotes…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hamilton-tend-la-main-a-leclerc-mais-ne-change-pas-de-position-sur-les-regles-d,213763.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456337_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T17:21:44.404Z"
   },
   {
    "id": "news_kf3q44",
@@ -804,45 +843,6 @@
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/grandprixlasvegas.jpg",
    "impact": null,
    "firstSeen": "2026-11-24T22:13:36.860Z"
-  },
-  {
-   "id": "news_b02y3q",
-   "timestamp": "2026-11-24T18:53:26.000Z",
-   "category": "PADDOCK",
-   "title": "L'heure du choix approche pour Colton Herta après le refus de Cadillac pour 2027",
-   "summary": "La décision de Cadillac de conserver le titulaire expérimenté Valtteri Bottas aux côtés de Sergio Perez relève d'un choix de continuité et de stabilité, après une première saison 2026 semée d'embûches pour la 11e équipe de Formule 1. Elle soulève également des…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/heure-choix-colton-herta-apres-refus-cadillac-2028/10877540/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "image": "https://cdn-1.motorsport.com/images/amp/2y7QPOK6/s6/colton-herta-hitech-2.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-24T19:12:49.144Z"
-  },
-  {
-   "id": "news_pam1ts",
-   "timestamp": "2026-11-24T18:00:00.000Z",
-   "category": "PADDOCK",
-   "title": "Avec un double Top 10 à Las Vegas, Alpine reste dans la course à la cinquième place du championnat",
-   "summary": "À la roulette du Bellagio, quand sortent le 10 et le 43, c’est toute l’écurie Alpine qui passe à la caisse. Dix-huit points, c’est le jackpot pour les Bleus qui reviennent à 27 points de Racing Bulls au championnat « Constructeurs ». Aller chercher la « P5 »…",
-   "source": "AutoHebdo",
-   "lang": "fr",
-   "url": "https://www.autohebdo.fr/actualites/f1/avec-un-double-top-10-a-las-vegas-alpine-reste-dans-la-course-a-la-cinquieme-place-du-championnat.html",
-   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/DPPI_00126024_2961-2.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-24T18:12:38.027Z"
-  },
-  {
-   "id": "news_74k88x",
-   "timestamp": "2026-11-24T17:04:00.000Z",
-   "category": "PADDOCK",
-   "title": "Norris se moque de Russell : 'il arrêterait la F1 pour devenir James Bond !'",
-   "summary": "Et si le prochain James Bond se trouvait sur la grille de Formule 1 ? Interrogé sur le pilote qui pourrait incarner le célèbre agent secret britannique au cinéma, Lando Norris a rapidement désigné George Russell, estimant que son compatriote possède le style…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/norris-se-moque-de-russell-il-arreterait-la-f1-pour-devenir-james-bond,213519.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1453070_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-24T17:12:28.380Z"
   }
  ]
 }
