@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T08:20:05.660Z",
+ "updated": "2026-11-26T08:50:09.340Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T08:50:05.660Z",
+ "next": "2026-11-26T09:20:09.340Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_gwkzdq",
+   "timestamp": "2026-11-26T08:28:00.000Z",
+   "category": "PADDOCK",
+   "title": "Bourdais charge sévèrement Verstappen : 'je n'aime pas le personnage'",
+   "summary": "Sébastien Bourdais n'a pas mâché ses mots à l'égard de Max Verstappen après la nouvelle escalade des tensions entre le Néerlandais et George Russell lors du Grand Prix de Las Vegas. L'ancien pilote français de Formule 1 reproche au quadruple champion du monde…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/bourdais-charge-severement-verstappen-je-n-aime-pas-le-personnage,213740.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456001_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T08:50:09.340Z"
+  },
   {
    "id": "news_1pphori",
    "timestamp": "2026-11-26T07:45:00.000Z",
@@ -841,19 +854,6 @@
    "impact": null,
    "firstSeen": "2026-11-23T18:37:00.937Z",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/redbull_146_.jpg"
-  },
-  {
-   "id": "news_13jh7jv",
-   "timestamp": "2026-11-23T17:54:13.000Z",
-   "category": "PADDOCK",
-   "title": "Max Verstappen envisage les 24 Heures de Daytona dès 2027",
-   "summary": "En amont du Grand Prix de Las Vegas de Formule 1, Max Verstappen a d'abord fait un détour par Daytona. Le Néerlandais a expliqué qu'il s'y était principalement rendu pour tourner du contenu avec Red Bull, mais cette visite soulève également la question d'une…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/max-verstappen-envisage-24h-daytona-des-2027/10877165/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "impact": null,
-   "firstSeen": "2026-11-23T18:06:54.493Z",
-   "image": "https://cdn-1.motorsport.com/images/amp/68VwB9x2/s6/max-verstappen-red-bull-racing-2.jpg"
   }
  ]
 }
