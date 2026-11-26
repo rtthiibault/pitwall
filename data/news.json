@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T12:50:57.535Z",
+ "updated": "2026-11-26T13:21:00.492Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T13:20:57.535Z",
+ "next": "2026-11-26T13:51:00.492Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,31 @@
   }
  ],
  "items": [
+  {
+   "id": "news_1teijow",
+   "timestamp": "2026-11-26T12:54:00.000Z",
+   "category": "TECHNIQUE",
+   "title": "Honda F1 n'a trouvé aucun problème moteur malgré les plaintes d'Alonso",
+   "summary": "Honda F1 n'est toujours pas parvenu à identifier le moindre problème sur le groupe propulseur de Fernando Alonso après l'abandon de l'Espagnol dans le dernier virage du Grand Prix de Las Vegas. Alors que le double champion du monde s'était plaint d'un problème…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/honda-f1-n-a-trouve-aucun-probleme-moteur-malgre-les-plaintes-d-alonso,213750.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/astonmartin3_20_-4.jpg",
+   "impact": {
+    "targetType": "engine",
+    "targetIds": [
+     "aston_martin"
+    ],
+    "managerModifiers": {
+     "powerUnit": -2,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 1.08,
+    "impactLabel": "Moteur -2 pts | Cotes +8%"
+   },
+   "firstSeen": "2026-11-26T13:21:00.492Z"
+  },
   {
    "id": "news_72lm08",
    "timestamp": "2026-11-26T12:13:00.000Z",
@@ -830,19 +855,6 @@
    "impact": null,
    "firstSeen": "2026-11-24T11:11:19.505Z",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1452411_hires.jpg"
-  },
-  {
-   "id": "news_c2ygoe",
-   "timestamp": "2026-11-24T10:45:00.000Z",
-   "category": "TECHNIQUE",
-   "title": "Le podium s’est envolé pour Antonelli dans le dernier tour : « Je n’avais plus de puissance »",
-   "summary": "Parti sixième, Kimi Antonelli s’est peut-être dressé comme la menace la plus crédible pour Max Verstappen lors du Grand Prix de Las Vegas de F1. L’Italien échangeait en effet la position de pointe avec le Néerlandais dans les derniers tours, tous les deux en…",
-   "source": "AutoHebdo",
-   "lang": "fr",
-   "url": "https://www.autohebdo.fr/actualites/f1/le-podium-sest-envole-pour-antonelli-dans-le-dernier-tour-je-navais-plus-de-puissance.html",
-   "impact": null,
-   "firstSeen": "2026-11-24T11:11:19.505Z",
-   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/DPPI_00126024_2575-2.jpg"
   }
  ]
 }
