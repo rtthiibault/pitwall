@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T18:51:59.868Z",
+ "updated": "2026-11-26T19:22:04.315Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T19:21:59.868Z",
+ "next": "2026-11-26T19:52:04.315Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 84
+   "n": 86
   },
   {
    "name": "F1i",
@@ -26,6 +26,32 @@
   }
  ],
  "items": [
+  {
+   "id": "news_1tim479",
+   "timestamp": "2026-11-26T19:04:00.000Z",
+   "category": "PADDOCK",
+   "title": "Hamilton refuse de noircir le tableau chez Ferrari malgré les tensions",
+   "summary": "Lewis Hamilton assure que les deux pilotes Ferrari restent libres de s'affronter en piste malgré leur nouvel accrochage lors du Grand Prix de Las Vegas. Après avoir pris le temps de réfléchir aux événements du week-end dernier et discuté avec Charles Leclerc…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hamilton-refuse-de-noircir-le-tableau-chez-ferrari-malgre-les-tensions,213772.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456610_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T19:22:04.315Z"
+  },
+  {
+   "id": "news_8v4efz",
+   "timestamp": "2026-11-26T18:46:00.000Z",
+   "category": "PADDOCK",
+   "title": "Hülkenberg salue les 'progrès' d'Audi F1, Bortoleto explique d'où vient sa frustration",
+   "summary": "Nico Hülkenberg dresse un bilan globalement positif de la première saison d'Audi en Formule 1, malgré un parcours parfois chaotique et une certaine frustration liée aux nombreuses occasions manquées d'inscrire des points. Le pilote allemand, qui s'est une…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hulkenberg-salue-les-progres-d-audi-f1-bortoleto-explique-d-ou-vient-sa,213769.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456410_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T19:22:04.315Z"
+  },
   {
    "id": "news_lxamug",
    "timestamp": "2026-11-26T18:31:00.000Z",
@@ -843,32 +869,6 @@
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/astonmartin3_13_-9.jpg",
    "impact": null,
    "firstSeen": "2026-11-25T10:46:17.808Z"
-  },
-  {
-   "id": "news_9k9mmy",
-   "timestamp": "2026-11-25T10:09:00.000Z",
-   "category": "PADDOCK",
-   "title": "EXCLUSIF – Ayao Komatsu, directeur d’Haas F1 Team : « Notre seule raison d’exister, c’est de courir »",
-   "summary": "Haas occupe actuellement la 7e place du championnat Constructeurs. Si vous conservez cette position, cela égalera votre meilleur résultat des huit dernières années (2024). Le bilan est-il globalement positif selon vous ? Ce serait un sacré « si », parce…",
-   "source": "AutoHebdo",
-   "lang": "fr",
-   "url": "https://www.autohebdo.fr/actualites/f1/exclusif-ayao-komatsu-directeur-dhaas-f1-team-notre-seule-raison-dexister-cest-de-courir.html",
-   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/komatsu-haas.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T10:16:13.173Z"
-  },
-  {
-   "id": "news_f1xf3x",
-   "timestamp": "2026-11-25T09:47:36.000Z",
-   "category": "PADDOCK",
-   "title": "Alonso: \"Sur certains circuits...nous perdons plus de deux secondes\"",
-   "summary": "Fernando Alonso estime que Honda accuse \"un retard considérable\" sur ses rivaux en Formule 1. Aston Martin ne peut donc \"pas être compétitive\" avec le moteur japonais, même s'il se montre optimiste pour l'avenir. Depuis le passage de la F1 à des unités de…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/fernando-alonso-certains-circuits-nous-perdons-deux-secondes/10877615/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "image": "https://cdn-1.motorsport.com/images/amp/6DGgOvVY/s6/fernando-alonso-aston-martin-r.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T10:16:13.173Z"
   }
  ]
 }
