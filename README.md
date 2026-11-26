@@ -509,3 +509,9 @@ Page propre (`pageCareer`, styles `css/career.css` : nuit bleue, or et ivoire, n
 - **Point presse obligatoire** par Grand Prix : 3 questions, 60 secondes ; popularité (prime de course jusqu'à +25 %) et forme du pilote (-3 à +3 sur rythme, combativité, régularité pour le Grand Prix).
 - **Qualifications** avant chaque course (tour propre, engagé, ou tout ou rien) : la grille de la course en découle (`createRace({ qualiOrder })`).
 - **Duel des coéquipiers** : qualifs, courses, points, historique course par course.
+
+## Carrière : presse et visuels
+
+- PitCoins : plus de solde dans la barre du haut ; chaque mode affiche le sien (bandeau du F1 Manager, en-tête de la Carrière), deux soldes séparés dans la sauvegarde.
+- Onglet **Presse** (`crPress`) aux codes de Paddock Wire (bandeau défilant, BREAKING, une, fil par jour, cote médiatique) : dépêches **fictives** générées au fil de la carrière (`crNewsMedia`, `crNewsQuali`, `crNewsRace`, rumeurs), tirées au hasard pour chaque joueur, avec les citations du point presse. Stockées dans `career.cal.news` (80 au plus).
+- Visuels : pilotes avec photo et numéro dans la typographie de l'écurie (en-tête, week-end, qualifs, championnat, contrats), les deux monoplaces du week-end avec leur numéro en grand.

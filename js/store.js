@@ -256,7 +256,7 @@
      avec chacune son écurie, sa R&D, son garage, ses PitCoins et son quota de courses.
      Le mode actif est choisi par la page (#/manager ou #/carriere). */
   let mode = 'base';
-  const blankCal = () => ({ season: 1, gp: 0, run: 0, pts: {}, names: {}, gps: [], champs: [], pop: 40, form: 0, mediaGp: -1, media: [], quali: null, duel: { q: [0, 0], r: [0, 0] } });
+  const blankCal = () => ({ season: 1, gp: 0, run: 0, pts: {}, names: {}, gps: [], champs: [], pop: 40, form: 0, mediaGp: -1, media: [], quali: null, duel: { q: [0, 0], r: [0, 0] }, news: [], newsSeen: 0 });
   const blankCareer = () => ({ ...blankManager(), cal: blankCal() });
   function career() {
     const s = get(); if (!s.career) { s.career = normMgr(blankCareer()); }
@@ -281,6 +281,8 @@
     if (q.matePos) { if (q.myPos < q.matePos) c.duel.q[0]++; else c.duel.q[1]++; }
     save(); return c.quali;
   }
+  // actualités fictives de la Carrière (les 80 plus récentes)
+  function careerNewsAdd(a) { const c = career().cal; c.news.unshift({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), t: Date.now(), ...a }); if (c.news.length > 80) c.news.length = 80; save(); }
   const careerQualiFor = () => { const c = career().cal; return c.quali && c.quali.key === `${c.season}-${c.gp}-${c.run}` ? c.quali : null; };
   const setMode = (m) => { mode = m === 'career' ? 'career' : 'base'; };
   const getMode = () => mode;
@@ -753,5 +755,5 @@
   function reset() { const n = get().name; state = blank(); state.name = n; save(); }
   const popUnlocked = () => unlocked.splice(0);
 
-  F1.store = { careerOpen, careerMedia, careerSetQuali, careerQualiFor, setMode, getMode, career, careerStandings, careerNewSeason, careerReset, RUNS_PER_GP, seasonRoll, passNextOpen, curMonth, betWait, mateLocked, setNumber, installPart, rushJob, unlockSlot2, jobOf, tunnel, pass, claimPass, passComplete, nextSeason, setSkin, weeklyMax, sponsorCooldown, achProgress, claimAch, achClaimable, noteStat, setAvatar, ACH_BY, buyMate, releaseMate, weeklyGP, useWeeklyAttempt, recordWeekly, claimWeeklyGP, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
+  F1.store = { careerNewsAdd, careerOpen, careerMedia, careerSetQuali, careerQualiFor, setMode, getMode, career, careerStandings, careerNewSeason, careerReset, RUNS_PER_GP, seasonRoll, passNextOpen, curMonth, betWait, mateLocked, setNumber, installPart, rushJob, unlockSlot2, jobOf, tunnel, pass, claimPass, passComplete, nextSeason, setSkin, weeklyMax, sponsorCooldown, achProgress, claimAch, achClaimable, noteStat, setAvatar, ACH_BY, buyMate, releaseMate, weeklyGP, useWeeklyAttempt, recordWeekly, claimWeeklyGP, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
 })(globalThis.F1 = globalThis.F1 || {});

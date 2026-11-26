@@ -1704,7 +1704,7 @@
      CARRIÈRE — une expérience à part : week-end (point presse, qualifs, 3 courses), duel, contrats
      ===================================================================================== */
   const CR_TABS = [['weekend', 'Week-end', '<path d="M4 20V5m0 0h11l-2 3 2 3H4"/>'], ['championnat', 'Championnat', '<path d="M8 4h8v5a4 4 0 0 1-8 0Z"/><path d="M12 13v4M8.5 20h7"/>'], ['duel', 'Duel', '<path d="M5 19 19 5M5 5l14 14"/>'],
-    ['contrats', 'Contrats', '<path d="M7 3h7l4 4v14H7Z"/><path d="M14 3v4h4M10 12h5M10 16h5"/>'], ['rd', 'Bureau d\'études', '<path d="M9 3v6l-5 9a2 2 0 0 0 2 3h12a2 2 0 0 0 2-3l-5-9V3M8 3h8"/>'],
+    ['presse', 'Presse', '<path d="M4 5h13v14H6a2 2 0 0 1-2-2Z"/><path d="M17 8h3v9a2 2 0 0 1-2 2M8 9h5M8 13h5M8 16h3"/>'], ['contrats', 'Contrats', '<path d="M7 3h7l4 4v14H7Z"/><path d="M14 3v4h4M10 12h5M10 16h5"/>'], ['rd', 'Bureau d\'études', '<path d="M9 3v6l-5 9a2 2 0 0 0 2 3h12a2 2 0 0 0 2-3l-5-9V3M8 3h8"/>'],
     ['garage', 'Garage', '<path d="M3 21V9l9-6 9 6v12"/><path d="M7 21v-7h10v7"/>'], ['muret', 'Muret', '<path d="M5 14v-2a7 7 0 0 1 14 0v2"/><rect x="3.5" y="13" width="4" height="6" rx="1"/><rect x="16.5" y="13" width="4" height="6" rx="1"/>'],
     ['sponsors', 'Sponsors', '<path d="M4 7h16v12H4z"/><path d="M9 7V5h6v2"/>']];
   const crIco = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
@@ -1715,6 +1715,12 @@
     const drivers = mk.drivers.slice().sort((a, b) => a.rating - b.rating).slice(0, Math.min(mk.drivers.length, 7 + 3 * (c.season - 1)));
     return { teams, drivers, tIds: new Set(teams.map((x) => x.id)), dIds: new Set(drivers.map((x) => x.id)) };
   }
+  // pastille pilote : photo, numéro dans la typographie de l'écurie, nom
+  function crDrvChip(d, num, ch, role) {
+    const p = F1.visuals.portrait(d.id), team = ch ? ch.id : d.teamId, col = F1.teamColor(team);
+    return `<div class="crx-dc" style="--dc:${col}"><span class="crx-dc-ph"><i>${esc(d.code || '')}</i>${p ? `<img src="${esc(p.img)}" alt="" onerror="this.remove()">` : ''}</span>${num ? `<span class="crx-dc-n">${F1.num.html(num, team, { color: '#fff' })}</span>` : ''}<span class="crx-dc-t"><small>${role}</small><b>${esc(d.name)}</b></span></div>`;
+  }
+  const crNum = (id, team) => { const n = id === 'me' ? F1.store.mgr().number || (mgrCtx().drvM || {}).number : F1.num.ofDriver(id) || ((S.mk && S.mk.byDriver.get(id)) || {}).number; return n ? `<span class="crx-num">${F1.num.html(n, team, { color: 'currentColor' })}</span>` : ''; };
   function pageCareer(tab) {
     const ctx = mgrCtx(), { m, ch, drvM, mate } = ctx, c = F1.store.career().cal, s = S.f1 || S.season, N = s.races.length;
     const signed = !!(ch && drvM && mate);
@@ -1729,7 +1735,7 @@
     const head = `<header class="crx-head" style="--tc:${col}">
         <div class="crx-id"><span class="crx-kicker">${crIco('<path d="M8 4h8v5a4 4 0 0 1-8 0Z"/><path d="M12 13v4M8.5 20h7"/>')}Carrière · saison ${c.over ? c.over.season : c.season}</span>
           <h1>${ch ? esc(ch.name) : 'Nouvelle écurie'}</h1>
-          <p>${drvM ? `<b>${esc(drvM.name)}</b>${mate ? ` et <b>${esc(mate.name)}</b>` : ''}` : 'Signez une écurie et deux pilotes pour lancer la saison.'}</p></div>
+          ${drvM ? `<div class="crx-drivers">${crDrvChip(drvM, m.number || drvM.number, ch, 'Pilote')}${mate ? crDrvChip(mate, mate.number, ch, 'Coéquipier') : ''}</div>` : '<p>Signez une écurie et deux pilotes pour lancer la saison.</p>'}</div>
         <div class="crx-stats">${ring(pop, 'Popularité', pop >= 70 ? 'Star du paddock' : pop >= 50 ? 'Apprécié' : pop >= 30 ? 'Discret' : 'Contesté')}
           <div class="crx-stat"><small>Forme</small><b class="${(drvM && drvM.form) > 0 ? 'up' : (drvM && drvM.form) < 0 ? 'down' : ''}">${formTxt(c.form || 0)}</b><span>${c.form > 0 ? '+' : ''}${c.form || 0} pour ce Grand Prix</span></div>
           <div class="crx-stat"><small>Championnat</small><b>${myPos ? 'P' + myPos : '—'}</b><span>${c.pts.me || 0} points</span></div>
@@ -1741,6 +1747,7 @@
     if (tab === 'weekend') body = crWeekend(ctx);
     else if (tab === 'championnat') body = mgrChampionship(ctx);
     else if (tab === 'duel') body = crDuel(ctx);
+    else if (tab === 'presse') body = crPress(ctx);
     else if (tab === 'contrats') body = crContracts(ctx);
     else if (tab === 'rd') body = `<div class="rd-team" style="--tc:${col};--tc-ink:${inkOn(col)}">${mgrRD(ctx)}</div>`;
     else if (tab === 'garage') body = mgrGarage(ctx);
@@ -1766,6 +1773,8 @@
     const map = race.circuitId ? trackSvg(race.circuitId, F1.teamColor(ctx.ch.id), true) : '';
     return `<section class="crx-gp"><div class="crx-gp-l"><small>Grand Prix ${c.gp + 1} sur ${N} · ${esc(race.circuit || '')}</small><h2>${flag(race.iso, 'lg')} ${esc(race.nameFr)}</h2>${steps}</div>
         <figure class="crx-gp-map hx-map">${map}</figure></section>
+      <div class="crx-line">${[[ctx.drvM, F1.store.mgr().number || ctx.drvM.number, 'Votre pilote', q && q.myPos], [ctx.mate, ctx.mate && ctx.mate.number, 'Coéquipier', q && q.matePos]].filter((x) => x[0]).map(([d, n, role, gp]) => { const pt = F1.visuals.portrait(d.id); return `<div class="crx-car" style="--dc:${F1.teamColor(ctx.ch.id)}"><div class="crx-car-n">${n ? F1.num.html(n, ctx.ch.id, { color: 'currentColor' }) : ''}</div><div class="crx-car-v">${F1.visuals.car(ctx.ch.id, { view: 'side', shadow: false, number: n, numTeam: ctx.ch.id, sponsor: livery(F1.store.mgr()) })}</div>
+        <div class="crx-car-b"><span class="crx-dc-ph sm"><i>${esc(d.code || '')}</i>${pt ? `<img src="${esc(pt.img)}" alt="" onerror="this.remove()">` : ''}</span><div><small>${role}</small><b>${esc(d.name)}</b></div><span class="crx-car-g">${gp ? `Grille <b>P${gp}</b>` : `Note <b>${d.rating}</b>`}</span></div></div>`; }).join('')}</div>
       <div class="crx-runs">${runs}</div>
       <div class="crx-two"><section class="crx-card">${crDuelMini(ctx)}</section><section class="crx-card">${crPressLog(c)}</section></div>
       <section class="crx-card crx-prep"><header><h3>Préparation de la course</h3><span>Réglage aéro, pneus et stratégie : ils s'appliquent aux qualifs et à la course</span></header><div class="p-week"><div class="pnl-b">${weekendBody(ctx)}</div></div></section>`;
@@ -1775,6 +1784,98 @@
     return `<header><h3>Revue de presse</h3><span>Popularité ${c.pop} / 100</span></header><div class="crx-pop"><i style="width:${c.pop}%"></i></div>
       ${last.length ? `<ul class="crx-press">${last.map((x) => `<li><span>Saison ${x.season} · GP ${x.gp + 1}</span><b class="${x.pop >= 0 ? 'up' : 'down'}">${x.pop >= 0 ? '+' : ''}${x.pop} popularité</b><b class="${x.form >= 0 ? 'up' : 'down'}">forme ${x.form >= 0 ? '+' : ''}${x.form}</b></li>`).join('')}</ul>` : '<p class="muted">Aucune conférence de presse pour l\'instant.</p>'}
       <p class="muted crx-note">La popularité augmente la prime de chaque course (jusqu'à +25 %). La forme agit sur le rythme, la combativité et la régularité du pilote pendant tout le Grand Prix.</p>`;
+  }
+
+
+  /* ---------- Presse de la Carrière : actualités fictives, générées au fil de la saison ----------
+     Chaque joueur obtient ses propres articles (tirages aléatoires), écrits à partir de ses résultats et de ses déclarations. */
+  const CR_SRC = ['Le Mag du Paddock', 'Pit Lane Hebdo', 'Radio Stand', 'Grille de Départ', 'TurboPresse', "L'Écho des Stands", 'Chicane Info', 'Le Fil du Muret'];
+  const pick = (a) => a[Math.floor(Math.random() * a.length)];
+  const fill = (t, v) => t.replace(/\{(\w+)\}/g, (_, k) => (v[k] != null ? v[k] : ''));
+  function crNewsVars() {
+    const ctx = mgrCtx(), c = F1.store.career().cal, race = mgrRace();
+    return { ctx, c, v: { pilote: ctx.drvM ? ctx.drvM.name : 'le pilote', nom: ctx.drvM ? ctx.drvM.family || ctx.drvM.name : 'le pilote', equipier: ctx.mate ? ctx.mate.family || ctx.mate.name : 'son équipier', ecurie: ctx.ch ? ctx.ch.name : "l'écurie", gp: race.nameFr, saison: c.season } };
+  }
+  function crNewsPost(cat, title, body, extra = {}) {
+    const { ctx } = crNewsVars();
+    F1.store.careerNewsAdd({ cat, src: pick(CR_SRC), title, body, drv: extra.drv || (ctx.drvM && ctx.drvM.id), team: ctx.ch && ctx.ch.id, quote: extra.quote || null, hot: !!extra.hot, tag: extra.tag || null });
+  }
+  function crNewsMedia(answers) {
+    const { v } = crNewsVars(), best = answers.slice().sort((a, b) => Math.abs(b.pop) - Math.abs(a.pop))[0] || {};
+    const tot = answers.reduce((a, x) => a + (x.pop || 0), 0); v.citation = best.t || '';
+    const T = tot >= 4 ? ['« {citation} » : {nom} galvanise le paddock avant le {gp}', '{nom} crève l\'écran en conférence de presse', 'Le ton monte chez {ecurie} : {nom} affiche ses ambitions']
+      : tot >= 0 ? ['{nom} reste mesuré avant le {gp}', 'Conférence sans fausse note pour {nom}', '« {citation} » : le message de {nom} avant le {gp}']
+      : ['Malaise en conférence : {nom} agace les journalistes', '{nom} sur la défensive avant le {gp}', 'Réponses glaciales : le clan {ecurie} sous tension'];
+    crNewsPost('presse', fill(pick(T), v), `Interrogé avant le ${v.gp}, ${v.pilote} a répondu à trois questions. ${answers.map((x) => x.q ? `À « ${x.q} », il a répondu : « ${x.t} »` : '').filter(Boolean).join(' ')}`, { quote: best.t, hot: Math.abs(tot) >= 5 });
+  }
+  function crNewsQuali(q) {
+    const { v } = crNewsVars(); v.pos = q.myPos; v.mp = q.matePos;
+    const T = q.err ? ['Faute en qualifs : {nom} s\'élance P{pos}', 'Le pari du tout ou rien coûte cher à {nom}', '{nom} dans le mur des chronos au {gp}']
+      : q.myPos <= 3 ? ['Exploit en qualifs : {ecurie} en P{pos} au {gp} !', '{nom} décroche une place en première ligne', 'Le paddock n\'en revient pas : {nom} P{pos}']
+      : q.myPos <= 10 ? ['{nom} P{pos} : {ecurie} dans le top 10 des qualifs', 'Belle séance pour {nom}, qualifié P{pos}', '{ecurie} sourit après les qualifs du {gp}']
+      : ['{nom} P{pos} : {ecurie} limite la casse', 'Qualifs compliquées pour {nom} au {gp}', 'Les limites de la monoplace {ecurie} exposées en qualifs'];
+    const duel = v.mp ? (q.myPos < v.mp ? ` Il devance ${v.equipier} (P${v.mp}) dans le duel interne.` : ` ${v.equipier}, P${v.mp}, le devance cette fois.`) : '';
+    crNewsPost('qualif', fill(pick(T), v), `${v.pilote} partira P${q.myPos} sur la grille du ${v.gp}.${duel}`, { hot: q.myPos <= 3 || q.err, tag: `P${q.myPos}` });
+  }
+  function crNewsRace(rec) {
+    const { v, c, ctx } = crNewsVars(); v.pos = rec.pos; v.pts = rec.dnf ? 0 : (MG().F1_POINTS[rec.pos - 1] || 0);
+    const T = rec.dnf ? ['Abandon pour {nom} au {gp}', 'Coup dur : {nom} contraint à l\'abandon', 'Le {gp} tourne court pour {ecurie}']
+      : rec.pos === 1 ? ['VICTOIRE ! {nom} et {ecurie} écrivent l\'histoire', '{nom} triomphe au {gp}', 'Le petit poucet {ecurie} s\'impose au {gp}']
+      : rec.pos <= 3 ? ['Podium pour {nom} au {gp} !', '{nom} sur la boîte : {ecurie} exulte', 'P{pos} : {nom} signe un résultat retentissant']
+      : rec.pos <= 10 ? ['{nom} marque {pts} points au {gp}', 'Dans les points : {nom} P{pos}', '{ecurie} engrange {pts} points précieux']
+      : ['{nom} P{pos} : pas de points au {gp}', 'Course difficile pour {ecurie} au {gp}', '{nom} finit P{pos}, loin des points'];
+    const st = F1.store.careerStandings(), my = st.findIndex((x) => x.id === 'me') + 1;
+    crNewsPost('course', fill(pick(T), v), `${v.pilote} termine ${rec.dnf ? 'sur abandon' : 'P' + rec.pos} au ${v.gp}${v.pts ? ` et marque ${v.pts} points` : ''}. Il pointe désormais P${my} au championnat avec ${c.pts.me || 0} points.${rec.mate ? ` Son équipier ${v.equipier} ${rec.mate.dnf ? 'a abandonné' : 'a terminé P' + rec.mate.pos}.` : ''}`, { hot: rec.pos <= 3 && !rec.dnf, tag: rec.dnf ? 'AB' : `P${rec.pos}` });
+    // rumeurs et échos du paddock, au hasard
+    if (Math.random() < 0.45) {
+      const pop = c.pop || 40, lead = c.duel.q[0] + c.duel.r[0] - c.duel.q[1] - c.duel.r[1];
+      const R = [
+        ...(pop >= 60 ? ['Rumeur : un top team suivrait de près {nom}', 'Le phénomène {nom} intéresse les grandes écuries', 'Les sponsors se bousculent autour de {nom}'] : []),
+        ...(lead < -1 ? ['Tension chez {ecurie} : {equipier} prend l\'ascendant', '{nom} sous pression face à {equipier}', 'Le duel interne tourne en faveur de {equipier}'] : []),
+        ...(lead > 1 ? ['{equipier} en difficulté face à {nom}', '{nom} impose sa loi chez {ecurie}'] : []),
+        'Évolution en vue : {ecurie} préparerait un nouveau fond plat', 'Les ingénieurs {ecurie} travaillent jour et nuit à l\'usine', 'Un nouveau sponsor tournerait autour de {ecurie}', "Le patron de {ecurie} croit en sa paire de pilotes", 'Simulateur : {nom} enchaîne les heures avant le prochain Grand Prix',
+      ];
+      crNewsPost('rumeur', fill(pick(R), v), pick(['Selon nos informations, rien n\'est encore officiel.', 'Une source proche de l\'équipe évoque des discussions avancées.', 'Le paddock bruisse de cette information depuis plusieurs jours.', "L'intéressé n'a pas souhaité commenter."]), { drv: lead < -1 && ctx.mate ? ctx.mate.id : null });
+    }
+    if (rec.career && rec.career.seasonDone) crNewsPost('course', rec.career.myPos === 1 ? `${v.nom} champion du monde !` : `Saison ${v.saison} bouclée : ${v.nom} P${rec.career.myPos} au championnat`, `Fin de saison pour ${v.ecurie}. ${rec.career.myPos === 1 ? 'Un titre historique pour une écurie modeste.' : 'Rendez-vous la saison prochaine pour viser plus haut.'}`, { hot: true });
+  }
+  const CR_CAT = { presse: ['pad', 'Presse'], qualif: ['tech', 'Qualifs'], course: ['reg', 'Course'], rumeur: ['wx', 'Rumeur'] };
+  function crPressVisual(x) {
+    // monoplace de l'écurie en fond, photo du pilote par-dessus (retirée si elle ne charge pas)
+    const p = x.drv && F1.visuals.portrait(x.drv);
+    return `<div class="crp-vis">${x.team ? `<div class="pw-car">${F1.visuals.car(x.team, { view: 'side', shadow: false })}</div>` : ''}${p ? `<img class="pw-img portrait" src="${esc(p.img)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</div>`;
+  }
+  function crPress(ctx) {
+    const c = F1.store.career().cal, items = c.news || [], col = ctx.ch ? F1.teamColor(ctx.ch.id) : '#e9be3e';
+    const seen = c.newsSeen || 0; c.newsSeen = Date.now(); F1.store.save();
+    const isNew = (x) => x.t > seen;
+    const ago = (t) => pwAgo(t);
+    const num = (x) => { const n = x.drv === (ctx.drvM && ctx.drvM.id) ? F1.store.mgr().number || ctx.drvM.number : x.drv && F1.num.ofDriver(x.drv); return n ? `<div class="pwb-num">${F1.num.html(n, x.team || 'red_bull', { color: 'currentColor' })}</div>` : ''; };
+    if (!items.length) return `<section class="pdw-page crx-press"><div class="pdw-hero"><div class="pdw-title">${PW_ICON}<h1 class="pdw-word">Paddock Wire · Carrière</h1></div><p class="muted">Les journalistes suivent votre écurie : conférences de presse, qualifs, courses et rumeurs apparaîtront ici au fil de la saison.</p></div><div class="empty">Aucune dépêche pour l'instant. Répondez aux médias avant le premier Grand Prix.</div></section>`;
+    const tick = items.slice(0, 12).map((x) => `<a><time>${new Date(x.t).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</time>${esc(x.title)}</a>`).join('<span class="pw-sep">◆</span>');
+    const brk = items.find((x) => x.hot) || items[0], tops = items.filter((x) => x !== brk).slice(0, 3);
+    const tag = (x) => x.tag ? `<span class="pw-tag" style="--tc:${col}">${esc(x.tag)}</span>` : '';
+    const cat = (x) => CR_CAT[x.cat] || CR_CAT.presse;
+    const breaking = `<article class="pwb" style="--tc:${col};--ti:${inkOn(col)}"><div class="pwb-bg"></div><div class="pwb-vis">${crPressVisual(brk)}</div>${num(brk)}
+      <div class="pwb-top"><span class="pwb-alert"><i></i>Alerte paddock</span><b class="pwb-word">Breaking</b></div>
+      <div class="pwb-body"><div class="pwb-meta"><span class="pdw-cat ${cat(brk)[0]}">${cat(brk)[1]}</span><span>${esc(brk.src)}</span><time>${ago(brk.t)}</time>${isNew(brk) ? '<span class="pw-new">Nouveau</span>' : ''}</div>
+        <h2 class="pwb-head">${esc(brk.title)}</h2><p class="pwb-sub">${esc(brk.body)}</p>${brk.quote ? `<blockquote class="crp-quote">« ${esc(brk.quote)} »</blockquote>` : ''}<div class="pwb-foot"><div class="pw-tags">${tag(brk)}</div></div></div></article>`;
+    const top = (x) => `<div class="pwt" style="--tc:${col}"><div class="pwt-vis">${crPressVisual(x)}<span class="pdw-cat ${cat(x)[0]}">${cat(x)[1]}</span></div><div class="pwt-b"><div class="pwt-meta"><span>${esc(x.src)}</span><time>${ago(x.t)}</time>${isNew(x) ? '<span class="pw-new">Nouveau</span>' : ''}</div><h3>${esc(x.title)}</h3><div class="pw-tags">${tag(x)}</div></div></div>`;
+    const dayKey = (t) => { const x = new Date(t), td = new Date(); const diff = Math.round((new Date(td.toDateString()) - new Date(x.toDateString())) / 864e5); return diff === 0 ? "Aujourd'hui" : diff === 1 ? 'Hier' : x.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }); };
+    const groups = []; items.forEach((x) => { const k = dayKey(x.t); const g = groups[groups.length - 1]; if (g && g.k === k) g.items.push(x); else groups.push({ k, items: [x] }); });
+    const row = (x) => `<article class="pwr ${isNew(x) ? 'new' : ''}" style="--tc:${col}"><div class="pwr-time"><b>${new Date(x.t).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</b><small>${ago(x.t)}</small></div><i class="pwr-dot"></i>
+      <div class="pwr-card"><div class="pwr-main"><header class="pdw-meta"><span class="pdw-cat ${cat(x)[0]}">${cat(x)[1]}</span><span>${esc(x.src)}</span>${isNew(x) ? '<span class="pw-new">Nouveau</span>' : ''}</header>
+        <h3>${esc(x.title)}</h3><p>${esc(x.body)}</p>${x.quote ? `<blockquote class="crp-quote">« ${esc(x.quote)} »</blockquote>` : ''}<div class="pw-tags">${tag(x)}</div></div><div class="pwr-vis">${crPressVisual(x)}</div></div></article>`;
+    const quotes = c.media.length ? items.filter((x) => x.quote).slice(0, 5).map((x) => `<li><q>${esc(x.quote)}</q><small>${esc(x.src)} · ${ago(x.t)}</small></li>`).join('') : '';
+    const side = `<aside class="pdw-side"><div class="card pdw-board"><div class="pdw-bh"><h3>Cote médiatique</h3><span class="muted">${esc((ctx.drvM || {}).name || '')}</span></div>
+        <div class="crp-meter"><b>${c.pop}</b><small>/ 100 popularité</small><div class="crx-pop"><i style="width:${c.pop}%"></i></div></div>
+        <div class="crp-meter"><b class="${c.form > 0 ? 'up' : c.form < 0 ? 'down' : ''}">${c.form > 0 ? '+' : ''}${c.form}</b><small>forme pour ce Grand Prix</small></div>
+        ${quotes ? `<h4>Vos déclarations</h4><ul class="crp-quotes">${quotes}</ul>` : ''}</div>
+      <details class="card pdw-how"><summary>D'où viennent ces dépêches ?</summary><ul><li>Ce sont des <b>actualités fictives</b>, écrites au fil de votre carrière : vos conférences de presse, vos qualifs, vos courses, et les rumeurs du paddock.</li><li>Elles sont tirées au hasard pour chaque joueur : deux carrières ne racontent jamais la même histoire.</li></ul></details></aside>`;
+    return `<section class="pdw-page crx-press"><div class="pdw-hero"><div class="pdw-title">${PW_ICON}<h1 class="pdw-word">Paddock Wire · Carrière</h1></div><p class="muted">Ce que la presse raconte de votre écurie. Dépêches fictives, propres à votre carrière.</p></div>
+      <div class="pw-ticker"><span class="pw-onair"><i></i>En direct</span><div class="pw-tk"><div class="pw-tk-in">${tick}<span class="pw-sep">◆</span>${tick}</div></div></div>
+      ${breaking}${tops.length ? `<div class="pwt-row">${tops.map(top).join('')}</div>` : ''}
+      <div class="pdw-grid"><div class="pdw-feed">${groups.map((g) => `<section class="pw-day"><h4 class="pw-day-h">${esc(g.k)}<span>${g.items.length} dépêche${g.items.length > 1 ? 's' : ''}</span></h4>${g.items.map(row).join('')}</section>`).join('')}</div>${side}</div></section>`;
   }
 
   // ---------- Point presse : 3 questions, 60 secondes ----------
@@ -1804,6 +1905,7 @@
       clearInterval(timer);
       while (answers.length < 3) answers.push({ pop: -2, form: 0, t: 'Pas de commentaire' });
       const res = F1.store.careerMedia(answers);
+      try { crNewsMedia(answers.filter((x) => x.t && x.t !== 'Pas de commentaire')); } catch (e) { /* presse facultative */ }
       $('#crMedia').innerHTML = `<div class="crm-end"><small>Fin du point presse</small><h3>${res.pop >= 4 ? 'Les médias adorent' : res.pop >= 0 ? 'Conférence maîtrisée' : 'Réponses mal reçues'}</h3>
         <div class="crm-res"><div><small>Popularité</small><b class="${res.pop >= 0 ? 'up' : 'down'}">${res.pop >= 0 ? '+' : ''}${res.pop}</b><span>${res.total} / 100</span></div><div><small>Forme du pilote</small><b class="${res.form >= 0 ? 'up' : 'down'}">${res.form >= 0 ? '+' : ''}${res.form}</b><span>pour ce Grand Prix</span></div></div>
         <button class="btn" data-action="m-close">Passer aux qualifications</button></div>`;
@@ -1811,7 +1913,7 @@
     modal(`<div class="crm" id="crMedia"></div>`);
     draw();
     timer = setInterval(() => { left--; const t = $('#crmT'), b = $('#crmBar'); if (!t) { clearInterval(timer); return; } t.textContent = left + ' s'; b.style.width = (left / 60) * 100 + '%'; if (left <= 0) finish(); }, 1000);
-    $('#crMedia').addEventListener('click', (e) => { const b = e.target.closest('[data-crm]'); if (!b) return; const [, pop, form] = pool[i][1][+b.dataset.crm]; answers.push({ pop, form }); i++; if (i >= 3) finish(); else draw(); });
+    $('#crMedia').addEventListener('click', (e) => { const b = e.target.closest('[data-crm]'); if (!b) return; const [t, pop, form] = pool[i][1][+b.dataset.crm]; answers.push({ pop, form, t, q: pool[i][0] }); i++; if (i >= 3) finish(); else draw(); });
   }
 
   // ---------- Qualifications : un tour lancé, trois approches ----------
@@ -1844,8 +1946,9 @@
     const me = ents.find((x) => x.me), mt = ents.find((x) => x.mate);
     const q = { order: ents.map((x) => x.key), myPos: me.pos, matePos: mt ? mt.pos : null, err, mode };
     F1.store.careerSetQuali(q);
+    try { crNewsQuali(q); } catch (e) { /* presse facultative */ }
     const lt = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(3).padStart(6, '0')}`;
-    const rows = ents.filter((x) => x.pos <= 10 || x.me || x.mate).map((x) => `<tr class="${x.me ? 'me-row' : x.mate ? 'mate-row' : ''}"><td class="pos">${x.pos}</td><td><span class="tstripe" style="background:${F1.teamColor(x.team)}"></span>${esc(x.me ? x.name + ' (vous)' : x.name)}</td><td class="r num">${x.pos === 1 ? lt(x.t) : '+' + (x.t - ents[0].t).toFixed(3)}</td></tr>`).join('');
+    const rows = ents.filter((x) => x.pos <= 10 || x.me || x.mate).map((x) => `<tr class="${x.me ? 'me-row' : x.mate ? 'mate-row' : ''}"><td class="pos">${x.pos}</td><td><span class="tstripe" style="background:${F1.teamColor(x.team)}"></span>${crNum(x.key, x.team)}${esc(x.me ? x.name + ' (vous)' : x.name)}</td><td class="r num">${x.pos === 1 ? lt(x.t) : '+' + (x.t - ents[0].t).toFixed(3)}</td></tr>`).join('');
     const box = $('#crQuali'); if (!box) return;
     box.innerHTML = `<div class="crq-run"><small class="crq-k">Tour lancé en cours</small><div class="crq-clock" id="crqClock">0:00.000</div><div class="crq-sec"><i></i><i></i><i></i></div></div>`;
     const t0 = performance.now(), D = 2600, target = me.t;
@@ -1895,7 +1998,7 @@
     const tCards = al.teams.map((t) => { const own = ch && ch.id === t.id, car = MG().carStats(t, {}, {}); return `<div class="crc-card ${own ? 'own' : ''}" style="--cc:${F1.teamColor(t.id)}"><div class="crc-car">${F1.visuals.car(t.id, { view: 'side', shadow: false })}</div><b>${esc(t.name)}</b><span>Note voiture ${MG().carRating(car)} · vitesse ${Math.round(car.speed)} · appui ${Math.round(car.df)}</span>
       <div class="crc-foot"><b>${fmtPC(t.price)}</b>${own ? '<span class="chip green">Sous contrat</span>' : `<button class="btn sm" data-action="m-buy-c" data-id="${esc(t.id)}" ${t.price - resaleC(ctx) > m.pc + 1e-9 ? 'disabled' : ''}>Signer</button>`}</div></div>`; }).join('');
     const dCard = (d, role) => { const x = MG().withExperience(d, m.drvXp), price = role === 'mate' ? MG().mateValue(d) : MG().driverPrice(x), own = role === 'mate' ? mate && mate.id === d.id : drvM && drvM.id === d.id, other = role === 'mate' ? drvM && drvM.id === d.id : mate && mate.id === d.id, p = F1.visuals.portrait(d.id);
-      return `<div class="crc-dr ${own ? 'own' : ''}" style="--cc:${F1.teamColor(d.teamId)}"><div class="crc-ph">${p ? `<img src="${esc(p.img)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<i>${esc(d.code || '')}</i></div><div class="crc-dn"><b>${esc(d.name)}</b><span>${x.exp.age} ans · ${esc(x.exp.label)}</span></div><b class="crc-rt">${x.rating}</b>
+      return `<div class="crc-dr ${own ? 'own' : ''}" style="--cc:${F1.teamColor(d.teamId)}"><div class="crc-ph">${p ? `<img src="${esc(p.img)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<i>${esc(d.code || '')}</i></div><div class="crc-dn"><b>${d.number ? `<span class="crx-num" style="color:${F1.teamColor(d.teamId)}">${F1.num.html(d.number, d.teamId, { color: 'currentColor' })}</span>` : ''}${esc(d.name)}</b><span>${x.exp.age} ans · ${esc(x.exp.label)}</span></div><b class="crc-rt">${x.rating}</b>
         <div class="crc-act">${own ? '<span class="chip green">Signé</span>' : other ? '<span class="chip">Déjà pris</span>' : `<button class="btn sm" data-action="${role === 'mate' ? 'mate-buy' : 'm-buy-d'}" data-id="${esc(d.id)}">${fmtPC(price)}</button>`}</div></div>`; };
     return `${lockMsg}${cur}
       <section class="crx-sec"><header><h2>1. Écurie</h2><span>Seules les ${al.teams.length} écuries les plus modestes du plateau acceptent un manager débutant${c.season > 1 ? ' (de nouvelles portes s\'ouvrent chaque saison)' : ''}.</span></header><div class="crc-grid">${tCards}</div></section>
@@ -1940,7 +2043,7 @@
   function mgrChampionship(ctx) {
     const c = F1.store.career().cal, s = S.f1 || S.season, P = MG().F1_POINTS;
     const st = F1.store.careerStandings();
-    const rows = st.length ? st.map((x, i) => `<tr class="${x.id === 'me' ? 'me-row' : ''}"><td class="pos">${i + 1}</td><td><span class="row" style="gap:10px;flex-wrap:nowrap"><span class="tstripe" style="background:${x.id === 'me' ? F1.teamColor(ctx.ch ? ctx.ch.id : 'mclaren') : F1.teamColor(x.t)}"></span><b>${x.id === 'me' ? esc((ctx.drvM && ctx.drvM.name) || 'Vous') + ' <small class="muted">(vous)</small>' : esc(x.n || x.id)}</b></span></td><td class="r num"><b>${x.pts}</b></td><td class="r num muted">${i ? '−' + (st[0].pts - x.pts) : '—'}</td></tr>`).join('')
+    const rows = st.length ? st.map((x, i) => `<tr class="${x.id === 'me' ? 'me-row' : ''}"><td class="pos">${i + 1}</td><td><span class="row" style="gap:10px;flex-wrap:nowrap"><span class="tstripe" style="background:${x.id === 'me' ? F1.teamColor(ctx.ch ? ctx.ch.id : 'mclaren') : F1.teamColor(x.t)}"></span>${crNum(x.id, x.id === 'me' && ctx.ch ? ctx.ch.id : x.t)}<b>${x.id === 'me' ? esc((ctx.drvM && ctx.drvM.name) || 'Vous') + ' <small class="muted">(vous)</small>' : esc(x.n || x.id)}</b></span></td><td class="r num"><b>${x.pts}</b></td><td class="r num muted">${i ? '−' + (st[0].pts - x.pts) : '—'}</td></tr>`).join('')
       : '<tr><td colspan="4" class="muted">Aucune course disputée cette saison : lancez la première course depuis le QG.</td></tr>';
     const cal = s.races.map((r, i) => {
       const g = c.gps.find((x) => x.season === c.season && x.gp === i), cur = i === c.gp && !c.over;
@@ -2944,6 +3047,7 @@
       const cls = res.final.map((r) => { const x = byI.get(r.i); return { id: x.c.me ? 'me' : (x.driver && x.driver.id) || 'ai' + r.i, n: x.c.me ? 'Vous' : (x.driver && (x.driver.name || x.driver.family)) || '', t: x.c.chassisId || (x.driver && (x.driver.seatTeam || x.driver.teamId)) || '', pos: r.pos, out: !!r.out }; });
       F1.store.recordRace({ cls, nGP: (S.f1 || S.season).races.length, mate: mateRes, maxEng, pos: me.pos, dnf: me.out, grid: meX.grid, fastest: res.fastest.who === meX.i, rain: res.weather.some((x) => x.rain > 0.25), lp: rw.lp, pc: rw.pc, gp: ctx.race.nameFr.replace('Grand Prix', 'GP'), league: leagueBefore.name, driver: ctx.drvM.family, chassis: ctx.ch.name });
       F1.social.sync(true);
+      if (isCareer()) { try { crNewsRace(F1.store.mgr().races[0] || {}); } catch (e) { /* presse facultative */ } }
       if (silent || !$('#raceEnd')) { showAchievements(); return; }
       T = LAPS; paused = false; $('#radio').classList.remove('on'); render(LAPS); renderWall(LAPS); renderTele();
       const m = F1.store.mgr();
