@@ -3915,7 +3915,10 @@
     if (p.avatar) { if (!av.querySelector('img') || av.querySelector('img').getAttribute('src') !== p.avatar) av.innerHTML = `<img src="${esc(p.avatar)}" alt="">`; }
     else av.textContent = (p.name || '?').slice(0, 1).toUpperCase();
     achBadge(); avatarBadge();
-    if ($('#pcBal')) { const v = Math.round(p.manager ? p.manager.pc : 0); $('#pcBal').textContent = fmt(v); $('#pcWallet') && $('#pcWallet').classList.toggle('neg', v < 0); }
+    // solde de PitCoins du mode affiché (F1 Manager ou Carrière), mis à jour à chaque achat ou gain, sans recharger la page
+    { const v = Math.round(F1.store.mgr().pc || 0);
+      $$('.pc-wallet').forEach((w) => { const b = w.querySelector('b'); if (b) b.textContent = fmt(v); w.classList.toggle('neg', v < 0); });
+      $$('.hq-hud > div').forEach((d) => { const l = d.querySelector('small'); if (l && l.textContent === 'PitCoins') d.querySelector('b').innerHTML = v < 0 ? `<span class="neg">${fmtPC(v)}</span>` : fmtPC(v); }); }
     if (shownBal === null) { shownBal = target; el.textContent = fmtJ(target); return; }
     if (Math.abs(shownBal - target) < 0.005) return;
     const from = shownBal, t0 = performance.now();
