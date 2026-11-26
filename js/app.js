@@ -579,7 +579,7 @@
     if (!f1Home && S.series !== 'wec' && nx && F1.store.canClaim(s, nx)) h += `<div class="notice" style="margin-top:18px">🎁 Prime du week-end disponible : <b>+${jt(F1.store.WEEKLY)}</b> pour le ${esc(nx.nameFr)}. <span class="sp"></span><button class="btn sm gold" data-action="claim">Récupérer</button></div>`;
     if (!f1Home && S.series !== 'wec' && nx && F1.store.canRescue(s, nx)) h += `<div class="notice red" style="margin-top:18px">💸 Réservoir vide ? Le stand vous ravitaille : <b>+${jt(F1.store.RESCUE)}</b>. <span class="sp"></span><button class="btn sm" data-action="rescue">Ravitailler</button></div>`;
 
-    if (f1Home) h += gameHub(s, nx);
+    if (f1Home) h += pronoHome(s, nx);
     else if (S.markets.length) {
       const win = S.markets.find((m) => m.kind === 'win');
       h += `<section class="section"><div class="section-h"><h2>Favoris pour la victoire</h2><a class="link" href="#/paris">Tous les marchés</a></div><div class="grid g4">${win.selections.slice(0, 4).map((x, i) => favCard(x, win, i)).join('')}</div></section>`;
@@ -595,6 +595,33 @@
     return h;
   }
 
+
+
+  /* ---------- Accueil façon « pronostic entre amis » : ton podium, la tendance, en pourcentages (pas de cotes) ---------- */
+  function pronoHome(s, nx) {
+    const win = S.markets.find((m) => m.kind === 'win'), y = (S.f1 || S.season).year, lp = localPicks();
+    const mine = (k) => { const e = lp[pkKey(y, nx.round, k)]; return e && e.p && e.p.every(Boolean) ? e.p : null; };
+    const chip = (id, i) => { const d = drvOf(id), pt = F1.visuals.portrait(id), col = F1.teamColor(d.teamId);
+      return `<div class="pr-step s${i + 1}" style="--tc:${col}"><span class="pr-ph"><i>${esc(d.code || '?')}</i>${pt ? `<img src="${esc(pt.img)}" alt="" onerror="this.remove()">` : ''}</span>${d.number ? `<span class="pr-n">${F1.num.html(d.number, d.teamId, { color: 'currentColor' })}</span>` : ''}<b>${esc(d.family || '')}</b><i class="pr-pl">${i + 1}</i></div>`; };
+    const empty = (i) => `<div class="pr-step s${i + 1} empty"><span class="pr-ph"><i>?</i></span><b>À choisir</b><i class="pr-pl">${i + 1}</i></div>`;
+    const slot = (k, label) => {
+      const pk = mine(k), st = sessionStart(nx, k), locked = !st || Date.now() >= st.getTime();
+      const order = [1, 0, 2]; // marches : 2 · 1 · 3
+      return `<div class="pr-slot"><header><b>${label}</b><span>${locked ? 'Verrouillé' : st ? `verrouillage dans ${untilTxt(st.getTime() - Date.now())}` : ''}</span></header>
+        <div class="pr-pod">${order.map((i) => (pk ? chip(pk[i], i) : empty(i))).join('')}</div>
+        ${locked ? '' : `<a class="btn ${pk ? 'ghost' : ''} pr-go" href="#/ligues">${pk ? 'Modifier mon podium' : 'Faire mon pronostic'}</a>`}</div>`;
+    };
+    const top = win ? win.selections.slice(0, 6) : [];
+    const max = top.length ? top[0].prob : 1;
+    const trend = top.map((x, i) => { const d = drv(x.driverId), t = team(d.teamId), pt = F1.visuals.portrait(d.id);
+      return `<li style="--tc:${t.color}"><span class="pr-r">${i + 1}</span><span class="pr-ph sm"><i>${esc(d.code || '')}</i>${pt ? `<img src="${esc(pt.img)}" alt="" onerror="this.remove()">` : ''}</span>
+        <div class="pr-who">${d.number ? `<span class="pr-n">${F1.num.html(d.number, d.teamId, { color: 'currentColor' })}</span>` : ''}<b>${esc(d.given)} <strong>${esc(d.family)}</strong></b><small>${esc(t.short || t.name || '')}</small>
+          <div class="pr-bar"><i style="width:${(x.prob / max) * 100}%"></i></div></div><span class="pr-pct">${pct(x.prob)}</span></li>`; }).join('');
+    return `<section class="section pr">
+      <div class="section-h"><h2>Ton prono du ${esc(nx.nameFr.replace('Grand Prix', 'GP'))}</h2><a class="link" href="#/ligues">Mes ligues</a></div>
+      <div class="pr-grid"><div class="pr-mine">${slot('quali', 'Podium des qualifications')}${slot('race', 'Podium de la course')}<div class="pr-pts">${bareme()}</div></div>
+        <aside class="pr-trend"><header><h3>La tendance</h3><span>Chances de victoire selon notre modèle</span></header><ol>${trend}</ol></aside></div></section>`;
+  }
 
   /* ---------- Accueil : hub de jeu (modes, défis du jour, Pass, profil) ---------- */
   function gameHub(s, nx) {
@@ -808,7 +835,7 @@
         <div class="hx-cta"><a class="btn" href="#/manager">Courir ce Grand Prix</a><a class="btn ghost" href="#/ligues">Pronostiquer le podium</a></div>
       </div>
       <figure class="hx-map">${trackSvg(nx.circuitId, tc) || `<div class="hx-car3d">${F1.visuals.car(favD ? favD.teamId : 'mclaren', { live: true })}</div>`}
-        <figcaption>${favD ? `<a class="hx-fav" href="#/paris" style="--tc:${tc}">${favD.number ? `<span class="hx-fav-n">${F1.num.html(favD.number, favD.teamId, { color: 'currentColor' })}</span>` : ''}<span><small>Favori</small><b>${esc(favD.given)} ${esc(favD.family)}</b></span><span class="hx-fav-o"><small>Cote</small><b>${fmtOdds(favS.odds)}</b></span></a>` : ''}${wx ? `<div class="hx-wx">${wx}</div>` : ''}</figcaption></figure>
+        <figcaption>${favD ? `<a class="hx-fav" href="#/ligues" style="--tc:${tc}">${favD.number ? `<span class="hx-fav-n">${F1.num.html(favD.number, favD.teamId, { color: 'currentColor' })}</span>` : ''}<span><small>Favori</small><b>${esc(favD.given)} ${esc(favD.family)}</b></span><span class="hx-fav-o"><small>Chances</small><b>${pct(favS.prob)}</b></span></a>` : ''}${wx ? `<div class="hx-wx">${wx}</div>` : ''}</figcaption></figure>
     </section>`;
   }
   // « Ton week-end » : ce qui attend le joueur, en un seul endroit

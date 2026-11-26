@@ -213,3 +213,35 @@ main .pdw-chip .num { opacity: .7; }
 @media (max-width: 900px) { .gh-top { grid-template-columns: 1fr; } .gh-me { grid-template-columns: 64px minmax(0, 1fr); } .gh-me-k { grid-column: 1 / -1; flex-wrap: wrap; } .gh-ava { width: 64px; height: 64px; } }
 @media (max-width: 560px) { .gh-modes { grid-template-columns: 1fr; } .gh-goal { grid-template-columns: 28px minmax(0, 1fr); } .gh-goal-r, .gh-goal .btn { grid-column: 2; justify-self: start; } }
 @media (prefers-reduced-motion: reduce) { .gh-mode { transition: none; } .gh-mode:hover { transform: none; } }
+
+/* =====================================================================================
+   Accueil : pronostic du week-end (style « pronos entre amis », sans cotes)
+   ===================================================================================== */
+.pr-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.pr-mine { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.pr-slot { display: grid; gap: 14px; padding: 18px 20px 20px; border-radius: 8px; background: var(--l1); border: 1px solid var(--hair); }
+.pr-slot > header { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; } .pr-slot > header b { font-size: 16px; } .pr-slot > header span { font-size: 12px; color: var(--muted); }
+.pr-pod { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; gap: 8px; }
+.pr-step { position: relative; display: grid; justify-items: center; gap: 6px; padding: 12px 6px 0; text-align: center; }
+.pr-step b { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.pr-step .pr-pl { display: grid; place-items: start center; width: 100%; padding-top: 6px; border-radius: 6px 6px 0 0; font-style: normal; font-family: 'Archivo', var(--f); font-weight: 900; font-size: 22px; color: #111; }
+.pr-step.s1 .pr-pl { height: 64px; background: #e9be3e; } .pr-step.s2 .pr-pl { height: 46px; background: #c9ced8; } .pr-step.s3 .pr-pl { height: 34px; background: #cd7f32; }
+.pr-step.empty b { color: var(--muted); font-weight: 500; } .pr-step.empty .pr-pl { opacity: .45; }
+.pr-ph { position: relative; display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; overflow: hidden; background: color-mix(in srgb, var(--tc, #555) 35%, #151a21); border: 2px solid var(--tc, var(--hair-2)); }
+.pr-ph i { font-style: normal; font-weight: 800; font-size: 12px; color: #fff; } .pr-ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; }
+.pr-ph.sm { width: 40px; height: 40px; flex: none; }
+.pr-n { display: inline-grid; place-items: center; height: 18px; color: var(--tc); } .pr-n .dnum { height: 100%; width: auto; }
+.pr-go { justify-self: stretch; text-align: center; }
+.pr-pts { grid-column: 1 / -1; padding: 12px 16px; border-radius: 8px; background: var(--l1); border: 1px solid var(--hair); font-size: 13px; }
+.pr-trend { padding: 18px 20px; border-radius: 8px; background: var(--l1); border: 1px solid var(--hair); }
+.pr-trend > header { display: grid; gap: 2px; margin-bottom: 12px; } .pr-trend h3 { margin: 0; font-size: 20px; } .pr-trend > header span { font-size: 12px; color: var(--muted); }
+.pr-trend ol { list-style: none; margin: 0; padding: 0; display: grid; }
+.pr-trend li { display: grid; grid-template-columns: 22px 40px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--hair); }
+.pr-r { font-family: 'Archivo', var(--f); font-weight: 800; color: var(--muted); text-align: center; }
+.pr-who { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 8px; row-gap: 2px; min-width: 0; }
+.pr-who b { font-size: 14px; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .pr-who b strong { font-weight: 700; }
+.pr-who small { grid-column: 1 / -1; font-size: 12px; color: var(--muted); }
+.pr-bar { grid-column: 1 / -1; height: 5px; border-radius: 999px; background: var(--l3); overflow: hidden; } .pr-bar i { display: block; height: 100%; background: var(--tc); border-radius: 999px; }
+.pr-pct { font-family: 'Archivo', var(--f); font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+@media (max-width: 1100px) { .pr-grid { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .pr-mine { grid-template-columns: 1fr; } }
