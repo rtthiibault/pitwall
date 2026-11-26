@@ -3353,7 +3353,8 @@
   document.addEventListener('input', (e) => { if (e.target && e.target.id === 'naN' && S.numAv) { const v = F1.num.clean(e.target.value); e.target.value = v; if (v) { S.numAv.n = v; numAvDraw(); } } });
 
   document.addEventListener('click', (e) => {
-    const l = e.target.closest && e.target.closest('a[href^="#/manager"]');
+    // seulement dans la fenêtre de course (débriefing) : le bouton « F1 Manager » de la barre du haut doit mener au mode classique
+    const l = e.target.closest && e.target.closest('#modal a[href^="#/manager"]');
     if (l && /^#\/carriere/.test(location.hash)) l.setAttribute('href', l.getAttribute('href').replace('#/manager', '#/carriere'));
   }, true);
   /* =================== Compte : menu de l'avatar, notifications, messagerie, circuits, paramètres =================== */
