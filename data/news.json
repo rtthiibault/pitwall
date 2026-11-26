@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T09:20:13.183Z",
+ "updated": "2026-11-26T09:50:17.187Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T09:50:13.183Z",
+ "next": "2026-11-26T10:20:17.187Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -27,6 +27,19 @@
  ],
  "items": [
   {
+   "id": "news_nio2t5",
+   "timestamp": "2026-11-26T09:15:39.000Z",
+   "category": "PADDOCK",
+   "title": "Grille F1 2027 : le point complet sur les baquets et les contrats",
+   "summary": "Au gré des annonces de renouvellement de contrat, la grille de Formule 1 pour 2027 s'est mise en place ces dernières semaines. La prolongation de contrat de Max Verstappen chez Red Bull jusqu'en 2030 avait fait disparaître la principale interrogation pour l'an…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/grille-f1-2027-baquets-contrats/10572421/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/6x7ZeQ5Y/s6/un-fan-de-tous-les-pilotes.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T09:50:17.187Z"
+  },
+  {
    "id": "news_1i4kq32",
    "timestamp": "2026-11-26T09:11:47.000Z",
    "category": "PADDOCK",
@@ -38,6 +51,19 @@
    "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/DPPI_00126022_1233.jpg",
    "impact": null,
    "firstSeen": "2026-11-26T09:20:13.183Z"
+  },
+  {
+   "id": "news_18t35u0",
+   "timestamp": "2026-11-26T09:06:00.000Z",
+   "category": "PADDOCK",
+   "title": "Officiel : Haas F1 et Ferrari trouvent un accord pour prolonger Bearman",
+   "summary": "Haas F1 a officiellement confirmé la prolongation d'Oliver Bearman pour la saison 2027 de Formule 1, mettant ainsi un terme aux dernières incertitudes concernant la composition de la grille de départ pour l'année prochaine. Le Britannique de 21 ans disputera…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/officiel-haas-f1-et-ferrari-trouvent-un-accord-pour-prolonger-bearman,213747.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/haas0_15_-5.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T09:50:17.187Z"
   },
   {
    "id": "news_10xaprm",
@@ -815,32 +841,6 @@
    },
    "firstSeen": "2026-11-24T08:10:40.205Z",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456039_hires-3.jpg"
-  },
-  {
-   "id": "news_ruafgp",
-   "timestamp": "2026-11-24T06:47:00.000Z",
-   "category": "PADDOCK",
-   "title": "Hadjar a changé chez Red Bull : Mekies révèle ce qui le rend désormais plus rapide",
-   "summary": "Isack Hadjar a quitté le Grand Prix de Las Vegas sans le moindre point, mais sa prestation a pourtant renforcé la confiance de Red Bull dans son potentiel. Quatrième sur la grille de départ et brièvement en tête de la course, le Français a vu ses espoirs…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hadjar-a-change-chez-red-bull-mekies-revele-ce-qui-le-rend-desormais-plus,213687.html",
-   "impact": null,
-   "firstSeen": "2026-11-24T07:10:30.843Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/redbull_123_-2.jpg"
-  },
-  {
-   "id": "news_bnrk6p",
-   "timestamp": "2026-11-24T06:00:00.000Z",
-   "category": "PADDOCK",
-   "title": "Présentation et horaires du Grand Prix du Qatar 2026 de F1",
-   "summary": "La saison arrive à son avant-dernière manche, puisque le paddock se rend à Losail pour disputer le Grand Prix du Qatar. Les pilotes et les équipes vont connaître un défi radicalement différent, sinon carrément inversé de celui de Las Vegas, avec un asphalte…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/presentation-et-horaires-du-grand-prix-du-qatar-2026-de-f1,213686.html",
-   "impact": null,
-   "firstSeen": "2026-11-24T06:10:22.342Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1389137_hires.jpg"
   }
  ]
 }
