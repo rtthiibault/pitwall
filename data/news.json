@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T13:21:00.492Z",
+ "updated": "2026-11-26T13:51:03.955Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T13:51:00.492Z",
+ "next": "2026-11-26T14:21:03.955Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 76
+   "n": 77
   },
   {
    "name": "F1i",
@@ -26,6 +26,32 @@
   }
  ],
  "items": [
+  {
+   "id": "news_jadi7l",
+   "timestamp": "2026-11-26T13:28:00.000Z",
+   "category": "PADDOCK",
+   "title": "Le Grand Prix du Qatar F1 va se jouer à guichets fermés malgré les tensions",
+   "summary": "Malgré le conflit au Moyen-Orient et les nombreuses interrogations qui ont entouré la tenue des deux dernières manches de la saison 2026 de Formule 1, les organisateurs du Grand Prix du Qatar s'attendent à faire le plein de spectateurs ce dimanche sur le…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/le-grand-prix-du-qatar-f1-va-se-jouer-a-guichets-fermes-malgre-les-tensions,213755.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456315_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T13:51:03.955Z"
+  },
+  {
+   "id": "news_1q7g8kz",
+   "timestamp": "2026-11-26T13:21:00.000Z",
+   "category": "PADDOCK",
+   "title": "Photos - GP du Qatar de F1 2026 - Jeudi",
+   "summary": "",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/photos/photos-gp-du-qatar-de-f1-2026-jeudi,213752.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456373_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T13:51:03.955Z"
+  },
   {
    "id": "news_1teijow",
    "timestamp": "2026-11-26T12:54:00.000Z",
@@ -829,32 +855,6 @@
    },
    "firstSeen": "2026-11-24T11:41:22.971Z",
    "image": "https://cdn-1.motorsport.com/images/amp/6lmAlV80/s6/flavio-briatore-alpine.jpg"
-  },
-  {
-   "id": "news_c8oew2",
-   "timestamp": "2026-11-24T11:24:00.000Z",
-   "category": "PADDOCK",
-   "title": "Audi F1 lance Freddie Slater en Formule 2 ce week-end au Qatar",
-   "summary": "Membre du programme de développement des jeunes pilotes d'Audi F1, Freddie Slater va faire ses débuts en Formule 2 dès ce week-end, à l'occasion du Grand Prix du Qatar. Le Britannique rejoindra Invicta Racing pour les deux dernières manches de la saison 2026…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/motorsport/audi-f1-lance-freddie-slater-en-formule-2-ce-week-end-au-qatar,213701.html",
-   "impact": null,
-   "firstSeen": "2026-11-24T12:11:25.924Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/audi0_13_.jpg"
-  },
-  {
-   "id": "news_jkfsg8",
-   "timestamp": "2026-11-24T11:05:00.000Z",
-   "category": "RÈGLEMENT",
-   "title": "'La pire chose serait de camper sur nos positions' : Vowles valide le retour au V8 'à 100 %'",
-   "summary": "Le patron de Williams F1, James Vowles, a apporté son soutien au retour des moteurs V8 en Formule 1, désormais prévu pour 2030. Les discussions sur le cadre exact du règlement étant toujours en cours, il n'y a aucune indication quant à la date à laquelle…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/la-pire-chose-serait-de-camper-sur-nos-positions-vowles-valide-le-retour-au-v8,213679.html",
-   "impact": null,
-   "firstSeen": "2026-11-24T11:11:19.505Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1452411_hires.jpg"
   }
  ]
 }
