@@ -1496,6 +1496,8 @@
   const MG = () => F1.manager;
   const pcoin = `<span class="coin sm pcoin" title="PitCoins">${COIN_P}</span>`;
   const fmtPC = (n) => `${pcoin}${fmt(Math.round(n))}`;
+  // encart de solde, propre à chaque mode (les PitCoins du F1 Manager et de la Carrière sont séparés)
+  const pcWallet = (n, label) => `<div class="pc-wallet ${n < 0 ? 'neg' : ''}" title="PitCoins ${label}"><span class="coin pcoin">${COIN_P}</span><div><small>PitCoins · ${label}</small><b>${fmt(Math.round(n))}</b></div></div>`;
   function mgrRace() {
     const s = S.f1 || S.season;
     if (F1.store.getMode() === 'career') { const c = F1.store.career().cal; return s.races[Math.min(c.gp, s.races.length - 1)]; }
@@ -1613,7 +1615,7 @@
         ${ghost}
         <div class="box-l"><div class="box-crumb"><span class="hq-live"></span>${isCareer() ? 'Quartier général de la Carrière' : 'Quartier général du F1 Manager'}</div>
           <h1 class="box-team">${ch ? esc(ch.name) : 'Votre écurie'}</h1>
-          <div class="box-crew">${crew}${leagueBadge(league)}</div></div>
+          <div class="box-crew">${crew}${leagueBadge(league)}</div>${pcWallet(m.pc, isCareer() ? 'Carrière' : 'F1 Manager')}</div>
         <i class="box-line" aria-hidden="true"></i>
       </header>
       <div class="hq-hud">${hud.map(([l, v]) => `<div><small>${l}</small><b>${v}</b></div>`).join('')}</div>
@@ -1736,12 +1738,12 @@
     const head = `<header class="crx-head" style="--tc:${col}">${ch ? `<div class="crx-head-car" aria-hidden="true">${F1.visuals.car(ch.id, { view: 'side', shadow: false, number: m.number || (drvM && drvM.number), numTeam: ch.id, sponsor: livery(m) })}</div>` : ''}
         <div class="crx-id"><span class="crx-kicker">${crIco('<path d="M8 4h8v5a4 4 0 0 1-8 0Z"/><path d="M12 13v4M8.5 20h7"/>')}Carrière · saison ${c.over ? c.over.season : c.season}</span>
           <h1>${ch ? esc(ch.name) : 'Nouvelle écurie'}</h1>
-          ${drvM ? `<div class="crx-drivers">${crDrvChip(drvM, m.number || drvM.number, ch, 'Pilote')}${mate ? crDrvChip(mate, mate.number, ch, 'Coéquipier') : ''}</div>` : '<p>Signez une écurie et deux pilotes pour lancer la saison.</p>'}</div>
+          ${drvM ? `<div class="crx-drivers">${crDrvChip(drvM, m.number || drvM.number, ch, 'Pilote')}${mate ? crDrvChip(mate, mate.number, ch, 'Coéquipier') : ''}</div>` : '<p>Signez une écurie et deux pilotes pour lancer la saison.</p>'}${pcWallet(m.pc, 'Carrière')}</div>
         <div class="crx-stats">${ring(pop, 'Popularité', pop >= 70 ? 'Star du paddock' : pop >= 50 ? 'Apprécié' : pop >= 30 ? 'Discret' : 'Contesté')}
           <div class="crx-stat"><small>Forme</small><b class="${(drvM && drvM.form) > 0 ? 'up' : (drvM && drvM.form) < 0 ? 'down' : ''}">${formTxt(c.form || 0)}</b><span>${c.form > 0 ? '+' : ''}${c.form || 0} pour ce Grand Prix</span></div>
           <div class="crx-stat"><small>Championnat</small><b>${myPos ? 'P' + myPos : '—'}</b><span>${c.pts.me || 0} points</span></div>
           <div class="crx-stat"><small>Calendrier</small><b>${c.over ? 'Fin' : `${c.gp + 1}<i>/${N}</i>`}</b><span>${c.over ? 'Saison bouclée' : esc(race.nameFr.replace('Grand Prix', 'GP'))}</span></div>
-          <div class="crx-stat"><small>PitCoins</small><b>${fmtPC(m.pc)}</b><span>${F1.store.racesLeft()} course${F1.store.racesLeft() > 1 ? 's' : ''} gratuite${F1.store.racesLeft() > 1 ? 's' : ''}</span></div></div>
+          <div class="crx-stat"><small>Courses</small><b>${F1.store.racesLeft()}<i>/${F1.store.racesPerDay()}</i></b><span>gratuites disponibles</span></div></div>
       </header>
       <nav class="crx-nav" aria-label="Sections de la Carrière">${CR_TABS.map(([k, l, ic]) => `<a href="#/carriere/${k}" class="${k === tab ? 'on' : ''}${!signed && k !== 'contrats' ? ' off' : ''}"${k === tab ? ' aria-current="page"' : ''}>${crIco(ic)}<span>${l}</span></a>`).join('')}</nav>`;
     let body = '';
