@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T05:49:44.940Z",
+ "updated": "2026-11-26T06:19:48.128Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T06:19:44.940Z",
+ "next": "2026-11-26T06:49:48.128Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_16qygwc",
+   "timestamp": "2026-11-26T05:33:00.000Z",
+   "category": "MÉTÉO",
+   "title": "Météo F1 - GP du Qatar : pas de canicule cette année sur le circuit de Losail",
+   "summary": "À deux manches de la fin de la saison 2026 de Formule 1, le Grand Prix du Qatar devrait se dérouler dans des conditions météorologiques particulièrement stables, sans le moindre risque de pluie attendu au cours des trois journées de compétition. Si la tenue…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/meteo-f1-gp-du-qatar-pas-de-canicule-cette-annee-sur-le-circuit-de-losail,213731.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1388617_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T06:19:48.128Z"
+  },
   {
    "id": "news_1b924nn",
    "timestamp": "2026-11-25T18:27:00.000Z",
@@ -854,19 +867,6 @@
    "impact": null,
    "firstSeen": "2026-11-23T16:06:40.426Z",
    "image": "https://cdn-1.motorsport.com/images/amp/2wlKJ3bY/s6/qatar-2.jpg"
-  },
-  {
-   "id": "news_1opp6su",
-   "timestamp": "2026-11-23T15:41:00.000Z",
-   "category": "PADDOCK",
-   "title": "Stella donne le crédit du double podium de McLaren F1 aux pilotes",
-   "summary": "McLaren F1 a signé un double podium construit au fil de la course à Las Vegas, avec un début d'épreuve particulièrement difficile, mais des progrès de compréhension de la stratégie de gestion d'énergie et une meilleure aisance au fil de l'épreuve ont permis à…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/stella-donne-le-credit-du-double-podium-de-mclaren-f1-aux-pilotes,213650.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T16:36:43.989Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456226_hires.jpg"
   }
  ]
 }
