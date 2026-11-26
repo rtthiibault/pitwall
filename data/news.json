@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T06:49:51.497Z",
+ "updated": "2026-11-26T07:19:56.622Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T07:19:51.497Z",
+ "next": "2026-11-26T07:49:56.622Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 74
+   "n": 76
   },
   {
    "name": "F1i",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_1p690eq",
+   "timestamp": "2026-11-26T07:04:00.000Z",
+   "category": "PADDOCK",
+   "title": "Cadillac F1 s'attend à voir ses faiblesses exposées au Qatar",
+   "summary": "Cadillac F1 s'apprête à relever l'un des défis les plus exigeants de sa première saison en Formule 1 à l'occasion du Grand Prix du Qatar. Après un déplacement de 13 000 kilomètres et la traversée de onze fuseaux horaires depuis Las Vegas, l'écurie américaine…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/cadillac-f1-s-attend-a-voir-ses-faiblesses-exposees-au-qatar,213730.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/cadillac_54_-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T07:19:56.622Z"
+  },
   {
    "id": "news_6jh4o5",
    "timestamp": "2026-11-26T06:21:00.000Z",
@@ -854,19 +867,6 @@
    "impact": null,
    "firstSeen": "2026-11-23T17:06:47.563Z",
    "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/Ferrari-Las-Vegas.jpg"
-  },
-  {
-   "id": "news_1wsb3t5",
-   "timestamp": "2026-11-23T16:26:00.000Z",
-   "category": "PADDOCK",
-   "title": "La F1 est 'très petite' aux Etats-Unis mais Domenicali veut concurrencer la NFL et la NBA",
-   "summary": "Stefano Domenicali a relativisé l'ampleur de la F1 aux Etats-Unis, malgré les trois courses annuelles qui s'y tiennent, et le succès populaire d'Austin quand la catégorie reine du sport automobile s'y rend. Le PDG de la Formule 1 a parlé du développement de la…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/la-f1-est-tres-petite-aux-etats-unis-mais-domenicali-veut-concurrencer-la-nfl,213678.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T17:36:51.009Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1454519_hires.jpg"
   }
  ]
 }
