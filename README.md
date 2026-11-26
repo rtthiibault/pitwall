@@ -500,3 +500,12 @@ Route `#/carriere` : bouton « Carrière » dans la barre du haut, tuile sur l'a
 ## Décor des circuits en course
 
 La carte 2D de course (`js/racemap.js`, option `scene`) affiche sous la piste le décor du circuit de la page d'accueil (`trackSvg`) : paysage (désert, ville, mer, forêt, montagne, nuit), lieux emblématiques peints ou dessinés. Le SVG est recalé sur la transformation du canvas à chaque redimensionnement (`viewBox` calculé depuis l'échelle et le décalage de la piste) ; les étiquettes des lieux sont sur un calque au-dessus des voitures. Valable pour le F1 Manager classique, la Carrière et le GP Hebdo ; masqué en style « 2D épurée ».
+
+## Carrière : nouvelle expérience (v2)
+
+Page propre (`pageCareer`, styles `css/career.css` : nuit bleue, or et ivoire, navigation horizontale). Onglets : Week-end, Championnat, Duel, Contrats, Bureau d'études, Garage, Muret, Sponsors.
+- **Départ modeste** : seules les 4 écuries les plus faibles et les 7 pilotes les moins bien notés sont proposés en saison 1 (+2 écuries et +3 pilotes par saison).
+- **Mercato** (`F1.store.careerOpen`) : écurie, pilote et coéquipier ne changent qu'avant la 1re course ou en fin de saison.
+- **Point presse obligatoire** par Grand Prix : 3 questions, 60 secondes ; popularité (prime de course jusqu'à +25 %) et forme du pilote (-3 à +3 sur rythme, combativité, régularité pour le Grand Prix).
+- **Qualifications** avant chaque course (tour propre, engagé, ou tout ou rien) : la grille de la course en découle (`createRace({ qualiOrder })`).
+- **Duel des coéquipiers** : qualifs, courses, points, historique course par course.

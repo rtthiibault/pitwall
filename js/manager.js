@@ -725,7 +725,7 @@
   const DILEMMA_AT = [0.25, 0.55, 0.8];   // dilemmes radio vers 25 %, 55 % et 80 % de la course
   const dilemmaLaps = (laps) => DILEMMA_AT.map((f) => Math.round(f * laps));
   const DILEMMA_LAPS = dilemmaLaps(LAPS);
-  function createRace({ player, bots, grid, race, seed, wxSeed, rainProb, temp, startTyre, plan, manual, news }) {
+  function createRace({ player, bots, grid, race, seed, wxSeed, rainProb, temp, startTyre, plan, manual, news, qualiOrder }) {
     const w = circuitProfile(race);
     const LAPS = lapsOf(race), K = LAPS / 20, DL = dilemmaLaps(LAPS);
     // générateur aléatoire dont l'état peut être sauvegardé : un tour peut être recalculé à l'identique
@@ -753,7 +753,10 @@
         fuel: null, bat: 100, tEng: 92, tTyre: 88, hot: 0, ersNow: 'bal', mixNow: 'std', act: null, prep: 1, tr: {},
         perf: 0.42 * ((d.pace + d.craft) / 2) + 0.58 * cs + form, q: 0.5 * d.pace + 0.5 * cs + form + gauss(r) * 2.5, time: 0, out: null, lapsDone: 0, spins: 0 };
     });
-    field.sort((a, b) => b.q - a.q).forEach((x, k) => { x.grid = k + 1; });
+    field.sort((a, b) => b.q - a.q);
+    // Carrière : la grille sort de la séance de qualifications (clé « me » pour le joueur, identifiant du pilote sinon)
+    if (qualiOrder && qualiOrder.length) { const rk = (x) => { const i = qualiOrder.indexOf(x.c.me ? 'me' : x.driver && x.driver.id); return i < 0 ? 999 : i; }; field.sort((a, b) => rk(a) - rk(b)); }
+    field.forEach((x, k) => { x.grid = k + 1; });
     const gridGap = 0.35 + 0.6 * w.df;
     field.forEach((x) => { x.time = (x.grid - 1) * gridGap; });
     const gapArr = {}, tArr = {}; field.forEach((x) => { gapArr[x.i] = [x.time]; tArr[x.i] = [x.time]; });

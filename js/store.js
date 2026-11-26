@@ -256,8 +256,32 @@
      avec chacune son écurie, sa R&D, son garage, ses PitCoins et son quota de courses.
      Le mode actif est choisi par la page (#/manager ou #/carriere). */
   let mode = 'base';
-  const blankCareer = () => ({ ...blankManager(), cal: { season: 1, gp: 0, run: 0, pts: {}, names: {}, gps: [], champs: [] } });
-  function career() { const s = get(); if (!s.career) { s.career = normMgr(blankCareer()); } if (!s.career.cal) s.career.cal = blankCareer().cal; return s.career; }
+  const blankCal = () => ({ season: 1, gp: 0, run: 0, pts: {}, names: {}, gps: [], champs: [], pop: 40, form: 0, mediaGp: -1, media: [], quali: null, duel: { q: [0, 0], r: [0, 0] } });
+  const blankCareer = () => ({ ...blankManager(), cal: blankCal() });
+  function career() {
+    const s = get(); if (!s.career) { s.career = normMgr(blankCareer()); }
+    if (!s.career.cal) s.career.cal = blankCal();
+    const c = s.career.cal, b = blankCal(); for (const k in b) if (c[k] === undefined) c[k] = b[k];
+    return s.career;
+  }
+  /* Mercato de Carrière : écurie, pilote et coéquipier ne changent qu'avant la première course de la saison,
+     ou une fois la saison terminée. */
+  function careerOpen() { const c = career().cal; return !!c.over || (c.gp === 0 && c.run === 0 && !c.gps.some((g) => g.season === c.season)); }
+  function mercato() { if (mode === 'career' && !careerOpen()) throw new Error('Mercato fermé : écurie, pilote et coéquipier ne changent pas en pleine saison. Rendez-vous à la fin de la saison.'); }
+  // point presse : popularité (cumulée) et forme du pilote pour ce Grand Prix
+  function careerMedia(answers) {
+    const c = career().cal, pop = answers.reduce((a, x) => a + (x.pop || 0), 0), form = answers.reduce((a, x) => a + (x.form || 0), 0);
+    c.pop = Math.max(0, Math.min(100, (c.pop || 40) + pop)); c.form = Math.max(-3, Math.min(3, form)); c.mediaGp = c.gp;
+    c.media.unshift({ season: c.season, gp: c.gp, pop, form }); if (c.media.length > 30) c.media.pop();
+    save(); return { pop, form, total: c.pop };
+  }
+  // qualifications : grille de la prochaine course, et duel en qualifs face au coéquipier
+  function careerSetQuali(q) {
+    const c = career().cal; c.quali = { ...q, key: `${c.season}-${c.gp}-${c.run}` };
+    if (q.matePos) { if (q.myPos < q.matePos) c.duel.q[0]++; else c.duel.q[1]++; }
+    save(); return c.quali;
+  }
+  const careerQualiFor = () => { const c = career().cal; return c.quali && c.quali.key === `${c.season}-${c.gp}-${c.run}` ? c.quali : null; };
   const setMode = (m) => { mode = m === 'career' ? 'career' : 'base'; };
   const getMode = () => mode;
   const mgr = () => (mode === 'career' ? career() : get().manager);
@@ -270,7 +294,9 @@
     (r.cls || []).forEach((x) => { const id = x.id; if (!x.out) c.pts[id] = (c.pts[id] || 0) + (P[x.pos - 1] || 0); else c.pts[id] = c.pts[id] || 0; c.names[id] = { n: x.n, t: x.t }; });
     let gpRec = c.gps.find((g) => g.season === c.season && g.gp === c.gp);
     if (!gpRec) { gpRec = { season: c.season, gp: c.gp, name: r.gp, res: [] }; c.gps.push(gpRec); if (c.gps.length > 80) c.gps.shift(); }
-    gpRec.res.push({ pos: r.pos, dnf: !!r.dnf, pts: r.dnf ? 0 : P[r.pos - 1] || 0 });
+    gpRec.res.push({ pos: r.pos, dnf: !!r.dnf, pts: r.dnf ? 0 : P[r.pos - 1] || 0, q: c.quali ? c.quali.myPos : null, mate: r.mate ? (r.mate.dnf ? 'AB' : r.mate.pos) : null });
+    if (r.mate) { const mine = r.dnf ? 99 : r.pos, his = r.mate.dnf ? 99 : r.mate.pos; if (mine !== his) { if (mine < his) c.duel.r[0]++; else c.duel.r[1]++; } }
+    c.quali = null;
     c.run++;
     let ev = null;
     if (c.run >= RUNS_PER_GP) {
@@ -286,7 +312,7 @@
   function careerNewSeason() {
     const m = career(), c = m.cal;
     if (c.over) { c.champs.unshift(c.over); if (c.champs.length > 20) c.champs.pop(); }
-    c.season++; c.gp = 0; c.run = 0; c.pts = {}; c.names = {}; c.over = null; c.lastEv = null;
+    c.season++; c.gp = 0; c.run = 0; c.pts = {}; c.names = {}; c.over = null; c.lastEv = null; c.form = 0; c.mediaGp = -1; c.quali = null; c.duel = { q: [0, 0], r: [0, 0] };
     save();
   }
   function careerReset() { get().career = normMgr(blankCareer()); save(); }
@@ -301,6 +327,7 @@
   }
   function buyDriver(d, resale) {
     const m = mgr();
+    mercato();
     if (m.driver && m.driver.id === d.id) throw new Error('Ce pilote est déjà dans votre écurie');
     if (m.mate && m.mate.id === d.id) throw new Error('Ce pilote est votre coéquipier : libérez-le d\'abord dans l\'onglet Transferts');
     const net = d.price - (resale || 0);
@@ -316,7 +343,8 @@
   const mateLocked = () => mgr().mateDay === dayKey();
   function buyMate(d, price, resale) {
     const m = mgr();
-    if (mateLocked()) throw new Error('Un seul changement de coéquipier par jour : revenez demain');
+    mercato();
+    if (mode !== 'career' && mateLocked()) throw new Error('Un seul changement de coéquipier par jour : revenez demain');
     if (m.driver && m.driver.id === d.id) throw new Error('Ce pilote est déjà votre pilote titulaire');
     if (m.mate && m.mate.id === d.id) throw new Error('Ce pilote est déjà votre coéquipier');
     const net = price - (resale || 0);
@@ -330,7 +358,8 @@
   }
   function releaseMate(resale) {
     const m = mgr(); if (!m.mate) return 0;
-    if (mateLocked()) throw new Error('Un seul changement de coéquipier par jour : revenez demain');
+    mercato();
+    if (mode !== 'career' && mateLocked()) throw new Error('Un seul changement de coéquipier par jour : revenez demain');
     const name = m.mate.name;
     m.mateDay = dayKey();
     if (resale) addPC(resale, `Transfert : départ de ${name}`);
@@ -339,6 +368,7 @@
   }
   function buyChassis(c, resale) {
     const m = mgr();
+    mercato();
     if (m.chassis && m.chassis.id === c.id) throw new Error('Vous possédez déjà ce châssis');
     const net = c.price - (resale || 0);
     if (m.pc + 1e-9 < net) throw new Error(`Il vous manque ${Math.ceil(net - m.pc)} PitCoins`);
@@ -723,5 +753,5 @@
   function reset() { const n = get().name; state = blank(); state.name = n; save(); }
   const popUnlocked = () => unlocked.splice(0);
 
-  F1.store = { setMode, getMode, career, careerStandings, careerNewSeason, careerReset, RUNS_PER_GP, seasonRoll, passNextOpen, curMonth, betWait, mateLocked, setNumber, installPart, rushJob, unlockSlot2, jobOf, tunnel, pass, claimPass, passComplete, nextSeason, setSkin, weeklyMax, sponsorCooldown, achProgress, claimAch, achClaimable, noteStat, setAvatar, ACH_BY, buyMate, releaseMate, weeklyGP, useWeeklyAttempt, recordWeekly, claimWeeklyGP, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
+  F1.store = { careerOpen, careerMedia, careerSetQuali, careerQualiFor, setMode, getMode, career, careerStandings, careerNewSeason, careerReset, RUNS_PER_GP, seasonRoll, passNextOpen, curMonth, betWait, mateLocked, setNumber, installPart, rushJob, unlockSlot2, jobOf, tunnel, pass, claimPass, passComplete, nextSeason, setSkin, weeklyMax, sponsorCooldown, achProgress, claimAch, achClaimable, noteStat, setAvatar, ACH_BY, buyMate, releaseMate, weeklyGP, useWeeklyAttempt, recordWeekly, claimWeeklyGP, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
 })(globalThis.F1 = globalThis.F1 || {});

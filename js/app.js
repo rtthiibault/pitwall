@@ -213,7 +213,7 @@
       case 'mes-paris': html = pageMyBets(); break;
       case 'amis': html = pageFriends(parts); break;
       case 'manager': html = pageManager(parts[1]); break;
-      case 'carriere': html = pageManager(parts[1]); break;
+      case 'carriere': html = pageCareer(parts[1]); break;
       case 'paddock': html = pagePaddock(); F1.store.noteStat('pwVisits'); break;
       case 'succes': html = pageAch(); break;
       case 'profil': html = pageProfile(); break;
@@ -1508,7 +1508,9 @@
     const mk = S.mk || (S.mk = MG().market(S.f1 || S.season));
     const race = mgrRace();
     const w = MG().circuitProfile(race);
-    const drvM = m.driver ? MG().withExperience(mk.byDriver.get(m.driver.id) || null, m.drvXp) : null;
+    let drvM = m.driver ? MG().withExperience(mk.byDriver.get(m.driver.id) || null, m.drvXp) : null;
+    // Carrière : la forme du pilote (point presse du Grand Prix) pèse sur son rythme, sa combativité et sa régularité
+    if (drvM && F1.store.getMode() === 'career') { const f = F1.store.career().cal.form || 0; if (f) { const cl = (v) => Math.max(40, Math.min(99, v + f * 1.2)); drvM = { ...drvM, pace: cl(drvM.pace), craft: cl(drvM.craft), cons: cl(drvM.cons), form: f }; } }
     const ch = m.chassis ? mk.byChassis.get(m.chassis.id) || null : null;
     const tb = MG().teamBonus(m);
     const car = ch ? MG().carStats(ch, m.ups, m.parts, tb) : null;
@@ -1697,6 +1699,210 @@
     si.addEventListener('change', () => F1.store.setSetup(+si.value));
   }
   function refreshWeekend() { const el = $('.p-week .pnl-b'); if (el) { el.innerHTML = weekendBody(mgrCtx()); bindSetup(); } }
+
+  /* =====================================================================================
+     CARRIÈRE — une expérience à part : week-end (point presse, qualifs, 3 courses), duel, contrats
+     ===================================================================================== */
+  const CR_TABS = [['weekend', 'Week-end', '<path d="M4 20V5m0 0h11l-2 3 2 3H4"/>'], ['championnat', 'Championnat', '<path d="M8 4h8v5a4 4 0 0 1-8 0Z"/><path d="M12 13v4M8.5 20h7"/>'], ['duel', 'Duel', '<path d="M5 19 19 5M5 5l14 14"/>'],
+    ['contrats', 'Contrats', '<path d="M7 3h7l4 4v14H7Z"/><path d="M14 3v4h4M10 12h5M10 16h5"/>'], ['rd', 'Bureau d\'études', '<path d="M9 3v6l-5 9a2 2 0 0 0 2 3h12a2 2 0 0 0 2-3l-5-9V3M8 3h8"/>'],
+    ['garage', 'Garage', '<path d="M3 21V9l9-6 9 6v12"/><path d="M7 21v-7h10v7"/>'], ['muret', 'Muret', '<path d="M5 14v-2a7 7 0 0 1 14 0v2"/><rect x="3.5" y="13" width="4" height="6" rx="1"/><rect x="16.5" y="13" width="4" height="6" rx="1"/>'],
+    ['sponsors', 'Sponsors', '<path d="M4 7h16v12H4z"/><path d="M9 7V5h6v2"/>']];
+  const crIco = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+  // écuries et pilotes accessibles : les plus faibles du plateau en début de carrière, un peu plus chaque saison
+  function crAllowed(ctx) {
+    const c = F1.store.career().cal, mk = ctx.mk;
+    const teams = mk.chassis.slice().sort((a, b) => MG().carRating(MG().carStats(a, {}, {})) - MG().carRating(MG().carStats(b, {}, {}))).slice(0, Math.min(mk.chassis.length, 4 + 2 * (c.season - 1)));
+    const drivers = mk.drivers.slice().sort((a, b) => a.rating - b.rating).slice(0, Math.min(mk.drivers.length, 7 + 3 * (c.season - 1)));
+    return { teams, drivers, tIds: new Set(teams.map((x) => x.id)), dIds: new Set(drivers.map((x) => x.id)) };
+  }
+  function pageCareer(tab) {
+    const ctx = mgrCtx(), { m, ch, drvM, mate } = ctx, c = F1.store.career().cal, s = S.f1 || S.season, N = s.races.length;
+    const signed = !!(ch && drvM && mate);
+    if (!signed) tab = 'contrats';
+    tab = tab || 'weekend';
+    const col = ch ? F1.teamColor(ch.id) : '#e9be3e';
+    const st = F1.store.careerStandings(), myPos = st.findIndex((x) => x.id === 'me') + 1;
+    const race = mgrRace();
+    const formTxt = (f) => (f >= 2 ? 'En feu' : f >= 1 ? 'Confiant' : f <= -2 ? 'Sous pression' : f <= -1 ? 'Tendu' : 'Neutre');
+    const pop = c.pop || 40;
+    const ring = (v, lbl, sub) => `<div class="crx-ring" style="--v:${v}"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="19" class="t"/><circle cx="22" cy="22" r="19" class="v" pathLength="100" stroke-dasharray="${v} 100"/></svg><b>${v}</b><span><small>${lbl}</small>${sub}</span></div>`;
+    const head = `<header class="crx-head" style="--tc:${col}">
+        <div class="crx-id"><span class="crx-kicker">${crIco('<path d="M8 4h8v5a4 4 0 0 1-8 0Z"/><path d="M12 13v4M8.5 20h7"/>')}Carrière · saison ${c.over ? c.over.season : c.season}</span>
+          <h1>${ch ? esc(ch.name) : 'Nouvelle écurie'}</h1>
+          <p>${drvM ? `<b>${esc(drvM.name)}</b>${mate ? ` et <b>${esc(mate.name)}</b>` : ''}` : 'Signez une écurie et deux pilotes pour lancer la saison.'}</p></div>
+        <div class="crx-stats">${ring(pop, 'Popularité', pop >= 70 ? 'Star du paddock' : pop >= 50 ? 'Apprécié' : pop >= 30 ? 'Discret' : 'Contesté')}
+          <div class="crx-stat"><small>Forme</small><b class="${(drvM && drvM.form) > 0 ? 'up' : (drvM && drvM.form) < 0 ? 'down' : ''}">${formTxt(c.form || 0)}</b><span>${c.form > 0 ? '+' : ''}${c.form || 0} pour ce Grand Prix</span></div>
+          <div class="crx-stat"><small>Championnat</small><b>${myPos ? 'P' + myPos : '—'}</b><span>${c.pts.me || 0} points</span></div>
+          <div class="crx-stat"><small>Calendrier</small><b>${c.over ? 'Fin' : `${c.gp + 1}<i>/${N}</i>`}</b><span>${c.over ? 'Saison bouclée' : esc(race.nameFr.replace('Grand Prix', 'GP'))}</span></div>
+          <div class="crx-stat"><small>PitCoins</small><b>${fmtPC(m.pc)}</b><span>${F1.store.racesLeft()} course${F1.store.racesLeft() > 1 ? 's' : ''} gratuite${F1.store.racesLeft() > 1 ? 's' : ''}</span></div></div>
+      </header>
+      <nav class="crx-nav" aria-label="Sections de la Carrière">${CR_TABS.map(([k, l, ic]) => `<a href="#/carriere/${k}" class="${k === tab ? 'on' : ''}${!signed && k !== 'contrats' ? ' off' : ''}"${k === tab ? ' aria-current="page"' : ''}>${crIco(ic)}<span>${l}</span></a>`).join('')}</nav>`;
+    let body = '';
+    if (tab === 'weekend') body = crWeekend(ctx);
+    else if (tab === 'championnat') body = mgrChampionship(ctx);
+    else if (tab === 'duel') body = crDuel(ctx);
+    else if (tab === 'contrats') body = crContracts(ctx);
+    else if (tab === 'rd') body = `<div class="rd-team" style="--tc:${col};--tc-ink:${inkOn(col)}">${mgrRD(ctx)}</div>`;
+    else if (tab === 'garage') body = mgrGarage(ctx);
+    else if (tab === 'muret') body = mgrStaff(ctx);
+    else if (tab === 'sponsors') body = mgrSponsors(ctx);
+    const html = `<div class="hq crx" style="--tc:${col};--tc-ink:${inkOn(col)}">${head}<div class="crx-body">${body}</div></div>`;
+    return html.replace(/href="#\/manager/g, 'href="#/carriere');
+  }
+
+  // ---------- Week-end : point presse → qualifications → course (×3 par Grand Prix) ----------
+  function crWeekend(ctx) {
+    const c = F1.store.career().cal, R = F1.store.RUNS_PER_GP, race = mgrRace(), s = S.f1 || S.season, N = s.races.length;
+    if (c.over) return careerStrip(ctx);
+    const media = c.mediaGp === c.gp, q = F1.store.careerQualiFor();
+    const gpRec = c.gps.find((g) => g.season === c.season && g.gp === c.gp);
+    const step = (n, state, title, txt, act) => `<li class="crx-step ${state}"><span class="crx-n">${state === 'done' ? '✓' : n}</span><div><b>${title}</b><span>${txt}</span></div>${act || ''}</li>`;
+    const steps = `<ol class="crx-steps">
+      ${step(1, media ? 'done' : 'now', 'Point presse', media ? `Forme ${c.form > 0 ? '+' : ''}${c.form} · popularité ${c.pop}` : 'Trois questions, une minute : obligatoire avant les qualifs', media ? '' : '<button class="btn" data-action="cr-media">Répondre aux médias</button>')}
+      ${step(2, q ? 'done' : media ? 'now' : 'wait', `Qualifications · course ${c.run + 1}`, q ? `Vous partez <b>P${q.myPos}</b>${q.matePos ? ` · coéquipier P${q.matePos}` : ''}` : 'Un tour lancé fixe votre place sur la grille', !q && media ? '<button class="btn" data-action="cr-quali">Lancer les qualifs</button>' : '')}
+      ${step(3, q ? 'now' : 'wait', `Course ${c.run + 1} sur ${R}`, q ? `${MG().lapsOf(race)} tours · départ P${q.myPos}` : 'Disponible après les qualifications', q ? raceButton('btn crx-go') : '')}
+    </ol>`;
+    const runs = Array.from({ length: R }, (_, i) => { const r = gpRec && gpRec.res[i]; return `<div class="crx-run ${r ? 'done' : i === c.run ? 'next' : ''}"><small>Course ${i + 1}</small><b>${r ? (r.dnf ? 'Abandon' : 'P' + r.pos) : i === c.run ? 'À venir' : '—'}</b><span>${r ? `${r.q ? 'parti P' + r.q + ' · ' : ''}+${r.pts} pts` : ''}</span></div>`; }).join('');
+    const map = race.circuitId ? trackSvg(race.circuitId, F1.teamColor(ctx.ch.id), true) : '';
+    return `<section class="crx-gp"><div class="crx-gp-l"><small>Grand Prix ${c.gp + 1} sur ${N} · ${esc(race.circuit || '')}</small><h2>${flag(race.iso, 'lg')} ${esc(race.nameFr)}</h2>${steps}</div>
+        <figure class="crx-gp-map hx-map">${map}</figure></section>
+      <div class="crx-runs">${runs}</div>
+      <div class="crx-two"><section class="crx-card">${crDuelMini(ctx)}</section><section class="crx-card">${crPressLog(c)}</section></div>
+      <section class="crx-card crx-prep"><header><h3>Préparation de la course</h3><span>Réglage aéro, pneus et stratégie : ils s'appliquent aux qualifs et à la course</span></header><div class="p-week"><div class="pnl-b">${weekendBody(ctx)}</div></div></section>`;
+  }
+  function crPressLog(c) {
+    const last = c.media.slice(0, 4);
+    return `<header><h3>Revue de presse</h3><span>Popularité ${c.pop} / 100</span></header><div class="crx-pop"><i style="width:${c.pop}%"></i></div>
+      ${last.length ? `<ul class="crx-press">${last.map((x) => `<li><span>Saison ${x.season} · GP ${x.gp + 1}</span><b class="${x.pop >= 0 ? 'up' : 'down'}">${x.pop >= 0 ? '+' : ''}${x.pop} popularité</b><b class="${x.form >= 0 ? 'up' : 'down'}">forme ${x.form >= 0 ? '+' : ''}${x.form}</b></li>`).join('')}</ul>` : '<p class="muted">Aucune conférence de presse pour l\'instant.</p>'}
+      <p class="muted crx-note">La popularité augmente la prime de chaque course (jusqu'à +25 %). La forme agit sur le rythme, la combativité et la régularité du pilote pendant tout le Grand Prix.</p>`;
+  }
+
+  // ---------- Point presse : 3 questions, 60 secondes ----------
+  const CR_Q = [
+    ['Votre monoplace est l\'une des plus lentes du plateau. Quel est l\'objectif ce week-end ?', [['Marquer des points, rien de moins.', 4, -1], ['Progresser course après course, sans brûler les étapes.', 1, 2], ['On fera avec ce qu\'on a.', -3, 0]]],
+    ['On dit que votre coéquipier a été plus rapide ces derniers temps. Votre réaction ?', [['Le chrono parlera dimanche.', 3, 1], ['Il fait du bon travail, on se pousse mutuellement.', 2, 1], ['Il a eu de la chance, rien de plus.', -2, 2]]],
+    ['Les ingénieurs ont-ils apporté des évolutions pour ce Grand Prix ?', [['Oui, et j\'ai hâte de les essayer en piste.', 2, 1], ['Je préfère ne rien promettre avant d\'avoir roulé.', 0, 1], ['Pas assez à mon goût, il faut accélérer.', -1, -1]]],
+    ['Ce circuit vous convient-il ?', [['C\'est l\'un de mes préférés, j\'y suis à l\'aise.', 2, 2], ['Chaque circuit a ses pièges, on s\'adapte.', 1, 1], ['Franchement, pas vraiment.', -2, -2]]],
+    ['Un top team s\'intéresserait à vous. Rumeur ou réalité ?', [['Je suis concentré sur mon équipe actuelle.', 2, 1], ['Ce n\'est jamais désagréable d\'être regardé.', 3, -1], ['Pas de commentaire.', -1, 0]]],
+    ['La pression monte après les derniers résultats. Comment la gérez-vous ?', [['Elle me motive, j\'adore ça.', 2, 1], ['Je reste dans ma bulle, une course à la fois.', 0, 2], ['Je ne lis pas ce qui se dit.', -1, 0]]],
+    ['Les fans attendent un coup d\'éclat. Vous allez prendre des risques ?', [['Je vais tout donner dès le premier tour.', 4, -1], ['Les risques calculés, oui. Les coups de poker, non.', 1, 2], ['Ce n\'est pas le moment de faire n\'importe quoi.', -1, 1]]],
+    ['La météo pourrait jouer un rôle. Un avantage pour vous ?', [['Sous la pluie, tout est possible.', 3, 1], ['On a des plans pour chaque scénario.', 1, 2], ['Je préfère une course sèche.', -1, 0]]],
+    ['Votre équipe manque de moyens. Est-ce frustrant ?', [['On fait des miracles avec ce qu\'on a.', 3, 1], ['On travaille dur, les résultats viendront.', 1, 1], ['Oui, et la direction le sait.', -3, -1]]],
+    ['Quel message pour vos supporters ?', [['Merci, on va leur donner des raisons d\'y croire.', 3, 1], ['Restez avec nous, on construit quelque chose.', 2, 1], ['Rien de spécial.', -2, 0]]],
+  ];
+  function crMediaOpen() {
+    const c = F1.store.career().cal; if (c.mediaGp === c.gp) return;
+    const r = (n) => { let x = MG().hash(`press-${c.season}-${c.gp}-${n}`); return x; };
+    const pool = CR_Q.map((q, i) => [q, r(i)]).sort((a, b) => a[1] - b[1]).slice(0, 3).map((x) => x[0]);
+    const answers = []; let i = 0, left = 60, timer;
+    const draw = () => {
+      const [q, opts] = pool[i];
+      $('#crMedia').innerHTML = `<div class="crm-top"><span class="crm-live">● En direct</span><span>Question ${i + 1} sur 3</span><span class="crm-t" id="crmT">${left} s</span></div><div class="crm-bar"><i id="crmBar" style="width:${(left / 60) * 100}%"></i></div>
+        <p class="crm-q">« ${esc(q)} »</p><div class="crm-a">${opts.map(([t], k) => `<button class="crm-btn" data-crm="${k}">${esc(t)}</button>`).join('')}</div>`;
+    };
+    const finish = () => {
+      clearInterval(timer);
+      while (answers.length < 3) answers.push({ pop: -2, form: 0, t: 'Pas de commentaire' });
+      const res = F1.store.careerMedia(answers);
+      $('#crMedia').innerHTML = `<div class="crm-end"><small>Fin du point presse</small><h3>${res.pop >= 4 ? 'Les médias adorent' : res.pop >= 0 ? 'Conférence maîtrisée' : 'Réponses mal reçues'}</h3>
+        <div class="crm-res"><div><small>Popularité</small><b class="${res.pop >= 0 ? 'up' : 'down'}">${res.pop >= 0 ? '+' : ''}${res.pop}</b><span>${res.total} / 100</span></div><div><small>Forme du pilote</small><b class="${res.form >= 0 ? 'up' : 'down'}">${res.form >= 0 ? '+' : ''}${res.form}</b><span>pour ce Grand Prix</span></div></div>
+        <button class="btn" data-action="m-close">Passer aux qualifications</button></div>`;
+    };
+    modal(`<div class="crm" id="crMedia"></div>`);
+    draw();
+    timer = setInterval(() => { left--; const t = $('#crmT'), b = $('#crmBar'); if (!t) { clearInterval(timer); return; } t.textContent = left + ' s'; b.style.width = (left / 60) * 100 + '%'; if (left <= 0) finish(); }, 1000);
+    $('#crMedia').addEventListener('click', (e) => { const b = e.target.closest('[data-crm]'); if (!b) return; const [, pop, form] = pool[i][1][+b.dataset.crm]; answers.push({ pop, form }); i++; if (i >= 3) finish(); else draw(); });
+  }
+
+  // ---------- Qualifications : un tour lancé, trois approches ----------
+  function crQualiOpen() {
+    const c = F1.store.career().cal;
+    if (c.mediaGp !== c.gp) return crMediaOpen();
+    if (F1.store.careerQualiFor()) return;
+    modal(`<div class="crq" id="crQuali"><small class="crq-k">Qualifications · course ${c.run + 1}</small><h2>Quelle approche pour le tour lancé ?</h2>
+      <div class="crq-opts">${[['safe', 'Tour propre', 'Peu de risque, un chrono fiable.'], ['push', 'Tour engagé', 'Plus rapide en moyenne, un peu plus aléatoire.'], ['all', 'Tout ou rien', 'Le meilleur chrono possible, mais 1 chance sur 4 de faire une erreur.']].map(([k, t, d]) => `<button class="crq-opt" data-crq="${k}"><b>${t}</b><span>${d}</span></button>`).join('')}</div></div>`);
+    $('#crQuali').addEventListener('click', (e) => { const b = e.target.closest('[data-crq]'); if (b) crQualiRun(b.dataset.crq); });
+  }
+  function crQualiRun(mode) {
+    const ctx = mgrCtx(), w = ctx.w, race = ctx.race, c = F1.store.career().cal;
+    const seed = MG().hash(`q-${c.season}-${c.gp}-${c.run}-${Date.now()}`); let st = seed >>> 0;
+    const rnd = () => { st = (st + 0x6d2b79f5) | 0; let t = Math.imul(st ^ (st >>> 15), 1 | st); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    const gauss = () => { const u = Math.max(1e-9, rnd()), v = rnd(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+    const sc = (d, car, setup) => 0.5 * d.pace + 0.5 * MG().carScore(MG().withSetup(car, setup || 0), w);
+    const mateE = MG().mateEntry(ctx.mate, ctx.car, ctx.ch.id, ctx.ch.name);
+    const ents = [{ key: 'me', name: ctx.drvM.name, team: ctx.ch.id, s: sc(ctx.drvM, ctx.car, ctx.m.setup), me: true }]
+      .concat(mateE ? [{ key: mateE.driver.id, name: mateE.driver.name, team: ctx.ch.id, s: sc(mateE.driver, mateE.car, 0), mate: true }] : [])
+      .concat(ctx.bots.map((b) => ({ key: b.driver.id, name: b.driver.name || b.name, team: b.chassisId, s: sc(b.driver, b.car, b.setup) })));
+    let err = false;
+    ents.forEach((x) => {
+      x.v = x.s + gauss() * 1.6;
+      if (x.me) { if (mode === 'push') x.v += 0.9 + gauss() * 1.1; if (mode === 'all') { x.v += 2.2 + gauss() * 1.4; if (rnd() < 0.25) { x.v -= 14; err = true; } } }
+    });
+    ents.sort((a, b) => b.v - a.v);
+    const pole = 78 + (MG().hash(race.circuitId || race.nameFr) % 14) + rnd(), top = ents[0].v;
+    ents.forEach((x, i) => { x.pos = i + 1; x.t = pole + (top - x.v) * 0.06; });
+    const me = ents.find((x) => x.me), mt = ents.find((x) => x.mate);
+    const q = { order: ents.map((x) => x.key), myPos: me.pos, matePos: mt ? mt.pos : null, err, mode };
+    F1.store.careerSetQuali(q);
+    const lt = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(3).padStart(6, '0')}`;
+    const rows = ents.filter((x) => x.pos <= 10 || x.me || x.mate).map((x) => `<tr class="${x.me ? 'me-row' : x.mate ? 'mate-row' : ''}"><td class="pos">${x.pos}</td><td><span class="tstripe" style="background:${F1.teamColor(x.team)}"></span>${esc(x.me ? x.name + ' (vous)' : x.name)}</td><td class="r num">${x.pos === 1 ? lt(x.t) : '+' + (x.t - ents[0].t).toFixed(3)}</td></tr>`).join('');
+    const box = $('#crQuali'); if (!box) return;
+    box.innerHTML = `<div class="crq-run"><small class="crq-k">Tour lancé en cours</small><div class="crq-clock" id="crqClock">0:00.000</div><div class="crq-sec"><i></i><i></i><i></i></div></div>`;
+    const t0 = performance.now(), D = 2600, target = me.t;
+    const tick = (now) => { const k = Math.min(1, (now - t0) / D), el = $('#crqClock'); if (!el) return; el.textContent = lt(target * k); $$('.crq-sec i').forEach((x, j) => x.classList.toggle('on', k > (j + 1) / 3 - 0.01)); if (k < 1) requestAnimationFrame(tick); else show(); };
+    const show = () => { const b2 = $('#crQuali'); if (!b2) return; b2.innerHTML = `<small class="crq-k">Qualifications terminées</small><h2>${err ? 'Erreur dans le dernier secteur !' : me.pos === 1 ? 'Pole position !' : `Vous partez P${me.pos}`}</h2>
+      <p class="muted">${err ? 'Le tout ou rien n\'a pas payé : place en fond de grille.' : `Chrono ${lt(me.t)}${mt ? ` · coéquipier P${mt.pos}` : ''}`}</p>
+      <div class="table-wrap"><table class="tbl"><thead><tr><th>Pos</th><th>Pilote</th><th class="r">Temps</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn" data-action="m-close">Retour au week-end</button></div>`; if (me.pos <= 3 && !err) confetti(me.pos === 1 ? 160 : 60); };
+    requestAnimationFrame(tick);
+  }
+
+  // ---------- Duel entre coéquipiers ----------
+  function crDuelData(ctx) {
+    const c = F1.store.career().cal, mate = ctx.mate;
+    const mePts = c.pts.me || 0, matePts = mate ? c.pts[mate.id] || 0 : 0;
+    const res = c.gps.filter((g) => g.season === c.season).flatMap((g) => g.res);
+    return { q: c.duel.q, r: c.duel.r, pts: [mePts, matePts], res };
+  }
+  function crDuelMini(ctx) {
+    if (!ctx.mate) return '<header><h3>Duel des coéquipiers</h3></header><p class="muted">Signez un coéquipier dans Contrats.</p>';
+    const d = crDuelData(ctx), bar = (a, b) => { const t = a + b || 1; return `<div class="crd-bar"><i style="width:${(a / t) * 100}%"></i></div>`; };
+    return `<header><h3>Duel des coéquipiers</h3><a href="#/carriere/duel">Détail</a></header>
+      ${[['Qualifs', d.q], ['Courses', d.r], ['Points', d.pts]].map(([l, v]) => `<div class="crd-row"><b>${v[0]}</b><div><small>${l}</small>${bar(v[0], v[1])}</div><b>${v[1]}</b></div>`).join('')}
+      <div class="crd-names"><span>${esc(ctx.drvM.family || ctx.drvM.name)}</span><span>${esc(ctx.mate.family || ctx.mate.name)}</span></div>`;
+  }
+  function crDuel(ctx) {
+    if (!ctx.mate) return '<div class="crx-card"><p>Signez un coéquipier dans l\'onglet Contrats pour lancer le duel.</p></div>';
+    const d = crDuelData(ctx), me = ctx.drvM, mt = ctx.mate, col = F1.teamColor(ctx.ch.id);
+    const side = (x, num, win) => { const p = F1.visuals.portrait(x.id); return `<div class="crd-side ${win ? 'lead' : ''}"><div class="crd-ph"><i>${esc(x.code || (x.name || '?').slice(0, 3).toUpperCase())}</i>${p ? `<img src="${esc(p.img)}" alt="" onerror="this.remove()">` : ''}</div>${num ? `<span class="crd-num">${F1.num.html(num, ctx.ch.id, { color: '#fff' })}</span>` : ''}<h3>${esc(x.name)}</h3><span>Note ${x.rating}</span></div>`; };
+    const tot = d.q[0] + d.r[0] - d.q[1] - d.r[1];
+    const cell = (a, b) => `<td class="${a > b ? 'win' : ''}">${a}</td><td class="${b > a ? 'win' : ''}">${b}</td>`;
+    const lines = d.res.slice(-12).map((r, i) => `<div class="crd-h"><span>${i + 1}</span><b class="${(r.dnf ? 99 : r.pos) < (r.mate === 'AB' ? 99 : r.mate || 99) ? 'win' : ''}">${r.dnf ? 'AB' : 'P' + r.pos}</b><b class="${(r.mate === 'AB' ? 99 : r.mate || 99) < (r.dnf ? 99 : r.pos) ? 'win' : ''}">${r.mate == null ? '—' : r.mate === 'AB' ? 'AB' : 'P' + r.mate}</b></div>`).join('');
+    return `<section class="crd" style="--tc:${col}">${side(me, F1.store.mgr().number || me.number, tot > 0)}
+        <div class="crd-mid"><small>Saison ${F1.store.career().cal.season}</small><b class="crd-score">${d.q[0] + d.r[0]}<i>–</i>${d.q[1] + d.r[1]}</b><span>${tot > 0 ? 'Vous menez le duel' : tot < 0 ? 'Votre coéquipier mène' : 'Égalité parfaite'}</span>
+          <table class="crd-tbl"><tbody><tr><th>Qualifs</th>${cell(...d.q)}</tr><tr><th>Courses</th>${cell(...d.r)}</tr><tr><th>Points</th>${cell(...d.pts)}</tr></tbody></table></div>
+        ${side(mt, mt.number, tot < 0)}</section>
+      <section class="crx-card"><header><h3>Course par course</h3><span>Vous · coéquipier</span></header>${lines ? `<div class="crd-hist">${lines}</div>` : '<p class="muted">Aucune course disputée cette saison.</p>'}</section>`;
+  }
+
+  // ---------- Contrats : écurie, pilote, coéquipier (mercato) ----------
+  function crContracts(ctx) {
+    const { m, mk, ch, drvM, mate } = ctx, c = F1.store.career().cal, open = F1.store.careerOpen(), al = crAllowed(ctx);
+    const lockMsg = open ? `<div class="crx-merc on">${crIco('<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>')}<div><b>Mercato ouvert</b><span>Choisissez votre écurie et vos deux pilotes. Dès la première course, les contrats sont figés jusqu'à la fin de la saison.</span></div></div>`
+      : `<div class="crx-merc">${crIco('<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>')}<div><b>Mercato fermé</b><span>Écurie et pilotes sont sous contrat jusqu'à la fin de la saison ${c.season}.</span></div></div>`;
+    const cur = `<div class="crc-cur">${[['Écurie', ch ? ch.name : 'À signer', ch ? F1.teamColor(ch.id) : '#555', ch ? `Note voiture ${MG().carRating(ctx.car)}` : ''], ['Pilote', drvM ? drvM.name : 'À signer', ch ? F1.teamColor(ch.id) : '#555', drvM ? `Note ${drvM.rating}` : ''], ['Coéquipier', mate ? mate.name : 'À signer', ch ? F1.teamColor(ch.id) : '#555', mate ? `Note ${mate.rating}` : '']].map(([l, v, cc, sub]) => `<div class="crc-slot" style="--cc:${cc}"><small>${l}</small><b>${esc(v)}</b><span>${sub}</span></div>`).join('')}</div>`;
+    if (!open) return lockMsg + cur;
+    const tCards = al.teams.map((t) => { const own = ch && ch.id === t.id, car = MG().carStats(t, {}, {}); return `<div class="crc-card ${own ? 'own' : ''}" style="--cc:${F1.teamColor(t.id)}"><div class="crc-car">${F1.visuals.car(t.id, { view: 'side', shadow: false })}</div><b>${esc(t.name)}</b><span>Note voiture ${MG().carRating(car)} · vitesse ${Math.round(car.speed)} · appui ${Math.round(car.df)}</span>
+      <div class="crc-foot"><b>${fmtPC(t.price)}</b>${own ? '<span class="chip green">Sous contrat</span>' : `<button class="btn sm" data-action="m-buy-c" data-id="${esc(t.id)}" ${t.price - resaleC(ctx) > m.pc + 1e-9 ? 'disabled' : ''}>Signer</button>`}</div></div>`; }).join('');
+    const dCard = (d, role) => { const x = MG().withExperience(d, m.drvXp), price = role === 'mate' ? MG().mateValue(d) : MG().driverPrice(x), own = role === 'mate' ? mate && mate.id === d.id : drvM && drvM.id === d.id, other = role === 'mate' ? drvM && drvM.id === d.id : mate && mate.id === d.id, p = F1.visuals.portrait(d.id);
+      return `<div class="crc-dr ${own ? 'own' : ''}" style="--cc:${F1.teamColor(d.teamId)}"><div class="crc-ph">${p ? `<img src="${esc(p.img)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<i>${esc(d.code || '')}</i></div><div class="crc-dn"><b>${esc(d.name)}</b><span>${x.exp.age} ans · ${esc(x.exp.label)}</span></div><b class="crc-rt">${x.rating}</b>
+        <div class="crc-act">${own ? '<span class="chip green">Signé</span>' : other ? '<span class="chip">Déjà pris</span>' : `<button class="btn sm" data-action="${role === 'mate' ? 'mate-buy' : 'm-buy-d'}" data-id="${esc(d.id)}">${fmtPC(price)}</button>`}</div></div>`; };
+    return `${lockMsg}${cur}
+      <section class="crx-sec"><header><h2>1. Écurie</h2><span>Seules les ${al.teams.length} écuries les plus modestes du plateau acceptent un manager débutant${c.season > 1 ? ' (de nouvelles portes s\'ouvrent chaque saison)' : ''}.</span></header><div class="crc-grid">${tCards}</div></section>
+      <section class="crx-sec"><header><h2>2. Pilote titulaire</h2><span>Pilotes peu expérimentés ou en manque de résultats : à vous de les faire grandir.</span></header><div class="crc-list">${al.drivers.map((d) => dCard(d, 'drv')).join('')}</div></section>
+      <section class="crx-sec"><header><h2>3. Coéquipier</h2><span>Le second baquet : votre premier rival dans le duel interne.</span></header><div class="crc-list">${al.drivers.map((d) => dCard(d, 'mate')).join('')}</div></section>`;
+  }
+
   /* ---------- Carrière : progression dans le calendrier, championnat ---------- */
   function careerHud(m, car) {
     const c = F1.store.career().cal, N = (S.f1 || S.season).races.length, st = F1.store.careerStandings(), me = st.findIndex((x) => x.id === 'me') + 1;
@@ -2504,14 +2710,16 @@
   function startRace() {
     const ctx = mgrCtx();
     if (!ctx.drvM || !ctx.car) return;
-    if (isCareer() && F1.store.career().cal.over) return toast('🏁', 'Saison terminée : lancez la saison suivante depuis le QG.', 'err');
+    if (isCareer() && F1.store.career().cal.over) return toast('🏁', 'Saison terminée : lancez la saison suivante depuis le week-end.', 'err');
+    if (isCareer() && F1.store.career().cal.mediaGp !== F1.store.career().cal.gp) { toast('🎙️', 'Point presse obligatoire avant les qualifications.', 'err'); return crMediaOpen(); }
+    if (isCareer() && !F1.store.careerQualiFor()) { toast('⏱️', 'Passez d\'abord par les qualifications : elles fixent la grille.', 'err'); return crQualiOpen(); }
     if (F1.store.racesLeft() <= 0 && !F1.store.canPayExtra()) return toast('⏳', `Courses gratuites épuisées. Une course supplémentaire coûte ${jt(F1.store.extraCost())}.`, 'err');
     const meName = (F1.social.state.me && F1.social.state.me.username) || F1.store.get().name || 'Mon écurie';
     const player = { name: meName, driver: ctx.drvM, car: ctx.car, setup: ctx.m.setup, chassisId: ctx.ch.id };
     const seed = MG().hash(`${Date.now()}-${Math.random()}`);
     // la météo de la course est celle annoncée par le bulletin ; la course est décomptée dès le départ
     const mateE = MG().mateEntry(ctx.mate, ctx.car, ctx.ch.id, ctx.ch.name);
-    const R = MG().createRace({ player, bots: mateE ? [mateE, ...ctx.bots] : ctx.bots, race: ctx.race, seed, wxSeed: ctx.m.next.seed, startTyre: ctx.m.next.tyre, plan: ctx.m.next.plan, manual: true, news: F1.news ? F1.news.teamMods() : null });
+    const R = MG().createRace({ player, bots: mateE ? [mateE, ...ctx.bots] : ctx.bots, race: ctx.race, seed, wxSeed: ctx.m.next.seed, startTyre: ctx.m.next.tyre, plan: ctx.m.next.plan, manual: true, news: F1.news ? F1.news.teamMods() : null, qualiOrder: isCareer() && F1.store.careerQualiFor() ? F1.store.careerQualiFor().order : null });
     let bill; try { bill = F1.store.consumeRace(); } catch (err) { return toast('⚠️', esc(err.message), 'err'); }
     if (bill.paid) toast('🟡', `Course supplémentaire : −${jt(bill.paid)}`, 'win');
     showRace(R, ctx);
@@ -2727,6 +2935,7 @@
       if (res.weekly) return finishWeekly(silent, me);
       const rw = MG().rewards(me.pos, me.out, leagueBefore);
       rw.pc = Math.round(rw.pc * (1 + ctx.tb.pc));
+      if (isCareer()) rw.pc = Math.round(rw.pc * (1 + ((F1.store.career().cal.pop || 40) - 50) / 200)); // popularité : sponsors plus généreux
       const m0 = F1.store.mgr(), drvId = m0.driver && m0.driver.id;
       const xpBefore = drvId ? MG().driverGrowth(drvId, JSON.parse(JSON.stringify(m0.drvXp || {}))) : null, pcBefore = m0.pc;
       const mateX = res.field.find((x) => x.c.mate), mateR = mateX ? res.final.find((x) => x.i === mateX.i) : null;
@@ -3768,11 +3977,13 @@
       case 'm-race': startRace(); break;
       case 'm-again': closeModal(); setTimeout(startRace, 50); break;
       case 'm-qg': closeModal(); if (location.hash !== MB()) location.hash = MB(); else route(); break;
+      case 'cr-media': crMediaOpen(); break;
+      case 'cr-quali': crQualiOpen(); break;
       case 'cr-new': F1.store.careerNewSeason(); route(); toast('🏁', `Saison ${F1.store.career().cal.season} de Carrière lancée`, 'win'); break;
       case 'cr-reset': modal(`<h2>Recommencer la Carrière ?</h2><p class="muted">Votre écurie, vos pilotes, votre R&D, votre garage, vos PitCoins et votre championnat de Carrière seront effacés. Le F1 Manager classique n'est pas touché.</p><div class="row" style="justify-content:flex-end;gap:8px"><button class="btn ghost" data-action="modal-close">Annuler</button><button class="btn" data-action="cr-reset-ok">Effacer la Carrière</button></div>`); break;
       case 'cr-reset-ok': F1.store.careerReset(); closeModal(); location.hash = '#/carriere'; route(); toast('🔄', 'Carrière remise à zéro', 'win'); break;
       case 'm-skip': if (S.raceFinish && raceTimer) S.raceFinish(); break;
-      case 'm-close': closeModal(); break;
+      case 'm-close': closeModal(); if (isCareer()) route(); break;
       case 'f-retry': F1.social.init().then(route); break;
       case 'f-refresh': socialAct(() => F1.social.refresh()); break;
       case 'lg-sel': S.lgSel = a.dataset.id; mountLeagues(); break;
