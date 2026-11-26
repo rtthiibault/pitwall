@@ -579,7 +579,8 @@
     if (!f1Home && S.series !== 'wec' && nx && F1.store.canClaim(s, nx)) h += `<div class="notice" style="margin-top:18px">🎁 Prime du week-end disponible : <b>+${jt(F1.store.WEEKLY)}</b> pour le ${esc(nx.nameFr)}. <span class="sp"></span><button class="btn sm gold" data-action="claim">Récupérer</button></div>`;
     if (!f1Home && S.series !== 'wec' && nx && F1.store.canRescue(s, nx)) h += `<div class="notice red" style="margin-top:18px">💸 Réservoir vide ? Le stand vous ravitaille : <b>+${jt(F1.store.RESCUE)}</b>. <span class="sp"></span><button class="btn sm" data-action="rescue">Ravitailler</button></div>`;
 
-    if (S.markets.length) {
+    if (f1Home) h += gameHub(s, nx);
+    else if (S.markets.length) {
       const win = S.markets.find((m) => m.kind === 'win');
       h += `<section class="section"><div class="section-h"><h2>Favoris pour la victoire</h2><a class="link" href="#/paris">Tous les marchés</a></div><div class="grid g4">${win.selections.slice(0, 4).map((x, i) => favCard(x, win, i)).join('')}</div></section>`;
       const boost = S.markets.find((m) => m.layout === 'boost');
@@ -588,11 +589,55 @@
       h += `<section class="section"><div class="section-h"><h2>À la une</h2></div><div class="grid g3">${boostCard(boost) || ''}${rival ? h2hCard(rival) : ''}${marketCard(quali, { limit: 6 })}</div></section>`;
     }
     h += pwHome();
-    h += `<section class="section"><div class="grid g2">${lastPodium()}${miniStandings()}</div></section>`;
+    h += `<section class="section"><div class="section-h"><h2>Le championnat</h2><a class="link" href="#/classements">Classements</a></div><div class="grid g2">${lastPodium()}${miniStandings()}</div></section>`;
     h += upcomingTeaser();
     if (!f1Home) h += homeStats();
-    else h += `<section class="section"><div class="section-h"><h2>Ton week-end</h2><a class="link" href="#/profil">Mon profil</a></div>${yourWeekend(s, nx)}</section>`;
     return h;
+  }
+
+
+  /* ---------- Accueil : hub de jeu (modes, défis du jour, Pass, profil) ---------- */
+  function gameHub(s, nx) {
+    const p = F1.store.get(), st = F1.store.stats(), m = F1.store.mgr(), MGx = MG();
+    const L = MGx.leagueOf(m.lp), nl = MGx.nextLeague(m.lp);
+    const name = (SO().me && SO().me.username) || p.name || 'Pilote';
+    const ach = Object.keys(p.ach || {}).length;
+    const bonus = F1.store.canClaimSeason(s) && s.doneCount === 0 ? { act: 'claim-season', v: F1.store.SEASON_BONUS, l: `Prime de lancement ${s.year}` }
+      : F1.store.canClaim(s, nx) ? { act: 'claim', v: F1.store.WEEKLY, l: 'Prime du week-end' } : F1.store.canRescue(s, nx) ? { act: 'rescue', v: F1.store.RESCUE, l: 'Ravitaillement' } : null;
+    // carte du joueur
+    const prog = nl ? Math.round(((m.lp - L.min) / (nl.min - L.min)) * 100) : 100;
+    const player = `<section class="gh-me" style="--lc:${L.color}">
+      <a class="gh-ava ring" href="#/profil" data-lg="${L.id}" style="--lr:${L.color}">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : `<span>${esc(name.slice(0, 1).toUpperCase())}</span>`}</a>
+      <div class="gh-me-id"><small>Bienvenue au paddock</small><b>${esc(name)}</b>
+        <div class="gh-lg"><span>${L.icon} Ligue ${esc(L.name)}</span><div class="gh-lg-bar"><i style="width:${prog}%"></i></div><small>${nl ? `${fmt(m.lp)} / ${fmt(nl.min)} LP vers ${esc(nl.name)}` : 'Ligue maximale atteinte'}</small></div></div>
+      <div class="gh-me-k"><div><small>Jetons</small><b>${fmtJ(p.balance)}</b></div><div><small>Succès</small><b>${ach}<i>/${F1.store.ACH.length}</i></b></div><div><small>Courses</small><b>${fmt((m.stats && m.stats.races) || 0)}</b></div></div>
+      ${bonus ? `<button class="btn gold gh-bonus" data-action="${bonus.act}">${esc(bonus.l)} · +${fmt(bonus.v)} jetons</button>` : ''}</section>`;
+    // modes de jeu
+    const car = (team, num) => `<div class="gh-car">${F1.visuals.car(team, { view: 'side', shadow: false, number: num, numTeam: team, sponsor: livery(m) })}</div>`;
+    const mgrOn = m.driver && m.chassis, left = F1.store.racesLeft();
+    const cr = p.career, crOn = cr && cr.driver && cr.chassis, crC = cr && cr.cal;
+    const ev = MGx.weeklyEvent(), w = F1.store.weeklyGP(ev.id), wLeft = F1.store.weeklyMax(w) - w.attemptsUsed, tok = F1.store.pass().tokens || 0;
+    const lp = localPicks(), has = (k) => { const e = lp[pkKey(s.year, nx.round, k)]; return e && e.p && e.p.every(Boolean); }, nPick = (has('quali') ? 1 : 0) + (has('race') ? 1 : 0);
+    const mode = (cls, href, tag, title, line, stat, art, cta, ping) => `<a class="gh-mode ${cls}" href="${href}">${art}<div class="gh-mode-b"><span class="gh-tag">${tag}</span><h3>${title}</h3><p>${line}</p>${stat}</div><span class="gh-cta">${cta}</span>${ping ? `<i class="gh-ping">${ping}</i>` : ''}</a>`;
+    const modes = `<div class="gh-modes">
+      ${mode('m-mgr', '#/manager', 'Gestion d\'écurie', 'F1 Manager', mgrOn ? `${esc(m.chassis.name)} · ligue ${esc(L.name)}` : 'Recrutez un pilote, choisissez une écurie, développez la voiture.',
+        mgrOn ? `<div class="gh-st"><span><b>${left}/${F1.store.racesPerDay()}</b> courses gratuites</span><span>${fmtPC(m.pc)}</span></div>` : '', car(mgrOn ? m.chassis.id : 'mclaren', mgrOn ? m.number : ''), mgrOn ? 'Lancer une course' : 'Monter mon écurie', mgrOn && left ? left : '')}
+      ${mode('m-crr', '#/carriere', 'Mode histoire', 'Carrière', crOn ? `${esc(cr.chassis.name)} · saison ${crC.season}` : 'Partez d\'une petite écurie et visez le titre, Grand Prix après Grand Prix.',
+        crOn ? `<div class="gh-st"><span>GP <b>${crC.gp + 1}</b>/${s.races.length} · course ${crC.run + 1}/3</span><span>${fmt(crC.pts.me || 0)} pts</span></div>` : '', car(crOn ? cr.chassis.id : 'haas', crOn ? cr.number : ''), crOn ? 'Continuer la saison' : 'Commencer ma carrière', '')}
+      ${mode('m-wk', '#/manager/hebdo', 'Défi en ligne', 'GP Hebdo', `${esc(ev.race.nameFr)} · même course pour tous`,
+        `<div class="gh-st"><span><b>${Math.max(0, wLeft)}</b> tentative${wLeft > 1 ? 's' : ''}${tok ? ` + ${tok} jeton${tok > 1 ? 's' : ''}` : ''}</span><span>${w.bestTime != null ? MGx.fmtRaceTime(w.bestTime) : 'Pas de chrono'}</span></div>`,
+        `<div class="gh-art-track">${ev.race.circuitId ? trackSvg(ev.race.circuitId, '#27f4d2', true) : ''}</div>`, wLeft > 0 ? 'Signer un chrono' : 'Voir le classement', wLeft > 0 ? wLeft : '')}
+      ${mode('m-bet', '#/ligues', 'Entre amis', 'Pronostics & ligues', `Podium des qualifs et de la course du ${esc(nx.nameFr.replace('Grand Prix', 'GP'))}`,
+        `<div class="gh-st"><span><b>${nPick}</b>/2 pronostics</span><span>${st.open} pari${st.open > 1 ? 's' : ''} en cours</span></div>`,
+        `<div class="gh-art-pod"><i class="p2">2</i><i class="p1">1</i><i class="p3">3</i></div>`, nPick < 2 ? 'Pronostiquer' : 'Voir mes ligues', nPick < 2 ? 2 - nPick : '')}
+    </div>`;
+    // défis du jour (objectifs du F1 Manager) et Pass
+    const obs = mgrOn ? F1.store.objectives() : [];
+    const P = F1.store.pass(), pg = MGx.passProgress(P.xp);
+    const goals = `<section class="gh-goals"><header><h3>Défis du jour</h3><a href="#/manager">F1 Manager</a></header>${obs.length ? obs.map((o) => `<div class="gh-goal ${o.done ? 'done' : ''}"><span class="gh-goal-i">${o.done ? '✓' : ''}</span><div><b>${esc(o.txt)}</b><div class="gh-goal-bar"><i style="width:${(o.val / o.goal) * 100}%"></i></div></div><span class="gh-goal-r">${o.claimed ? 'Récupéré' : fmtPC(o.pc * L.mult)}</span>${o.done && !o.claimed ? `<button class="btn sm gold" data-action="obj-claim" data-id="${o.id}">Récupérer</button>` : ''}</div>`).join('') : '<p class="muted">Montez votre écurie dans le F1 Manager pour débloquer trois défis par jour.</p>'}</section>`;
+    const pass = `<a class="gh-pass" href="#/manager/passe"><small>Pass de saison ${P.season}</small><b>Palier ${pg.tier}<i>/${MGx.PASS_TIERS}</i></b><div class="gh-pass-bar"><i style="width:${(pg.cur / pg.need) * 100}%"></i></div><span>${pg.tier < MGx.PASS_TIERS ? `${pg.cur}/${pg.need} XP vers le palier ${pg.tier + 1}` : 'Pass complété'}</span></a>`;
+    return `<section class="section gh"><div class="gh-top">${player}${pass}</div>
+      <div class="section-h"><h2>Choisis ton mode de jeu</h2></div>${modes}${goals}</section>`;
   }
 
   /* ---------- Accueil : le tracé du prochain circuit, feux de départ, programme du week-end ---------- */
@@ -760,7 +805,7 @@
         <h1 class="hx-title">${esc(nx.nameFr)}</h1>
         <p class="hx-place">${esc(nx.circuit)}, ${esc(nx.locality)}. Départ ${DAYL.format(nx.date)} à ${HM.format(nx.date)}.</p>
         ${lights}${rail}
-        <div class="hx-cta"><a class="btn" href="#/paris">Parier sur ce Grand Prix</a><a class="btn ghost" href="#/paris/tierce">Jouer le tiercé</a></div>
+        <div class="hx-cta"><a class="btn" href="#/manager">Courir ce Grand Prix</a><a class="btn ghost" href="#/ligues">Pronostiquer le podium</a></div>
       </div>
       <figure class="hx-map">${trackSvg(nx.circuitId, tc) || `<div class="hx-car3d">${F1.visuals.car(favD ? favD.teamId : 'mclaren', { live: true })}</div>`}
         <figcaption>${favD ? `<a class="hx-fav" href="#/paris" style="--tc:${tc}">${favD.number ? `<span class="hx-fav-n">${F1.num.html(favD.number, favD.teamId, { color: 'currentColor' })}</span>` : ''}<span><small>Favori</small><b>${esc(favD.given)} ${esc(favD.family)}</b></span><span class="hx-fav-o"><small>Cote</small><b>${fmtOdds(favS.odds)}</b></span></a>` : ''}${wx ? `<div class="hx-wx">${wx}</div>` : ''}</figcaption></figure>
