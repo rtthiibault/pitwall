@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T09:50:17.187Z",
+ "updated": "2026-11-26T10:20:40.044Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T10:20:17.187Z",
+ "next": "2026-11-26T10:50:40.044Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 73
+   "n": 74
   },
   {
    "name": "F1i",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_1fl2hy3",
+   "timestamp": "2026-11-26T09:51:00.000Z",
+   "category": "RÈGLEMENT",
+   "title": "Cadillac avantagée par le retour du V8, la F1 pourrait répondre par un gel des moteurs",
+   "summary": "La décision de la Formule 1 d'introduire une nouvelle réglementation moteur dès 2030 devrait entraîner le retour d'un gel du développement des groupes propulseurs actuels, potentiellement à partir de la mi-saison 2028. Si la maîtrise des coûts constitue…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/cadillac-avantagee-par-le-retour-du-v8-la-f1-pourrait-repondre-par-un-gel-des,213745.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/cadillac_63_-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T10:20:40.044Z"
+  },
   {
    "id": "news_nio2t5",
    "timestamp": "2026-11-26T09:15:39.000Z",
@@ -816,31 +829,6 @@
    "impact": null,
    "firstSeen": "2026-11-24T08:10:40.205Z",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/haas0_15_-4.jpg"
-  },
-  {
-   "id": "news_x7qkca",
-   "timestamp": "2026-11-24T07:26:00.000Z",
-   "category": "TECHNIQUE",
-   "title": "Sanction financière, suspension : jusqu'où Ferrari est-elle prête à aller sur le conflit Leclerc-Hamilton ?",
-   "summary": "La situation devient de plus en plus préoccupante chez Ferrari après le nouvel accrochage entre Charles Leclerc et Lewis Hamilton lors du Grand Prix de Las Vegas. La Scuderia envisagerait désormais des sanctions financières, voire la suspension de l'un de ses…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/sanction-financiere-suspension-jusqu-ou-ferrari-est-elle-prete-a-aller-sur-le,213688.html",
-   "impact": {
-    "targetType": "team",
-    "targetIds": [
-     "ferrari"
-    ],
-    "managerModifiers": {
-     "powerUnit": 0,
-     "aero": -2,
-     "reliability": 0
-    },
-    "bettingOddsMultiplier": 1.08,
-    "impactLabel": "Aéro -2 pts | Cotes +8%"
-   },
-   "firstSeen": "2026-11-24T08:10:40.205Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456039_hires-3.jpg"
   }
  ]
 }
