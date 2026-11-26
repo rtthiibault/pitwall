@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T17:51:49.130Z",
+ "updated": "2026-11-26T18:21:54.899Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T18:21:49.130Z",
+ "next": "2026-11-26T18:51:54.899Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 81
+   "n": 82
   },
   {
    "name": "F1i",
@@ -26,6 +26,45 @@
   }
  ],
  "items": [
+  {
+   "id": "news_1nybnuo",
+   "timestamp": "2026-11-26T18:05:00.000Z",
+   "category": "PADDOCK",
+   "title": "Câmara revient sur une décision 'pas facile' mais qui avait 'plus de sens'",
+   "summary": "Rafael Câmara est présent au Grand Prix du Qatar en tant que pilote Haas F1 ce week-end, puisqu'il a décidé de rester en Formule 1 pour les deux dernières courses de l'année. Arrivé au Brésil à la place d'Esteban Ocon, il a ensuite couru à Las Vegas, deux…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/camara-revient-sur-une-decision-pas-facile-mais-qui-avait-plus-de-sens,213764.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456447_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T18:21:54.899Z"
+  },
+  {
+   "id": "news_11wjl98",
+   "timestamp": "2026-11-26T17:52:00.000Z",
+   "category": "PADDOCK",
+   "title": "Piastri veut repartir de zéro après une saison 2026 particulièrement difficile",
+   "summary": "Oscar Piastri espère terminer sur une note positive une saison 2026 de Formule 1 bien plus difficile qu'il ne l'avait imaginé. À l'occasion de la conférence de presse du Grand Prix du Qatar, le pilote McLaren est revenu sur les difficultés d'adaptation…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/piastri-veut-repartir-de-zero-apres-une-saison-2026-particulierement-difficile,213768.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456493_hires.jpg",
+   "impact": {
+    "targetType": "driver",
+    "targetIds": [
+     "piastri"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 1.06,
+    "impactLabel": "Cotes +6%",
+    "teamId": "mclaren"
+   },
+   "firstSeen": "2026-11-26T18:21:54.899Z"
+  },
   {
    "id": "news_17t0ag5",
    "timestamp": "2026-11-26T17:37:00.000Z",
@@ -830,32 +869,6 @@
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/mercedes_52_-7.jpg",
    "impact": null,
    "firstSeen": "2026-11-25T09:16:02.773Z"
-  },
-  {
-   "id": "news_1d93qi",
-   "timestamp": "2026-11-25T08:13:29.000Z",
-   "category": "PADDOCK",
-   "title": "Conflit Hamilton - Leclerc : le directeur général de Ferrari renvoie Vasseur à ses responsabilités",
-   "summary": "La pression continue de s'accentuer sur Frédéric Vasseur chez Ferrari après le nouvel accrochage entre Charles Leclerc et Lewis Hamilton lors du Grand Prix de Las Vegas. Alors que la presse italienne réclame de plus en plus ouvertement une intervention de la…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/conflit-hamilton-leclerc-le-directeur-general-de-ferrari-renvoie-vasseur-a-ses,213709.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1445318_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T09:16:02.773Z"
-  },
-  {
-   "id": "news_2s8gfr",
-   "timestamp": "2026-11-25T07:34:00.000Z",
-   "category": "RÈGLEMENT",
-   "title": "La F1 transformée en Indy 500 à Vegas : Wolff défend le spectacle, Stella s'interroge",
-   "summary": "Le spectaculaire Grand Prix de Las Vegas a relancé le débat autour de la réglementation 2026 de la Formule 1, à l'heure où la discipline prépare déjà une nouvelle révolution technique pour 2030. Si Max Verstappen a comparé la course du Nevada à une partie de…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/la-f1-transformee-en-indy-500-a-vegas-wolff-defend-le-spectacle-stella-s,213704.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/mercedes_50_-5.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T08:15:52.062Z"
   }
  ]
 }
