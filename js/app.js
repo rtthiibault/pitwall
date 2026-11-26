@@ -2585,7 +2585,7 @@
           <div class="ps-prog"><div class="ps-bar"><i style="width:${(P.xp / M.PASS_XP_MAX) * 100}%"></i></div>
             <small class="muted">${tier >= T ? 'Tous les paliers sont atteints' : `${inTier} / ${XT} XP vers le palier ${tier + 1} · ${fmt(P.xp)} XP au total`}</small></div></div></section>
       <div class="ps-inv">
-        <div><small>Jetons de tentative</small><b>🎟️ ${P.tokens || 0}</b><span class="muted">Une 3ᵉ tentative au GP Hebdo (une par semaine)</span></div>
+        <div><small>Jetons de tentative</small><b>🎟️ ${P.tokens || 0}</b><span class="muted">Une tentative de plus au GP Hebdo, à utiliser quand vos essais sont épuisés</span></div>
         <div><small>Livrées spéciales</small><b>🎨 ${livOwned} / ${M.PASS_LIVERIES.length}</b><a class="link" href="#/manager/garage">Choisir dans le Garage</a></div>
         <div><small>Saisons complétées</small><b>${(P.done || []).length}</b>${done ? `<span class="ps-seasons">${done}</span>` : '<span class="muted">Le badge apparaît sur votre profil</span>'}</div>
         ${complete ? (F1.store.passNextOpen() ? `<button class="btn ps-next" data-action="ps-next">Commencer la saison ${P.season + 1} →</button>` : `<div class="ps-wait"><small>Pass terminé</small><b>Saison ${P.season + 1} le ${nextMonthTxt()}</b><span class="muted">Un nouveau Pass ouvre chaque mois.</span></div>`) : ready.length ? `<button class="btn" data-action="ps-all">Tout réclamer (${ready.length})</button>` : ''}</div>
@@ -3378,7 +3378,7 @@
   function mgrWeekly(ctx) {
     const { m, drvM, ch, car } = ctx, ev = MG().weeklyEvent(), w = F1.store.weeklyGP(ev.id);
     const fl = MG().forecastLaps(ev.seed, ev.race), plan = MG().planFor(m.next.plan, ev.laps).stops;
-    const maxA = F1.store.weeklyMax(w), left = maxA - w.attemptsUsed, tok = F1.store.pass().tokens || 0, canTok = left <= 0 && !w.bonus && tok > 0;
+    const maxA = F1.store.weeklyMax(w), left = maxA - w.attemptsUsed, tok = F1.store.pass().tokens || 0, canTok = left <= 0 && tok > 0;
     const head = `<div class="wk-banner"><div class="wk-b-l"><small>Grand Prix Hebdomadaire · semaine ${ev.week}</small><h2>${flag(ev.race.iso, 'lg')} ${esc(ev.race.nameFr)}</h2>
         <div class="muted" style="font-size:13px">${ev.laps} tours · mêmes conditions pour tous les joueurs : circuit, météo tour par tour, pilotes IA</div>
         <div class="fc-segs">${fl.segs.map((g) => `<span>${g.icon} ${esc(g.txt)}</span>`).join('')}</div></div>
@@ -3392,7 +3392,7 @@
           <div><small>Départ</small><b>${tyreDot(m.next.tyre, 'sm')} ${esc(MG().TYRES[m.next.tyre].name)}</b></div><div><small>Arrêts prévus</small><b>${plan.length ? plan.map((x) => `tour ${x.lap} ${tyreDot(x.tyre, 'sm')}`).join(' · ') : 'aucun'}</b><span class="muted">sur ${ev.laps} tours</span></div></div>
         <small class="muted">La course se joue comme en campagne (muret, arrêts, dilemmes radio). Elle ne consomme pas vos courses gratuites, et vos contrats sponsors sont en pause : aucun objectif ni pénalité ici.</small>
         <div class="wk-att"><div><small>Tentatives</small><b>${left} / ${maxA} restante${left > 1 ? 's' : ''}</b>${tok ? `<small class="muted">🎟️ ${tok} jeton${tok > 1 ? 's' : ''} de tentative en réserve</small>` : ''}</div><div><small>Meilleur temps</small><b>${w.bestTime != null ? MG().fmtRaceTime(w.bestTime) : '—'}</b>${w.bestConfig ? `<small class="muted">P${w.bestPosition} · ${esc(w.bestConfig.chassis)} · ${esc(w.bestConfig.driver)}</small>` : ''}</div></div>
-        ${canTok ? `<button class="btn block wk-tok" data-action="wk-go" data-token="1">🎟️ Utiliser un jeton de tentative : 3ᵉ essai (${tok} en réserve)</button>` : `<button class="btn block" data-action="wk-go" ${left > 0 ? '' : 'disabled'}>${left > 0 ? `Lancer une tentative (${left}/${maxA})` : 'Tentatives épuisées : nouveau Grand Prix lundi'}</button>`}</section>
+        ${canTok ? `<button class="btn block wk-tok" data-action="wk-go" data-token="1">🎟️ Utiliser un jeton : tentative supplémentaire (${tok} en réserve)</button>` : `<button class="btn block" data-action="wk-go" ${left > 0 ? '' : 'disabled'}>${left > 0 ? `Lancer une tentative (${left}/${maxA})` : 'Tentatives épuisées : nouveau Grand Prix lundi'}</button>`}</section>
       <section class="ol-card"><header><b>Classement</b><div class="seg" id="wkTabs"></div></header><div id="wkBoard"><div class="skeleton" style="height:160px"></div></div></section></div>
       <section class="ol-card" style="margin-top:12px"><header><b>Récompenses</b></header>
         <div class="wk-prizes"><span>+${MG().WEEKLY_FIRST_PRIME} PC au premier chrono de la semaine</span><span>Clôture : 1<sup>er</sup> +600 · 2<sup>e</sup> +450 · 3<sup>e</sup> +350 · top 10 +200 · top 25 % +120 · classé +60</span><span>Trophée pour un top 10</span></div>

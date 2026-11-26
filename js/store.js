@@ -709,13 +709,13 @@
     return m.weeklyGP;
   }
   // tentatives de la semaine : 2, plus une 3e si un jeton de tentative (Pass de saison) a été utilisé
-  const weeklyMax = (w) => ((F1.manager && F1.manager.WEEKLY_ATTEMPTS) || 2) + (w.bonus ? 1 : 0);
+  const weeklyMax = (w) => ((F1.manager && F1.manager.WEEKLY_ATTEMPTS) || 2) + (+w.bonus || 0); // chaque jeton utilisé ajoute une tentative (ancien format : true = 1)
   function useWeeklyAttempt(weekId, useToken) {
     const w = weeklyGP(weekId);
     if (w.attemptsUsed >= weeklyMax(w)) {
       const p = pass();
-      if (!useToken || w.bonus || !(p.tokens > 0)) throw new Error('Plus de tentative cette semaine : rendez-vous lundi pour le prochain Grand Prix');
-      p.tokens--; w.bonus = true;
+      if (!useToken || !(p.tokens > 0)) throw new Error('Plus de tentative cette semaine : rendez-vous lundi pour le prochain Grand Prix');
+      p.tokens--; w.bonus = (+w.bonus || 0) + 1;
     }
     w.attemptsUsed++; save();
     return weeklyMax(w) - w.attemptsUsed;
