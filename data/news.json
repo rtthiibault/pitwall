@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T20:22:13.728Z",
+ "updated": "2026-11-26T20:52:18.091Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T20:52:13.728Z",
+ "next": "2026-11-26T21:22:18.091Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 87
+   "n": 88
   },
   {
    "name": "F1i",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_17eq9fo",
+   "timestamp": "2026-11-26T20:18:27.000Z",
+   "category": "PADDOCK",
+   "title": "Impressionné par sa 'très bonne série', Verstappen veut faire 'encore mieux' en 2027",
+   "summary": "Max Verstappen est impressionné de voir comment Red Bull a réglé ses problèmes du début de saison, alors qu'il est le pilote le plus prolifique en termes de points marqués depuis le Grand Prix d'Espagne. Le pilote Red Bull va très certainement être…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/impressionne-par-sa-tres-bonne-serie-verstappen-veut-faire-encore-mieux-en-2027,213773.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456640_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T20:52:18.091Z"
+  },
   {
    "id": "news_1j13l6i",
    "timestamp": "2026-11-26T19:41:00.000Z",
@@ -856,19 +869,6 @@
    "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/minia-qatar-article.jpg",
    "impact": null,
    "firstSeen": "2026-11-25T11:16:22.438Z"
-  },
-  {
-   "id": "news_d500sm",
-   "timestamp": "2026-11-25T10:40:19.000Z",
-   "category": "TECHNIQUE",
-   "title": "Zak Brown écarte l'idée d'un programme moteur McLaren en 2030",
-   "summary": "Zak Brown a écarté la possibilité de développer un moteur en interne pour la saison 2030 de Formule 1, McLaren étant \"très satisfaite\" de son partenariat avec Mercedes. La marque britannique est cliente de Mercedes depuis 2021 et a connu un grand succès durant…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/zak-brown-ecarte-idee-programme-moteur-2030/10877565/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "image": "https://cdn-1.motorsport.com/images/amp/YBVj9M7Y/s6/oscar-piastri-mclaren-2.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T10:46:17.808Z"
   }
  ]
 }
