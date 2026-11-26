@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T10:50:43.460Z",
+ "updated": "2026-11-26T11:20:46.596Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T11:20:43.460Z",
+ "next": "2026-11-26T11:50:46.596Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,58 @@
   }
  ],
  "items": [
+  {
+   "id": "news_tqrpp2",
+   "timestamp": "2026-11-26T11:01:32.000Z",
+   "category": "PADDOCK",
+   "title": "Malade, Alonso va manquer la première journée du Grand Prix du Qatar",
+   "summary": "Fernando Alonso ne participera pas à la journée médias du Grand Prix du Qatar ce jeudi, Aston Martin F1 ayant confirmé que son pilote souffrait encore des effets d'une infection virale contractée lors du Grand Prix de Las Vegas le week-end dernier. Le double…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/malade-alonso-va-manquer-la-premiere-journee-du-grand-prix-du-qatar,213749.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/astonmartin2_1_-6.jpg",
+   "impact": {
+    "targetType": "driver",
+    "targetIds": [
+     "alonso"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 1.25,
+    "impactLabel": "Cotes +25%",
+    "teamId": "aston_martin"
+   },
+   "firstSeen": "2026-11-26T11:20:46.596Z"
+  },
+  {
+   "id": "news_fefgtc",
+   "timestamp": "2026-11-26T10:58:23.000Z",
+   "category": "PADDOCK",
+   "title": "Fernando Alonso malade et absent jeudi à Losail",
+   "summary": "Le double champion du monde manquera les habituelles obligations médiatiques sur le circuit de Losail, avec pour objectif de retrouver la forme à temps pour les EL1 vendredi. Dans un communiqué, son équipe Aston Martin a expliqué : \"Fernando manquera la…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/fernando-alonso-malade-absent-jeudi-qatar/10877852/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/6zoD4Ma0/s6/fernando-alonso-aston-martin-r.jpg",
+   "impact": {
+    "targetType": "driver",
+    "targetIds": [
+     "alonso"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 1.25,
+    "impactLabel": "Cotes +25%",
+    "teamId": "aston_martin"
+   },
+   "firstSeen": "2026-11-26T11:20:46.596Z"
+  },
   {
    "id": "news_1a650sy",
    "timestamp": "2026-11-26T10:32:00.000Z",
@@ -791,44 +843,6 @@
    "impact": null,
    "firstSeen": "2026-11-24T11:11:19.505Z",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/mclaren1_132_-3.jpg"
-  },
-  {
-   "id": "news_1l1kw8n",
-   "timestamp": "2026-11-24T09:31:00.000Z",
-   "category": "PADDOCK",
-   "title": "Mercedes F1 veut retrouver la victoire au Qatar après trois courses frustrantes",
-   "summary": "Mercedes F1 entend profiter du Grand Prix du Qatar pour rebondir après un résultat décevant à Las Vegas, où l'écurie allemande avait pourtant affiché un niveau de performance lui permettant de se battre aux avant-postes. Toto Wolff reste convaincu que son…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/mercedes-f1-veut-retrouver-la-victoire-au-qatar-apres-trois-courses-frustrantes,213699.html",
-   "impact": {
-    "targetType": "team",
-    "targetIds": [
-     "mercedes"
-    ],
-    "managerModifiers": {
-     "powerUnit": 1,
-     "aero": 1,
-     "reliability": 0
-    },
-    "bettingOddsMultiplier": 0.92,
-    "impactLabel": "Moteur +1 pts | Aéro +1 pts | Cotes -8%"
-   },
-   "firstSeen": "2026-11-24T10:11:11.084Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/mercedes_57_-3.jpg"
-  },
-  {
-   "id": "news_1m9exrj",
-   "timestamp": "2026-11-24T08:53:00.000Z",
-   "category": "PADDOCK",
-   "title": "Antonelli achète un garage pour sa future collection de voitures et révèle celles qu'il convoite",
-   "summary": "Sacré champion du monde de Formule 1 à seulement 20 ans, Kimi Antonelli commence déjà à préparer une collection de voitures d'exception. Le pilote Mercedes a révélé avoir acheté un bâtiment destiné à accueillir ses futures acquisitions, avec plusieurs modèles…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/antonelli-achete-un-garage-pour-sa-future-collection-de-voitures-et-revele,213510.html",
-   "impact": null,
-   "firstSeen": "2026-11-24T09:11:02.535Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/mercedes_16_-7.jpg"
   }
  ]
 }
