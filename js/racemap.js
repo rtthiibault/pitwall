@@ -68,9 +68,26 @@
   }
   const NIGHT = ['vegas', 'marina_bay', 'losail', 'yas_marina', 'jeddah', 'bahrain'];
 
-  function mount(el, { res, seedStr, colorOf, getT, onIncident, style = 'anim', low = false }) {
+  function mount(el, { res, seedStr, colorOf, getT, onIncident, style = 'anim', low = false, scene = '' }) {
     const cv = document.createElement('canvas'); cv.className = 'race-map-cv';
-    el.innerHTML = ''; el.appendChild(cv);
+    el.innerHTML = '';
+    /* Décor du circuit (paysage, lieux emblématiques), dessiné en SVG dans les coordonnées du tracé réel :
+       son cadrage est recalé sur celui du canvas à chaque redimensionnement, la piste et les voitures passent par-dessus. */
+    let sceneEl = null, sceneSvg = null;
+    if (scene) {
+      sceneEl = document.createElement('div'); sceneEl.className = 'rm-scene'; sceneEl.innerHTML = scene;
+      sceneSvg = sceneEl.querySelector('svg');
+      if (sceneSvg) { sceneSvg.setAttribute('preserveAspectRatio', 'none'); const g = [...sceneSvg.classList].find((c) => c.startsWith('g-')); if (g) sceneEl.classList.add(g); }
+      el.appendChild(sceneEl);
+    }
+    el.appendChild(cv);
+    // étiquettes des lieux emblématiques : sur un calque au-dessus de la piste, pour rester lisibles
+    let lblEl = null, lblSvg = null;
+    if (sceneSvg) {
+      lblEl = document.createElement('div'); lblEl.className = 'rm-labels'; lblSvg = sceneSvg.cloneNode(true);
+      lblSvg.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'));
+      lblEl.appendChild(lblSvg); el.appendChild(lblEl);
+    }
     const ctx = cv.getContext('2d');
     const LAPS = res.LAPS || res.laps.length;
     const { P, N, speed: VP } = makeTrack(seedStr, res.w);
@@ -89,6 +106,9 @@
       const pad = 34, k = Math.min((W - pad * 2) / (x1 - x0), (H - pad * 2) / (y1 - y0));
       const ox = (W - (x1 - x0) * k) / 2 - x0 * k, oy = (H - (y1 - y0) * k) / 2 + y1 * k;
       S = P.map((p) => [ox + p[0] * k, oy - p[1] * k]); // vue du dessus, y inversé : la ligne des stands est en bas
+      // décor : point (x, 1000 - y) du SVG -> (ox + x·k, oy - y·k) à l'écran, la même transformation que la piste
+      if (lblSvg) lblSvg.setAttribute('viewBox', `${(-ox / k).toFixed(2)} ${((1000 * k - oy) / k).toFixed(2)} ${(W / k).toFixed(2)} ${(H / k).toFixed(2)}`);
+      if (sceneSvg) sceneSvg.setAttribute('viewBox', `${(-ox / k).toFixed(2)} ${((1000 * k - oy) / k).toFixed(2)} ${(W / k).toFixed(2)} ${(H / k).toFixed(2)}`);
       NRM = S.map((p, i) => { const a = S[(i - 1 + N) % N], b = S[(i + 1) % N]; const dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1; return [-dy / l, dx / l]; });
       // la voie des stands longe la ligne droite des stands, du côté intérieur du circuit
       const cx = S.reduce((a, p) => a + p[0], 0) / N, cy = S.reduce((a, p) => a + p[1], 0) / N, p = S[0], nn = NRM[0];
@@ -157,7 +177,9 @@
       const flat = FLAT();
       ctx.clearRect(0, 0, W, H);
       // fond
+      if (sceneEl) { sceneEl.style.display = flat ? 'none' : ''; lblEl.style.display = flat ? 'none' : ''; }
       if (flat) { ctx.fillStyle = wet > 0.12 ? '#141b24' : '#13171c'; ctx.fillRect(0, 0, W, H); }
+      else if (sceneEl) { ctx.fillStyle = `rgba(8,10,14,${(0.12 + rain * 0.35 + (night ? 0.08 : 0)).toFixed(3)})`; ctx.fillRect(0, 0, W, H); }
       else {
         const g = ctx.createLinearGradient(0, 0, 0, H);
         g.addColorStop(0, `rgb(${Math.round(lerp(16, 12, rain))},${Math.round(lerp(19, 20, rain))},${Math.round(lerp(26, 38, rain))})`); g.addColorStop(1, '#0a0c11');

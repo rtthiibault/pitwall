@@ -2994,6 +2994,8 @@
     try {
       S.raceMap = F1.racemap.mount($('#raceMap'), {
         res, seedStr: ctx.race.circuitId || ctx.race.nameFr, colorOf, getT: () => T, style: mapStyle(), low: lowMode(),
+        // décor du circuit (paysage et lieux emblématiques de la page d'accueil), sous la piste
+        scene: ctx.race.circuitId ? trackSvg(ctx.race.circuitId, '#ffffff', true) : '',
         onIncident: (x, out) => showFlag(out.crash ? `🟡 DRAPEAU JAUNE · accident de <b>${esc(x.c.me ? 'votre voiture' : x.name)}</b>` : `💨 ${esc(out.why)} · <b>${esc(x.c.me ? 'votre voiture' : x.name)}</b> s'arrête`, out.crash ? 'yellow' : 'mech'),
       });
     } catch (e) { console.warn(e); const st = $('.race-stage'); if (st) st.classList.add('off'); }

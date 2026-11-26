@@ -785,3 +785,21 @@ body.on-mgr main { max-width: none; padding-left: clamp(12px, 2.2vw, 36px); padd
 .hq.is-career .hq-rail a[href$="/championnat"].on { box-shadow: inset 4px 0 0 var(--gold) !important; }
 @media (max-width: 760px) { .hq .rail-h { display: none; } .hq .crr-band a { margin-left: 0; } }
 .yw-t.crr { box-shadow: inset 0 2px 0 var(--gold); }
+
+/* =====================================================================================
+   Course : décor du circuit sous la carte 2D (paysage, lieux emblématiques, libellés)
+   ===================================================================================== */
+.race-map .rm-scene { position: absolute; inset: 0; pointer-events: none; --gr: rgba(20,24,30,.0); background: linear-gradient(180deg, #10141a, #0b0e12); }
+.race-map .rm-scene.g-sand { background: linear-gradient(180deg, rgba(168,128,66,.30), rgba(120,90,48,.22)), #12100d; }
+.race-map .rm-scene.g-city { background: linear-gradient(180deg, rgba(72,82,98,.34), rgba(40,46,56,.3)), #0f1217; }
+.race-map .rm-scene.g-park { background: linear-gradient(180deg, rgba(78,138,78,.22), rgba(50,90,52,.2)), #0e120f; }
+.race-map .rm-scene.g-forest { background: linear-gradient(180deg, rgba(44,104,68,.30), rgba(30,70,46,.26)), #0c110e; }
+.race-map .rm-scene svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* la piste, son liseré et le damier du décor sont redessinés par le canvas : on ne garde que le paysage et les repères */
+.race-map .rm-scene :is(.hx-t-glow, .hx-t-kerb, .hx-t-asphalt, .hx-t-line, .hx-car) { display: none; }
+.race-map .rm-scene .hx-lms { opacity: .92; }
+.race-map .race-map-cv { position: relative; }
+.race-map .rm-scene .hx-lms .hx-lm { display: none; }
+.race-map .rm-labels { position: absolute; inset: 0; pointer-events: none; }
+.race-map .rm-labels svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.race-map .rm-labels > svg > :not(.hx-lms), .race-map .rm-labels .hx-lms > :not(.hx-lm) { display: none; }
