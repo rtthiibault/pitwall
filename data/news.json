@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T08:50:09.340Z",
+ "updated": "2026-11-26T09:20:13.183Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T09:20:09.340Z",
+ "next": "2026-11-26T09:50:13.183Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 75
+   "n": 73
   },
   {
    "name": "F1i",
@@ -26,6 +26,32 @@
   }
  ],
  "items": [
+  {
+   "id": "news_1i4kq32",
+   "timestamp": "2026-11-26T09:11:47.000Z",
+   "category": "PADDOCK",
+   "title": "Haas confirme la prolongation d’Oliver Bearman pour 2027",
+   "summary": "La question n’était pas de savoir « si » mais plutôt « quand » Oliver Bearman et Haas allaient officialiser la poursuite de leur aventure commune. Le Britannique lui-même ne cachait pas son impatience et commençait sérieusement à trépigner ces dernières…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/haas-confirme-la-prolongation-doliver-bearman-pour-2027.html",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/DPPI_00126022_1233.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T09:20:13.183Z"
+  },
+  {
+   "id": "news_10xaprm",
+   "timestamp": "2026-11-26T09:04:15.000Z",
+   "category": "PADDOCK",
+   "title": "Haas confirme enfin Bearman, la grille 2027 est complète",
+   "summary": "C'est officiel, Oliver Bearman restera chez Haas pour la saison 2027 de F1, après avoir enfin signé un nouveau contrat avec l'écurie. Haas a annoncé ce jeudi que Bearman poursuivrait l'aventure l'année prochaine. Il fera équipe avec le rookie brésilien Rafael…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/oliver-bearman-officiel-prolongation-haas-2027/10877814/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/YXyKMzx6/s6/oliver-bearman-haas.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T09:20:13.183Z"
+  },
   {
    "id": "news_gwkzdq",
    "timestamp": "2026-11-26T08:28:00.000Z",
@@ -815,45 +841,6 @@
    "impact": null,
    "firstSeen": "2026-11-24T06:10:22.342Z",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1389137_hires.jpg"
-  },
-  {
-   "id": "news_rfsuzx",
-   "timestamp": "2026-11-23T18:00:00.000Z",
-   "category": "PADDOCK",
-   "title": "La victoire de Verstappen à Las Vegas à la Une du N°2589 d’AUTOhebdo",
-   "summary": "À la Une d’AUTOhebdo cette semaine : The post La victoire de Verstappen à Las Vegas à la Une du N°2589 d’AUTOhebdo appeared first on AutoHebdo .",
-   "source": "AutoHebdo",
-   "lang": "fr",
-   "url": "https://www.autohebdo.fr/actualites/magazine/la-victoire-de-verstappen-a-la-une-du-n2589-dautohebdo.html",
-   "impact": {
-    "targetType": "driver",
-    "targetIds": [
-     "max_verstappen"
-    ],
-    "managerModifiers": {
-     "powerUnit": 0,
-     "aero": 0,
-     "reliability": 0
-    },
-    "bettingOddsMultiplier": 0.95,
-    "impactLabel": "Cotes -5%",
-    "teamId": "red_bull"
-   },
-   "firstSeen": "2026-11-23T18:06:54.493Z",
-   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/1200x800-2589.png"
-  },
-  {
-   "id": "news_nzmtz9",
-   "timestamp": "2026-11-23T18:00:00.000Z",
-   "category": "PADDOCK",
-   "title": "Photos - GP de Las Vegas de F1 2026 - La galerie 'bonus' du week-end",
-   "summary": "",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/photos/photos-gp-de-las-vegas-de-f1-2026-la-galerie-bonus-du-week-end,213683.html",
-   "impact": null,
-   "firstSeen": "2026-11-23T18:37:00.937Z",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/redbull_146_.jpg"
   }
  ]
 }
