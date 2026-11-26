@@ -143,3 +143,8 @@ main .pdw-chip .num { opacity: .7; }
 .ring[data-lg="platine"], .ring[data-lg="diamant"], .ring[data-lg="legende"] { background-clip: padding-box; }
 .ring[data-lg="legende"] { box-shadow: 0 0 0 2px var(--l0, #0f1216), 0 0 0 4px var(--lr), 0 0 12px color-mix(in srgb, var(--lr) 45%, transparent) !important; }
 .pf-ava.ring[data-lg="legende"] { box-shadow: 0 0 0 4px var(--l1, #161a20), 0 0 0 8px var(--lr), 0 0 22px color-mix(in srgb, var(--lr) 45%, transparent) !important; }
+
+/* avatar du compte : la photo reste ronde, mais la pastille de notifications n'est plus coupée */
+.topbar .avatar { overflow: visible !important; }
+.topbar .avatar img { border-radius: 50%; }
+.topbar .av-badge { top: -6px !important; right: -7px !important; z-index: 2; min-width: 18px; height: 18px; font-size: 12px; line-height: 1; box-shadow: 0 0 0 2px var(--bg); }
