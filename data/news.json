@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T16:21:35.652Z",
+ "updated": "2026-11-26T16:51:40.233Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T16:51:35.652Z",
+ "next": "2026-11-26T17:21:40.233Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,45 @@
   }
  ],
  "items": [
+  {
+   "id": "news_1e0wrqp",
+   "timestamp": "2026-11-26T16:42:02.000Z",
+   "category": "PADDOCK",
+   "title": "Leclerc agacé de \"voir des gens remettre en question mon intégrité\" chez Ferrari",
+   "summary": "Charles Leclerc n'a pas caché sa colère face à ceux qui \"remettent en question son intégrité et son amour pour Ferrari\" après un nouvel accrochage avec son coéquipier Lewis Hamilton à Las Vegas. Le Monégasque a également appelé à trouver une \"solution\". Les…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/charles-leclerc-agace-remise-en-question-integrite-ferrari/10877966/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/6zoD4aJ0/s6/charles-leclerc-ferrari-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T16:51:40.233Z"
+  },
+  {
+   "id": "news_kf3q44",
+   "timestamp": "2026-11-26T16:36:11.000Z",
+   "category": "PADDOCK",
+   "title": "Charles Leclerc l’assume après Las Vegas : « Oui, c’est inacceptable »",
+   "summary": "Après trois Grands Prix à l’issue desquels la discorde a prédominé cette saison chez Ferrari, l’étau médiatique se ressert. Coupable d’avoir accroché Lewis Hamilton à Las Vegas, Charles Leclerc, présent en conférence de presse au Qatar, a naturellement été…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/charles-leclerc-lassume-apres-las-vegas-oui-cest-inacceptable.html",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/DPPI_00126025_055.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T16:51:40.233Z"
+  },
+  {
+   "id": "news_avwjff",
+   "timestamp": "2026-11-26T16:06:00.000Z",
+   "category": "PADDOCK",
+   "title": "Leclerc n'a 'pas le droit' de parler des dernière discussions chez Ferrari et dément être le n°1 par contrat",
+   "summary": "Charles Leclerc a reconnu que l'ambiance au sein de Ferrari était loin d'être idéale à la suite de son nouvel accrochage avec Lewis Hamilton lors du Grand Prix de Las Vegas. Le Monégasque accepte le jugement particulièrement sévère de Frédéric Vasseur sur cet…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/leclerc-n-a-pas-le-droit-de-parler-des-derniere-discussions-chez-ferrari-et,213762.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456409_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T16:51:40.233Z"
+  },
   {
    "id": "news_1jj4nnm",
    "timestamp": "2026-11-26T15:49:24.000Z",
@@ -804,45 +843,6 @@
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1453070_hires.jpg",
    "impact": null,
    "firstSeen": "2026-11-24T17:12:28.380Z"
-  },
-  {
-   "id": "news_1lhny61",
-   "timestamp": "2026-11-24T16:18:00.000Z",
-   "category": "RÈGLEMENT",
-   "title": "La F1 révèle comment la direction de course prend ses décisions (vidéo)",
-   "summary": "La FIA a publié une nouvelle vidéo offrant un aperçu de la manière dont les décisions sont prises au sein de la direction de course lors des Grands Prix. Le directeur de course de Formule 1, Rui Marques, le pilote de la voiture de sécurité, Bernd Schneider, et…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/la-f1-revele-comment-la-direction-de-course-prend-ses-decisions-video,213524.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/fia_3_.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-24T17:12:28.380Z"
-  },
-  {
-   "id": "news_hwoe8c",
-   "timestamp": "2026-11-24T16:06:23.000Z",
-   "category": "PADDOCK",
-   "title": "Le problème qui a privé Pierre Gasly d'une possible \"victoire\" au GP de Las Vegas",
-   "summary": "Pierre Gasly estime qu'il avait potentiellement le rythme pour remporter le Grand Prix de Las Vegas si un problème de refroidissement n'avait pas affecté sa monoplace Alpine dans les derniers tours. Parti de la huitième place sur la grille, le Français a…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/probleme-prive-pierre-gasly-possible-victoire-gp-las-vegas/10877510/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "image": "https://cdn-1.motorsport.com/images/amp/0rVPe7q0/s6/pierre-gasly-alpine-2.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-24T16:12:18.623Z"
-  },
-  {
-   "id": "news_1pntyxo",
-   "timestamp": "2026-11-24T15:29:00.000Z",
-   "category": "PADDOCK",
-   "title": "Verstappen dévoile les Grands Prix qu'il choisirait s'il était un simple fan de F1",
-   "summary": "Max Verstappen a beau parcourir le monde depuis plus de dix ans au rythme du calendrier de la Formule 1, certains Grands Prix continuent de lui donner envie de voyager. À l'occasion de la remise d'un abonnement exceptionnel permettant à un supporter d'assister…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-devoile-les-grands-prix-qu-il-choisirait-s-il-etait-un-simple-fan-de,213575.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/redbull_10_-9.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-24T16:12:18.623Z"
   }
  ]
 }
