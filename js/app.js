@@ -622,11 +622,39 @@
   }
   function grQuestions(season, race) {
     const duels = grDuels(season, race);
-    const Q = [{ k: 'win', t: 'Vainqueur du Grand Prix', type: 'drv', pts: 10, when: 'race' }, { k: 'pole', t: 'Pole position', type: 'drv', pts: 6, when: 'quali' }];
-    duels.forEach((d, i) => Q.push({ k: 'duel' + i, t: 'Qui finira devant ?', type: 'duel', pair: d.map((x) => x.id), pts: 3, when: 'race' }));
-    Q.push({ k: 'fl', t: 'Meilleur tour en course', type: 'drv', pts: 5, when: 'race' }, { k: 'dnf', t: 'Nombre d\'abandons', type: 'num', pts: 5, when: 'race', hint: '5 pts si exact, 2 à un près' }, { k: 'team', t: 'Écurie la mieux classée', type: 'team', pts: 4, when: 'race' });
+    const Q = [{ k: 'win', t: 'Vainqueur du Grand Prix', type: 'drv', pts: 10, when: 'race', mk: 'win', K: 6, cap: 150 }, { k: 'pole', t: 'Pole position', type: 'drv', pts: 6, when: 'quali', mk: 'pole', K: 4.5, cap: 110 }];
+    duels.forEach((d, i) => Q.push({ k: 'duel' + i, t: 'Qui finira devant ?', type: 'duel', pair: d.map((x) => x.id), pts: 3, when: 'race', K: 2.5, cap: 15, ex: 0.85 }));
+    Q.push({ k: 'fl', t: 'Meilleur tour en course', type: 'drv', pts: 5, when: 'race', mk: 'fastest', K: 3.5, cap: 90 }, { k: 'dnf', t: 'Nombre d\'abandons', type: 'num', pts: 5, when: 'race', hint: '5 pts si exact, 2 à un près' }, { k: 'team', t: 'Écurie la mieux classée', type: 'team', pts: 4, when: 'race', mk: 'teamWin', K: 4, cap: 80 });
+    const ctx = grCtx(season, race);
+    Q.forEach((q) => { if (q.K) q.val = grValues(q, ctx); });
     return Q;
   }
+  // probabilités du modèle pour ce Grand Prix (mêmes chiffres que les marchés), sinon une estimation par la forme
+  function grCtx(season, race) {
+    const ms = S.markets && S.markets.length && S.markets[0].round === race.round ? S.markets : [];
+    const byKind = (k) => { const m = ms.find((x) => x.kind === k); if (!m) return null; const o = {}; m.selections.forEach((x) => { o[x.driverId || x.teamId || x.key] = x.prob; }); return o; };
+    const win = byKind('win');
+    return { ms, win, get: (k) => byKind(k) || (k === 'teamWin' ? null : win) };
+  }
+  // valeur en points de chaque réponse possible : plus le choix est improbable, plus il rapporte (≈ K / √p, plafonné)
+  function grValues(q, ctx) {
+    const v = {}, f = (p) => Math.max(1, Math.min(q.cap, Math.round(q.K * Math.pow(1 / (q.type === 'duel' ? p : p + (q.type === 'team' ? 0.008 : 0.004)), q.ex || 0.5))));
+    if (q.type === 'duel') {
+      const [a, b] = q.pair, m = ctx.ms.find((x) => x.kind === 'h2h' && ((x.a === a && x.b === b) || (x.a === b && x.b === a)));
+      let pa;
+      if (m) pa = m.selections.find((x) => x.driverId === a).prob;
+      else if (ctx.win && (ctx.win[a] || ctx.win[b])) { const wa = Math.sqrt(ctx.win[a] || 0.001), wb = Math.sqrt(ctx.win[b] || 0.001); pa = wa / (wa + wb); }
+      else pa = 0.5;
+      pa = Math.max(0.05, Math.min(0.95, pa)); v[a] = f(pa); v[b] = f(1 - pa); return v;
+    }
+    let P = ctx.get(q.mk);
+    if (q.type === 'team' && !P && ctx.win) { P = {}; Object.entries(ctx.win).forEach(([id, p]) => { const d = drv(id); if (d && d.teamId) P[d.teamId] = (P[d.teamId] || 0) + p; }); }
+    if (!P) return null;
+    Object.entries(P).forEach(([id, p]) => { v[id] = f(p); });
+    v._def = f(0); // choix absent du modèle : valeur maximale
+    return v;
+  }
+  const grVal = (q, id, frozen) => (frozen && frozen[q.k] != null ? frozen[q.k] : q.val ? (q.val[id] != null ? q.val[id] : q.val._def) : q.pts);
   // bonne réponse une fois les résultats connus (null tant que la session n'est pas courue)
   function grTruth(race, q) {
     const R = race.results && race.results.length ? race.results : null, QU = race.qualifying && race.qualifying.length ? race.qualifying : null;
@@ -640,35 +668,39 @@
     if (q.k === 'team') return S2[0].teamId;
     return null;
   }
-  function grPoints(q, ans, truth) {
+  function grPoints(q, ans, truth, frozen) {
     if (ans == null || ans === '' || truth == null) return null;
     if (q.type === 'num') { const d = Math.abs(+ans - truth); return d === 0 ? q.pts : d === 1 ? 2 : 0; }
-    return ans === truth ? q.pts : 0;
+    return ans === truth ? grVal(q, ans, frozen) : 0;
   }
   function grilleHtml(season, race) {
     const key = `${season.year}-${race.round}`, all = grLoad(), mine = all[key] || {};
     const Q = grQuestions(season, race), drivers = grDrivers(season);
     const teams = [...new Set(drivers.map((d) => d.teamId))].map((id) => team(id)).sort((a, b) => (a.short || a.name).localeCompare(b.short || b.name));
     const lockAt = (q) => { const st = sessionStart(race, q.when); return st ? st.getTime() : Infinity; };
-    let got = 0, max = 0, filled = 0;
+    let got = 0, max = 0, filled = 0, stake = 0;
     const rows = Q.map((q, i) => {
-      const ans = mine[q.k], locked = Date.now() >= lockAt(q), truth = grTruth(race, q), pts = grPoints(q, ans, truth);
-      if (ans != null && ans !== '') filled++;
-      if (truth != null) { max += q.pts; if (pts) got += pts; }
+      const ans = mine[q.k], locked = Date.now() >= lockAt(q), truth = grTruth(race, q), pts = grPoints(q, ans, truth, mine.pv);
+      const has = ans != null && ans !== '', worth = has ? (q.type === 'num' ? q.pts : grVal(q, ans, mine.pv)) : null;
+      if (has) { filled++; stake += worth; }
+      if (truth != null) { max += has ? worth : 0; if (pts) got += pts; }
+      const pv = (id) => (q.val ? grVal(q, id, id === ans ? mine.pv : null) : q.pts);
       const dis = locked ? 'disabled' : '';
       let input;
-      if (q.type === 'drv') input = `<select class="gr-sel" data-gr="${q.k}" ${dis}><option value="">Choisir un pilote</option>${drivers.map((d) => `<option value="${esc(d.id)}" ${ans === d.id ? 'selected' : ''}>${d.number ? '#' + esc(d.number) + ' · ' : ''}${esc(d.given + ' ' + d.family)}</option>`).join('')}</select>`;
-      else if (q.type === 'team') input = `<select class="gr-sel" data-gr="${q.k}" ${dis}><option value="">Choisir une écurie</option>${teams.map((t) => `<option value="${esc(t.id)}" ${ans === t.id ? 'selected' : ''}>${esc(t.short || t.name)}</option>`).join('')}</select>`;
+      if (q.type === 'drv') input = `<select class="gr-sel" data-gr="${q.k}" ${dis}><option value="">Choisir un pilote</option>${drivers.slice().sort((a, b) => pv(a.id) - pv(b.id) || a.family.localeCompare(b.family)).map((d) => `<option value="${esc(d.id)}" data-pv="${pv(d.id)}" ${ans === d.id ? 'selected' : ''}>${d.number ? '#' + esc(d.number) + ' · ' : ''}${esc(d.given + ' ' + d.family)} — ${pv(d.id)} pts</option>`).join('')}</select>`;
+      else if (q.type === 'team') input = `<select class="gr-sel" data-gr="${q.k}" ${dis}><option value="">Choisir une écurie</option>${teams.slice().sort((a, b) => pv(a.id) - pv(b.id)).map((t) => `<option value="${esc(t.id)}" data-pv="${pv(t.id)}" ${ans === t.id ? 'selected' : ''}>${esc(t.short || t.name)} — ${pv(t.id)} pts</option>`).join('')}</select>`;
       else if (q.type === 'num') input = `<input class="gr-num" type="number" inputmode="numeric" min="0" max="20" data-gr="${q.k}" value="${ans != null ? esc(String(ans)) : ''}" placeholder="–" ${dis} aria-label="${esc(q.t)}">`;
-      else input = `<div class="gr-duel">${q.pair.map((id) => { const d = drv(id); const pt = F1.visuals.portrait(id); return `<label class="gr-dp ${ans === id ? 'on' : ''}" style="--tc:${F1.teamColor(d.teamId)}"><input type="radio" name="gr-${q.k}" value="${esc(id)}" data-gr="${q.k}" ${ans === id ? 'checked' : ''} ${dis}><span class="gr-ph"><i>${esc(d.code || '')}</i>${pt ? `<img src="${esc(pt.img)}" alt="" onerror="this.remove()">` : ''}</span>${d.number ? `<span class="gr-n">${F1.num.html(d.number, d.teamId, { color: 'currentColor' })}</span>` : ''}<b>${esc(d.family)}</b></label>`; }).join('<span class="gr-vs">ou</span>')}</div>`;
-      const res = truth == null ? (locked ? '<span class="gr-st wait">En attente du résultat</span>' : `<span class="gr-st">${q.pts} pts</span>`)
+      else input = `<div class="gr-duel">${q.pair.map((id) => { const d = drv(id); const pt = F1.visuals.portrait(id); return `<label class="gr-dp ${ans === id ? 'on' : ''}" style="--tc:${F1.teamColor(d.teamId)}"><input type="radio" name="gr-${q.k}" value="${esc(id)}" data-gr="${q.k}" data-pv="${pv(id)}" ${ans === id ? 'checked' : ''} ${dis}><em class="gr-pv">${pv(id)} pts</em><span class="gr-ph"><i>${esc(d.code || '')}</i>${pt ? `<img src="${esc(pt.img)}" alt="" onerror="this.remove()">` : ''}</span>${d.number ? `<span class="gr-n">${F1.num.html(d.number, d.teamId, { color: 'currentColor' })}</span>` : ''}<b>${esc(d.family)}</b></label>`; }).join('<span class="gr-vs">ou</span>')}</div>`;
+      const range = q.val ? (() => { const xs = Object.entries(q.val).filter(([k]) => k !== '_def').map(([, x]) => x); return xs.length ? `${Math.min(...xs)} à ${Math.max(...xs)} pts` : `${q.pts} pts`; })() : `${q.pts} pts`;
+      const res = truth == null ? (locked ? `<span class="gr-st wait">${has ? `En jeu : <b>${worth} pts</b>` : 'En attente du résultat'}</span>` : `<span class="gr-st ${has ? 'set' : ''}" data-range="${range}">${has ? `<b>${worth} pts</b><small>si c'est juste</small>` : range}</span>`)
         : `<span class="gr-st ${pts ? 'ok' : 'ko'}">${pts ? '✓ +' + pts : '✗ 0'} <small>${esc(grTruthTxt(q, truth))}</small></span>`;
       return `<div class="gr-row ${locked ? 'locked' : ''}"><span class="gr-i">${i + 1}</span><div class="gr-q"><b>${esc(q.t)}</b>${q.type === 'duel' ? `<small>${esc(team(drv(q.pair[0]).teamId).short || '')} : le mieux classé à l'arrivée</small>` : q.hint ? `<small>${esc(q.hint)}</small>` : ''}</div><div class="gr-a">${input}</div>${res}</div>`;
     }).join('');
     const total = Object.entries(all).reduce((a, [k, v]) => a + (v.score || 0), 0);
     if (max) { mine.score = got; all[key] = mine; grSave(all); }
     return `<section class="gr" id="grille" data-key="${key}"><header class="gr-h"><div><h3>Ta grille du ${esc(race.nameFr.replace('Grand Prix', 'GP'))}</h3><span>${filled} / ${Q.length} pronos remplis · enregistrés automatiquement</span></div>
-      <div class="gr-score"><small>${max ? 'Score du GP' : 'Points en jeu'}</small><b>${max ? got : Q.reduce((a, q) => a + q.pts, 0)}${max ? `<i>/${max}</i>` : ''}</b><span>Saison : ${total} pts</span></div></header>${rows}</section>`;
+      <div class="gr-score"><small>${max ? 'Score du GP' : 'Points en jeu'}</small><b>${max ? got : stake}${max ? `<i>/${max}</i>` : ''}</b><span>Saison : ${total} pts</span></div></header>
+      <p class="gr-rule">Chaque réponse a sa valeur : un favori rapporte peu, un outsider rapporte gros. La valeur est figée au moment où tu fais ton choix.</p>${rows}</section>`;
   }
   function grTruthTxt(q, t) { if (q.type === 'num') return `${t} abandon${t > 1 ? 's' : ''}`; if (q.type === 'team') return team(t).short || t; const d = drv(t); return d ? d.family : t; }
   document.addEventListener('change', (e) => {
@@ -676,9 +708,17 @@
     const box = el.closest('#grille'); if (!box) return;
     const all = grLoad(), key = box.dataset.key, mine = all[key] || {};
     let v = el.value; if (el.type === 'number') v = v === '' ? '' : String(Math.max(0, Math.min(20, Math.round(+v))));
-    mine[el.dataset.gr] = v; mine.t = Date.now(); all[key] = mine; grSave(all);
+    mine[el.dataset.gr] = v; mine.t = Date.now();
+    const opt = el.tagName === 'SELECT' ? el.selectedOptions[0] : el, val = opt && opt.dataset.pv ? +opt.dataset.pv : null;
+    mine.pv = mine.pv || {}; if (val != null && v !== '') mine.pv[el.dataset.gr] = val; else delete mine.pv[el.dataset.gr];
+    all[key] = mine; grSave(all);
     if (el.type === 'radio') box.querySelectorAll(`[name="${el.name}"]`).forEach((r) => r.closest('.gr-dp').classList.toggle('on', r.checked));
-    const n = Object.keys(mine).filter((k) => !['t', 'score'].includes(k) && mine[k] !== '').length;
+    const st = el.closest('.gr-row').querySelector('.gr-st');
+    if (st && st.dataset.range) { if (val != null && v !== '') { st.classList.add('set'); st.innerHTML = `<b>${val} pts</b><small>si c'est juste</small>`; } else if (el.type !== 'number') { st.classList.remove('set'); st.textContent = st.dataset.range; } }
+    let stake = 0; box.querySelectorAll('.gr-row').forEach((r) => { const s2 = r.querySelector('.gr-sel'), rd = r.querySelector('input[type=radio]:checked'), nm = r.querySelector('.gr-num');
+      if (s2 && s2.value) stake += +s2.selectedOptions[0].dataset.pv || 0; else if (rd) stake += +rd.dataset.pv || 0; else if (nm && nm.value !== '') stake += 5; });
+    const sb = box.querySelector('.gr-score'); if (sb && sb.querySelector('small').textContent === 'Points en jeu') sb.querySelector('b').textContent = stake;
+    const n = Object.keys(mine).filter((k) => !['t', 'score', 'pv'].includes(k) && mine[k] !== '').length;
     const sp = box.querySelector('.gr-h span'); if (sp) sp.textContent = `${n} / ${box.querySelectorAll('.gr-row').length} pronos remplis · enregistrés automatiquement`;
     toast('✅', 'Prono enregistré', 'win', 1200);
   });
