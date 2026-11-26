@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-26T17:21:44.404Z",
+ "updated": "2026-11-26T17:51:49.130Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-26T17:51:44.404Z",
+ "next": "2026-11-26T18:21:49.130Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 80
+   "n": 81
   },
   {
    "name": "F1i",
@@ -26,6 +26,58 @@
   }
  ],
  "items": [
+  {
+   "id": "news_17t0ag5",
+   "timestamp": "2026-11-26T17:37:00.000Z",
+   "category": "PADDOCK",
+   "title": "Hadjar sent sa première victoire en F1 se rapprocher après sa performance de Vegas",
+   "summary": "Isack Hadjar aborde les deux dernières manches de la saison 2026 de Formule 1 avec la conviction que sa première victoire dans la catégorie reine est désormais à sa portée. Après avoir lutté aux avant-postes avec Max Verstappen lors du Grand Prix de Las Vegas…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hadjar-sent-sa-premiere-victoire-en-f1-se-rapprocher-apres-sa-performance-de,213754.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456531_hires.jpg",
+   "impact": {
+    "targetType": "driver",
+    "targetIds": [
+     "hadjar"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 0.95,
+    "impactLabel": "Cotes -5%",
+    "teamId": "red_bull"
+   },
+   "firstSeen": "2026-11-26T17:51:49.130Z"
+  },
+  {
+   "id": "news_91ylis",
+   "timestamp": "2026-11-26T17:34:00.000Z",
+   "category": "PADDOCK",
+   "title": "George Russell réagit à la tension grandissante avec Max Verstappen : « Je suis peut-être trop ouvert et trop honnête avec les médias »",
+   "summary": "À Sin City, George Russell aurait bien pu aller accrocher un podium à la régulière. Au lieu de cela, le Britannique a terminé sa course dans le mur alors qu’il tentait de dépasser son coéquipier Kimi Antonelli, dans un contexte où sa joute verbale avec Max…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/george-russell-reagit-a-la-tension-grandissante-avec-max-verstappen-je-suis-peut-etre-trop-ouvert-et-trop-honnete-avec-les-medias.html",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/DPPI_00126025_043.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T17:51:49.130Z"
+  },
+  {
+   "id": "news_1cmexe1",
+   "timestamp": "2026-11-26T17:19:00.000Z",
+   "category": "PADDOCK",
+   "title": "Bearman se sent prêt à mener Haas F1 et veut prouver à Ferrari qu'il a les épaules",
+   "summary": "Quelques heures après l'officialisation de sa prolongation chez Haas F1 pour la saison 2027, Oliver Bearman s'est longuement exprimé sur son avenir à l'occasion de la conférence de presse du Grand Prix du Qatar. Soulagé de voir les dernières incertitudes…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/bearman-se-sent-pret-a-mener-haas-f1-et-veut-prouver-a-ferrari-qu-il-a-les,213766.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456485_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-26T17:51:49.130Z"
+  },
   {
    "id": "news_1xshvlg",
    "timestamp": "2026-11-26T17:17:13.000Z",
@@ -804,45 +856,6 @@
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/mercedes_50_-5.jpg",
    "impact": null,
    "firstSeen": "2026-11-25T08:15:52.062Z"
-  },
-  {
-   "id": "news_1c1lsch",
-   "timestamp": "2026-11-25T06:49:00.000Z",
-   "category": "PADDOCK",
-   "title": "Verstappen étudie une participation aux 24 Heures de Daytona en janvier",
-   "summary": "Max Verstappen pourrait profiter de la trêve hivernale de la Formule 1 pour ajouter une nouvelle épreuve prestigieuse à son programme de compétition en dehors des Grands Prix. Le quadruple champion du monde étudie actuellement la possibilité de participer aux…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-etudie-une-participation-aux-24-heures-de-daytona-en-janvier,213703.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/redbull_9_-13.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T07:15:42.857Z"
-  },
-  {
-   "id": "news_7y7g4g",
-   "timestamp": "2026-11-25T06:06:00.000Z",
-   "category": "PADDOCK",
-   "title": "Alonso profiterait d'un week-end sans F1 pour retrouver l'IndyCar",
-   "summary": "Fernando Alonso pourrait-il profiter d'une pause dans le calendrier de la Formule 1 pour s'offrir une nouvelle aventure en IndyCar en 2027 ? Alors que le double champion du monde espagnol doit déjà participer au rallye Dakar en janvier prochain, une…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/alonso-profiterait-d-un-week-end-sans-f1-pour-retrouver-l-indycar,213706.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/927361673_18649386697012568_4769209859805430002_n.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T06:15:15.186Z"
-  },
-  {
-   "id": "news_13c2k49",
-   "timestamp": "2026-11-24T22:06:21.000Z",
-   "category": "PADDOCK",
-   "title": "Vidéo - Grand Prix, le Talk de la F1 - Débriefing du Grand Prix de Las Vegas 2026",
-   "summary": "Rediffusion de l'émission 'Grand Prix', le talk de la F1, du 24 novembre 2026, qui revient sur le GP de Las Vegas avec la victoire de Max Verstappen et la discorde chez Ferrari ! On a aussi abordé les difficultés de Mercedes, la belle remontée d'Oscar Piastri…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/videos/video-grand-prix-le-talk-de-la-f1-debriefing-du-grand-prix-de-las-vegas-2026,213707.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/grandprixlasvegas.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-24T22:13:36.860Z"
   }
  ]
 }
