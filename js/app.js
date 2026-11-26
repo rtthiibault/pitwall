@@ -1291,7 +1291,6 @@
     const dashHtml = '<div id="lgDash" class="lgd"><div class="skeleton" style="height:150px"></div></div>';
     // accès rapide : pronostic du GP (avec l'échéance), historique, création
     const nextLock = gp && ['quali', 'race'].map((k) => sessionStart(gp, k)).find((t) => t && t.getTime() > Date.now());
-    const quick = `<div class="lgx-quick">${gp ? `<button class="lgx-q hot" data-action="scroll-to" data-to="#pdSec"><b>🎯 Pronostiquer ${esc(gp.nameFr.replace('Grand Prix', 'le GP'))}</b><small>${nextLock ? `verrouillage dans ${untilTxt(nextLock.getTime() - Date.now())}` : 'pronostics verrouillés'}</small></button>` : ''}<button class="lgx-q" data-action="scroll-to" data-to="#lgHistSec"><b>📊 Mes 5 derniers GP</b><small>pronostics face aux résultats</small></button><button class="lgx-q" data-action="scroll-to" data-to="#lgFormsSec"><b>➕ Créer ou rejoindre</b><small>une ligue entre amis</small></button></div>`;
     let h = '';
     if (gp) {
       const key = `${y}-${gp.round}`;
@@ -1304,7 +1303,7 @@
     // vos ligues en haut de la page, création / adhésion et barème en bas
     const lgHead = '<div class="lgx-h"><h2>Vos ligues</h2><span class="muted">Rang · écart au leader · podium</span></div>';
     // en haut : vos ligues (à gauche) et vos points de ligue (à droite)
-    const top = (x, after = '') => head + quick + `<div class="lgx-top"><section class="lgx-l">${lgHead}${x}</section>${dashHtml}</div>` + h + after;
+    const top = (x, after = '') => head + `<div class="lgx-top"><section class="lgx-l">${lgHead}${x}</section>${dashHtml}</div>` + h + after;
     if (!so.enabled) return top('<div class="notice">Les ligues utilisent la base de données du système d\'amis, qui n\'est pas encore activée sur ce site. Vos pronostics sont gardés sur cet appareil.</div>');
     if (so.error) return top(`<div class="notice red">⚠️ Connexion impossible : ${esc(so.error)} <button class="btn sm ghost" data-action="f-retry">Réessayer</button></div>`);
     if (!so.ready) return top('<div class="skeleton"></div>');
