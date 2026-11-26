@@ -277,7 +277,7 @@
     }
     if (r === 'mes-paris') mountBankroll();
     if (r === 'amis') mountFriends(parts);
-    if (r === 'ligues') { if (parts[1] === 'l') mountLeaguePage(); else { mountLeagues(); mountLeagueDash(); } }
+    if (r === 'ligues') { grOffP = null; grMissing = false; if (parts[1] === 'l') mountLeaguePage(); else { mountLeagues(); mountLeagueDash(); } }
     if (isMgr) mountManager(parts[1]);
     if (r === 'manager' && parts[1] === 'hebdo') mountWeekly(); else { stopWeekly(); if (r === 'manager') weeklyClaim(); }
   }
@@ -622,9 +622,9 @@
   }
   function grQuestions(season, race) {
     const duels = grDuels(season, race);
-    const Q = [{ k: 'win', t: 'Vainqueur du Grand Prix', type: 'drv', pts: 10, when: 'race', mk: 'win', K: 6, cap: 150 }, { k: 'pole', t: 'Pole position', type: 'drv', pts: 6, when: 'quali', mk: 'pole', K: 4.5, cap: 110 }];
+    const Q = [{ k: 'win', t: 'Vainqueur du GP', type: 'drv', pts: 10, when: 'race', mk: 'win', K: 6, cap: 150 }, { k: 'pole', t: 'Pole position', type: 'drv', pts: 6, when: 'quali', mk: 'pole', K: 4.5, cap: 110 }];
     duels.forEach((d, i) => Q.push({ k: 'duel' + i, t: 'Qui finira devant ?', type: 'duel', pair: d.map((x) => x.id), pts: 3, when: 'race', K: 2.5, cap: 15, ex: 0.85 }));
-    Q.push({ k: 'fl', t: 'Meilleur tour en course', type: 'drv', pts: 5, when: 'race', mk: 'fastest', K: 3.5, cap: 90 }, { k: 'dnf', t: 'Nombre d\'abandons', type: 'num', pts: 5, when: 'race', hint: '5 pts si exact, 2 à un près' }, { k: 'team', t: 'Écurie la mieux classée', type: 'team', pts: 4, when: 'race', mk: 'teamWin', K: 4, cap: 80 });
+    Q.push({ k: 'fl', t: 'Meilleur tour', type: 'drv', pts: 5, when: 'race', mk: 'fastest', K: 3.5, cap: 90 }, { k: 'dnf', t: 'Nombre d\'abandons', type: 'num', pts: 5, when: 'race', hint: '5 pts si exact, 2 à un près' }, { k: 'team', t: 'Meilleure écurie', type: 'team', pts: 4, when: 'race', mk: 'teamWin', K: 4, cap: 80 });
     const ctx = grCtx(season, race);
     Q.forEach((q) => { if (q.K) q.val = grValues(q, ctx); });
     return Q;
@@ -673,54 +673,132 @@
     if (q.type === 'num') { const d = Math.abs(+ans - truth); return d === 0 ? q.pts : d === 1 ? 2 : 0; }
     return ans === truth ? grVal(q, ans, frozen) : 0;
   }
+  const GR_SHORT = { win: 'Vainqueur', pole: 'Pole', duel0: 'Duel 1', duel1: 'Duel 2', fl: 'Meilleur tour', dnf: 'Abandons', team: 'Écurie' };
+  const grQC = new Map();   // questions des GP déjà courus (stables), pour le calcul des classements
+  const grQFor = (season, race) => { if (!race.results) return grQuestions(season, race); const k = `${season.year}-${race.round}`; if (!grQC.has(k)) grQC.set(k, grQuestions(season, race)); return grQC.get(k); };
+  // points d'une grille sur un GP couru : { pts, hits, n, det: [{ q, ans, ok, pts, truth }] }
+  function grScoreRace(season, race, g) {
+    const Q = grQFor(season, race); let pts = 0, hits = 0, n = 0; const det = [];
+    Q.forEach((q) => { const ans = g && g.answers ? g.answers[q.k] : null, truth = grTruth(race, q), has = ans != null && ans !== '';
+      const p = has ? grPoints(q, ans, truth, g.pv) : null; if (has && truth != null) { n++; if (p) { hits++; pts += p; } } det.push({ q, ans: has ? ans : null, truth, pts: p }); });
+    return { pts, hits, n, det };
+  }
+  // statistiques de saison d'un joueur à partir de ses grilles (map manche → { answers, pv })
+  function grStats(season, byRound) {
+    const per = []; let total = 0, hits = 0, n = 0;
+    season.races.filter((r) => r.results && r.results.length).forEach((race) => { const g = byRound[race.round]; if (!g) return; const x = grScoreRace(season, race, g); if (!x.n) return; per.push({ race, ...x }); total += x.pts; hits += x.hits; n += x.n; });
+    return { total, hits, n, per, gps: per.length, last: per[per.length - 1] || null, best: per.reduce((m, x) => (!m || x.pts > m.pts ? x : m), null) };
+  }
+  // mes grilles : cet appareil, complétées par le serveur (la plus récente l'emporte)
+  function grMine(season, serverRows) {
+    const all = grLoad(), out = {};
+    (serverRows || []).forEach((r) => { out[r.round] = { answers: r.answers || {}, pv: r.pv || {}, t: new Date(r.updated_at).getTime() }; });
+    Object.entries(all).forEach(([k, v]) => { const [y, r] = k.split('-').map(Number); if (y !== season.year || !v) return; const answers = {}; Object.keys(v).forEach((x) => { if (!['t', 'score', 'pv'].includes(x) && v[x] !== '' && v[x] != null) answers[x] = v[x]; });
+      if (!out[r] || (v.t || 0) >= out[r].t) out[r] = { answers, pv: v.pv || {}, t: v.t || 0 }; });
+    return out;
+  }
+  // grille enregistrée sur le serveur reprise sur cet appareil (autre appareil, réinstallation)
+  function grAdopt(season, serverRows) {
+    const all = grLoad(); let ch = false;
+    (serverRows || []).forEach((r) => { const k = `${season.year}-${r.round}`, t = new Date(r.updated_at).getTime(); if (all[k] && (all[k].t || 0) >= t) return; all[k] = { ...(r.answers || {}), pv: r.pv || {}, t }; ch = true; });
+    if (ch) grSave(all); return ch;
+  }
+  function grSeasonLocal(season) { return grStats(season, grMine(season, null)).total; }
+
+  // ---------- Grille : cartes ----------
+  function grPh(id, cls = '') { const d = drv(id) || drvOf(id), pt = F1.visuals.portrait(id); return `<span class="gx-ph ${cls}"><i>${esc(d.code || '?')}</i>${pt ? `<img src="${esc(pt.img)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span>`; }
+  const grNum = (d) => (d && d.number ? `<span class="gx-n">${F1.num.html(d.number, d.teamId, { color: 'currentColor' })}</span>` : '');
   function grilleHtml(season, race) {
     const key = `${season.year}-${race.round}`, all = grLoad(), mine = all[key] || {};
-    const Q = grQuestions(season, race), drivers = grDrivers(season);
-    const teams = [...new Set(drivers.map((d) => d.teamId))].map((id) => team(id)).sort((a, b) => (a.short || a.name).localeCompare(b.short || b.name));
+    const Q = grQuestions(season, race);
+    S.gx = { season, race, Q };
     const lockAt = (q) => { const st = sessionStart(race, q.when); return st ? st.getTime() : Infinity; };
-    let got = 0, max = 0, filled = 0, stake = 0;
-    const rows = Q.map((q, i) => {
-      const ans = mine[q.k], locked = Date.now() >= lockAt(q), truth = grTruth(race, q), pts = grPoints(q, ans, truth, mine.pv);
-      const has = ans != null && ans !== '', worth = has ? (q.type === 'num' ? q.pts : grVal(q, ans, mine.pv)) : null;
+    let got = 0, max = 0, filled = 0, stake = 0, judged = 0;
+    const cards = Q.map((q, i) => {
+      const ans = mine[q.k], has = ans != null && ans !== '', locked = Date.now() >= lockAt(q), truth = grTruth(race, q), pts = grPoints(q, ans, truth, mine.pv);
+      const worth = has ? (q.type === 'num' ? q.pts : grVal(q, ans, mine.pv)) : null;
       if (has) { filled++; stake += worth; }
-      if (truth != null) { max += has ? worth : 0; if (pts) got += pts; }
+      if (truth != null) { judged++; max += has ? worth : 0; if (pts) got += pts; }
       const pv = (id) => (q.val ? grVal(q, id, id === ans ? mine.pv : null) : q.pts);
-      const dis = locked ? 'disabled' : '';
-      let input;
-      if (q.type === 'drv') input = `<select class="gr-sel" data-gr="${q.k}" ${dis}><option value="">Choisir un pilote</option>${drivers.slice().sort((a, b) => pv(a.id) - pv(b.id) || a.family.localeCompare(b.family)).map((d) => `<option value="${esc(d.id)}" data-pv="${pv(d.id)}" ${ans === d.id ? 'selected' : ''}>${d.number ? '#' + esc(d.number) + ' · ' : ''}${esc(d.given + ' ' + d.family)} — ${pv(d.id)} pts</option>`).join('')}</select>`;
-      else if (q.type === 'team') input = `<select class="gr-sel" data-gr="${q.k}" ${dis}><option value="">Choisir une écurie</option>${teams.slice().sort((a, b) => pv(a.id) - pv(b.id)).map((t) => `<option value="${esc(t.id)}" data-pv="${pv(t.id)}" ${ans === t.id ? 'selected' : ''}>${esc(t.short || t.name)} — ${pv(t.id)} pts</option>`).join('')}</select>`;
-      else if (q.type === 'num') input = `<input class="gr-num" type="number" inputmode="numeric" min="0" max="20" data-gr="${q.k}" value="${ans != null ? esc(String(ans)) : ''}" placeholder="–" ${dis} aria-label="${esc(q.t)}">`;
-      else input = `<div class="gr-duel">${q.pair.map((id) => { const d = drv(id); const pt = F1.visuals.portrait(id); return `<label class="gr-dp ${ans === id ? 'on' : ''}" style="--tc:${F1.teamColor(d.teamId)}"><input type="radio" name="gr-${q.k}" value="${esc(id)}" data-gr="${q.k}" data-pv="${pv(id)}" ${ans === id ? 'checked' : ''} ${dis}><em class="gr-pv">${pv(id)} pts</em><span class="gr-ph"><i>${esc(d.code || '')}</i>${pt ? `<img src="${esc(pt.img)}" alt="" onerror="this.remove()">` : ''}</span>${d.number ? `<span class="gr-n">${F1.num.html(d.number, d.teamId, { color: 'currentColor' })}</span>` : ''}<b>${esc(d.family)}</b></label>`; }).join('<span class="gr-vs">ou</span>')}</div>`;
-      const range = q.val ? (() => { const xs = Object.entries(q.val).filter(([k]) => k !== '_def').map(([, x]) => x); return xs.length ? `${Math.min(...xs)} à ${Math.max(...xs)} pts` : `${q.pts} pts`; })() : `${q.pts} pts`;
-      const res = truth == null ? (locked ? `<span class="gr-st wait">${has ? `En jeu : <b>${worth} pts</b>` : 'En attente du résultat'}</span>` : `<span class="gr-st ${has ? 'set' : ''}" data-range="${range}">${has ? `<b>${worth} pts</b><small>si c'est juste</small>` : range}</span>`)
-        : `<span class="gr-st ${pts ? 'ok' : 'ko'}">${pts ? '✓ +' + pts : '✗ 0'} <small>${esc(grTruthTxt(q, truth))}</small></span>`;
-      return `<div class="gr-row ${locked ? 'locked' : ''}"><span class="gr-i">${i + 1}</span><div class="gr-q"><b>${esc(q.t)}</b>${q.type === 'duel' ? `<small>${esc(team(drv(q.pair[0]).teamId).short || '')} : le mieux classé à l'arrivée</small>` : q.hint ? `<small>${esc(q.hint)}</small>` : ''}</div><div class="gr-a">${input}</div>${res}</div>`;
+      const xs = q.val ? Object.entries(q.val).filter(([k]) => k !== '_def').map(([, x]) => x) : [];
+      const range = xs.length ? `${Math.min(...xs)}–${Math.max(...xs)}` : String(q.pts);
+      const st = truth == null ? '' : has ? (pts ? 'ok' : 'ko') : 'ko';
+      const res = truth == null ? '' : `<span class="gx-res ${st}">${has ? (pts ? `<b>+${pts}</b> bien joué` : '<b>0</b> raté') : '<b>0</b> sans réponse'}<small>${esc(grTruthTxt(q, truth))}</small></span>`;
+      const head = `<span class="gx-q"><i>${String(i + 1).padStart(2, '0')}</i><b>${esc(q.t)}</b>${locked && truth == null ? '<em class="gx-lk">Fermé</em>' : ''}</span>`;
+      const val = (v, lab) => `<span class="gx-val ${has ? 'on' : ''}"><b>${v}</b><small>${lab}</small></span>`;
+      let body = '', cls = '', color = '';
+      if (q.type === 'drv' || q.type === 'team') {
+        if (has && q.type === 'drv') { const d = drv(ans) || drvOf(ans); color = F1.teamColor(d.teamId);
+          body = `<span class="gx-pick">${grPh(ans)}<span class="gx-who">${grNum(d)}<b>${esc(d.family)}</b><small>${esc((team(d.teamId) || {}).short || '')}</small></span></span>`; }
+        else if (has) { const t = team(ans) || {}; color = t.color || F1.teamColor(ans);
+          body = `<span class="gx-pick"><span class="gx-tm"><i></i></span><span class="gx-who"><b>${esc(t.short || t.name || ans)}</b><small>Meilleure voiture à l'arrivée</small></span></span>`; }
+        else body = `<span class="gx-empty"><span class="gx-plus" aria-hidden="true">+</span><span>${q.type === 'team' ? 'Choisir une écurie' : 'Choisir un pilote'}<small>${q.type === 'team' ? '11 écuries' : '22 pilotes'} · ${range} pts</small></span></span>`;
+        cls = 'pickable';
+        return `<button type="button" class="gx-c ${cls} ${has ? 'set' : ''} ${locked ? 'locked' : ''} ${st}" ${color ? `style="--tc:${color}"` : ''} data-gx-open="${q.k}" ${locked ? 'disabled' : ''}>${head}${body}${has ? val(worth, 'pts') : ''}${res}</button>`;
+      }
+      if (q.type === 'duel') {
+        const side = (id) => { const d = drv(id) || drvOf(id), on = ans === id, win = truth != null && truth === id;
+          return `<button type="button" class="gx-side ${on ? 'on' : ''} ${win ? 'win' : ''}" style="--tc:${F1.teamColor(d.teamId)}" data-gx-set="${q.k}" data-id="${esc(id)}" data-pv="${pv(id)}" ${locked ? 'disabled' : ''} aria-pressed="${on}">${grPh(id, 'lg')}${grNum(d)}<b>${esc(d.family)}</b><em>${pv(id)} pts</em></button>`; };
+        return `<div class="gx-c duel ${has ? 'set' : ''} ${locked ? 'locked' : ''} ${st}">${head}<small class="gx-sub">${esc((team(drv(q.pair[0]).teamId) || {}).short || '')} : le mieux classé à l'arrivée</small><div class="gx-duel">${side(q.pair[0])}<span class="gx-vs">VS</span>${side(q.pair[1])}</div>${res}</div>`;
+      }
+      // nombre d'abandons
+      const n = has ? +ans : null;
+      return `<div class="gx-c num ${has ? 'set' : ''} ${locked ? 'locked' : ''} ${st}">${head}<small class="gx-sub">${esc(q.hint)}</small><div class="gx-step"><button type="button" data-gx-num="${q.k}" data-d="-1" ${locked || n === 0 ? 'disabled' : ''} aria-label="Un de moins">−</button><output>${has ? n : '–'}</output><button type="button" data-gx-num="${q.k}" data-d="1" ${locked || n >= 20 ? 'disabled' : ''} aria-label="Un de plus">+</button></div>${has ? val(q.pts, 'pts') : ''}${res}</div>`;
     }).join('');
-    const total = Object.entries(all).reduce((a, [k, v]) => a + (v.score || 0), 0);
-    if (max) { mine.score = got; all[key] = mine; grSave(all); }
-    return `<section class="gr" id="grille" data-key="${key}"><header class="gr-h"><div><h3>Ta grille du ${esc(race.nameFr.replace('Grand Prix', 'GP'))}</h3><span>${filled} / ${Q.length} pronos remplis · enregistrés automatiquement</span></div>
-      <div class="gr-score"><small>${max ? 'Score du GP' : 'Points en jeu'}</small><b>${max ? got : stake}${max ? `<i>/${max}</i>` : ''}</b><span>Saison : ${total} pts</span></div></header>
-      <p class="gr-rule">Chaque réponse a sa valeur : un favori rapporte peu, un outsider rapporte gros. La valeur est figée au moment où tu fais ton choix.</p>${rows}</section>`;
+    const season0 = grSeasonLocal(season);
+    const lr = sessionStart(race, 'race'), lq = sessionStart(race, 'quali'), now = Date.now();
+    const lockTxt = lr && now < new Date(lr).getTime() ? (lq && now < new Date(lq).getTime() ? `Pole fermée dans <b>${untilTxt(new Date(lq).getTime() - now)}</b> · le reste au départ` : `Fermeture au départ dans <b>${untilTxt(new Date(lr).getTime() - now)}</b>`) : judged ? 'Résultats officiels' : 'Grille fermée · en attente des résultats';
+    return `<section class="gx" id="grille" data-key="${key}">
+      <div class="gx-h"><div class="gx-t"><small>Grille de pronos · manche ${race.round}</small><h3>${flag(race.iso)} ${esc(race.nameFr)}</h3><span class="gx-when">${lockTxt}</span></div>
+        <div class="gx-kpis"><div><small>Remplis</small><b>${filled}<i>/${Q.length}</i></b></div><div class="hot"><small>${judged ? 'Marqués' : 'En jeu'}</small><b>${judged ? got : stake}<i>${judged ? '/' + max : ' pts'}</i></b></div><div><small>Saison ${season.year}</small><b>${season0}<i> pts</i></b></div></div>
+        <div class="gx-prog" aria-hidden="true"><i style="width:${(filled / Q.length) * 100}%"></i></div></div>
+      <div class="gx-cards">${cards}</div>
+      <div class="gx-f"><span>Un favori rapporte peu, un outsider rapporte gros : la valeur d'un choix est figée au moment où tu le fais.</span><a href="#/ligues">Classements des ligues ›</a></div></section>`;
   }
-  function grTruthTxt(q, t) { if (q.type === 'num') return `${t} abandon${t > 1 ? 's' : ''}`; if (q.type === 'team') return team(t).short || t; const d = drv(t); return d ? d.family : t; }
-  document.addEventListener('change', (e) => {
-    const el = e.target.closest && e.target.closest('[data-gr]'); if (!el) return;
-    const box = el.closest('#grille'); if (!box) return;
-    const all = grLoad(), key = box.dataset.key, mine = all[key] || {};
-    let v = el.value; if (el.type === 'number') v = v === '' ? '' : String(Math.max(0, Math.min(20, Math.round(+v))));
-    mine[el.dataset.gr] = v; mine.t = Date.now();
-    const opt = el.tagName === 'SELECT' ? el.selectedOptions[0] : el, val = opt && opt.dataset.pv ? +opt.dataset.pv : null;
-    mine.pv = mine.pv || {}; if (val != null && v !== '') mine.pv[el.dataset.gr] = val; else delete mine.pv[el.dataset.gr];
-    all[key] = mine; grSave(all);
-    if (el.type === 'radio') box.querySelectorAll(`[name="${el.name}"]`).forEach((r) => r.closest('.gr-dp').classList.toggle('on', r.checked));
-    const st = el.closest('.gr-row').querySelector('.gr-st');
-    if (st && st.dataset.range) { if (val != null && v !== '') { st.classList.add('set'); st.innerHTML = `<b>${val} pts</b><small>si c'est juste</small>`; } else if (el.type !== 'number') { st.classList.remove('set'); st.textContent = st.dataset.range; } }
-    let stake = 0; box.querySelectorAll('.gr-row').forEach((r) => { const s2 = r.querySelector('.gr-sel'), rd = r.querySelector('input[type=radio]:checked'), nm = r.querySelector('.gr-num');
-      if (s2 && s2.value) stake += +s2.selectedOptions[0].dataset.pv || 0; else if (rd) stake += +rd.dataset.pv || 0; else if (nm && nm.value !== '') stake += 5; });
-    const sb = box.querySelector('.gr-score'); if (sb && sb.querySelector('small').textContent === 'Points en jeu') sb.querySelector('b').textContent = stake;
-    const n = Object.keys(mine).filter((k) => !['t', 'score', 'pv'].includes(k) && mine[k] !== '').length;
-    const sp = box.querySelector('.gr-h span'); if (sp) sp.textContent = `${n} / ${box.querySelectorAll('.gr-row').length} pronos remplis · enregistrés automatiquement`;
-    toast('✅', 'Prono enregistré', 'win', 1200);
+  function grTruthTxt(q, t) { if (q.type === 'num') return `Officiel : ${t} abandon${t > 1 ? 's' : ''}`; if (q.type === 'team') return 'Officiel : ' + (team(t).short || t); const d = drv(t); return 'Officiel : ' + (d ? d.family : t); }
+  // enregistre une réponse, redessine la grille, envoie au serveur
+  let grTimer = null;
+  function grSet(k, v, val) {
+    const g = S.gx; if (!g) return;
+    const key = `${g.season.year}-${g.race.round}`, all = grLoad(), mine = all[key] || {};
+    mine.pv = mine.pv || {};
+    if (v === '' || v == null) { delete mine[k]; delete mine.pv[k]; } else { mine[k] = v; if (val != null) mine.pv[k] = val; else delete mine.pv[k]; }
+    mine.t = Date.now(); all[key] = mine; grSave(all);
+    const el = $('#grille'); if (el) el.outerHTML = grilleHtml(g.season, g.race);
+    toast('✅', 'Prono enregistré', 'win', 1000);
+    clearTimeout(grTimer); grTimer = setTimeout(() => grPush(g.season, g.race), 700);
+  }
+  function grPush(season, race) {
+    const so = SO(); if (!so.ready || !so.me) return;
+    const lr = sessionStart(race, 'race'); if (!lr || Date.now() >= new Date(lr).getTime()) return;
+    const lq = sessionStart(race, 'quali') || lr, m = grLoad()[`${season.year}-${race.round}`] || {};
+    const answers = {}; Object.keys(m).forEach((x) => { if (!['t', 'score', 'pv'].includes(x) && m[x] !== '' && m[x] != null) answers[x] = m[x]; });
+    F1.social.saveGrille(season.year, race.round, answers, m.pv || {}, lq, lr).catch((e) => { if (!e.missing) console.warn(e); });
+  }
+  // sélecteur en grand : tuiles de pilotes ou d'écuries, de la plus probable à la plus risquée
+  function grOpen(k) {
+    const g = S.gx; if (!g) return; const q = g.Q.find((x) => x.k === k); if (!q) return;
+    const mine = grLoad()[`${g.season.year}-${g.race.round}`] || {}, ans = mine[k];
+    const pv = (id) => (q.val ? grVal(q, id, id === ans ? mine.pv : null) : q.pts);
+    let tiles;
+    if (q.type === 'team') {
+      const ids = [...new Set(grDrivers(g.season).map((d) => d.teamId))].sort((a, b) => pv(a) - pv(b));
+      tiles = ids.map((id) => { const t = team(id) || {}; const ds = grDrivers(g.season).filter((d) => d.teamId === id);
+        return `<button type="button" class="gxp-t team ${ans === id ? 'on' : ''}" style="--tc:${t.color || F1.teamColor(id)}" data-gx-pick="${k}" data-id="${esc(id)}" data-pv="${pv(id)}"><span class="gxp-band"></span><b>${esc(t.short || t.name || id)}</b><small>${ds.map((d) => esc(d.family)).join(' · ')}</small><em><b>${pv(id)}</b> pts</em></button>`; }).join('');
+    } else {
+      const ds = grDrivers(g.season).slice().sort((a, b) => pv(a.id) - pv(b.id) || a.family.localeCompare(b.family));
+      tiles = ds.map((d) => `<button type="button" class="gxp-t ${ans === d.id ? 'on' : ''}" style="--tc:${F1.teamColor(d.teamId)}" data-gx-pick="${k}" data-id="${esc(d.id)}" data-pv="${pv(d.id)}">${grPh(d.id, 'lg')}<span class="gxp-who">${grNum(d)}<b>${esc(d.family)}</b><small>${esc((team(d.teamId) || {}).short || '')}</small></span><em><b>${pv(d.id)}</b> pts</em></button>`).join('');
+    }
+    $('#modal').innerHTML = `<div class="modal" data-action="modal-bg"><div class="modal-box gxp" role="dialog" aria-label="${esc(q.t)}"><button class="lg-x" data-action="close-modal" aria-label="Fermer">✕</button>
+      <header class="gxp-h"><small>${esc(g.race.nameFr)}</small><h3>${esc(q.t)}</h3><p>Du favori à l'outsider : plus le choix est risqué, plus il rapporte si c'est juste.</p></header>
+      <div class="gxp-grid">${tiles}</div>${ans ? `<div class="gxp-f"><button type="button" class="btn sm ghost" data-gx-pick="${k}" data-id="">Retirer mon choix</button></div>` : ''}</div></div>`;
+  }
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest && e.target.closest('[data-gx-open],[data-gx-set],[data-gx-num],[data-gx-pick]'); if (!t || t.disabled) return;
+    if (t.dataset.gxOpen) return grOpen(t.dataset.gxOpen);
+    if (t.dataset.gxSet) { const cur = (grLoad()[`${S.gx.season.year}-${S.gx.race.round}`] || {})[t.dataset.gxSet]; return cur === t.dataset.id ? grSet(t.dataset.gxSet, '') : grSet(t.dataset.gxSet, t.dataset.id, +t.dataset.pv); }
+    if (t.dataset.gxNum) { const k = t.dataset.gxNum, cur = (grLoad()[`${S.gx.season.year}-${S.gx.race.round}`] || {})[k]; const base = cur == null || cur === '' ? 2 - (+t.dataset.d > 0 ? 1 : -1) : +cur; return grSet(k, String(Math.max(0, Math.min(20, base + +t.dataset.d)))); }
+    if (t.dataset.gxPick != null) { closeModal(); return grSet(t.dataset.gxPick, t.dataset.id, t.dataset.id ? +t.dataset.pv : null); }
   });
 
   /* ---------- Accueil façon « pronostic entre amis » : ton podium, la tendance, en pourcentages (pas de cotes) ---------- */
@@ -745,7 +823,7 @@
           <div class="pr-bar"><i style="width:${(x.prob / max) * 100}%"></i></div></div><span class="pr-pct">${pct(x.prob)}</span></li>`; }).join('');
     return `<section class="section pr">
       <div class="section-h"><h2>Tes pronos du week-end</h2><a class="link" href="#/ligues">Mes ligues</a></div>
-      <div class="pr-grid"><div class="pr-mine">${grilleHtml(S.f1 || S.season, nx)}<a class="pr-podl" href="#/ligues"><b>Podiums entre amis</b><span>Pronostiquez aussi les podiums des qualifs et de la course dans vos ligues privées</span></a></div>
+      <div class="pr-grid"><div class="pr-mine">${grilleHtml(S.f1 || S.season, nx)}<a class="pr-podl" href="#/ligues"><b>Ligue officielle et ligues entre amis</b><span>Tes points de grille, cumulés depuis le début de la saison, font ton classement</span></a></div>
         <aside class="pr-trend"><header><h3>La tendance</h3><span>Chances de victoire selon notre modèle</span></header><ol>${trend}</ol></aside></div></section>`;
   }
 
@@ -1486,21 +1564,17 @@
       return `<section class="lgp"><a class="lgp-back" href="#/ligues">← Toutes mes ligues</a><div id="lgPage" data-id="${esc(parts[2])}"><div class="skeleton" style="height:320px"></div></div></section>`;
     }
     const so = SO(), gp = leagueGp(), y = (S.f1 || S.season).year;
-    const head = `<div class="market-head"><div><h1>Mes ligues</h1><div class="muted" style="margin-top:6px">Pronostiquez le podium des qualifications et de la course, et affrontez vos amis au classement. Des points de ligue seulement : ni jetons, ni PitCoins.</div></div></div>`;
+    const head = `<div class="market-head"><div><h1>Mes ligues</h1><div class="muted" style="margin-top:6px">Remplis ta grille de 7 pronos à chaque Grand Prix. Les points marqués depuis le début de la saison font ton classement dans la ligue officielle PitWall et dans tes ligues entre amis.</div></div></div>`;
     const dashHtml = '<div id="lgDash" class="lgd"><div class="skeleton" style="height:150px"></div></div>';
     // accès rapide : pronostic du GP (avec l'échéance), historique, création
     const nextLock = gp && ['quali', 'race'].map((k) => sessionStart(gp, k)).find((t) => t && t.getTime() > Date.now());
     let h = '';
-    if (gp) {
-      const key = `${y}-${gp.round}`;
-      if (!S.pdDraft || S.pdDraft.key !== key) { const lp = localPicks(); S.pdDraft = { key, quali: ((lp[pkKey(y, gp.round, 'quali')] || {}).p || [null, null, null]).slice(), race: ((lp[pkKey(y, gp.round, 'race')] || {}).p || [null, null, null]).slice() }; }
-      h += `<div id="pdSec" class="lgx-anchor"></div><div class="pd-gp"><div class="row" style="gap:10px;flex-wrap:nowrap">${flag(gp.iso, 'lg')}<div><div class="pd-gp-name">${esc(gp.nameFr)}</div><small class="muted">Manche ${gp.round} · ${esc(gp.circuit)} · vos pronostics valent pour toutes vos ligues</small></div></div></div>
-        <div class="pd-cards">${podiumCard(gp, 'quali', y)}${podiumCard(gp, 'race', y)}</div>`;
-    } else h += '<div class="empty"><div class="ic">🏁</div>Aucun Grand Prix à pronostiquer pour le moment.</div>';
+    if (gp) h += `<div id="pdSec" class="lgx-anchor"></div><div class="lg-grille">${grilleHtml(S.f1 || S.season, gp)}</div>`;
+    else h += '<div class="empty"><div class="ic">🏁</div>Aucun Grand Prix à pronostiquer pour le moment.</div>';
     const code = parts[1] === 'rejoindre' && parts[2] ? decodeURIComponent(parts[2]) : '';
-    h += '<div id="lgHistSec" class="lgx-anchor"></div><div class="section-h" style="margin-top:28px"><h2>Mes 5 derniers Grands Prix</h2><span class="muted" style="font-size:13px">Vos podiums face aux résultats officiels</span></div><div id="lgHist" class="lgh"><div class="skeleton" style="height:120px"></div></div>';
+    h += '<div id="lgHistSec" class="lgx-anchor"></div><div class="section-h" style="margin-top:28px"><h2>Mes 5 derniers Grands Prix</h2><span class="muted" style="font-size:13px">Ta grille face aux résultats officiels</span></div><div id="lgHist" class="lgh"><div class="skeleton" style="height:120px"></div></div>';
     // vos ligues en haut de la page, création / adhésion et barème en bas
-    const lgHead = '<div class="lgx-h"><h2>Vos ligues</h2><span class="muted">Rang · écart au leader · podium</span></div>';
+    const lgHead = '<div class="lgx-h"><h2>Classements</h2><span class="muted">Points de grille cumulés depuis le début de la saison</span></div>';
     // en haut : vos ligues (à gauche) et vos points de ligue (à droite)
     const top = (x, after = '') => head + `<div class="lgx-top"><section class="lgx-l">${lgHead}${x}</section>${dashHtml}</div>` + h + after;
     if (!so.enabled) return top('<div class="notice">Les ligues utilisent la base de données du système d\'amis, qui n\'est pas encore activée sur ce site. Vos pronostics sont gardés sur cet appareil.</div>');
@@ -1518,7 +1592,7 @@
     return top(`<div class="lg-cards" id="lgList"><div class="skeleton" style="height:110px"></div></div>`, `
       <div id="lgFormsSec" class="lgx-anchor"></div><div class="section-h" style="margin-top:28px"><h2>Créer ou rejoindre une ligue</h2></div><div class="lg-forms"><div class="card lg-form"><b>Créer une ligue</b><div class="row" style="gap:6px;flex-wrap:nowrap"><input class="field" id="lgName" maxlength="40" placeholder="Nom (ex. Les potes du lycée)"><button class="btn sm" data-action="lg-create">Créer</button></div><small class="muted">Un code d'invitation unique est généré (ex. PIT-K7Q2).</small></div>
         <div class="card lg-form"><b>Rejoindre avec un code</b><div class="row" style="gap:6px;flex-wrap:nowrap"><input class="field" id="lgCode" maxlength="9" placeholder="PIT-XXXX" style="text-transform:uppercase" value="${esc(code)}"><button class="btn sm ${code ? '' : 'ghost'}" data-action="lg-join">Rejoindre</button></div></div></div>
-      <details class="card lg-how"><summary>Barème des points</summary>${bareme()}</details>`);
+      <details class="card lg-how"><summary>Comment marque-t-on des points ?</summary>${bareme()}</details>`);
   }
   // Liste des ligues : une carte par ligue, le classement complet s'ouvre dans une fenêtre dédiée
   let lgCache = [];
@@ -1526,19 +1600,20 @@
     const so = SO(); if (!so.ready || !so.me) return;
     const list = $('#lgList'); if (!list) return;
     // pronostics enregistrés hors ligne : envoyés au serveur s'ils sont encore modifiables
-    syncLocalPicks();
     let leagues = [], missing = false;
     try { leagues = await F1.social.myLeagues(); } catch (e) { if (e.missing) missing = true; else toast('⚠️', esc(e.message), 'err'); }
     if (!$('#lgList')) return;
     lgCache = leagues;
     const me = so.me.id;
-    list.innerHTML = missing ? '<div class="notice" style="font-size:13px">Les ligues privées ne sont pas encore activées : le propriétaire du site doit exécuter <code>supabase/migration-bet-leagues.sql</code> puis <code>supabase/migration-podium.sql</code> dans Supabase.</div>'
+    const off = `<div class="lg-card official" data-href="#/ligues/l/officielle"><div class="lg-card-h"><span class="lg-ic">${CUP_ICO}</span><div style="min-width:0"><b>Ligue officielle PitWall</b><small>Tous les joueurs · saison ${(S.f1 || S.season).year}</small></div></div>
+          <div class="lg-card-x" data-lg="officielle"><div class="skeleton" style="height:58px"></div></div><a class="lg-go" href="#/ligues/l/officielle">Classement complet ›</a></div>`;
+    list.innerHTML = off + (missing ? '<div class="notice" style="font-size:13px">Les ligues privées ne sont pas encore activées : le propriétaire du site doit exécuter <code>supabase/migration-bet-leagues.sql</code> puis <code>supabase/migration-podium.sql</code> dans Supabase.</div>'
       : leagues.length ? leagues.map((l) => `<div class="lg-card" data-href="#/ligues/l/${l.id}"><div class="lg-card-h"><span class="lg-ic">🏆</span><div style="min-width:0"><b>${esc(l.name)}</b><small>${l.members} membre${l.members > 1 ? 's' : ''}${l.owner === me ? ' · créée par vous' : ''}</small></div></div>
           <div class="lg-card-code"><small>Code</small><b>${esc(l.code)}</b></div>
           <div class="lg-card-x" data-lg="${l.id}"><div class="skeleton" style="height:58px"></div></div>
           <a class="lg-go" href="#/ligues/l/${l.id}" aria-label="Voir le classement de la ligue">Classement complet ›</a></div>`).join('')
-        : '<div class="card lg-empty"><b>Aucune ligue pour l\'instant</b><span class="muted">Créez-en une et partagez son code (PIT-XXXX), ou rejoignez celle d\'un ami.</span></div>';
-    window.__lgBest = null; leagues.forEach(fillLeagueCard);
+        : '<div class="card lg-empty"><b>Aucune ligue entre amis</b><span class="muted">Créez-en une et partagez son code (PIT-XXXX), ou rejoignez celle d\'un ami.</span></div>');
+    window.__lgBest = null; fillLeagueCard({ id: 'officielle', name: 'Ligue officielle PitWall', official: true }); leagues.forEach(fillLeagueCard);
   }
   /* ---------- Mes ligues : statistiques du joueur et des ligues ---------- */
   // points d'un joueur sur une liste de GP disputés, à partir de ses pronostics (serveur, sinon cet appareil pour soi)
@@ -1567,93 +1642,98 @@
     if (local) { const l = localPicks()[pkKey(y, round, k)]; if (l && l.p && l.p.every(Boolean)) return { p: l.p, o: l.o || [], at: new Date(l.t || 0), local: true }; }
     return null;
   };
-  let lgMine = null;   // mes statistiques (pour le meilleur rang en ligue)
+  // Classement d'un groupe de joueurs (ligue privée) ou de tout le monde (ligue officielle), sur les points de grille de la saison
+  let grOffP = null, grMissing = false;
+  async function grBoard(sel) {
+    const f1 = S.f1 || S.season, y = f1.year, so = SO(), me = so.me && so.me.id;
+    let picks = [], profs;
+    if (sel.official) {
+      if (!grOffP) grOffP = (async () => { const pk = await F1.social.grillePicks(null, y); const ids = [...new Set(pk.map((x) => x.user_id).concat(me ? [me] : []))]; return { pk, profs: await F1.social.profilesByIds(ids) }; })();
+      try { const r = await grOffP; picks = r.pk; profs = r.profs; } catch (e) { grOffP = null; if (!e.missing) throw e; grMissing = true; profs = so.me ? [so.me] : []; }
+    } else {
+      profs = await F1.social.leagueBoard(sel.id);
+      try { picks = await F1.social.grillePicks(profs.map((p) => p.id), y); } catch (e) { if (!e.missing) throw e; grMissing = true; }
+    }
+    const by = {}; picks.forEach((r) => { (by[r.user_id] = by[r.user_id] || {})[r.round] = { answers: r.answers || {}, pv: r.pv || {} }; });
+    if (me) { grAdopt(f1, picks.filter((r) => r.user_id === me)); by[me] = grMine(f1, picks.filter((r) => r.user_id === me)); }
+    const rows = profs.map((p) => ({ p, g: by[p.id] || {}, ...grStats(f1, by[p.id] || {}) }))
+      .sort((a, b) => b.total - a.total || b.hits - a.hits || (b.last ? b.last.pts : 0) - (a.last ? a.last.pts : 0) || String(a.p.username).localeCompare(String(b.p.username)));
+    return { rows, f1, me };
+  }
+  const grAnsTxt = (q, a) => { if (a == null) return '—'; if (q.type === 'num') return String(a); if (q.type === 'team') return (team(a) || {}).short || a; const d = drv(a) || drvOf(a); return d.code || d.family; };
+  const grAnsCol = (q, a) => (a == null || q.type === 'num' ? '' : q.type === 'team' ? (team(a) || {}).color || F1.teamColor(a) : F1.teamColor((drv(a) || drvOf(a)).teamId));
+  let lgMine = null;
   async function mountLeagueDash() {
     const dash = $('#lgDash'); if (!dash) return;
-    const f1 = S.f1 || S.season, y = f1.year, so = SO(), done = f1.races.filter((r) => r.results);
+    const f1 = S.f1 || S.season, y = f1.year, so = SO();
     let rows = [];
-    if (so.ready && so.me) { try { rows = await F1.social.podiumPicks([so.me.id], y); } catch (e) { /* pronostics partagés indisponibles */ } }
+    if (so.ready && so.me) { try { rows = await F1.social.grillePicks([so.me.id], y); if (grAdopt(f1, rows)) { const g = $('#grille'); if (g && S.gx) g.outerHTML = grilleHtml(S.gx.season, S.gx.race); } } catch (e) { /* grilles partagées indisponibles */ } }
     if (!$('#lgDash')) return;
-    const st = pickStats(pickFrom(rows, so.me && so.me.id, y, true), done);
+    const st = grStats(f1, grMine(f1, rows));
     lgMine = st;
-    const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+    const pc = (a, b) => (b ? Math.round((a / b) * 100) : 0);
     const bars = st.per.slice(-12), mx = Math.max(10, ...bars.map((x) => x.pts));
-    const kpi = (l, v, sub = '', cls = '') => `<div class="lgd-k ${cls}"><small>${l}</small><b>${v}</b>${sub ? `<span>${sub}</span>` : ''}</div>`;
-    dash.innerHTML = `<div class="lgd-main"><div class="lgd-score"><small>Mes points de ligue · saison ${y}</small><b class="num">${fmt(st.total)}</b><span class="muted">${st.gps ? `${st.gps} Grand${st.gps > 1 ? 's' : ''} Prix pronostiqué${st.gps > 1 ? 's' : ''}` : 'Aucun pronostic noté pour l\'instant'}</span><div class="lgd-rank" id="lgdRank"></div></div>
-        <div class="lgd-kpis">${kpi('Dernier GP', st.last ? `+${st.last.pts}` : '—', st.last ? esc(st.last.race.nameFr.replace('Grand Prix', 'GP')) : '')}${kpi('Meilleur GP', st.best ? `+${st.best.pts}` : '—', st.best ? esc(st.best.race.nameFr.replace('Grand Prix', 'GP')) : '')}
-          ${kpi('Bonne marche', `${pct(st.exact, st.made)} %`, `${st.exact} pilote${st.exact > 1 ? 's' : ''} pile à sa place`)}${kpi('Sur le podium', `${pct(st.exact + st.onPod, st.made)} %`, 'pilotes choisis montés sur le podium')}${kpi('Podiums parfaits', st.perfect, 'les 3 marches exactes', st.perfect ? 'gold' : '')}</div></div>
+    const kpi = (l, v, sub = '', cls = '', id = '') => `<div class="lgd-k ${cls}"${id ? ` id="${id}"` : ''}><small>${l}</small><b>${v}</b>${sub ? `<span>${sub}</span>` : ''}</div>`;
+    const gpn = (x) => esc(x.race.nameFr.replace('Grand Prix', 'GP'));
+    dash.innerHTML = `<div class="lgd-main"><div class="lgd-score"><small>Mes points · saison ${y}</small><b class="num">${fmt(st.total)}</b><span class="muted">${st.gps ? `${st.gps} Grand${st.gps > 1 ? 's' : ''} Prix joué${st.gps > 1 ? 's' : ''}` : 'Aucune grille notée pour l\'instant'}</span><div class="lgd-rank" id="lgdRank"></div></div>
+        <div class="lgd-kpis">${kpi('Classement officiel', '…', 'ligue PitWall', '', 'lgdOff')}${kpi('Dernier GP', st.last ? `+${st.last.pts}` : '—', st.last ? gpn(st.last) : '')}${kpi('Meilleur GP', st.best ? `+${st.best.pts}` : '—', st.best ? gpn(st.best) : '', st.best && st.best.pts >= 100 ? 'gold' : '')}
+          ${kpi('Réussite', `${pc(st.hits, st.n)} %`, `${st.hits} bonne${st.hits > 1 ? 's' : ''} réponse${st.hits > 1 ? 's' : ''} sur ${st.n}`)}${kpi('Moyenne', st.gps ? Math.round(st.total / st.gps) : '—', 'points par Grand Prix')}</div></div>
       ${bars.length ? `<div class="lgd-chart"><small class="muted">Points par Grand Prix</small><div class="lgd-bars">${bars.map((x) => `<div class="lgd-bar" title="${esc(x.race.nameFr)} : ${x.pts} pts"><i style="height:${Math.max(4, (x.pts / mx) * 100)}%"></i><span>${esc((x.race.iso || '').toUpperCase() || x.race.round)}</span><b>${x.pts}</b></div>`).join('')}</div></div>` : ''}`;
-    // historique détaillé des 5 derniers GP pronostiqués
     const hist = $('#lgHist');
     if (hist) {
-      const pk = pickFrom(rows, so.me && so.me.id, y, true);
       const last = st.per.slice(-5).reverse();
-      hist.innerHTML = last.length ? last.map(({ race, pts }) => {
-        const ses = (k) => { const p = pk(race.round, k), top = actualTop(race, k); if (!p || !top) return `<div class="lgh-s"><small>${PODIUM[k].label}</small><span class="muted">pas de pronostic</span></div>`;
-          const sp = podiumScore(p.p, top, k, p.o) || 0;
-          return `<div class="lgh-s"><small>${PODIUM[k].label} <b>+${sp}</b></small><div class="lgh-pk">${p.p.map((d, i) => `<span class="lgh-d ${d === top[i] ? 'ok' : top.includes(d) ? 'mid' : 'ko'}" style="--tc:${F1.teamColor(drvOf(d).teamId)}"><i>P${i + 1}</i>${drvOf(d).number ? dnum(drvOf(d).number, drvOf(d).teamId, 'pdn') : ''}${esc(drvOf(d).code || '?')}</span>`).join('')}</div>
-            <div class="lgh-real">Officiel : ${top.map((d) => esc(drvOf(d).code || '?')).join(' · ')}</div></div>`; };
-        return `<div class="lgh-row"><div class="lgh-gp">${flag(race.iso, 'sm')}<div><b>${esc(race.nameFr)}</b><small class="muted">Manche ${race.round}</small></div><span class="lgh-pts">+${pts}</span></div>${ses('quali')}${ses('race')}</div>`;
-      }).join('') : '<div class="card lg-empty"><b>Pas encore d\'historique</b><span class="muted">Pronostiquez le podium du prochain Grand Prix : vos résultats s\'afficheront ici après la course.</span></div>';
+      hist.innerHTML = last.length ? last.map((x) => `<div class="lgh-row gxh-row"><div class="lgh-gp">${flag(x.race.iso, 'sm')}<div><b>${esc(x.race.nameFr)}</b><small class="muted">Manche ${x.race.round} · ${x.hits}/${x.n} bonnes réponses</small></div><span class="lgh-pts">+${x.pts}</span></div>
+          <div class="gxh">${x.det.map((d) => `<span class="gxh-c ${d.ans == null ? 'none' : d.pts ? 'ok' : 'ko'}" style="--tc:${grAnsCol(d.q, d.ans) || 'var(--hair-2)'}"><small>${GR_SHORT[d.q.k] || esc(d.q.t)}</small><b>${esc(grAnsTxt(d.q, d.ans))}</b><i>${d.ans == null ? '' : d.pts ? '+' + d.pts : '0'}</i></span>`).join('')}</div></div>`).join('')
+        : '<div class="card lg-empty"><b>Pas encore d\'historique</b><span class="muted">Remplis la grille du prochain Grand Prix : tes résultats s\'afficheront ici après la course.</span></div>';
     }
   }
   // carte d'une ligue : mon rang, mes points, le leader, le podium de la ligue
   async function fillLeagueCard(l) {
     const el = document.querySelector(`.lg-card-x[data-lg="${l.id}"]`); if (!el) return;
-    const so = SO(), f1 = S.f1 || S.season, y = f1.year, me = so.me.id, done = f1.races.filter((r) => r.results);
     try {
-      const members = await F1.social.leagueBoard(l.id);
-      let picks = []; try { picks = await F1.social.podiumPicks(members.map((p) => p.id), y); } catch (e) { /* */ }
-      const rows = members.map((p) => ({ p, ...pickStats(pickFrom(picks, p.id, y, p.id === me), done) })).sort((a, b) => b.total - a.total || (b.last ? b.last.pts : 0) - (a.last ? a.last.pts : 0));
+      const { rows, me } = await grBoard(l);
       const i = rows.findIndex((x) => x.p.id === me), mine = rows[i], lead = rows[0];
       const el2 = document.querySelector(`.lg-card-x[data-lg="${l.id}"]`); if (!el2) return;
+      if (!rows.length || !mine) { el2.innerHTML = '<span class="muted" style="font-size:12px">Pas encore de classement</span>'; return; }
       const av = (x) => `<span class="lgc-av${leagueOfUser(x.p) ? ' ring' : ''}"${ringAttr(leagueOfUser(x.p))} title="${esc(x.p.username)} · ${x.total} pts">${x.p.avatar && AVA_OK.test(x.p.avatar) ? `<img src="${esc(x.p.avatar)}" alt="">` : esc((x.p.username || '?')[0].toUpperCase())}</span>`;
       el2.innerHTML = `<div class="lgc-rank"><b>${i + 1}<sup>${i === 0 ? 'er' : 'e'}</sup></b><small>sur ${rows.length}</small></div>
-        <div class="lgc-info"><div><small>Mes points</small><b>${mine ? mine.total : 0}</b></div><div><small>${i === 0 ? 'Avance' : 'Retard'}</small><b class="${i === 0 ? 'up' : 'down'}">${i === 0 ? (rows[1] ? `+${mine.total - rows[1].total}` : '—') : `−${lead.total - (mine ? mine.total : 0)}`}</b></div><div><small>Leader</small><b>${esc(lead.p.username)}</b></div></div>
+        <div class="lgc-info"><div><small>Mes points</small><b>${mine.total}</b></div><div><small>${i === 0 ? 'Avance' : 'Retard'}</small><b class="${i === 0 ? 'up' : 'down'}">${i === 0 ? (rows[1] ? `+${mine.total - rows[1].total}` : '—') : `−${lead.total - mine.total}`}</b></div><div><small>Leader</small><b>${esc(lead.p.username)}</b></div></div>
         <div class="lgc-pod">${rows.slice(0, 3).map((x, k) => `<div class="lgc-step s${k}">${av(x)}<span>${k + 1}</span></div>`).join('')}</div>`;
       el2.closest('.lg-card').classList.toggle('lead', i === 0);
-      // meilleur rang dans le tableau de bord
+      if (l.official) { const o = $('#lgdOff'); if (o) o.innerHTML = `<small>Classement officiel</small><b>${i + 1}<sup>${i === 0 ? 'er' : 'e'}</sup></b><span>sur ${rows.length} joueur${rows.length > 1 ? 's' : ''}</span>`; return; }
       const best = (window.__lgBest = window.__lgBest && window.__lgBest.rank <= i + 1 ? window.__lgBest : { rank: i + 1, of: rows.length, name: l.name });
-      const r = $('#lgdRank'); if (r) r.innerHTML = `🏆 Meilleur classement : <b>${best.rank}${best.rank === 1 ? 'er' : 'e'} sur ${best.of}</b> dans « ${esc(best.name)} »`;
-    } catch (e) { el.innerHTML = `<span class="muted" style="font-size:12px">Classement indisponible</span>`; }
+      const r = $('#lgdRank'); if (r) r.innerHTML = `Meilleur rang entre amis : <b>${best.rank}${best.rank === 1 ? 'er' : 'e'} sur ${best.of}</b> dans « ${esc(best.name)} »`;
+    } catch (e) { el.innerHTML = '<span class="muted" style="font-size:12px">Classement indisponible</span>'; }
   }
-  // Classement complet d'une ligue : points de la saison, du dernier GP, et comparaison des pronostics une fois verrouillés
+  // Classement complet : points de la saison, dernier GP, et les grilles de chacun une fois la course partie
   async function leagueBoardHtml(sel) {
-    const so = SO();
-      const f1 = S.f1 || S.season, y = f1.year, me = so.me.id;
-      const members = await F1.social.leagueBoard(sel.id);
-      let picks = [], podMissing = false;
-      try { picks = await F1.social.podiumPicks(members.map((p) => p.id), y); } catch (e) { if (e.missing) podMissing = true; else throw e; }
-      const lp = localPicks();
-      const pickOf = (uid, round, k) => { const r = picks.find((x) => x.user_id === uid && x.round === round && x.session === k); if (r) return { p: [r.p1, r.p2, r.p3], o: [r.o1, r.o2, r.o3].map(Number), at: new Date(r.updated_at) }; if (uid === me && lp[pkKey(y, round, k)]) return { p: lp[pkKey(y, round, k)].p, o: lp[pkKey(y, round, k)].o, at: new Date(lp[pkKey(y, round, k)].t), local: true }; return null; };
-      const done = f1.races.filter((r) => r.results);
-      const last = done[done.length - 1] || null;
-      const ptsOf = (uid, race, k) => { const pk = pickOf(uid, race.round, k), top = actualTop(race, k), st = sessionStart(race, k); if (!pk || !top) return null; if (st && pk.at > st && !pk.local) return 0; return podiumScore(pk.p, top, k, pk.o); };
-      const rows = members.map((p) => {
-        let total = 0; done.forEach((r) => { total += (ptsOf(p.id, r, 'quali') || 0) + (ptsOf(p.id, r, 'race') || 0); });
-        const lastPts = last ? (ptsOf(p.id, last, 'quali') || 0) + (ptsOf(p.id, last, 'race') || 0) : 0;
-        return { p, total, lastPts };
-      }).sort((a, b) => b.total - a.total || b.lastPts - a.lastPts);
-      const link = `${location.origin}${location.pathname}#/ligues/rejoindre/${encodeURIComponent(sel.code)}`;
-      // Grand Prix comparé : celui en cours si ses qualifications ont commencé, sinon le dernier disputé
-      const gp = leagueGp(), gq = gp && sessionStart(gp, 'quali');
-      const cmp = gp && gq && Date.now() >= gq.getTime() ? gp : last;
-      const cell = (uid, race, k) => {
-        const st = sessionStart(race, k), locked = st && Date.now() >= st.getTime(), pk = pickOf(uid, race.round, k);
-        if (!locked && uid !== me) return '<td class="pd-hide" colspan="2">🔒 visible au départ</td>';
-        if (!pk) return '<td class="muted" colspan="2">—</td>';
-        const pts = ptsOf(uid, race, k), top = actualTop(race, k);
-        return `<td><span class="pd-mini">${pk.p.map((d, i) => drvTag(d, top ? (d === top[i] ? 'ok' : top.includes(d) ? 'mid' : 'ko') : '')).join('')}</span></td><td class="r num">${pts == null ? '' : `+${pts}`}</td>`;
-      };
-      return `<div class="card"><div class="lg-h"><div><h3>${esc(sel.name)}</h3><small class="muted">${members.length} membre${members.length > 1 ? 's' : ''}${sel.owner === me ? ' · vous êtes le créateur' : ''}${last ? ` · dernier GP : ${esc(last.nameFr)}` : ''}</small></div>
-          <div class="lg-code"><small>Code d'invitation</small><b>${esc(sel.code)}</b><button class="btn sm ghost" data-action="lg-copy" data-code="${esc(sel.code)}" data-link="${esc(link)}">Copier l'invitation</button></div></div>
-        ${podMissing ? '<div class="notice" style="font-size:13px;margin-bottom:10px">Les pronostics partagés ne sont pas encore activés : le propriétaire du site doit exécuter <code>supabase/migration-podium.sql</code> dans Supabase. Vos pronostics sont gardés sur cet appareil.</div>' : ''}
-        <div class="table-wrap"><table class="tbl lg-tbl"><thead><tr><th>#</th><th>Joueur</th><th class="r">Saison</th><th class="r">Dernier GP</th></tr></thead><tbody>${rows.map((x, i) => `<tr class="${x.p.id === me ? 'me-row' : ''}"><td class="pos">${i + 1}</td><td><span class="row" style="gap:8px;flex-wrap:nowrap">${uava(x.p, '')}<b>${esc(x.p.username)}</b>${x.p.id === me ? '<small class="muted">(vous)</small>' : ''}</span></td><td class="r num"><b>${x.total}</b> pts</td><td class="r num ${x.lastPts ? 'up' : ''}">${x.lastPts ? '+' + x.lastPts : '0'}</td></tr>`).join('')}</tbody></table></div></div>
-      ${cmp ? `<div class="card" style="margin-top:12px"><div class="lg-h"><div><h3>Pronostics · ${esc(cmp.nameFr)}</h3><small class="muted">Vert : bonne marche · jaune : sur le podium, mauvaise marche · les pronostics des autres apparaissent au début de chaque session</small></div></div>
-        <div class="table-wrap"><table class="tbl lg-tbl pd-cmp"><thead><tr><th>Joueur</th><th>Qualifications</th><th class="r">Pts</th><th>Course</th><th class="r">Pts</th></tr></thead><tbody>
-          ${actualTop(cmp, 'quali') || actualTop(cmp, 'race') ? `<tr class="pd-real-row"><td><b>Résultat officiel</b></td><td>${actualTop(cmp, 'quali') ? `<span class="pd-mini">${actualTop(cmp, 'quali').map((d) => drvTag(d)).join('')}</span>` : '<span class="muted">à venir</span>'}</td><td></td><td>${actualTop(cmp, 'race') ? `<span class="pd-mini">${actualTop(cmp, 'race').map((d) => drvTag(d)).join('')}</span>` : '<span class="muted">à venir</span>'}</td><td></td></tr>` : ''}
-          ${rows.map((x) => `<tr class="${x.p.id === me ? 'me-row' : ''}"><td><b>${esc(x.p.username)}</b></td>${cell(x.p.id, cmp, 'quali')}${cell(x.p.id, cmp, 'race')}</tr>`).join('')}</tbody></table></div></div>` : ''}
-      <div class="card" style="margin-top:12px">${bareme()}<div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn sm ghost" data-action="lg-leave" data-id="${sel.id}">Quitter la ligue</button></div></div>`;
+    const { rows, f1, me } = await grBoard(sel);
+    const done = f1.races.filter((r) => r.results && r.results.length), last = done[done.length - 1] || null;
+    const lastPts = (x) => { const p = last && x.per.find((y) => y.race === last); return p ? p.pts : 0; };
+    const link = sel.code ? `${location.origin}${location.pathname}#/ligues/rejoindre/${encodeURIComponent(sel.code)}` : '';
+    const mi = rows.findIndex((x) => x.p.id === me);
+    const shown = sel.official ? rows.slice(0, 100) : rows;
+    const tr = (x, i) => `<tr class="${x.p.id === me ? 'me-row' : ''} ${i < 3 ? 'top' + (i + 1) : ''}"><td class="pos">${i + 1}</td><td><span class="row" style="gap:8px;flex-wrap:nowrap">${uava(x.p, '')}<b>${esc(x.p.username)}</b>${x.p.id === me ? '<small class="muted">(vous)</small>' : ''}</span></td><td class="r num"><b>${x.total}</b> pts</td><td class="r num ${lastPts(x) ? 'up' : ''}">${lastPts(x) ? '+' + lastPts(x) : '0'}</td><td class="r num muted">${x.n ? `${x.hits}/${x.n}` : '—'}</td></tr>`;
+    // GP comparé : celui en cours une fois la course partie, sinon le dernier disputé
+    const gp = leagueGp(), gl = gp && sessionStart(gp, 'race'), cmp = gp && gl && Date.now() >= new Date(gl).getTime() ? gp : last;
+    let cmpHtml = '';
+    if (cmp && !sel.official) {
+      const Q = grQFor(f1, cmp);
+      const cells = (x) => { const g = x.g[cmp.round]; let tot = 0; const c = Q.map((q) => { const a = g && g.answers ? g.answers[q.k] : null, has = a != null && a !== '', t = grTruth(cmp, q), p = has ? grPoints(q, a, t, g.pv) : null; if (p) tot += p;
+        return `<td><span class="gxt ${!has ? 'none' : t == null ? '' : p ? 'ok' : 'ko'}" style="--tc:${grAnsCol(q, has ? a : null) || 'var(--hair-2)'}">${esc(grAnsTxt(q, has ? a : null))}${has && g.pv && g.pv[q.k] ? `<i>${g.pv[q.k]}</i>` : ''}</span></td>`; }).join('');
+        return c + `<td class="r num"><b>${tot ? '+' + tot : '0'}</b></td>`; };
+      const real = `<tr class="pd-real-row"><td><b>Officiel</b></td>${Q.map((q) => { const t = grTruth(cmp, q); return `<td>${t == null ? '<span class="muted">à venir</span>' : `<span class="gxt real" style="--tc:${grAnsCol(q, t) || 'var(--hair-2)'}">${esc(grAnsTxt(q, t))}</span>`}</td>`; }).join('')}<td></td></tr>`;
+      cmpHtml = `<div class="card" style="margin-top:12px"><div class="lg-h"><div><h3>Les grilles · ${esc(cmp.nameFr)}</h3><small class="muted">Vert : bonne réponse · le petit chiffre est la valeur du choix · les grilles des autres apparaissent au départ de la course</small></div></div>
+        <div class="table-wrap"><table class="tbl lg-tbl gx-cmp"><thead><tr><th>Joueur</th>${Q.map((q) => `<th>${GR_SHORT[q.k] || esc(q.t)}</th>`).join('')}<th class="r">Pts</th></tr></thead><tbody>${real}
+          ${rows.map((x) => `<tr class="${x.p.id === me ? 'me-row' : ''}"><td><b>${esc(x.p.username)}</b></td>${cells(x)}</tr>`).join('')}</tbody></table></div></div>`;
+    }
+    const sub = sel.official ? `${rows.length} joueur${rows.length > 1 ? 's' : ''} classé${rows.length > 1 ? 's' : ''} · saison ${f1.year}${mi >= 0 ? ` · vous êtes ${mi + 1}${mi ? 'e' : 'er'}` : ''}` : `${rows.length} membre${rows.length > 1 ? 's' : ''}${sel.owner === me ? ' · vous êtes le créateur' : ''}${last ? ` · dernier GP : ${esc(last.nameFr)}` : ''}`;
+    return `<div class="card"><div class="lg-h"><div><h3>${esc(sel.name)}</h3><small class="muted">${sub}</small></div>
+          ${sel.code ? `<div class="lg-code"><small>Code d'invitation</small><b>${esc(sel.code)}</b><button class="btn sm ghost" data-action="lg-copy" data-code="${esc(sel.code)}" data-link="${esc(link)}">Copier l'invitation</button></div>` : ''}</div>
+        ${grMissing ? '<div class="notice" style="font-size:13px;margin-bottom:10px">Les grilles partagées ne sont pas encore activées : le propriétaire du site doit exécuter <code>supabase/migration-grille.sql</code> dans Supabase. Ta grille est gardée sur cet appareil.</div>' : ''}
+        <div class="table-wrap"><table class="tbl lg-tbl"><thead><tr><th>#</th><th>Joueur</th><th class="r">Saison</th><th class="r">Dernier GP</th><th class="r">Bonnes réponses</th></tr></thead><tbody>${shown.map(tr).join('')}${sel.official && mi >= 100 ? `<tr class="gap"><td colspan="5">…</td></tr>${tr(rows[mi], mi)}` : ''}</tbody></table></div></div>
+      ${cmpHtml}
+      <div class="card" style="margin-top:12px">${bareme()}${sel.official ? '' : `<div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn sm ghost" data-action="lg-leave" data-id="${sel.id}">Quitter la ligue</button></div>`}</div>`;
   }
   // Page de classement d'une ligue (pleine page)
   async function mountLeaguePage() {
@@ -1661,8 +1741,9 @@
     const so = SO();
     if (!so.ready || !so.me) { el.innerHTML = '<div class="notice">Connectez votre profil joueur pour voir le classement de vos ligues.</div>'; return; }
     try {
-      if (!lgCache.length) lgCache = await F1.social.myLeagues();
-      const sel = lgCache.find((l) => String(l.id) === String(el.dataset.id));
+      const off = el.dataset.id === 'officielle';
+      if (!off && !lgCache.length) lgCache = await F1.social.myLeagues();
+      const sel = off ? { id: 'officielle', name: 'Ligue officielle PitWall', official: true } : lgCache.find((l) => String(l.id) === String(el.dataset.id));
       if (!sel) { el.innerHTML = '<div class="notice">Ligue introuvable : vous n\'en faites peut-être plus partie.</div>'; return; }
       const html = await leagueBoardHtml(sel);
       if ($('#lgPage')) $('#lgPage').innerHTML = html;
@@ -1674,7 +1755,7 @@
     try { const html = await leagueBoardHtml(sel); const el = $('#lgModalBody'); if (el) el.innerHTML = html; }
     catch (e) { const el = $('#lgModalBody'); if (el) el.innerHTML = `<div class="notice red">⚠️ ${esc(e.message)}</div>`; }
   }
-  const bareme = () => `<div class="pd-bareme"><b>Barème</b>${['race', 'quali'].map((k) => `<div><span>${PODIUM[k].label}</span><span>P1 exact +${PODIUM[k].exact[0]} · P2 exact +${PODIUM[k].exact[1]} · P3 exact +${PODIUM[k].exact[2]} · pilote sur le podium à une autre marche +${PODIUM[k].podium} · podium parfait dans l'ordre +${PODIUM[k].perfect}</span></div>`).join('')}<div><span>Prime de risque</span><span>chaque pilote bien placé rapporte ses points × un coefficient lié à sa cote podium au moment du pronostic : ×1 jusqu'à la cote 1,5, ×2 à la cote 6, ×3 au maximum (cote 13,5 et plus). Le bonus du podium parfait n'est pas multiplié.</span></div><small class="muted">Un pronostic modifié après le début de la session ne rapporte rien.</small></div>`;
+  const bareme = () => `<div class="pd-bareme"><b>Barème de la grille</b><div><span>Vainqueur, pole, meilleur tour, écurie</span><span>chaque choix a sa propre valeur selon sa probabilité : un favori rapporte peu (environ 10 pts pour gagner le GP), un outsider beaucoup (jusqu'à une centaine de points)</span></div><div><span>Duels de coéquipiers</span><span>de 3 à 15 pts selon l'écart entre les deux pilotes</span></div><div><span>Nombre d'abandons</span><span>5 pts si c'est exact, 2 pts à un près</span></div><div><span>Classement</span><span>la somme des points marqués depuis le premier Grand Prix de la saison ; à égalité, le plus grand nombre de bonnes réponses</span></div><small class="muted">La valeur d'un choix est figée au moment où tu le fais. La pole se ferme au début des qualifications, le reste au départ de la course.</small></div>`;
   // Rafraîchit seulement les deux cartes de pronostics (pas toute la page)
   function pdRefresh() { const c = $('.pd-cards'), gp = leagueGp(); if (!c || !gp) return route(); const y = (S.f1 || S.season).year; c.innerHTML = podiumCard(gp, 'quali', y) + podiumCard(gp, 'race', y); }
   // Envoie au serveur les pronostics gardés sur l'appareil (session pas encore commencée)

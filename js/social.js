@@ -229,6 +229,37 @@
     return r.data || [];
   }
 
+  /* ---------- Grille de pronos du Grand Prix (supabase/migration-grille.sql) ---------- */
+  const GR_MISS = /grille_picks|does not exist|schema cache|42P01|PGRST20[02]/i;
+  const grErr = (e) => { if (e && GR_MISS.test((e.message || '') + (e.code || ''))) { const x = new Error('GRILLE_MISSING'); x.missing = true; throw x; } fail(e); };
+  async function saveGrille(season, round, answers, pv, lockQuali, lockRace) {
+    const row = { user_id: S.user.id, season, round, answers, pv, lock_quali: new Date(lockQuali).toISOString(), lock_race: new Date(lockRace).toISOString() };
+    const r = await S.client.from('grille_picks').upsert(row, { onConflict: 'user_id,season,round' });
+    grErr(r.error);
+  }
+  // grilles d'une saison : celles des joueurs donnés, ou de tout le monde (ligue officielle)
+  async function grillePicks(ids, season) {
+    if (ids && !ids.length) return [];
+    let out = [];
+    for (let from = 0; from < 20000; from += 1000) {
+      let q = S.client.from('grille_picks').select('user_id,round,answers,pv,lock_race,updated_at').eq('season', season);
+      if (ids) q = q.in('user_id', ids);
+      const r = await q.order('round').range(from, from + 999);
+      grErr(r.error);
+      out = out.concat(r.data || []);
+      if (!r.data || r.data.length < 1000) break;
+    }
+    return out;
+  }
+  async function profilesByIds(ids) {
+    const out = [];
+    for (let i = 0; i < ids.length; i += 150) {
+      const p = await S.client.from('profiles').select(COLS).in('id', ids.slice(i, i + 150));
+      fail(p.error); out.push(...(p.data || []));
+    }
+    return out;
+  }
+
   // Classement mondial des managers (null si la migration n'a pas été appliquée)
   // Classement des managers : statistiques détaillées si la migration v2 est passée, sinon ligue et LP seulement
   async function leaderboard() {
@@ -339,5 +370,5 @@
   // Rafraîchissement périodique des demandes (toutes les 60 s quand l'onglet est visible)
   setInterval(() => { if (S.ready && S.me && !document.hidden) { refresh().catch(() => {}); inbox().then(emit).catch(() => {}); } }, 60000);
 
-  F1.social = { inbox, thread, sendMessage, markRead, state: S, submitWeekly, weeklyBoard, weeklyRank, savePodium, podiumPicks, officialBoard, myLeagues, leagueBoard, createLeague, joinLeague, leaveLeague, leaderboard, init, claim, sync, search, byUsername, refresh, relation, linkWith, request, accept, remove, onChange: (f) => listeners.push(f), cleanName, USER_RE };
+  F1.social = { inbox, thread, sendMessage, markRead, state: S, submitWeekly, weeklyBoard, weeklyRank, savePodium, podiumPicks, saveGrille, grillePicks, profilesByIds, officialBoard, myLeagues, leagueBoard, createLeague, joinLeague, leaveLeague, leaderboard, init, claim, sync, search, byUsername, refresh, relation, linkWith, request, accept, remove, onChange: (f) => listeners.push(f), cleanName, USER_RE };
 })(globalThis.F1 = globalThis.F1 || {});
