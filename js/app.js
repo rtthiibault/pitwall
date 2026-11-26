@@ -200,8 +200,6 @@
     document.body.classList.toggle('on-home', r === '' && S.series !== 'wec');
     S.sel.clear();
     $$('[data-r]').forEach((a) => a.classList.toggle('active', a.dataset.r === (r === 'gp' ? 'calendrier' : r)));
-    // barre du bas (mobile) : « Manager » reste actif en Carrière
-    if (r === 'carriere') $$('.nav-mgr:not(.mgr-btn)').forEach((x) => x.classList.add('active'));
     $('#friendsBtn').classList.toggle('active', r === 'amis');
     if (F1.car3d) F1.car3d.disposeAll();
     const app = $('#app');
@@ -1611,7 +1609,7 @@
     h += `
       <header class="box">
         ${ghost}
-        <div class="box-l"><nav class="mode-sw" aria-label="Mode de jeu"><a href="#/manager" class="${isCareer() ? '' : 'on'}"${isCareer() ? '' : ' aria-current="page"'}><b>Classique</b><small>Ligues en ligne</small></a><a href="#/carriere" class="${isCareer() ? 'on' : ''}"${isCareer() ? ' aria-current="page"' : ''}><b>Carrière</b><small>Saison GP par GP</small></a></nav>
+        <div class="box-l"><div class="box-crumb"><span class="hq-live"></span>${isCareer() ? 'Quartier général de la Carrière' : 'Quartier général du F1 Manager'}</div>
           <h1 class="box-team">${ch ? esc(ch.name) : 'Votre écurie'}</h1>
           <div class="box-crew">${crew}${leagueBadge(league)}</div></div>
         <i class="box-line" aria-hidden="true"></i>
