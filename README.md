@@ -492,3 +492,7 @@ Chaque photo de profil est entourée d'un anneau à la couleur de la ligue du F1
 ## Bandeau du QG, garage et muret (illustrations)
 
 `js/scenes.js` : garage en perspective (plafond à poutre et rampes LED, panneau de l'écurie, sol époxy avec marquage du box, équipements dessinés en détail, mécaniciens en combinaison avec trois postures) ; le niveau de chaque équipement s'affiche en jauge de 5 segments. Muret : auvent aux couleurs de l'écurie, bureau et ingénieur au casque radio à chaque poste (chaise vide si le poste est vacant), allée des stands en décor. Bandeau du QG : panneau de livrée incliné à gauche, scène éclairée à droite avec le numéro en contour derrière la monoplace.
+
+## Carrière (F1 Manager)
+
+Route `#/carriere`, sélecteur Classique / Carrière dans le bandeau du Manager. Sauvegarde indépendante (`state.career`) : écurie, pilotes, R&D, garage, muret, sponsors, Pass, PitCoins et quota de courses propres ; `F1.store.setMode()` choisit la partie, toutes les pages du Manager servent aux deux. Calendrier : chaque Grand Prix de la saison se court 3 fois (`RUNS_PER_GP`), points F1 au top 10 de chaque course pour tous les pilotes (championnat avec l'IA), puis Grand Prix suivant ; après le dernier, titre, palmarès et nouvelle saison avec la même écurie et le même développement. Onglet Championnat (classement, calendrier, palmarès), bande de progression sur le QG, carte Carrière dans le débriefing. Les ligues en ligne et le GP Hebdo restent propres au mode classique.

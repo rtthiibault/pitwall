@@ -74,7 +74,14 @@
     try { state = JSON.parse(localStorage.getItem(KEY)); } catch (e) { state = null; }
     if (!state || state.v !== 1) state = blank();
     if (!state.manager) state.manager = blankManager();
-    const m = state.manager;
+    normMgr(state.manager);
+    if (state.career) normMgr(state.career);
+    if (!state.stats) state.stats = { tokensEarned: 0, newsWins: 0, leagueJoined: false, pwVisits: 0, podiumPicks: 0 };
+    if (!state.achClaimed) state.achClaimed = {};
+    if (state.avatar === undefined) state.avatar = null;
+    return state;
+  }
+  function normMgr(m) {
     if (!m.parts) m.parts = {};
     // anciennes sauvegardes : une pièce développée (horodatage) devient Mk I
     for (const k in m.parts) if (m.parts[k] > 5) m.parts[k] = 1;
@@ -104,10 +111,7 @@
         best: rs.reduce((b, x) => (x.dnf ? b : Math.min(b, x.pos)), 99), points: rs.reduce((a, x) => a + (x.dnf ? 0 : P[x.pos - 1] || 0), 0), dnf: rs.filter((x) => x.dnf).length,
         coolRaces: 0, pcEarned: 0, mateWins: 0, matePodiums: 0 };
     }
-    if (!state.stats) state.stats = { tokensEarned: 0, newsWins: 0, leagueJoined: false, pwVisits: 0, podiumPicks: 0 };
-    if (!state.achClaimed) state.achClaimed = {};
-    if (state.avatar === undefined) state.avatar = null;
-    return state;
+    return m;
   }
   function save() {
     checkAch();
@@ -248,7 +252,44 @@
     };
   }
   /* ---------- Mode manager ---------- */
-  const mgr = () => get().manager;
+  /* Deux parties indépendantes : le F1 Manager classique (state.manager) et la Carrière (state.career),
+     avec chacune son écurie, sa R&D, son garage, ses PitCoins et son quota de courses.
+     Le mode actif est choisi par la page (#/manager ou #/carriere). */
+  let mode = 'base';
+  const blankCareer = () => ({ ...blankManager(), cal: { season: 1, gp: 0, run: 0, pts: {}, names: {}, gps: [], champs: [] } });
+  function career() { const s = get(); if (!s.career) { s.career = normMgr(blankCareer()); } if (!s.career.cal) s.career.cal = blankCareer().cal; return s.career; }
+  const setMode = (m) => { mode = m === 'career' ? 'career' : 'base'; };
+  const getMode = () => mode;
+  const mgr = () => (mode === 'career' ? career() : get().manager);
+  const RUNS_PER_GP = 3;
+  /* Carrière : chaque Grand Prix se court 3 fois, chaque course rapporte les points F1 (top 10) à tous les pilotes classés,
+     puis on passe au Grand Prix suivant. Après le dernier, la saison est bouclée : titre, et une nouvelle saison
+     commence avec la même écurie et le même développement. */
+  function careerAfterRace(r, nGP) {
+    const m = career(), c = m.cal, P = (F1.manager && F1.manager.F1_POINTS) || [];
+    (r.cls || []).forEach((x) => { const id = x.id; if (!x.out) c.pts[id] = (c.pts[id] || 0) + (P[x.pos - 1] || 0); else c.pts[id] = c.pts[id] || 0; c.names[id] = { n: x.n, t: x.t }; });
+    let gpRec = c.gps.find((g) => g.season === c.season && g.gp === c.gp);
+    if (!gpRec) { gpRec = { season: c.season, gp: c.gp, name: r.gp, res: [] }; c.gps.push(gpRec); if (c.gps.length > 80) c.gps.shift(); }
+    gpRec.res.push({ pos: r.pos, dnf: !!r.dnf, pts: r.dnf ? 0 : P[r.pos - 1] || 0 });
+    c.run++;
+    let ev = null;
+    if (c.run >= RUNS_PER_GP) {
+      ev = { gpDone: gpRec };
+      c.run = 0; c.gp++;
+      if (c.gp >= nGP) { ev.seasonDone = careerStandings().slice(0, 3); ev.myPos = careerStandings().findIndex((x) => x.id === 'me') + 1; c.over = { season: c.season, top: ev.seasonDone, myPos: ev.myPos, pts: c.pts.me || 0 }; }
+    }
+    c.lastEv = ev;
+    return ev;
+  }
+  function careerStandings() { const c = career().cal; return Object.keys(c.pts).map((id) => ({ id, pts: c.pts[id], ...(c.names[id] || {}) })).sort((a, b) => b.pts - a.pts); }
+  // nouvelle saison de Carrière : on garde l'écurie, les pilotes et le développement, le championnat repart à zéro
+  function careerNewSeason() {
+    const m = career(), c = m.cal;
+    if (c.over) { c.champs.unshift(c.over); if (c.champs.length > 20) c.champs.pop(); }
+    c.season++; c.gp = 0; c.run = 0; c.pts = {}; c.names = {}; c.over = null; c.lastEv = null;
+    save();
+  }
+  function careerReset() { get().career = normMgr(blankCareer()); save(); }
   function addPC(n, reason) {
     const m = mgr();
     m.pc = Math.round((m.pc + n) * 100) / 100;
@@ -459,6 +500,7 @@
   /* Fin de saison mensuelle (appelée à l'ouverture du F1 Manager) : prime selon la ligue de fin de mois,
      LP ramenés à 60 %, résumé à afficher une fois. Renvoie le résumé s'il y a eu un changement de mois. */
   function seasonRoll() {
+    if (mode === 'career') return null;
     const m = mgr(), MG = F1.manager; if (!MG) return null;
     if (!m.mseason) m.mseason = { key: curMonth(), peak: m.lp || 0 };
     if (m.mseason.key === curMonth()) return null;
@@ -575,6 +617,8 @@
     if (r.pos === 1 && !r.dnf && r.rain) unlock('mgr_rain');
     if (F1.manager && m.lp >= F1.manager.LEAGUES[2].min) unlock('mgr_or');
     if (m.mseason) m.mseason.peak = Math.max(m.mseason.peak || 0, m.lp);
+    if (mode === 'career') m.races[0].career = careerAfterRace(r, r.nGP || 24);
+    delete m.races[0].cls; delete m.races[0].nGP;
     save();
   }
 
@@ -679,5 +723,5 @@
   function reset() { const n = get().name; state = blank(); state.name = n; save(); }
   const popUnlocked = () => unlocked.splice(0);
 
-  F1.store = { seasonRoll, passNextOpen, curMonth, betWait, mateLocked, setNumber, installPart, rushJob, unlockSlot2, jobOf, tunnel, pass, claimPass, passComplete, nextSeason, setSkin, weeklyMax, sponsorCooldown, achProgress, claimAch, achClaimable, noteStat, setAvatar, ACH_BY, buyMate, releaseMate, weeklyGP, useWeeklyAttempt, recordWeekly, claimWeeklyGP, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
+  F1.store = { setMode, getMode, career, careerStandings, careerNewSeason, careerReset, RUNS_PER_GP, seasonRoll, passNextOpen, curMonth, betWait, mateLocked, setNumber, installPart, rushJob, unlockSlot2, jobOf, tunnel, pass, claimPass, passComplete, nextSeason, setSkin, weeklyMax, sponsorCooldown, achProgress, claimAch, achClaimable, noteStat, setAvatar, ACH_BY, buyMate, releaseMate, weeklyGP, useWeeklyAttempt, recordWeekly, claimWeeklyGP, signSponsor, load, get, save, onChange, mgr, addPC, hireStaff, upgradeGarage, racesPerDay, extraCost, refillIn, canPayExtra, setTyre, setPlan, consumeRace, objectives, claimObjective, buyDriver, buyChassis, upgrade, research, setSetup, racesLeft, recordRace, dayKey, placeBet, settleAll, claimWeekly, claimSeason, canClaimSeason, SEASON_BONUS, canClaim, rescue, canRescue, stats, setName, exportCode, importCode, reset, popUnlocked, ACH, START, WEEKLY, RESCUE, MAX_ODDS };
 })(globalThis.F1 = globalThis.F1 || {});
