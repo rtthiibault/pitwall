@@ -589,8 +589,8 @@
       h += `<section class="section"><div class="section-h"><h2>À la une</h2></div><div class="grid g3">${boostCard(boost) || ''}${rival ? h2hCard(rival) : ''}${marketCard(quali, { limit: 6 })}</div></section>`;
     }
     h += pwHome();
-    h += `<section class="section"><div class="section-h"><h2>Le championnat</h2><a class="link" href="#/classements">Classements</a></div><div class="grid g2">${lastPodium()}${miniStandings()}</div></section>`;
-    h += upcomingTeaser();
+    if (f1Home) { h += champHome(); h += nextSeasonHome(); }
+    else { h += `<section class="section"><div class="section-h"><h2>Le championnat</h2><a class="link" href="#/classements">Classements</a></div><div class="grid g2">${lastPodium()}${miniStandings()}</div></section>`; h += upcomingTeaser(); }
     if (!f1Home) h += homeStats();
     return h;
   }
@@ -794,6 +794,7 @@
       <div class="gxp-grid">${tiles}</div>${ans ? `<div class="gxp-f"><button type="button" class="btn sm ghost" data-gx-pick="${k}" data-id="">Retirer mon choix</button></div>` : ''}</div></div>`;
   }
   document.addEventListener('click', (e) => {
+    const sc = e.target.closest && e.target.closest('[data-gx-scroll]'); if (sc) { const g = $('#grille'); if (g) g.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); return; }
     const t = e.target.closest && e.target.closest('[data-gx-open],[data-gx-set],[data-gx-num],[data-gx-pick]'); if (!t || t.disabled) return;
     if (t.dataset.gxOpen) return grOpen(t.dataset.gxOpen);
     if (t.dataset.gxSet) { const cur = (grLoad()[`${S.gx.season.year}-${S.gx.race.round}`] || {})[t.dataset.gxSet]; return cur === t.dataset.id ? grSet(t.dataset.gxSet, '') : grSet(t.dataset.gxSet, t.dataset.id, +t.dataset.pv); }
@@ -822,9 +823,9 @@
         <div class="pr-who">${d.number ? `<span class="pr-n">${F1.num.html(d.number, d.teamId, { color: 'currentColor' })}</span>` : ''}<b>${esc(d.given)} <strong>${esc(d.family)}</strong></b><small>${esc(t.short || t.name || '')}</small>
           <div class="pr-bar"><i style="width:${(x.prob / max) * 100}%"></i></div></div><span class="pr-pct">${pct(x.prob)}</span></li>`; }).join('');
     return `<section class="section pr">
-      <div class="section-h"><h2>Tes pronos du week-end</h2><a class="link" href="#/ligues">Mes ligues</a></div>
-      <div class="pr-grid"><div class="pr-mine">${grilleHtml(S.f1 || S.season, nx)}<a class="pr-podl" href="#/ligues"><b>Ligue officielle et ligues entre amis</b><span>Tes points de grille, cumulés depuis le début de la saison, font ton classement</span></a></div>
-        <aside class="pr-trend"><header><h3>La tendance</h3><span>Chances de victoire selon notre modèle</span></header><ol>${trend}</ol></aside></div></section>`;
+      <div class="section-h"><h2>Tes pronos du week-end</h2><a class="link" href="#/ligues">Classements des ligues</a></div>
+      <div class="pr-grid"><div class="pr-mine">${grilleHtml(S.f1 || S.season, nx)}</div>
+        <aside class="pr-trend"><header><h3>Qui va gagner ?</h3><span>Chances de victoire selon notre modèle</span></header><ol>${trend}</ol></aside></div></section>`;
   }
 
   /* ---------- Accueil : hub de jeu (modes, défis du jour, Pass, profil) ---------- */
@@ -1026,7 +1027,7 @@
     const w = S.weather;
     const favW = S.markets.find((m) => m.kind === 'win'), favS = favW && favW.selections[0], favD = favS && drv(favS.driverId);
     const tc = favD ? team(favD.teamId).color : '#d7261e';
-    const lights = `<div class="hx-lights" data-cd="${nx.date.getTime()}" aria-label="Compte à rebours avant le départ">${['jours', 'heures', 'min', 's'].map((u, i) => `<div class="hx-pod"><i></i><b data-u="${i}">--</b><small>${u}</small></div>`).join('')}</div>`;
+    const lights = `<div class="hx-lights" data-cd="${nx.date.getTime()}" aria-label="Compte à rebours avant le départ"><small class="hx-cd-l">Départ dans</small>${['j', 'h', 'min', 's'].map((u, i) => `<div class="hx-pod"><b data-u="${i}">--</b><small>${u}</small></div>`).join('')}</div>`;
     const rail = `<ol class="hx-rail">${nx.sessions.map((x) => { const st = x.date.getTime() < now ? 'done' : x === nextSess ? 'next' : ''; return `<li class="${st}"><span>${esc(x.label)}</span><b>${WD.format(x.date)} ${HM.format(x.date)}</b></li>`; }).join('')}</ol>`;
     const tags = [nx.sprint ? 'Week-end sprint' : '', nx.street ? 'Circuit urbain' : ''].filter(Boolean).map((t) => `<span class="hx-tag">${t}</span>`).join('');
     const wx = w ? `<span>${w.rain >= 50 ? '🌧️' : w.rain >= 25 ? '🌦️' : w.code <= 1 ? '☀️' : '⛅'} ${w.temp} °C, pluie ${w.rain} %, vent ${w.wind} km/h</span>` : '';
@@ -1036,7 +1037,7 @@
         <h1 class="hx-title">${esc(nx.nameFr)}</h1>
         <p class="hx-place">${esc(nx.circuit)}, ${esc(nx.locality)}. Départ ${DAYL.format(nx.date)} à ${HM.format(nx.date)}.</p>
         ${lights}${rail}
-        <div class="hx-cta"><a class="btn" href="#/manager">Courir ce Grand Prix</a><a class="btn ghost" href="#/ligues">Pronostiquer le podium</a></div>
+        <div class="hx-cta"><button type="button" class="btn" data-gx-scroll="1">Remplir ma grille</button><a class="btn ghost" href="#/manager">Courir ce Grand Prix</a></div>
       </div>
       <figure class="hx-map">${trackSvg(nx.circuitId, tc) || `<div class="hx-car3d">${F1.visuals.car(favD ? favD.teamId : 'mclaren', { live: true })}</div>`}
         <figcaption>${favD ? `<a class="hx-fav" href="#/ligues" style="--tc:${tc}">${favD.number ? `<span class="hx-fav-n">${F1.num.html(favD.number, favD.teamId, { color: 'currentColor' })}</span>` : ''}<span><small>Favori</small><b>${esc(favD.given)} ${esc(favD.family)}</b></span><span class="hx-fav-o"><small>Chances</small><b>${pct(favS.prob)}</b></span></a>` : ''}${wx ? `<div class="hx-wx">${wx}</div>` : ''}</figcaption></figure>
@@ -1141,6 +1142,33 @@
         ${news.length ? `<div class="weekend">${news.map((r) => `<div class="sess next"><small>Retour${r.tbc ? ' · à confirmer' : ''}</small><b>${flag(r.iso, 'sm')} ${esc(r.countryFr)}</b></div>`).join('')}</div>` : ''}
         ${countdown(first.date.getTime())}</div>
         ${wdc ? marketCard(wdc, { limit: 6 }) : ''}</div></section>`;
+  }
+
+  /* ---------- Accueil : championnat et saison suivante, posés à plat ---------- */
+  function champHome() {
+    const s = S.season, r = s.lastDone;
+    const ds = [...s.drivers.values()].filter((d) => s.entrants.includes(d.id) || d.points > 0).sort((a, b) => b.points - a.points).slice(0, 8);
+    const max = ds[0] ? ds[0].points || 1 : 1;
+    const line = (d, lead, right, i) => { const t = team(d.teamId) || {}; return `<li style="--tc:${t.color || F1.teamColor(d.teamId)}"><span class="ch-p">${lead}</span>${grPh(d.id)}<span class="ch-who">${d.number ? `<span class="gx-n">${F1.num.html(d.number, d.teamId, { color: 'currentColor' })}</span>` : ''}<b>${esc(d.given)} ${esc(d.family)}</b><small>${esc(t.short || t.name || '')}</small></span>${right}</li>`; };
+    const pod = r ? r.results.slice(0, 3).map((x, i) => { const d = drv(x.driverId); return d ? line(d, ['1er', '2e', '3e'][i], `<span class="ch-v">${i ? esc(x.timeText || '') : 'Vainqueur'}</span>`, i) : ''; }).join('') : '';
+    const tab = ds.map((d, i) => line(d, i + 1, `<span class="ch-bar"><i style="width:${(d.points / max) * 100}%"></i></span><span class="ch-pts">${fmt(d.points)}</span>`, i)).join('');
+    return `<section class="section hm-champ"><div class="section-h"><h2>Le championnat</h2><a class="link" href="#/classements">Tous les classements</a></div>
+      <div class="ch-grid">${r ? `<a class="ch-col" href="#/gp/${r.round}"><header><h3>${flag(r.iso, 'sm')} ${esc(r.nameFr)}</h3><span>Dernier Grand Prix, ${DAY.format(r.date)}</span></header><ol class="ch-list ch-podium">${pod}</ol></a>` : ''}
+        <a class="ch-col" href="#/classements"><header><h3>Pilotes</h3><span>Après ${s.doneCount} manche${s.doneCount > 1 ? 's' : ''} sur ${s.races.length}</span></header><ol class="ch-list">${tab}</ol></a></div></section>`;
+  }
+  function nextSeasonHome() {
+    const up = S.season.upcoming;
+    if (!up || !up.races.length) return '';
+    const first = up.races[0], last = up.races.at(-1), nSprint = up.races.filter((r) => r.sprint).length;
+    const back = up.races.filter((r) => !S.season.races.some((x) => x.circuitId === r.circuitId));
+    const wdc = S.upMarkets.find((m) => m.kind === 'wdc');
+    const fav = wdc ? wdc.selections.slice(0, 5) : [];
+    return `<section class="section hm-next"><div class="section-h"><h2>Saison ${up.year}</h2><a class="link" href="#/calendrier/${up.year}">Calendrier ${up.year}</a></div>
+      <div class="nx-grid"><div class="nx-main">
+          <p class="nx-lead">${up.races.length} Grands Prix, dont ${nSprint} week-ends sprint. Ouverture au ${esc(first.nameFr.replace('Grand Prix de ', '').replace('Grand Prix du ', '').replace("Grand Prix d'", ''))} le ${DAYL.format(first.date)}, finale à ${esc(last.locality || last.countryFr || last.nameFr)} le ${DAY.format(last.date).replace(/\.$/, "")}.</p>
+          <div class="hx-lights nx-cd" data-cd="${first.date.getTime()}"><small class="hx-cd-l">Premier départ dans</small>${['j', 'h', 'min', 's'].map((u, i) => `<div class="hx-pod"><b data-u="${i}">--</b><small>${u}</small></div>`).join('')}</div>
+          ${back.length ? `<p class="nx-back">De retour au calendrier : ${back.map((r) => `${flag(r.iso, 'sm')} ${esc(r.countryFr)}${r.tbc ? ' (à confirmer)' : ''}`).join(', ')}.</p>` : ''}</div>
+        ${fav.length ? `<div class="nx-fav"><h3>Favoris pour le titre ${up.year}</h3><ol class="ch-list">${fav.map((x, i) => { const d = drv(x.driverId) || (S.season.upcoming.drivers && S.season.upcoming.drivers.get(x.driverId)); if (!d) return ''; const t = team(d.teamId) || {}; return `<li style="--tc:${t.color || F1.teamColor(d.teamId)}"><span class="ch-p">${i + 1}</span>${grPh(d.id)}<span class="ch-who"><b>${esc(d.given)} ${esc(d.family)}</b><small>${esc(t.short || t.name || '')}</small></span><span class="ch-pts">${pct(x.prob)}</span></li>`; }).join('')}</ol></div>` : ''}</div></section>`;
   }
   function homeStats() {
     const st = F1.store.stats(); const p = F1.store.get();
