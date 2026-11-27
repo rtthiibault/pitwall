@@ -953,12 +953,17 @@
     const [bx, by, bw, bh] = box;
     const pool = Object.entries(sc.items).flatMap(([k, w]) => Array(w).fill(k));
     const near = (x, y, r) => pts.some((q, i) => i % 2 === 0 && (q[0] - x) ** 2 + (q[1] - y) ** 2 < r * r);
+    // décor détaillé du circuit (eau, forêts, quartiers…), dessiné d'après les vues aériennes
+    const pad = 110, tb = [bx + pad, by + pad, bw - 2 * pad, bh - 2 * pad];
+    let teamCols = []; try { teamCols = [...(S.f1 || S.season).teams.keys()].map((t) => F1.teamColor(t)); } catch (e) { /* saison pas encore chargée */ }
+    const geo = F1.circuitGeo ? F1.circuitGeo.layer(circuitId, pts, tb, rnd, near, !!sc.night) : null;
+    if (F1.circuitGeo) avoid = avoid.concat(F1.circuitGeo.pitZone(pts));
     const placed = [];
-    for (let k = 0; k < 320 && placed.length < 24; k++) {
+    for (let k = 0; k < 320 && placed.length < (geo ? 12 : 24); k++) {
       const it = pool[Math.floor(rnd() * pool.length)], [w, h] = SC_SIZE[it].map((v) => v * 1.55);
       const x = bx + rnd() * bw, y = by + rnd() * bh;
       // eau : les yachts seulement sur la mer, rien d'autre dessus
-      const wet = sc.sea === 'bottom' ? y > by + bh * 0.93 : sc.sea === 'left' ? x < bx + bw * 0.08 : false;
+      const wet = geo ? geo.wet(x, y - h * 0.3) : sc.sea === 'bottom' ? y > by + bh * 0.93 : sc.sea === 'left' ? x < bx + bw * 0.08 : false;
       if ((it === 'yacht') !== wet) continue;
       if (near(x, y - h * 0.35, Math.max(w, h) * 0.55 + 22)) continue;
       if (avoid.some((a) => (a[0] - x) ** 2 + (a[1] - y + h * 0.4) ** 2 < 110 * 110)) continue;
@@ -974,13 +979,13 @@
     if (sc.g === 'city') for (let k = 0; k < 40; k++) { const x = bx + rnd() * bw, y = by + rnd() * bh; if (!near(x, y, 50)) tex += `<rect x="${x.toFixed(0)}" y="${y.toFixed(0)}" width="${(30 + rnd() * 40).toFixed(0)}" height="${(30 + rnd() * 40).toFixed(0)}" rx="4" fill="#4a5363" opacity=".55"/>`; }
     if (sc.g === 'park' || sc.g === 'forest') for (let k = 0; k < 10; k++) { const x = bx + rnd() * bw, y = by + rnd() * bh; tex += `<ellipse cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" rx="${(60 + rnd() * 80).toFixed(0)}" ry="${(30 + rnd() * 40).toFixed(0)}" fill="#6aa65f" opacity=".18"/>`; }
     const cx = bx + bw / 2, cy = by + bh / 2;
-    const water = sc.sea === 'bottom' ? `<path d="M${bx - 200} ${by + bh * 0.9} C ${cx - 200} ${by + bh * 0.8}, ${cx + 200} ${by + bh}, ${bx + bw + 200} ${by + bh * 0.86} V ${by + bh + 300} H ${bx - 200}Z" fill="url(#sc-sea)"/>`
+    const water = geo ? '' : sc.sea === 'bottom' ? `<path d="M${bx - 200} ${by + bh * 0.9} C ${cx - 200} ${by + bh * 0.8}, ${cx + 200} ${by + bh}, ${bx + bw + 200} ${by + bh * 0.86} V ${by + bh + 300} H ${bx - 200}Z" fill="url(#sc-sea)"/>`
       : sc.sea === 'left' ? `<path d="M${bx - 300} ${by - 200} H ${bx + bw * 0.1} C ${bx + bw * 0.18} ${cy - 100}, ${bx + bw * 0.04} ${cy + 120}, ${bx + bw * 0.12} ${by + bh + 200} H ${bx - 300}Z" fill="url(#sc-sea)"/>`
       : sc.lake ? `<ellipse cx="${(cx + bw * 0.05).toFixed(0)}" cy="${(cy + bh * 0.04).toFixed(0)}" rx="${(bw * 0.16).toFixed(0)}" ry="${(bh * 0.1).toFixed(0)}" fill="url(#sc-sea)" opacity=".9"/>` : '';
     let sky = '';
     if (sc.night) { for (let k = 0; k < 40; k++) sky += `<circle cx="${(bx - 120 + rnd() * (bw + 240)).toFixed(0)}" cy="${(by - 120 + rnd() * (bh * 0.5)).toFixed(0)}" r="${(1 + rnd() * 2.4).toFixed(1)}" fill="#fff" opacity="${(0.3 + rnd() * 0.6).toFixed(2)}"/>`; sky += `<g transform="translate(${(bx + bw - 30).toFixed(0)} ${(by - 30).toFixed(0)})"><circle r="34" fill="#f5efd8"/><circle cx="14" cy="-8" r="30" fill="#141a22"/></g>`; }
     return { defs: `${SCENE_DEFS}<radialGradient id="sc-ground" cx=".5" cy=".5" r=".55"><stop offset="0" stop-color="${G[0]}" stop-opacity=".55"/><stop offset=".7" stop-color="${G[1]}" stop-opacity=".35"/><stop offset="1" stop-color="${G[1]}" stop-opacity="0"/></radialGradient><linearGradient id="sc-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f6f9c"/><stop offset="1" stop-color="#0d3550"/></linearGradient>`,
-      back: `${sky}${water}${tex}`, front: items, night: !!sc.night, ground: sc.g };
+      back: `${sky}${water}${tex}${geo ? geo.back + geo.under + geo.top : ''}${F1.circuitGeo ? F1.circuitGeo.pits(pts, teamCols) : ''}`, front: items, night: !!sc.night, ground: sc.g };
   }
   function trackSvg(circuitId, color, fixed = false) {
     const raw = F1.CIRCUITS && F1.CIRCUITS[circuitId];

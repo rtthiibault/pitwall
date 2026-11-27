@@ -552,3 +552,6 @@ body.on-home .hx-map .hx-track { width: 100%; height: auto; max-height: 440px; a
 body.on-home .hx-map figcaption { position: static; width: 100%; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 body.on-home .hx-wx { color: rgba(241,242,244,.78); }
 @media (max-width: 900px) { body.on-home .hx { padding: 18px; } body.on-home .hx-l { padding: 8px 4px 0; } body.on-home .hx-map { padding: 20px 18px 18px; } }
+/* décor détaillé : rien ne déborde de la vignette, sauf sur la carte de course (vue plus large) */
+.hx-track { overflow: hidden !important; }
+.race-map .rm-scene svg, .race-map .rm-labels svg { overflow: visible !important; }
