@@ -985,7 +985,32 @@
     let sky = '';
     if (sc.night) { for (let k = 0; k < 40; k++) sky += `<circle cx="${(bx - 120 + rnd() * (bw + 240)).toFixed(0)}" cy="${(by - 120 + rnd() * (bh * 0.5)).toFixed(0)}" r="${(1 + rnd() * 2.4).toFixed(1)}" fill="#fff" opacity="${(0.3 + rnd() * 0.6).toFixed(2)}"/>`; sky += `<g transform="translate(${(bx + bw - 30).toFixed(0)} ${(by - 30).toFixed(0)})"><circle r="34" fill="#f5efd8"/><circle cx="14" cy="-8" r="30" fill="#141a22"/></g>`; }
     return { defs: `${SCENE_DEFS}<radialGradient id="sc-ground" cx=".5" cy=".5" r=".55"><stop offset="0" stop-color="${G[0]}" stop-opacity=".55"/><stop offset=".7" stop-color="${G[1]}" stop-opacity=".35"/><stop offset="1" stop-color="${G[1]}" stop-opacity="0"/></radialGradient><linearGradient id="sc-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f6f9c"/><stop offset="1" stop-color="#0d3550"/></linearGradient>`,
-      back: `${sky}${water}${tex}${geo ? geo.back + geo.under + geo.top : ''}${F1.circuitGeo ? F1.circuitGeo.pits(pts, teamCols) : ''}`, front: items, night: !!sc.night, ground: sc.g };
+      back: geo ? `${groundArt(sc, box, rnd)}${geo.back}${geo.under}${geo.top}${F1.circuitGeo.pits(pts, teamCols)}${sc.night ? `<rect x="${bx - 3000}" y="${by - 3000}" width="${bw + 6000}" height="${bh + 6000}" fill="#060a18" opacity=".28"/>` : ''}`
+        : `${sky}${water}${tex}${F1.circuitGeo ? F1.circuitGeo.pits(pts, teamCols) : ''}`,
+      front: geo ? '' : items, night: !!sc.night, ground: sc.g, geo: !!geo, paintRunoff: !!(geo && geo.under) };
+  }
+  /* Sol de l'illustration (vue de dessus) : une teinte par terrain, des nappes plus claires et plus sombres
+     pour le relief, sur une grande surface (la carte de course montre plus large que la vignette). */
+  const GROUND = { sand: ['#a88a5c', '#b99a68', '#977a4f'], city: ['#2b3039', '#323843', '#252a32'], park: ['#3e5e40', '#46694a', '#365437'], forest: ['#33503a', '#3a5a41', '#2c4632'] };
+  function groundArt(sc, box, rnd) {
+    const [bx, by, bw, bh] = box, g = GROUND[sc.g] || GROUND.park;
+    let s = `<rect x="${bx - 3000}" y="${by - 3000}" width="${bw + 6000}" height="${bh + 6000}" fill="${g[0]}"/>`;
+    for (let k = 0; k < 16; k++) s += `<ellipse cx="${(bx - 400 + rnd() * (bw + 800)).toFixed(0)}" cy="${(by - 400 + rnd() * (bh + 800)).toFixed(0)}" rx="${(160 + rnd() * 320).toFixed(0)}" ry="${(90 + rnd() * 200).toFixed(0)}" fill="${g[1 + (k % 2)]}" opacity=".55"/>`;
+    if (sc.g === 'sand') for (let k = 0; k < 40; k++) { const x = bx - 300 + rnd() * (bw + 600), y = by - 300 + rnd() * (bh + 600); s += `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${(3 + rnd() * 4).toFixed(1)}" fill="#6f6a3a" opacity=".55"/>`; }
+    return s;
+  }
+  /* Virages : portions du tour où le cap tourne vite (vibreurs et bacs à graviers n'y sont posés que là) */
+  function cornerPaths(pts) {
+    // échantillonnage tous les 5 unités le long du tour : virage = rayon de courbure inférieur à ~100 unités
+    const n = pts.length, cum = [0];
+    for (let i = 1; i <= n; i++) cum.push(cum[i - 1] + Math.hypot(pts[i % n][0] - pts[i - 1][0], pts[i % n][1] - pts[i - 1][1]));
+    const L = cum[n]; let j = 0;
+    const at = (s) => { s = ((s % L) + L) % L; if (cum[j] > s) j = 0; while (j < n - 1 && cum[j + 1] <= s) j++; const t = (s - cum[j]) / ((cum[j + 1] - cum[j]) || 1), p = pts[j], q = pts[(j + 1) % n]; return [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]; };
+    const W = 50, R = 100, step = 5, flags = [];
+    for (let s = 0; s < L; s += step) { const a = at(s - W), b = at(s), e = at(s + W); let d = Math.atan2(e[1] - b[1], e[0] - b[0]) - Math.atan2(b[1] - a[1], b[0] - a[0]); while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; flags.push(Math.abs(d) / W > 1 / R); }
+    const segs = []; let st = -1;
+    for (let k = 0; k <= flags.length; k++) { if (flags[k] && st < 0) st = k; else if (!flags[k] && st >= 0) { if (k - st >= 4) segs.push([st * step - 15, k * step + 15]); st = -1; } }
+    return segs.map(([s0, s1]) => { const q = []; for (let s = s0; s <= s1; s += step) q.push(at(s)); return 'M' + q.map((p) => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L'); });
   }
   function trackSvg(circuitId, color, fixed = false) {
     const raw = F1.CIRCUITS && F1.CIRCUITS[circuitId];
@@ -1021,7 +1046,8 @@
       <defs>${sc.defs}<radialGradient id="sc-flood"><stop offset="0" stop-color="#fff6d0" stop-opacity=".55"/><stop offset="1" stop-color="#fff6d0" stop-opacity="0"/></radialGradient>
         <pattern id="hxChk" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff"/><rect width="4" height="4" fill="#111"/><rect x="4" y="4" width="4" height="4" fill="#111"/></pattern></defs>
       <g class="hx-scene">${sc.back}</g>${lights}
-      <path class="hx-t-glow" d="${d}" style="stroke:${color}"/>${paints}<path class="hx-t-kerb" d="${d}"/><path class="hx-t-asphalt" d="${d}"/><path class="hx-t-line" id="hxTrk" d="${d}" pathLength="1"/>${tunnels}
+      ${sc.geo ? (() => { const cs = cornerPaths(pts); return (sc.paintRunoff ? [] : cs).map((c) => `<path class="hx-t-gravel" d="${c}" fill="none" stroke="#cdb98c" stroke-width="104" stroke-linecap="round" stroke-linejoin="round"/>`).join('') + `<path class="hx-t-runoff" d="${d}" fill="none" stroke="#5a616c" stroke-width="64" stroke-linejoin="round"/>` + paints + cs.map((c) => `<path class="hx-t-kerbs" d="${c}" fill="none" stroke="#f3f4f6" stroke-width="38" stroke-linejoin="round"/><path class="hx-t-kerbs" d="${c}" fill="none" stroke="#e10600" stroke-width="38" stroke-dasharray="9 9" stroke-linejoin="round"/>`).join('') + `<path class="hx-t-edge" d="${d}" fill="none" stroke="#e9ecf0" stroke-width="31" stroke-linejoin="round"/><path class="hx-t-asphalt" d="${d}" style="stroke:#30353e;stroke-width:26"/><path class="hx-t-line" id="hxTrk" d="${d}" pathLength="1" style="stroke:rgba(255,255,255,.22);stroke-width:2.5"/>`; })()
+        : `<path class="hx-t-glow" d="${d}" style="stroke:${color}"/>${paints}<path class="hx-t-kerb" d="${d}"/><path class="hx-t-asphalt" d="${d}"/><path class="hx-t-line" id="hxTrk" d="${d}" pathLength="1"/>`}${tunnels}
       <g transform="translate(${sx} ${sy}) rotate(${ang})"><rect x="-4" y="-22" width="8" height="44" fill="url(#hxChk)"/></g>
       <g class="hx-scene-front">${sc.front}</g><g class="hx-lms">${icons}${labels}</g>
       ${still ? '' : `<circle class="hx-car" r="13" style="fill:${color}"><animateMotion dur="14s" repeatCount="indefinite" rotate="auto"><mpath href="#hxTrk"/></animateMotion></circle>`}</svg>`);

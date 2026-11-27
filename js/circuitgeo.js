@@ -167,8 +167,8 @@
   };
 
   const C = {
-    forest: '#284f37', canopy: ['#2f6a45', '#3a7c50', '#2a5d3d'], park: '#3f7a43', field: [['#6d8a43', '#82a050'], ['#a08c4e', '#b7a35e'], ['#5f7f3d', '#7a9a4c']],
-    city: '#262c35', bld: ['#48515f', '#535d6c', '#3f4754', '#5b6575'], old: '#6e5a3f', lot: '#30353d', sand: '#d2b47a', golf: '#3b7a3e', dunes: '#7d8452',
+    forest: '#284430', canopy: ['#2e5f3f', '#376d47', '#28533a'], park: '#4a7350', field: [['#6d8a43', '#82a050'], ['#a08c4e', '#b7a35e'], ['#5f7f3d', '#7a9a4c']],
+    city: '#2a2f38', bld: ['#4b5463', '#56606f', '#424a57', '#5f6878', '#6b7482'], old: '#6e5a3f', lot: '#30353d', sand: '#d2b47a', golf: '#3b7a3e', dunes: '#7d8452',
   };
   const inPoly = (x, y, P) => { let c = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const [xi, yi] = P[i], [xj, yj] = P[j]; if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c; } return c; };
   // contour adouci (Catmull-Rom fermé) : rives, lisières et quartiers sans angles de polygone
@@ -193,7 +193,8 @@
         const x = cx + i * ca - j * sa, y = cy + i * sa + j * ca;
         if (!inPoly(x, y, poly) || near(x, y, 46)) continue;
         const w = step * (0.55 + rnd() * 0.3), h = step * (0.5 + rnd() * 0.35), col = cols[Math.floor(rnd() * cols.length)];
-        s += `<rect x="${(x - w / 2).toFixed(0)}" y="${(y - h / 2).toFixed(0)}" width="${w.toFixed(0)}" height="${h.toFixed(0)}" rx="3" fill="${col}" transform="rotate(${ang} ${x.toFixed(0)} ${y.toFixed(0)})"/>`;
+        const tr = `transform="rotate(${ang} ${x.toFixed(0)} ${y.toFixed(0)})"`, sh = 4 + rnd() * 6;
+        s += `<rect x="${(x - w / 2 + sh).toFixed(0)}" y="${(y - h / 2 + sh * 1.2).toFixed(0)}" width="${w.toFixed(0)}" height="${h.toFixed(0)}" rx="2" fill="#000" opacity=".32" ${tr}/><rect x="${(x - w / 2).toFixed(0)}" y="${(y - h / 2).toFixed(0)}" width="${w.toFixed(0)}" height="${h.toFixed(0)}" rx="2" fill="${col}" ${tr}/><rect x="${(x - w / 2).toFixed(0)}" y="${(y - h / 2).toFixed(0)}" width="${w.toFixed(0)}" height="4" fill="#fff" opacity=".14" ${tr}/>`;
         if (night && rnd() < 0.5) s += `<rect x="${(x - 3).toFixed(0)}" y="${(y - 3).toFixed(0)}" width="6" height="6" fill="#ffd98a" opacity=".55"/>`;
         n++;
       }
