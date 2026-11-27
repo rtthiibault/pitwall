@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-27T14:25:35.377Z",
+ "updated": "2026-11-27T14:55:40.133Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-27T14:55:35.377Z",
+ "next": "2026-11-27T15:25:40.133Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -27,6 +27,45 @@
  ],
  "items": [
   {
+   "id": "news_1ocdx9c",
+   "timestamp": "2026-11-27T14:39:34.000Z",
+   "category": "PADDOCK",
+   "title": "EL1 - Antonelli et Mercedes déjà en forme à Losail",
+   "summary": "Fraîchement sacré champion du monde, Kimi Antonelli a largement dominé les premiers essais libres du Grand Prix du Qatar. Le pilote Mercedes a devancé son coéquipier George Russell, tandis que les pilotes ont dû composer avec les difficultés du circuit de…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/el1-gp-qatar-antonelli-mercedes-en-forme/10878267/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/0Zq8mM46/s6/andrea-kimi-antonelli-mercedes.jpg",
+   "impact": {
+    "targetType": "driver",
+    "targetIds": [
+     "antonelli"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 0.95,
+    "impactLabel": "Cotes -5%",
+    "teamId": "mercedes"
+   },
+   "firstSeen": "2026-11-27T14:55:40.133Z"
+  },
+  {
+   "id": "news_1ml2o1o",
+   "timestamp": "2026-11-27T14:32:02.000Z",
+   "category": "MÉTÉO",
+   "title": "GP du Qatar – EL1 : Antonelli en démonstration, Hadjar troisième",
+   "summary": "Quel changement pour les pilotes une semaine après Las Vegas ! Au Qatar, le paddock affronte un défi complètement opposé, qui a rendu les choses difficiles en Essais Libres 1. Du froid du Nevada à la chaleur du Moyen-Orient, des longues lignes droites aux…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/gp-du-qatar-el1-antonelli-en-demonstration-hadjar-troisieme.html",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/DPPI_00126025_221.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-27T14:55:40.133Z"
+  },
+  {
    "id": "news_amgbhe",
    "timestamp": "2026-11-27T13:44:50.000Z",
    "category": "PADDOCK",
@@ -37,7 +76,7 @@
    "url": "https://www.autohebdo.fr/actualites/motogp/marc-marquez-explique-sa-retraite-jai-commence-a-ressentir-de-la-peur.html",
    "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/55676514316_c20a95db7c_o.jpg",
    "impact": null,
-   "firstSeen": "2026-11-27T14:25:35.377Z"
+   "firstSeen": "2026-11-27T14:55:40.133Z"
   },
   {
    "id": "news_24fckz",
@@ -878,32 +917,6 @@
    "lang": "fr",
    "url": "https://www.autohebdo.fr/actualites/f1/haas-confirme-la-prolongation-doliver-bearman-pour-2027.html",
    "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/DPPI_00126022_1233.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T09:20:13.183Z"
-  },
-  {
-   "id": "news_18t35u0",
-   "timestamp": "2026-11-26T09:06:00.000Z",
-   "category": "PADDOCK",
-   "title": "Officiel : Haas F1 et Ferrari trouvent un accord pour prolonger Bearman",
-   "summary": "Haas F1 a officiellement confirmé la prolongation d'Oliver Bearman pour la saison 2027 de Formule 1, mettant ainsi un terme aux dernières incertitudes concernant la composition de la grille de départ pour l'année prochaine. Le Britannique de 21 ans disputera…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/officiel-haas-f1-et-ferrari-trouvent-un-accord-pour-prolonger-bearman,213747.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/haas0_15_-5.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T09:50:17.187Z"
-  },
-  {
-   "id": "news_10xaprm",
-   "timestamp": "2026-11-26T09:04:15.000Z",
-   "category": "PADDOCK",
-   "title": "Haas confirme enfin Bearman, la grille 2027 est complète",
-   "summary": "C'est officiel, Oliver Bearman restera chez Haas pour la saison 2027 de F1, après avoir enfin signé un nouveau contrat avec l'écurie. Haas a annoncé ce jeudi que Bearman poursuivrait l'aventure l'année prochaine. Il fera équipe avec le rookie brésilien Rafael…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/oliver-bearman-officiel-prolongation-haas-2027/10877814/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "image": "https://cdn-1.motorsport.com/images/amp/YXyKMzx6/s6/oliver-bearman-haas.jpg",
    "impact": null,
    "firstSeen": "2026-11-26T09:20:13.183Z"
   }
