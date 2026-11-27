@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-27T11:54:53.958Z",
+ "updated": "2026-11-27T12:24:58.334Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-27T12:24:53.958Z",
+ "next": "2026-11-27T12:54:58.334Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 91
+   "n": 93
   },
   {
    "name": "F1i",
@@ -27,6 +27,19 @@
  ],
  "items": [
   {
+   "id": "news_h8gwvs",
+   "timestamp": "2026-11-27T12:22:00.000Z",
+   "category": "RÈGLEMENT",
+   "title": "Sainz dédramatise l'impact de la sanction de Williams F1 pour 2027",
+   "summary": "Carlos Sainz ne pense pas que les sanctions infligées à Williams pour avoir dépassé le plafond budgétaire en 2025 puissent compromettre les perspectives de progression de l'écurie britannique la saison prochaine. Malgré les nombreuses frustrations exprimées…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/sainz-dedramatise-l-impact-de-la-sanction-de-williams-f1-pour-2027,213790.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/williams_14_-6.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-27T12:24:58.334Z"
+  },
+  {
    "id": "news_1wotlll",
    "timestamp": "2026-11-27T11:51:32.000Z",
    "category": "PADDOCK",
@@ -38,6 +51,19 @@
    "image": "https://cdn-1.motorsport.com/images/amp/YP74e532/s6/carlos-sainz-williams-2.jpg",
    "impact": null,
    "firstSeen": "2026-11-27T11:54:53.958Z"
+  },
+  {
+   "id": "news_1tfdtmd",
+   "timestamp": "2026-11-27T11:46:00.000Z",
+   "category": "PADDOCK",
+   "title": "Colapinto révèle pourquoi il a embarqué dans un avion avec son casque F1 sur la tête",
+   "summary": "Franco Colapinto a dévoilé les coulisses d'une scène pour le moins insolite qui a largement circulé sur les réseaux sociaux après le Grand Prix de Las Vegas. Aperçu en train d'embarquer sur un vol en classe économique avec son casque de Formule 1 sur la tête…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/colapinto-revele-pourquoi-il-a-embarque-dans-un-avion-avec-son-casque-f1-sur-la,213788.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/hye0qbxwuaekxmq.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-27T12:24:58.334Z"
   },
   {
    "id": "news_12y40mn",
@@ -867,32 +893,6 @@
    "image": "https://cdn-1.motorsport.com/images/amp/YMX3X1v2/s6/des-membres-de-red-bull-2.jpg",
    "impact": null,
    "firstSeen": "2026-11-26T07:50:00.618Z"
-  },
-  {
-   "id": "news_1p690eq",
-   "timestamp": "2026-11-26T07:04:00.000Z",
-   "category": "PADDOCK",
-   "title": "Cadillac F1 s'attend à voir ses faiblesses exposées au Qatar",
-   "summary": "Cadillac F1 s'apprête à relever l'un des défis les plus exigeants de sa première saison en Formule 1 à l'occasion du Grand Prix du Qatar. Après un déplacement de 13 000 kilomètres et la traversée de onze fuseaux horaires depuis Las Vegas, l'écurie américaine…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/cadillac-f1-s-attend-a-voir-ses-faiblesses-exposees-au-qatar,213730.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/cadillac_54_-2.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T07:19:56.622Z"
-  },
-  {
-   "id": "news_6jh4o5",
-   "timestamp": "2026-11-26T06:21:00.000Z",
-   "category": "PADDOCK",
-   "title": "Hamilton prend la défense de Ferrari après les révélations de Vettel",
-   "summary": "Lewis Hamilton ne partage pas le constat dressé par Sebastian Vettel sur l'atmosphère qui régnait chez Ferrari lorsque l'Allemand défendait les couleurs de la Scuderia. Dans son nouveau documentaire, le quadruple champion du monde a notamment évoqué un…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hamilton-prend-la-defense-de-ferrari-apres-les-revelations-de-vettel,213732.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/ferrari3_2_-16.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T06:49:51.497Z"
   }
  ]
 }
