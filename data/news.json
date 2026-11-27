@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-27T09:24:31.608Z",
+ "updated": "2026-11-27T09:54:35.354Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-27T09:54:31.608Z",
+ "next": "2026-11-27T10:24:35.354Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_6fsru8",
+   "timestamp": "2026-11-27T09:23:00.000Z",
+   "category": "PADDOCK",
+   "title": "Oliver Bearman prolongé par Haas, veut « prouver aux équipes de pointe » qu’il a « ce qu’il faut »",
+   "summary": "Cela semblait surtout être un secret de polichinelle, mais l’on aurait pu presque croire à un début de doute. Oliver Bearman, pilote de l’écurie Haas, sera toujours bel et bien titulaire au sein de l’équipe américaine de F1 en 2027, et ce malgré des…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/oliver-bearman-prolonge-par-haas-veut-prouver-aux-equipes-de-pointe-quil-a-ce-quil-faut.html",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/DPPI_00126025_044.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-27T09:54:35.354Z"
+  },
   {
    "id": "news_y47glz",
    "timestamp": "2026-11-27T08:25:17.000Z",
@@ -868,19 +881,6 @@
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/redbull_119_-4.jpg",
    "impact": null,
    "firstSeen": "2026-11-25T15:17:12.395Z"
-  },
-  {
-   "id": "news_1ld0iea",
-   "timestamp": "2026-11-25T13:47:00.000Z",
-   "category": "PADDOCK",
-   "title": "Grand Prix de Las Vegas – McLaren, la mise est doublée",
-   "summary": "Las Vegas, Baby ! Ici, tout peut arriver, tout est imprévisible, on y perd quand on devrait gagner, et on y gagne quand on devrait perdre. C’est justement ce qui est arrivé à Lando Norris et Oscar Piastri. Pénalisés par le mal endémique qu’est le manque de…",
-   "source": "AutoHebdo",
-   "lang": "fr",
-   "url": "https://www.autohebdo.fr/actualites/f1/grand-prix-de-las-vegas-mclaren-la-mise-est-doublee.html",
-   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/mclaren-las-vegas.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T14:17:02.866Z"
   }
  ]
 }
