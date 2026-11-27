@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-27T11:24:49.584Z",
+ "updated": "2026-11-27T11:54:53.958Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-27T11:54:49.584Z",
+ "next": "2026-11-27T12:24:53.958Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -11,8 +11,8 @@
   },
   {
    "name": "Nextgen-Auto",
-   "ok": false,
-   "err": "HTTP 415"
+   "ok": true,
+   "n": 91
   },
   {
    "name": "F1i",
@@ -27,6 +27,57 @@
  ],
  "items": [
   {
+   "id": "news_1wotlll",
+   "timestamp": "2026-11-27T11:51:32.000Z",
+   "category": "PADDOCK",
+   "title": "Carlos Sainz explique sa curieuse idée pour le DRS en F1 à partir de 2030",
+   "summary": "Alors que la Formule 1 est sur le point de valider les grandes lignes de son retour aux moteurs V8 en 2030, plusieurs des pilotes les plus influents ont commencé à développer leurs idées pour en faire un spectacle attractif. La F1 devrait adopter de tout…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/carlos-sainz-explique-idee-curieuse-drs-2030/10878149/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/YP74e532/s6/carlos-sainz-williams-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-27T11:54:53.958Z"
+  },
+  {
+   "id": "news_12y40mn",
+   "timestamp": "2026-11-27T11:41:21.000Z",
+   "category": "TECHNIQUE",
+   "title": "Honda ne trouve aucun problème sur le \"moteur cassé\" d'Alonso à Las Vegas",
+   "summary": "Lors du dernier tour du Grand Prix de Las Vegas de Formule 1, Fernando Alonso a décidé d'en rester là. Le double champion du monde a bloqué ses roues au bout de la longue ligne droite avant d'annoncer à son équipe à la radio : \"Aux stands, aux stands, moteur…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/honda-trouve-aucun-probleme-moteur-casse-alonso-aston-martin-las-vegas/10878123/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/YK15zBk0/s6/fernando-alonso-aston-martin-r.jpg",
+   "impact": {
+    "targetType": "engine",
+    "targetIds": [
+     "aston_martin"
+    ],
+    "managerModifiers": {
+     "powerUnit": -2,
+     "aero": 0,
+     "reliability": -2
+    },
+    "bettingOddsMultiplier": 1.12,
+    "impactLabel": "Moteur -2 pts | Fiabilité -2 pts | Cotes +12%"
+   },
+   "firstSeen": "2026-11-27T11:54:53.958Z"
+  },
+  {
+   "id": "news_e7se4n",
+   "timestamp": "2026-11-27T11:03:00.000Z",
+   "category": "RÈGLEMENT",
+   "title": "Verstappen révèle ce que la F1 devrait conserver pour ses monoplaces de 2030",
+   "summary": "Si le Grand Prix de Las Vegas n'a pas suffi à réconcilier Max Verstappen avec les aspects artificiels de la réglementation actuelle de la Formule 1, le Néerlandais estime néanmoins que l'épreuve disputée dans le Nevada a mis en évidence un phénomène dont la…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-revele-ce-que-la-f1-devrait-conserver-pour-ses-monoplaces-de-2030,213794.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/ambiance-pirelli3_4_-6.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-27T11:54:53.958Z"
+  },
+  {
    "id": "news_15svcoj",
    "timestamp": "2026-11-27T10:55:34.000Z",
    "category": "RÈGLEMENT",
@@ -38,6 +89,45 @@
    "image": "https://cdn-1.motorsport.com/images/amp/YE9EQnLY/s6/le-depart.jpg",
    "impact": null,
    "firstSeen": "2026-11-27T11:24:49.584Z"
+  },
+  {
+   "id": "news_11h9l51",
+   "timestamp": "2026-11-27T10:30:00.000Z",
+   "category": "PADDOCK",
+   "title": "Antonelli veut courir avec Verstappen au Nürburgring, reste à convaincre Wolff",
+   "summary": "Kimi Antonelli aimerait un jour faire équipe avec Max Verstappen en endurance, et plus particulièrement sur la mythique Nordschleife du Nürburgring. Le champion du monde 2026 de Formule 1 a révélé avoir déjà discuté de cette possibilité avec le Néerlandais…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/antonelli-veut-courir-avec-verstappen-au-nurburgring-reste-a-convaincre-wolff,213776.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455470_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-27T11:54:53.958Z"
+  },
+  {
+   "id": "news_vi5zw1",
+   "timestamp": "2026-11-27T10:01:00.000Z",
+   "category": "PADDOCK",
+   "title": "Pérez affiche sa confiance dans la progression de Cadillac F1 en 2027",
+   "summary": "Sergio Pérez ne regrette absolument pas sa décision de revenir en Formule 1 avec Cadillac, malgré les difficultés rencontrées par la nouvelle écurie américaine durant sa première saison dans la catégorie reine. Le Mexicain estime avoir réalisé une excellente…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/perez-affiche-sa-confiance-dans-la-progression-de-cadillac-f1-en-2027,213765.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456597_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-27T11:54:53.958Z"
+  },
+  {
+   "id": "news_1x63bbn",
+   "timestamp": "2026-11-27T09:38:00.000Z",
+   "category": "PADDOCK",
+   "title": "Hamilton veut profiter de l'hiver pour se rapprocher personnellement de Leclerc",
+   "summary": "Lewis Hamilton souhaite profiter de la trêve hivernale pour renforcer ses liens avec Charles Leclerc et repartir sur de meilleures bases avec son équipier chez Ferrari en 2027. Le septuple champion du monde estime que l'absence de pression liée à la…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hamilton-veut-profiter-de-l-hiver-pour-se-rapprocher-personnellement-de-leclerc,213793.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/ferrari_13_-6.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-27T11:54:53.958Z"
   },
   {
    "id": "news_6fsru8",
@@ -53,6 +143,32 @@
    "firstSeen": "2026-11-27T09:54:35.354Z"
   },
   {
+   "id": "news_1wmei7j",
+   "timestamp": "2026-11-27T09:11:00.000Z",
+   "category": "RÈGLEMENT",
+   "title": "Sainz prédit une fin de saison 'délicate' pour Williams F1, Albon est prudent pour 2027",
+   "summary": "Carlos Sainz est parti près du fond de la grille à Vegas en raison d'une pénalité de 10 places sur la grille pour avoir pris un nouveau turbo. Et malgré cela, il a remonté le peloton et a terminé huitième au prix d'un superbe dépassement sur George Russell…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/sainz-predit-une-fin-de-saison-delicate-pour-williams-f1-albon-est-prudent-pour,213771.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456584_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-27T11:54:53.958Z"
+  },
+  {
+   "id": "news_fhf7kf",
+   "timestamp": "2026-11-27T08:39:00.000Z",
+   "category": "PADDOCK",
+   "title": "La F1 arrive au Qatar entre plans d'évacuation, absences et demandes d'annulation",
+   "summary": "La Formule 1 a pris ses quartiers au Qatar malgré les inquiétudes persistantes concernant la situation sécuritaire au Moyen-Orient, mais plusieurs diffuseurs et fournisseurs de la discipline ont préféré limiter, voire supprimer, leur présence sur place. Des…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/la-f1-arrive-au-qatar-entre-plans-d-evacuation-absences-et-demandes-d,213786.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456630_hires-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-27T11:54:53.958Z"
+  },
+  {
    "id": "news_y47glz",
    "timestamp": "2026-11-27T08:25:17.000Z",
    "category": "PADDOCK",
@@ -64,6 +180,32 @@
    "image": "https://cdn-1.motorsport.com/images/amp/2wlKJ3bY/s6/qatar-2.jpg",
    "impact": null,
    "firstSeen": "2026-11-27T08:54:27.580Z"
+  },
+  {
+   "id": "news_a04wbg",
+   "timestamp": "2026-11-27T08:06:00.000Z",
+   "category": "PADDOCK",
+   "title": "Russell assume sa prise de risques et désigne Red Bull comme l'équipe à battre",
+   "summary": "George Russell reconnaît avoir sensiblement augmenté sa prise de risques en cette fin de saison 2026 de Formule 1, alors que ses espoirs de titre mondial se sont envolés et que Mercedes a déjà remporté le championnat des constructeurs. Le Britannique a apporté…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/russell-assume-sa-prise-de-risques-et-designe-red-bull-comme-l-equipe-a-battre,213767.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456467_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-27T11:54:53.958Z"
+  },
+  {
+   "id": "news_1wh3ai5",
+   "timestamp": "2026-11-27T07:28:00.000Z",
+   "category": "TECHNIQUE",
+   "title": "Stroll veut des progrès en 2027 mais admet que Honda est 'un point d'interrogation'",
+   "summary": "Aston Martin F1 espère progresser l'an prochain, notamment au niveau du châssis qui a été un des problèmes cette année, mais Lance Stroll s'inquiète de l'inconnue que représente la performance du moteur Honda évolué en 2027. Selon lui, c'est le plus gros du…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/stroll-veut-des-progres-en-2027-mais-admet-que-honda-est-un-point-d,213758.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456456_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-27T11:54:53.958Z"
   },
   {
    "id": "news_7qpwin",
@@ -751,136 +893,6 @@
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/ferrari3_2_-16.jpg",
    "impact": null,
    "firstSeen": "2026-11-26T06:49:51.497Z"
-  },
-  {
-   "id": "news_16qygwc",
-   "timestamp": "2026-11-26T05:33:00.000Z",
-   "category": "MÉTÉO",
-   "title": "Météo F1 - GP du Qatar : pas de canicule cette année sur le circuit de Losail",
-   "summary": "À deux manches de la fin de la saison 2026 de Formule 1, le Grand Prix du Qatar devrait se dérouler dans des conditions météorologiques particulièrement stables, sans le moindre risque de pluie attendu au cours des trois journées de compétition. Si la tenue…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/meteo-f1-gp-du-qatar-pas-de-canicule-cette-annee-sur-le-circuit-de-losail,213731.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1388617_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T06:19:48.128Z"
-  },
-  {
-   "id": "news_1b924nn",
-   "timestamp": "2026-11-25T18:27:00.000Z",
-   "category": "PADDOCK",
-   "title": "Les Wallabies en immersion chez Alpine à Enstone",
-   "summary": "Le XV australien a troqué le ballon ovale contre le volant le temps d’une journée. Lundi, en marge de sa tournée européenne dans le cadre du Championnat des Nations, dont l’épilogue se nouera ce week-end à Twickenham, l’équipe d’Australie de rugby a envoyé…",
-   "source": "AutoHebdo",
-   "lang": "fr",
-   "url": "https://www.autohebdo.fr/actualites/f1/les-wallabies-en-immersion-chez-alpine-a-enstone.html",
-   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/wallabies-alpine.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T18:47:54.905Z"
-  },
-  {
-   "id": "news_1q291nz",
-   "timestamp": "2026-11-25T18:03:00.000Z",
-   "category": "PADDOCK",
-   "title": "Grand Prix de Las Vegas – Williams, au mérite",
-   "summary": "« Toma ya ! » L’exclamation est répétée à l’envi par Carlos Oñoro, le manager du pilote, au milieu des mécaniciens britanniques de Williams dans le stand. Cette expression familière, que l’on pourrait traduire par « Prends ça ! », est un cri de satisfaction…",
-   "source": "AutoHebdo",
-   "lang": "fr",
-   "url": "https://www.autohebdo.fr/actualites/f1/grand-prix-de-las-vegas-williams-au-merite.html",
-   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/focus-williams-sainz.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T18:17:51.369Z"
-  },
-  {
-   "id": "news_n0fry",
-   "timestamp": "2026-11-25T17:10:00.000Z",
-   "category": "PADDOCK",
-   "title": "Racing Bulls a 'confiance' en sa F1 avant le Grand Prix du Qatar",
-   "summary": "Racing Bulls a connu une course difficile à Las Vegas, et le Grand Prix du Qatar sera l'occasion de rebondir pour Liam Lawson et Arvid Lindblad, qui partaient pourtant à l'avant de la grille mais ont connu diverses mauvaises fortunes dans le Nevada. A Losail…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/racing-bulls-a-confiance-en-sa-f1-avant-le-grand-prix-du-qatar,213727.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/racingbulls_66_-2.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T17:17:28.791Z"
-  },
-  {
-   "id": "news_1fgslm",
-   "timestamp": "2026-11-25T16:51:53.000Z",
-   "category": "RÈGLEMENT",
-   "title": "Williams et Alpine épinglées pour non-respect du plafond budgétaire 2025",
-   "summary": "Les écuries de F1 Williams et Alpine ont été épinglées pour non-respect du plafond budgétaire 2025 de la Formule 1 et ont conclu un accord de violation reconnue avec la FIA. Williams a écopé d'une sanction sportive pour dépassement du plafond, tandis qu'Alpine…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/williams-alpine-epinglee-non-respect-plafond-budgetaire-2025/10877751/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "image": "https://cdn-1.motorsport.com/images/amp/6VyKx8GY/s6/carlos-sainz-williams-2.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T17:17:28.791Z"
-  },
-  {
-   "id": "news_mo1xt7",
-   "timestamp": "2026-11-25T16:45:16.000Z",
-   "category": "PADDOCK",
-   "title": "Arthur Leclerc et Lilou Wadoux feront équipe aux 24 Heures de Daytona",
-   "summary": "L’écurie italienne AF Corse a annoncé ses équipages pour les prochaines 24 Heures de Daytona, où elle engagera deux Ferrari 296 GT3 Evo, l’une en GTD Pro, l’autre en GTD. Dans la catégorie GTD Pro, la n°21 verra à son volant Simon Mann, Alec Udell, Tommaso…",
-   "source": "AutoHebdo",
-   "lang": "fr",
-   "url": "https://www.autohebdo.fr/actualites/endurance/arthur-leclerc-et-lilou-wadoux-feront-equipe-aux-24-heures-de-daytona.html",
-   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/AF_Corse_IMSA_2027_50_1200x800.png",
-   "impact": null,
-   "firstSeen": "2026-11-25T16:47:25.007Z"
-  },
-  {
-   "id": "news_ulayfw",
-   "timestamp": "2026-11-25T16:35:12.000Z",
-   "category": "RÈGLEMENT",
-   "title": "La FIA rend son rapport des budgets capés 2025, Alpine et Williams épinglés",
-   "summary": "Depuis 2021, chaque écurie de Formule 1 est tenue de respecter un plafond budgétaire, afin d’équilibrer les dépenses entre les différentes écuries de la grille. Pour la cinquième année donc, la FIA a publié les résultats de l’enquête menée par une…",
-   "source": "AutoHebdo",
-   "lang": "fr",
-   "url": "https://www.autohebdo.fr/actualites/f1/la-fia-rend-son-rapport-des-budgets-capes-2025-alpine-et-williams-epingles.html",
-   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/DPPI_00125027_1778-2.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T16:47:25.007Z"
-  },
-  {
-   "id": "news_6y2hef",
-   "timestamp": "2026-11-25T16:23:00.000Z",
-   "category": "RÈGLEMENT",
-   "title": "Officiel : Williams F1 sanctionnée pour avoir dépassé le plafond budgétaire en 2025, Alpine également épinglée par la FIA !",
-   "summary": "La FIA a annoncé avoir achevé son processus d'examen des comptes des écuries de Formule 1 et des motoristes pour la saison 2025, révélant des infractions au règlement financier de la part de Williams et Alpine F1. Si l'écurie française a uniquement commis une…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/officiel-williams-f1-sanctionnee-pour-avoir-depasse-le-plafond-budgetaire-en,213733.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/williams_30_-8.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T16:47:25.007Z"
-  },
-  {
-   "id": "news_11jhcmb",
-   "timestamp": "2026-11-25T15:48:00.000Z",
-   "category": "PADDOCK",
-   "title": "McLaren F1 révèle les défauts de conception qui pénalisent sa MCL40 en ligne droite",
-   "summary": "Malgré son double podium au Grand Prix de Las Vegas, McLaren F1 a de nouveau été confrontée à un important déficit de vitesse de pointe, qui a notamment compromis le début de course de Lando Norris. Andrea Stella a révélé que ces difficultés étaient…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/mclaren-f1-revele-les-defauts-de-conception-qui-penalisent-sa-mcl40-en-ligne,213724.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/mclaren3_163_-2.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T16:17:21.092Z"
-  },
-  {
-   "id": "news_gtr7pu",
-   "timestamp": "2026-11-25T15:05:00.000Z",
-   "category": "PADDOCK",
-   "title": "Bearman veut réussir ses qualifications, Câmara veut gagner en confiance",
-   "summary": "Haas F1 espère rebondir au Grand Prix du Qatar ce week-end après un résultat décevant à Las Vegas, alors que l'équipe lutte toujours pour garder la septième place du championnat face à Audi, qui est revenue à trois points. Oliver Bearman continue à boucler sa…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/bearman-veut-reussir-ses-qualifications-camara-veut-gagner-en-confiance,213723.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1454965_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T15:17:12.395Z"
   }
  ]
 }
