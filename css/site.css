@@ -404,8 +404,8 @@ button.gx-c:disabled { cursor: default; }
    Accueil à plat : un seul fond uni, du contenu posé dessus, séparé par des filets.
    Titres et chiffres dans la police du titre du Grand Prix (Archivo large, 900).
    ===================================================================================== */
-body.on-home { --hm-bg: #15171b; --hm-line: #272b32; --hm-line2: #343943; --hm-ink: #f1f2f4; --hm-mute: #8d949e; --hm-red: #e10600; background: var(--hm-bg) !important; }
-body.on-home::before, body.on-home::after, body.on-home .bg-stripes, body.on-home .skids, body.on-home .skid-car, body.on-home .track-bg, body.on-home .tele, body.on-home .aurora { display: none !important; }
+body.on-home { --hm-bg: #1f2228; --hm-frame: #15171b; --hm-line: #2e323a; --hm-line2: #3a3f49; --hm-ink: #f1f2f4; --hm-mute: #8d949e; --hm-red: #e10600; background: var(--hm-bg) !important; }
+body.on-home::before, body.on-home::after, body.on-home .bg-stripes, body.on-home .aurora { display: none !important; }
 body.on-home .topbar { background: var(--hm-bg) !important; border-bottom: 1px solid var(--hm-line) !important; box-shadow: none !important; }
 body.on-home .topbar::before, body.on-home .topbar::after { display: none !important; }
 body.on-home footer { background: var(--hm-bg); }
@@ -443,13 +443,6 @@ body.on-home .hx-rail li.next::before { background: var(--hm-red); border-color:
 body.on-home .hx-rail li.next span { color: var(--hm-ink); }
 body.on-home .hx-cta .btn { border-radius: 6px; clip-path: none; transform: none; }
 body.on-home .hx-cta .btn.ghost { background: none; border: 1px solid var(--hm-line2); color: var(--hm-ink); }
-body.on-home .hx-map { padding: 10px 0 80px; background: none !important; --gr: transparent !important; }
-body.on-home .hx-map svg { filter: none !important; }
-body.on-home .hx-scene, body.on-home .hx-scene-front, body.on-home .hx-lm-ic, body.on-home .hx-t-glow, body.on-home .hx-t-kerb { display: none !important; }
-body.on-home .hx-t-asphalt { stroke: var(--hm-line2) !important; }
-body.on-home .hx-t-line { stroke: var(--hm-ink) !important; }
-body.on-home .hx-lm text, body.on-home .hx-lms text { fill: var(--hm-mute) !important; }
-body.on-home .hx-lm rect, body.on-home .hx-lms rect { fill: var(--hm-bg) !important; stroke: var(--hm-line2) !important; }
 body.on-home .hx-map figcaption { left: 0; right: 0; bottom: 8px; }
 body.on-home .hx-fav { background: none; border: 0; border-top: 2px solid var(--tc); border-radius: 0; padding: 12px 0 0; box-shadow: none; backdrop-filter: none; }
 body.on-home .hx-fav-o { border-color: var(--hm-line2); } body.on-home .hx-fav-o b { color: var(--hm-ink); }
@@ -540,9 +533,15 @@ body.on-home .pwh-row:hover { background: rgba(255,255,255,.02) !important; }
   .ch-bar { display: none; } .ch-list li { grid-template-columns: 30px 40px minmax(0, 1fr) auto; gap: 10px; }
 }
 body.on-home main .section-h h2 { font-size: clamp(24px, 2.6vw, 32px) !important; }
-body.on-home .hx-map svg.hx-track > :not(defs):not(.hx-t-asphalt):not(.hx-t-line):not(.hx-lms):not(.hx-car) { display: none !important; }
-body.on-home .hx-car { fill: var(--hm-red) !important; }
 .ch-podium .ch-v { white-space: nowrap; }
 body.on-home .hx-fav { background: none !important; box-shadow: none !important; }
 body.on-home footer { border-top: 1px solid var(--hm-line) !important; background: var(--hm-bg) !important; } body.on-home footer::before, body.on-home footer::after { display: none !important; }
 body.on-home footer#footer { background: var(--hm-bg) !important; background-color: var(--hm-bg) !important; }
+
+/* Accueil : deux blocs encadrés (en-tête du GP, saison suivante) sur un fond un peu plus clair */
+body.on-home .hx, body.on-home .hm-next .nx-grid { background: var(--hm-frame); border: 1px solid var(--hm-line2); border-radius: 14px; }
+body.on-home .hx { padding: 0 40px 40px; margin-top: 12px; overflow: hidden; }
+body.on-home .hx-map { padding: 26px 0 84px; border-radius: 12px; }
+body.on-home .hm-next .nx-grid { padding: 36px 40px; }
+body.on-home .hx + * { margin-top: 0; }
+@media (max-width: 640px) { body.on-home .hx { padding: 0 18px 24px; } body.on-home .hm-next .nx-grid { padding: 24px 18px; } }
