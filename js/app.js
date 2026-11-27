@@ -1063,6 +1063,55 @@
       .replace(/(href=")#([^"]+)"/g, (m, a, id) => (ids.has(id) ? `${a}#${id}-${u}"` : m))
       .replace(/url\(#([^)]+)\)/g, (m, id) => (ids.has(id) ? `url(#${id}-${u})` : m));
   }
+
+  /* ---------- Résultats des séances (essais libres, qualifs, sprint, course) : fenêtre ouverte depuis le programme du week-end ---------- */
+  let liveTimer = null;
+  function sessionModal(round, key) {
+    const s = S.f1 || S.season, race = s.races.find((r) => r.round === +round); if (!race) return;
+    const ses = race.sessions.find((x) => x.key === key); if (!ses) return;
+    $('#modal').innerHTML = `<div class="modal" data-action="modal-bg"><div class="modal-box lt" role="dialog" aria-label="${esc(ses.label)}"><button class="lg-x" data-action="close-modal" aria-label="Fermer">✕</button>
+      <header class="lt-h"><small>${flag(race.iso, 'sm')} ${esc(race.nameFr)}</small><h3>${esc(ses.label)}</h3><nav class="lt-tabs">${race.sessions.map((x) => `<button type="button" class="${x.key === key ? 'on' : ''}" data-live="${x.key}" data-round="${race.round}">${esc(x.label.replace('Essais libres ', 'EL'))}</button>`).join('')}</nav></header>
+      <div id="ltBody" class="lt-b"><div class="skeleton" style="height:240px"></div></div></div></div>`;
+    clearInterval(liveTimer);
+    const run = () => fillSession(race, ses);
+    run();
+    if (F1.live && F1.live.phase(ses.key, ses.date) === 'live') liveTimer = setInterval(() => { if (!$('#ltBody')) { clearInterval(liveTimer); return; } run(); }, 20000);
+  }
+  // repli : classement officiel déjà chargé par le site (qualifications et course)
+  function officialRows(race, key) {
+    const src = key === 'quali' ? race.qualifying : key === 'race' ? race.results : null; if (!src || !src.length) return null;
+    return src.slice().sort((a, b) => a.pos - b.pos).map((x) => { const d = drv(x.driverId) || drvOf(x.driverId), t = team(x.teamId) || {};
+      return { pos: x.pos, num: d.number, name: `${d.given || ''} ${d.family || ''}`.trim(), code: d.code, team: t.short || t.name || '', color: F1.teamColor(x.teamId), teamId: x.teamId,
+        qTxt: key === 'quali' ? [x.q1, x.q2, x.q3] : null, timeTxt: key === 'race' ? (x.timeText || (x.classified ? '' : x.status || '')) : '', laps: x.laps, out: key === 'race' && !x.classified ? 'AB' : '' }; });
+  }
+  async function fillSession(race, ses) {
+    const el = $('#ltBody'); if (!el) return;
+    const ph = F1.live ? F1.live.phase(ses.key, ses.date) : 'done';
+    if (ph === 'soon') { const ms = ses.date.getTime() - Date.now(); el.innerHTML = `<div class="lt-empty"><b>Séance à venir</b><span>Départ ${DAYL.format(ses.date)} à ${HM.format(ses.date)}, dans ${untilTxt(ms)}. Les temps s'afficheront ici pendant la séance.</span></div>`; return; }
+    let res = null, err = null;
+    try { res = await F1.live.load(race, ses); } catch (e) { err = e; }
+    if (!$('#ltBody')) return;
+    let rows = res && res.rows && res.rows.length ? res.rows : null, src = 'OpenF1';
+    if (!rows) { const o = officialRows(race, ses.key); if (o) { rows = o; src = 'résultats officiels'; } }
+    const status = ph === 'live' ? '<span class="lt-st live"><i></i>En direct · actualisé toutes les 20 s</span>' : `<span class="lt-st">${res && res.provisional ? 'Classement provisoire (meilleurs tours)' : 'Classement final'}</span>`;
+    if (!rows) {
+      const why = err && (err.status === 401 || err.status === 403) ? 'Le direct d\'OpenF1 est réservé aux comptes payants : le classement s\'affichera ici à la fin de la séance.'
+        : err ? 'Source des chronos injoignable pour le moment. Réessaie dans quelques minutes.' : (res && res.note) || 'Pas encore de temps publiés pour cette séance.';
+      el.innerHTML = `<div class="lt-top">${status}</div><div class="lt-empty"><b>${ph === 'live' ? 'Séance en cours' : 'Résultats pas encore disponibles'}</b><span>${esc(why)}</span></div>`; return;
+    }
+    const isQ = ses.key === 'quali' || ses.key === 'sq', isR = ses.key === 'race' || ses.key === 'sprint';
+    const byNum = new Map([...(S.f1 || S.season).drivers.values()].filter((d) => d.number).map((d) => [String(d.number), d]));
+    const L = F1.live || { fmtLap: (v) => v, fmtGap: (v) => v };
+    el.innerHTML = `<div class="lt-top">${status}<span class="lt-src">Chronos : ${esc(src)}</span></div>
+      <div class="table-wrap"><table class="tbl lt-tbl"><thead><tr><th>Pos</th><th>Pilote</th>${isQ ? '<th class="r">Q1</th><th class="r">Q2</th><th class="r">Q3</th>' : isR ? '<th class="r">Temps</th><th class="r">Meilleur tour</th>' : '<th class="r">Meilleur tour</th><th class="r">Écart</th>'}<th class="r">Tours</th></tr></thead><tbody>
+      ${rows.map((r, i) => { const our = byNum.get(String(r.num)), tid = r.teamId || (our && our.teamId), col = tid ? F1.teamColor(tid) : r.color;
+        const nm = our ? `${esc(our.given)} <b>${esc(our.family)}</b>` : esc(r.name);
+        const cells = isQ ? (r.q ? r.q.map((q) => `<td class="r num">${L.fmtLap(q)}</td>`).join('') : r.qTxt ? r.qTxt.map((q) => `<td class="r num">${esc(q || '—')}</td>`).join('') : `<td class="r num" colspan="3">${L.fmtLap(r.best)}</td>`)
+          : isR ? `<td class="r num">${r.out ? r.out : r.timeTxt ? esc(r.timeTxt) : i === 0 ? L.fmtLap(r.total) : esc(L.fmtGap(r.gap)) || '—'}</td><td class="r num muted">${L.fmtLap(r.best)}</td>`
+          : `<td class="r num">${L.fmtLap(r.best)}</td><td class="r num muted">${i === 0 ? '' : esc(L.fmtGap(r.gap))}</td>`;
+        return `<tr style="--tc:${col}" class="${i < 3 ? 'top' : ''}"><td class="pos">${r.out && !r.pos ? '–' : r.pos || i + 1}</td><td><span class="lt-who"><i class="lt-bar"></i>${r.num ? `<span class="lt-n">${F1.num.html(r.num, tid || '', { color: 'currentColor' })}</span>` : ''}<span><span class="lt-nm">${nm}</span><small>${esc(r.team || (tid && (team(tid) || {}).short) || '')}</small></span></span></td>${cells}<td class="r num muted">${r.laps || '—'}</td></tr>`; }).join('')}</tbody></table></div>`;
+  }
+  document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-live]'); if (!b) return; e.preventDefault(); sessionModal(b.dataset.round, b.dataset.live); });
   function heroTrack(nx) {
     const s = S.season, now = Date.now();
     const nextSess = nx.sessions.find((x) => x.date.getTime() > now);
@@ -1070,7 +1119,7 @@
     const favW = S.markets.find((m) => m.kind === 'win'), favS = favW && favW.selections[0], favD = favS && drv(favS.driverId);
     const tc = favD ? team(favD.teamId).color : '#d7261e';
     const lights = `<div class="hx-lights" data-cd="${nx.date.getTime()}" aria-label="Compte à rebours avant le départ"><small class="hx-cd-l">Départ dans</small>${['j', 'h', 'min', 's'].map((u, i) => `<div class="hx-pod"><b data-u="${i}">--</b><small>${u}</small></div>`).join('')}</div>`;
-    const rail = `<ol class="hx-rail">${nx.sessions.map((x) => { const st = x.date.getTime() < now ? 'done' : x === nextSess ? 'next' : ''; return `<li class="${st}"><span>${esc(x.label)}</span><b>${WD.format(x.date)} ${HM.format(x.date)}</b></li>`; }).join('')}</ol>`;
+    const rail = `<ol class="hx-rail">${nx.sessions.map((x) => { const st = x.date.getTime() < now ? 'done' : x === nextSess ? 'next' : '', ph = F1.live ? F1.live.phase(x.key, x.date) : ''; return `<li class="${st} ${ph === 'live' ? 'live' : ''}"><button type="button" class="hx-ses" data-live="${x.key}" data-round="${nx.round}" aria-label="Résultats : ${esc(x.label)}"><span>${esc(x.label)}${ph === 'live' ? ' <i class="hx-live">Direct</i>' : ''}</span><b>${WD.format(x.date)} ${HM.format(x.date)}</b></button></li>`; }).join('')}</ol>`;
     const tags = [nx.sprint ? 'Week-end sprint' : '', nx.street ? 'Circuit urbain' : ''].filter(Boolean).map((t) => `<span class="hx-tag">${t}</span>`).join('');
     const wx = w ? `<span>${w.rain >= 50 ? '🌧️' : w.rain >= 25 ? '🌦️' : w.code <= 1 ? '☀️' : '⛅'} ${w.temp} °C, pluie ${w.rain} %, vent ${w.wind} km/h</span>` : '';
     return `<section class="hx" style="--tc:${tc}">

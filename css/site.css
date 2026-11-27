@@ -584,3 +584,30 @@ body.on-home .hx-map figcaption { row-gap: 10px; }
 @media (max-width: 900px) { body.on-home .hx { grid-template-columns: 1fr; gap: 18px; } body.on-home .hx-map { min-height: 400px; } }
 @media (max-width: 480px) { body.on-home .hx-map .hx-track { padding: 12px 12px 140px; } body.on-home .hx-map figcaption { left: 10px; bottom: 10px; max-width: calc(100% - 20px); } }
 body.on-home .hx-fav-o b, body.on-home .hx-fav b { white-space: nowrap; }
+
+/* Programme du week-end : chaque séance ouvre ses résultats */
+.hx-ses { display: grid; gap: 2px; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.hx-ses:hover span, .hx-ses:hover b { color: #fff; text-decoration: underline; text-decoration-color: var(--red, #e10600); text-underline-offset: 3px; }
+.hx-ses:focus-visible { outline: 2px solid #ffd23f; outline-offset: 3px; border-radius: 4px; }
+.hx-live { display: inline-block; margin-left: 4px; padding: 1px 6px; border-radius: 999px; background: #e10600; color: #fff; font-style: normal; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+/* Fenêtre des résultats de séance */
+.modal-box.lt { width: min(760px, 94vw); max-height: 88vh; overflow: auto; padding: 22px; }
+.lt-h { display: grid; gap: 6px; margin-bottom: 14px; padding-right: 40px; }
+.lt-h small { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.lt-h h3 { margin: 0; font-size: 26px; font-weight: 900; font-variation-settings: 'wdth' 116; }
+.lt-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.lt-tabs button { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--hair-2, #343943); background: none; color: var(--muted); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.lt-tabs button.on { background: #f1f2f4; color: #15171b; border-color: #f1f2f4; }
+.lt-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 12.5px; color: var(--muted); }
+.lt-st { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: #d7dce3; }
+.lt-st.live i { width: 8px; height: 8px; border-radius: 50%; background: #e10600; box-shadow: 0 0 0 0 rgba(225,6,0,.6); animation: ltPulse 1.6s infinite; }
+@keyframes ltPulse { 70% { box-shadow: 0 0 0 8px rgba(225,6,0,0); } 100% { box-shadow: 0 0 0 0 rgba(225,6,0,0); } }
+@media (prefers-reduced-motion: reduce) { .lt-st.live i { animation: none; } }
+.lt-tbl td { vertical-align: middle; } .lt-tbl tr.top .pos { color: #fff; font-weight: 900; }
+.lt-who { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.lt-bar { width: 3px; height: 26px; border-radius: 2px; background: var(--tc); flex: none; }
+.lt-n { display: inline-grid; height: 18px; color: var(--tc); flex: none; } .lt-n svg, .lt-n .dnum { height: 18px !important; width: auto !important; }
+.lt-who > span:last-child { display: grid; line-height: 1.2; } .lt-who small { font-size: 11.5px; color: var(--muted); }
+.lt-empty { display: grid; gap: 6px; padding: 28px 18px; text-align: center; border: 1px dashed var(--hair-2, #343943); border-radius: 10px; }
+.lt-empty b { font-size: 16px; } .lt-empty span { font-size: 13.5px; color: var(--muted); max-width: 52ch; margin: 0 auto; }
+.lt-nm { white-space: nowrap; font-size: 14px; } .lt-nm b { font-weight: 800; }
