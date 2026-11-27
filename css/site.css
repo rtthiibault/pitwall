@@ -611,3 +611,22 @@ body.on-home .hx-fav-o b, body.on-home .hx-fav b { white-space: nowrap; }
 .lt-empty { display: grid; gap: 6px; padding: 28px 18px; text-align: center; border: 1px dashed var(--hair-2, #343943); border-radius: 10px; }
 .lt-empty b { font-size: 16px; } .lt-empty span { font-size: 13.5px; color: var(--muted); max-width: 52ch; margin: 0 auto; }
 .lt-nm { white-space: nowrap; font-size: 14px; } .lt-nm b { font-weight: 800; }
+/* Programme du week-end : chaque séance est une carte cliquable */
+body.on-home .hx-rail { gap: 8px; }
+body.on-home .hx-rail::before { display: none; }
+body.on-home .hx-rail li { padding-top: 0; }
+body.on-home .hx-rail li::before { display: none; }
+.hx-ses { position: relative; width: 100%; height: 100%; display: grid; align-content: start; gap: 3px; padding: 10px 12px 9px; border-radius: 10px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.035); transition: border-color .15s, background .15s, transform .15s; }
+.hx-ses span { font-size: 12.5px; color: #aab2bd; } .hx-ses b { font-size: 14px; color: #eef0f3; }
+.hx-ses-go { display: inline-flex; align-items: center; gap: 3px; margin-top: 4px; font-style: normal; font-size: 11.5px; font-weight: 700; color: #ff6a5f; }
+.hx-ses-go svg { width: 11px; height: 11px; transition: transform .15s; }
+.hx-ses:hover { border-color: rgba(255,255,255,.35); background: rgba(255,255,255,.07); transform: translateY(-1px); }
+.hx-ses:hover span, .hx-ses:hover b { text-decoration: none; }
+.hx-ses:hover .hx-ses-go svg { transform: translateX(3px); }
+.hx-rail li.done .hx-ses { opacity: .85; } .hx-rail li.done { opacity: 1 !important; }
+.hx-rail li.next .hx-ses, .hx-rail li.live .hx-ses { border-color: rgba(225,6,0,.6); background: rgba(225,6,0,.08); }
+.hx-rail li.next .hx-ses span { color: #fff; }
+.hx-rail-tip { margin: -6px 0 0; font-size: 12.5px; color: var(--hm-mute, #8d949e); }
+@media (prefers-reduced-motion: reduce) { .hx-ses, .hx-ses-go svg { transition: none; } .hx-ses:hover { transform: none; } }
+@media (max-width: 640px) { body.on-home .hx-rail { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
+@media (max-width: 480px) { body.on-home .hx-pod b { font-size: 34px; } body.on-home .hx-pod + .hx-pod::before { margin: 0 4px 0 2px; font-size: 24px; } body.on-home .hx-pod small { font-size: 12px; } }
