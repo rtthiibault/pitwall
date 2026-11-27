@@ -1012,14 +1012,25 @@
     const sc = sceneLayer(circuitId, pts, box, lms.flatMap((l) => [[l.q[0] + l.vx * 96, l.q[1] + l.vy * 96], [l.q[0] + l.vx * (l.icon ? 150 : 64), l.q[1] + l.vy * (l.icon ? 150 : 64)]]));
     // projecteurs le long du tracé pour les courses de nuit
     const lights = sc.night ? pts.filter((_, i) => i % Math.max(8, Math.round(pts.length / 14)) === 0).map((q) => `<circle cx="${q[0]}" cy="${q[1]}" r="34" fill="url(#sc-flood)"/>`).join('') : '';
-    return `<svg class="hx-track g-${sc.ground} ${sc.night ? 'night' : ''}" viewBox="${box.join(' ')}" role="img" aria-label="Tracé du circuit et son décor">
+    return uniqIds(`<svg class="hx-track g-${sc.ground} ${sc.night ? 'night' : ''}" viewBox="${box.join(' ')}" role="img" aria-label="Tracé du circuit et son décor">
       <defs>${sc.defs}<radialGradient id="sc-flood"><stop offset="0" stop-color="#fff6d0" stop-opacity=".55"/><stop offset="1" stop-color="#fff6d0" stop-opacity="0"/></radialGradient>
         <pattern id="hxChk" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff"/><rect width="4" height="4" fill="#111"/><rect x="4" y="4" width="4" height="4" fill="#111"/></pattern></defs>
       <g class="hx-scene">${sc.back}</g>${lights}
       <path class="hx-t-glow" d="${d}" style="stroke:${color}"/>${paints}<path class="hx-t-kerb" d="${d}"/><path class="hx-t-asphalt" d="${d}"/><path class="hx-t-line" id="hxTrk" d="${d}" pathLength="1"/>${tunnels}
       <g transform="translate(${sx} ${sy}) rotate(${ang})"><rect x="-4" y="-22" width="8" height="44" fill="url(#hxChk)"/></g>
       <g class="hx-scene-front">${sc.front}</g><g class="hx-lms">${icons}${labels}</g>
-      ${still ? '' : `<circle class="hx-car" r="13" style="fill:${color}"><animateMotion dur="14s" repeatCount="indefinite" rotate="auto"><mpath href="#hxTrk"/></animateMotion></circle>`}</svg>`;
+      ${still ? '' : `<circle class="hx-car" r="13" style="fill:${color}"><animateMotion dur="14s" repeatCount="indefinite" rotate="auto"><mpath href="#hxTrk"/></animateMotion></circle>`}</svg>`);
+  }
+  /* Identifiants propres à chaque dessin : plusieurs circuits sur la page ne se marchent plus dessus
+     (Chrome et Edge prennent le premier élément portant l'identifiant, même s'il est masqué). */
+  let uidN = 0;
+  function uniqIds(svg) {
+    const u = 't' + (++uidN).toString(36), ids = new Set();
+    svg.replace(/\bid="([^"]+)"/g, (m, id) => { ids.add(id); return m; });
+    if (!ids.size) return svg;
+    return svg.replace(/\bid="([^"]+)"/g, (m, id) => `id="${id}-${u}"`)
+      .replace(/(href=")#([^"]+)"/g, (m, a, id) => (ids.has(id) ? `${a}#${id}-${u}"` : m))
+      .replace(/url\(#([^)]+)\)/g, (m, id) => (ids.has(id) ? `url(#${id}-${u})` : m));
   }
   function heroTrack(nx) {
     const s = S.season, now = Date.now();

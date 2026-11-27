@@ -710,6 +710,14 @@ function mountPU(el, { part = null } = {}) {
   return api;
 }
 
+// roues d'une monoplace dédiée (celle de l'écurie si elle est chargée, sinon la première disponible)
+const WHEEL_MAT = /wheel_hub|disc|sidewall|tread|tyre|tire|rim/i;
+function wheelDonor(teamId) {
+  const set = F1_SETS.get(f1Key(teamId)) || [...F1_SETS.values()][0];
+  if (!set) { loadF1(f1Key(teamId) || 'mercedes').catch(() => {}); return null; }
+  const out = set.parts.filter((p) => { if (!p.material || !WHEEL_MAT.test(p.material.name || '')) return false; const b = p.geometry.boundingBox; return b.max.y < 1.0; });
+  return out.length >= 2 ? out : null;
+}
 function buildCar(teamId, { xray = false, skin = null } = {}) {
   if (isWec(teamId)) {
     const parts = WEC_PARTS.get(wecKey(teamId));
@@ -719,6 +727,7 @@ function buildCar(teamId, { xray = false, skin = null } = {}) {
     return g;
   }
   // livrée spéciale du Passe de saison : monoplace générique peinte avec la livrée choisie
+  const origTeam = teamId;
   const skinId = skin && F1.visuals && F1.visuals.liveryRules && F1.visuals.liveryRules('skin_' + skin) ? 'skin_' + skin : null;
   const set = skinId ? { parts: PARTS, bounds: BOUNDS } : setOf(teamId);
   const U = xray ? xrayUniforms() : null;
@@ -737,7 +746,14 @@ function buildCar(teamId, { xray = false, skin = null } = {}) {
   const M = materials(teamId, set.bounds);
   const car = new THREE.Group();
   if (U) Object.values(M).forEach((m) => applyXray(m, U));
+  // livrée spéciale : roues (jantes, disques, pneus) reprises d'une monoplace dédiée, plus fines que celles du modèle générique
+  const donor = skinId ? wheelDonor(origTeam) : null;
+  if (donor) for (const p of donor) {
+    const mat = p.material.clone(); if (U) applyXray(mat, U);
+    const m = new THREE.Mesh(p.geometry, mat); m.castShadow = true; m.receiveShadow = true; car.add(m);
+  }
   for (const p of set.parts) {
+    if (donor && (p.name === 'tyre' || p.name === 'rim')) continue;
     const m = new THREE.Mesh(p.geometry, M[p.name] || M.body);
     m.castShadow = true; m.receiveShadow = true;
     car.add(m);
