@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-27T08:24:23.544Z",
+ "updated": "2026-11-27T08:54:27.580Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-27T08:54:23.544Z",
+ "next": "2026-11-27T09:24:27.580Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_y47glz",
+   "timestamp": "2026-11-27T08:25:17.000Z",
+   "category": "PADDOCK",
+   "title": "Le programme du Grand Prix du Qatar F1 2026 : dates, horaires et infos",
+   "summary": "Le Grand Prix du Qatar, disputé sur le circuit de Losail, est la 22e et avant-dernière manche de la saison. Le décalage horaire entre Losail et Paris est de deux heures, donc quand il est 9h en France, il est 11h au Qatar. Toutefois, Grand Prix semi-nocturne…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/gp-qatar-2026-dates-horaires-infos-programme/10877189/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/2wlKJ3bY/s6/qatar-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-27T08:54:27.580Z"
+  },
   {
    "id": "news_7qpwin",
    "timestamp": "2026-11-27T06:51:00.000Z",
@@ -866,19 +879,6 @@
    "lang": "fr",
    "url": "https://www.autohebdo.fr/actualites/f1/grand-prix-de-las-vegas-mclaren-la-mise-est-doublee.html",
    "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/mclaren-las-vegas.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T14:17:02.866Z"
-  },
-  {
-   "id": "news_3hd294",
-   "timestamp": "2026-11-25T13:32:00.000Z",
-   "category": "TECHNIQUE",
-   "title": "Aston Martin F1 fait son autocritique au milieu des propos contre Honda",
-   "summary": "Aston Martin F1 a vécu un enfer à Las Vegas, avec des longues lignes droites qui coûtaient à elles seules près de deux secondes au tour, la faute à un moteur Honda toujours anémique. Fernando Alonso est rentré au stand avant l'arrivée, prétextant un moteur…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/aston-martin-f1-fait-son-autocritique-au-milieu-des-propos-contre-honda,213722.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/astonmartin3_26_-14.jpg",
    "impact": null,
    "firstSeen": "2026-11-25T14:17:02.866Z"
   }
