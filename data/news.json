@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-27T04:53:41.436Z",
+ "updated": "2026-11-27T05:23:44.371Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-27T05:23:41.436Z",
+ "next": "2026-11-27T05:53:44.371Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_timh8a",
+   "timestamp": "2026-11-27T05:00:04.000Z",
+   "category": "PADDOCK",
+   "title": "Fernando Alonso : \"J'arrêterai la F1 quand je me sentirai lent\"",
+   "summary": "Fernando Alonso affirme qu'il arrêtera la Formule 1 lorsqu'il sentira qu'il a perdu de sa vitesse, et estime qu'il n'a pas besoin d'être aussi en forme qu'un footballeur pour rester compétitif. Le pilote espagnol est le plus expérimenté de l'histoire de la F1…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/fernando-alonso-arretera-f1-quand-il-sera-lent/10877865/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/6zoDBWk0/s6/fernando-alonso-aston-martin-r.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-27T05:23:44.371Z"
+  },
   {
    "id": "news_1olbyh4",
    "timestamp": "2026-11-26T21:17:13.000Z",
@@ -856,19 +869,6 @@
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/mclaren3_92_.jpg",
    "impact": null,
    "firstSeen": "2026-11-25T12:16:46.306Z"
-  },
-  {
-   "id": "news_m1r2sd",
-   "timestamp": "2026-11-25T11:08:00.000Z",
-   "category": "PADDOCK",
-   "title": "Rosberg regrette sa relation avec Hamilton, une amitié brisée à jamais par la F1",
-   "summary": "Dix ans après avoir décroché le titre mondial de Formule 1 face à Lewis Hamilton, Nico Rosberg regrette profondément le prix personnel qu'il a dû payer pour parvenir au sommet de sa discipline. L'ancien pilote Mercedes a notamment confié que la disparition de…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/rosberg-regrette-sa-relation-avec-hamilton-une-amitie-brisee-a-jamais-par-la-f1,213721.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_857569_hires-2.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T11:16:22.438Z"
   }
  ]
 }
