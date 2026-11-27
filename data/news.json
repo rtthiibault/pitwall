@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-27T05:53:47.875Z",
+ "updated": "2026-11-27T06:23:51.505Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-27T06:23:47.875Z",
+ "next": "2026-11-27T06:53:51.505Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 88
+   "n": 87
   },
   {
    "name": "F1i",
@@ -26,6 +26,31 @@
   }
  ],
  "items": [
+  {
+   "id": "news_wherqu",
+   "timestamp": "2026-11-27T06:03:00.000Z",
+   "category": "PADDOCK",
+   "title": "Mercedes F1 a corrigé sa gestion énergétique après le fiasco d'Antonelli à Vegas",
+   "summary": "Mercedes F1 a apporté des modifications à son système de gestion de l'énergie électrique après la mésaventure de Kimi Antonelli lors du Grand Prix de Las Vegas. Alors qu'il luttait pour la victoire avec Max Verstappen, le champion du monde avait tenté de…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/mercedes-f1-a-corrige-sa-gestion-energetique-apres-le-fiasco-d-antonelli-a,213775.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/mercedes_47_-2.jpg",
+   "impact": {
+    "targetType": "team",
+    "targetIds": [
+     "mercedes"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": -1,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 1.04,
+    "impactLabel": "Aéro -1 pts | Cotes +4%"
+   },
+   "firstSeen": "2026-11-27T06:23:51.505Z"
+  },
   {
    "id": "news_timh8a",
    "timestamp": "2026-11-27T05:00:04.000Z",
@@ -856,19 +881,6 @@
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455472_hires.jpg",
    "impact": null,
    "firstSeen": "2026-11-25T12:46:50.995Z"
-  },
-  {
-   "id": "news_1c8dils",
-   "timestamp": "2026-11-25T11:57:00.000Z",
-   "category": "RÈGLEMENT",
-   "title": "La FIA et les pilotes de F1 ont déjà validé des modifications du circuit de Madrid",
-   "summary": "Les modifications envisagées sur le circuit du Madring en vue du Grand Prix d'Espagne 2027 auraient déjà reçu l'approbation de la FIA et du GPDA, l'association des pilotes de Formule 1. Luis García Abad, responsable de l'épreuve madrilène, a confirmé que…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/la-fia-et-les-pilotes-de-f1-ont-deja-valide-des-modifications-du-circuit-de,213719.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/mclaren3_92_.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T12:16:46.306Z"
   }
  ]
 }
