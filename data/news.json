@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-27T16:56:03.654Z",
+ "updated": "2026-11-27T17:26:08.248Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-27T17:26:03.654Z",
+ "next": "2026-11-27T17:56:08.248Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_1rhcdm9",
+   "timestamp": "2026-11-27T17:16:03.000Z",
+   "category": "RÈGLEMENT",
+   "title": "La FIA confirme un gel des moteurs et encadre les essais avant le retour des V8",
+   "summary": "Les motoristes de Formule 1 ne seront plus autorisés à travailler sur l'actuelle génération d'unités de puissance à partir de la mi-saison 2028. C'est ce qu'a révélé Nikolas Tombazis, responsable Monoplace de la FIA, dans un entretien exclusif accordé à…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/fia-confirms-gel-moteurs-avant-retour-v8/10878335/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/0arED5G2/s6/arvid-lindblad-racing-bulls-an.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-27T17:26:08.248Z"
+  },
   {
    "id": "news_1ocdx9c",
    "timestamp": "2026-11-27T14:39:34.000Z",
@@ -76,7 +89,7 @@
    "url": "https://www.autohebdo.fr/actualites/motogp/marc-marquez-explique-sa-retraite-jai-commence-a-ressentir-de-la-peur.html",
    "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/55676514316_c20a95db7c_o.jpg",
    "impact": null,
-   "firstSeen": "2026-11-27T16:56:03.654Z"
+   "firstSeen": "2026-11-27T17:26:08.248Z"
   },
   {
    "id": "news_24fckz",
@@ -906,19 +919,6 @@
    "image": "https://cdn-1.motorsport.com/images/amp/6x7ZeQ5Y/s6/un-fan-de-tous-les-pilotes.jpg",
    "impact": null,
    "firstSeen": "2026-11-26T09:50:17.187Z"
-  },
-  {
-   "id": "news_1i4kq32",
-   "timestamp": "2026-11-26T09:11:47.000Z",
-   "category": "PADDOCK",
-   "title": "Haas confirme la prolongation d’Oliver Bearman pour 2027",
-   "summary": "La question n’était pas de savoir « si » mais plutôt « quand » Oliver Bearman et Haas allaient officialiser la poursuite de leur aventure commune. Le Britannique lui-même ne cachait pas son impatience et commençait sérieusement à trépigner ces dernières…",
-   "source": "AutoHebdo",
-   "lang": "fr",
-   "url": "https://www.autohebdo.fr/actualites/f1/haas-confirme-la-prolongation-doliver-bearman-pour-2027.html",
-   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/DPPI_00126022_1233.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T09:20:13.183Z"
   }
  ]
 }
