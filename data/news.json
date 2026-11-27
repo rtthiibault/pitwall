@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-27T17:56:13.899Z",
+ "updated": "2026-11-27T18:26:18.206Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-27T18:26:13.899Z",
+ "next": "2026-11-27T18:56:18.206Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,58 @@
   }
  ],
  "items": [
+  {
+   "id": "news_198s6zc",
+   "timestamp": "2026-11-27T18:20:13.000Z",
+   "category": "PADDOCK",
+   "title": "EL2 - Mercedes toujours devant, Gasly provoque un drapeau rouge",
+   "summary": "Kimi Antonelli a dominé l'intégralité de la journée de vendredi au Grand Prix du Qatar, à Losail, en signant le meilleur temps d'une deuxième séance d'essais libres interrompue par deux drapeaux rouges. Disputée dans des conditions plus fraîches en soirée…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/el2-gp-qatar-gasly-drapeau-rouge-mercedes-devant/10878373/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/YMXbRqG2/s6/pierre-gasly-alpine-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-27T18:26:18.206Z"
+  },
+  {
+   "id": "news_14felzw",
+   "timestamp": "2026-11-27T18:14:45.000Z",
+   "category": "PADDOCK",
+   "title": "GP du Qatar – EL2 : Antonelli encore en tête, Leclerc et Gasly provoquent des drapeaux rouges",
+   "summary": "Large leader des Essais Libres 1, Kimi Antonelli n’a pas tardé à imposer sa loi ce vendredi au Qatar. Auteur d’un meilleur temps en 1:23.077, c’est pour légèrement plus d’un dixième de seconde que l’Italien s’est classé devant George Russell sur pneumatiques…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/gp-du-qatar-el2-antonelli-encore-en-tete-leclerc-et-gasly-provoquent-des-drapeaux-rouges.html",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/DPPI_00126025_695.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-27T18:26:18.206Z"
+  },
+  {
+   "id": "news_lo8nbe",
+   "timestamp": "2026-11-27T17:55:45.000Z",
+   "category": "PADDOCK",
+   "title": "L'appel d'Audi contre la décision sur Tsunoda à Monza a été rejeté",
+   "summary": "Plus de deux mois après le Grand Prix d'Italie, le classement de la course a enfin été définitivement confirmé. Audi estimait que Yuki Tsunoda, pilote Racing Bulls qui avait été appelé en renfort à la suite de la blessure au poignet d'Isack Hadjar et de la…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/appel-audi-gp-italie-2026-rejete/10878360/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/6AlvL9EY/s6/yuki-tsunoda-racing-bulls.jpg",
+   "impact": {
+    "targetType": "driver",
+    "targetIds": [
+     "tsunoda"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 1.25,
+    "impactLabel": "Cotes +25%",
+    "teamId": "rb"
+   },
+   "firstSeen": "2026-11-27T18:26:18.206Z"
+  },
   {
    "id": "news_1rhcdm9",
    "timestamp": "2026-11-27T17:16:03.000Z",
@@ -89,7 +141,7 @@
    "url": "https://www.autohebdo.fr/actualites/motogp/marc-marquez-explique-sa-retraite-jai-commence-a-ressentir-de-la-peur.html",
    "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/55676514316_c20a95db7c_o.jpg",
    "impact": null,
-   "firstSeen": "2026-11-27T17:56:13.899Z"
+   "firstSeen": "2026-11-27T18:26:18.206Z"
   },
   {
    "id": "news_24fckz",
@@ -880,45 +932,6 @@
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/ferrari_41_-7.jpg",
    "impact": null,
    "firstSeen": "2026-11-26T10:50:43.460Z"
-  },
-  {
-   "id": "news_1opeytw",
-   "timestamp": "2026-11-26T10:29:51.000Z",
-   "category": "PADDOCK",
-   "title": "Exclusif – Théophile Naël : « Red Bull a toujours été mon choix n°1 depuis que je suis tout petit »",
-   "summary": "Bonjour Théophile, tout d’abord félicitations pour cette nomination ! Quelle émotion prédomine après l’annonce officielle de votre arrivée au sein du Red Bull Junior Team ? C’est un sentiment vraiment incroyable. Je sors tout juste d’une journée complète de…",
-   "source": "AutoHebdo",
-   "lang": "fr",
-   "url": "https://www.autohebdo.fr/actualites/monoplace/formule-2/exclusif-theophile-nael-red-bull-a-toujours-ete-mon-choix-n1-depuis-que-je-suis-tout-petit.html",
-   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/09/DPPI_03326020_150.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T10:50:43.460Z"
-  },
-  {
-   "id": "news_1fl2hy3",
-   "timestamp": "2026-11-26T09:51:00.000Z",
-   "category": "RÈGLEMENT",
-   "title": "Cadillac avantagée par le retour du V8, la F1 pourrait répondre par un gel des moteurs",
-   "summary": "La décision de la Formule 1 d'introduire une nouvelle réglementation moteur dès 2030 devrait entraîner le retour d'un gel du développement des groupes propulseurs actuels, potentiellement à partir de la mi-saison 2028. Si la maîtrise des coûts constitue…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/cadillac-avantagee-par-le-retour-du-v8-la-f1-pourrait-repondre-par-un-gel-des,213745.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/cadillac_63_-2.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T10:20:40.044Z"
-  },
-  {
-   "id": "news_nio2t5",
-   "timestamp": "2026-11-26T09:15:39.000Z",
-   "category": "PADDOCK",
-   "title": "Grille F1 2027 : le point complet sur les baquets et les contrats",
-   "summary": "Au gré des annonces de renouvellement de contrat, la grille de Formule 1 pour 2027 s'est mise en place ces dernières semaines. La prolongation de contrat de Max Verstappen chez Red Bull jusqu'en 2030 avait fait disparaître la principale interrogation pour l'an…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/grille-f1-2027-baquets-contrats/10572421/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "image": "https://cdn-1.motorsport.com/images/amp/6x7ZeQ5Y/s6/un-fan-de-tous-les-pilotes.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T09:50:17.187Z"
   }
  ]
 }
