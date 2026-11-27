@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-27T07:23:58.809Z",
+ "updated": "2026-11-27T07:54:02.167Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-27T07:53:58.809Z",
+ "next": "2026-11-27T08:24:02.167Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 86
+   "n": 84
   },
   {
    "name": "F1i",
