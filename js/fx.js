@@ -233,7 +233,7 @@
       t += (14 + Math.min(v, 2600) * 0.16) * dt;
       const [tw, th] = tile();
       layer.style.transform = `translate3d(${mod(t * SLOPE, tw).toFixed(1)}px, ${(-mod(t, th)).toFixed(1)}px, 0)`;
-      const tb = bar(); if (tb) tb.style.backgroundPositionX = (-(t * 1.6) % 1400).toFixed(1) + 'px';
+      const tb = bar(); if (tb) tb.style.setProperty('background-position-x', (-(t * 1.6) % 1400).toFixed(1) + 'px', 'important'); // le thème fixe le fond en !important
       if (low) { stripes.on = false; return; } // config basse : les bandes s'arrêtent là où elles sont
       requestAnimationFrame(frame);
     };
