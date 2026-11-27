@@ -406,8 +406,6 @@ button.gx-c:disabled { cursor: default; }
    ===================================================================================== */
 body.on-home { --hm-bg: #1f2228; --hm-frame: #15171b; --hm-line: #2e323a; --hm-line2: #3a3f49; --hm-ink: #f1f2f4; --hm-mute: #8d949e; --hm-red: #e10600; background: var(--hm-bg) !important; }
 body.on-home::before, body.on-home::after, body.on-home .bg-stripes, body.on-home .aurora { display: none !important; }
-body.on-home .topbar { background: var(--hm-bg) !important; border-bottom: 1px solid var(--hm-line) !important; box-shadow: none !important; }
-body.on-home .topbar::before, body.on-home .topbar::after { display: none !important; }
 body.on-home footer { background: var(--hm-bg); }
 body.on-home main .section { margin-top: 0; padding: 56px 0 0; border-top: 0; }
 body.on-home main .section + .section { margin-top: 56px; border-top: 1px solid var(--hm-line); }
@@ -545,3 +543,12 @@ body.on-home .hx-map { padding: 26px 0 84px; border-radius: 12px; }
 body.on-home .hm-next .nx-grid { padding: 36px 40px; }
 body.on-home .hx + * { margin-top: 0; }
 @media (max-width: 640px) { body.on-home .hx { padding: 0 18px 24px; } body.on-home .hm-next .nx-grid { padding: 24px 18px; } }
+/* En-tête : le circuit dans un panneau à part, sol uniforme, même marge de chaque côté, tracé centré */
+body.on-home .hx { padding: 24px; gap: 32px; align-items: stretch; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); }
+body.on-home .hx-l { padding: 16px 0 16px 16px; align-content: center; }
+body.on-home .hx-map { display: grid; grid-template-rows: minmax(0, 1fr) auto; place-items: center; gap: 18px; padding: 28px 28px 22px; border-radius: 12px; background: var(--gr) !important; border: 1px solid rgba(255,255,255,.06); }
+body.on-home .hx-map:not(:has(.hx-track)) { --gr: #1b1e24; }
+body.on-home .hx-map .hx-track { width: 100%; height: auto; max-height: 440px; aspect-ratio: auto; justify-self: center; align-self: center; }
+body.on-home .hx-map figcaption { position: static; width: 100%; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+body.on-home .hx-wx { color: rgba(241,242,244,.78); }
+@media (max-width: 900px) { body.on-home .hx { padding: 18px; } body.on-home .hx-l { padding: 8px 4px 0; } body.on-home .hx-map { padding: 20px 18px 18px; } }
