@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-27T21:56:58.560Z",
+ "updated": "2026-11-27T22:27:01.862Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-27T22:26:58.560Z",
+ "next": "2026-11-27T22:57:01.862Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -154,7 +154,7 @@
    "url": "https://www.autohebdo.fr/actualites/motogp/marc-marquez-explique-sa-retraite-jai-commence-a-ressentir-de-la-peur.html",
    "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/55676514316_c20a95db7c_o.jpg",
    "impact": null,
-   "firstSeen": "2026-11-27T21:56:58.560Z"
+   "firstSeen": "2026-11-27T22:27:01.862Z"
   },
   {
    "id": "news_24fckz",
