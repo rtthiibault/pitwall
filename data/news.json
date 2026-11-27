@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-27T10:54:45.634Z",
+ "updated": "2026-11-27T11:24:49.584Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-27T11:24:45.634Z",
+ "next": "2026-11-27T11:54:49.584Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_15svcoj",
+   "timestamp": "2026-11-27T10:55:34.000Z",
+   "category": "RÈGLEMENT",
+   "title": "Quand les pilotes répondent à un quiz pour débattre des décisions des commissaires",
+   "summary": "Peu de sujets liés au quotidien d'un week-end de Formule 1 suscitent autant de divergences d'opinion que les décisions des commissaires, en particulier leur cohérence. Une minorité de pilotes particulièrement prompts à s'exprimer tend à monopoliser ce débat…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/pilotes-quiz-debattre-decisions-commissaires/10878167/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/YE9EQnLY/s6/le-depart.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-27T11:24:49.584Z"
+  },
   {
    "id": "news_6fsru8",
    "timestamp": "2026-11-27T09:23:00.000Z",
@@ -866,19 +879,6 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/bearman-veut-reussir-ses-qualifications-camara-veut-gagner-en-confiance,213723.html",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1454965_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T15:17:12.395Z"
-  },
-  {
-   "id": "news_yuzuga",
-   "timestamp": "2026-11-25T14:23:00.000Z",
-   "category": "PADDOCK",
-   "title": "Red Bull veut la 3e place du championnat : Verstappen et Hadjar prêts à repousser McLaren dès le Qatar",
-   "summary": "Red Bull Racing aborde le Grand Prix du Qatar avec la volonté de prolonger son excellente dynamique de fin de saison et de consolider sa troisième place au championnat des constructeurs face à McLaren. Vainqueur à Las Vegas, où il a décroché le 75e succès de…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/red-bull-veut-la-3e-place-du-championnat-verstappen-et-hadjar-prets-a-repousser,213726.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/redbull_119_-4.jpg",
    "impact": null,
    "firstSeen": "2026-11-25T15:17:12.395Z"
   }
