@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-27T12:24:58.334Z",
+ "updated": "2026-11-27T12:55:05.132Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-27T12:54:58.334Z",
+ "next": "2026-11-27T13:25:05.132Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 93
+   "n": 92
   },
   {
    "name": "F1i",
@@ -26,6 +26,32 @@
   }
  ],
  "items": [
+  {
+   "id": "news_a20c9v",
+   "timestamp": "2026-11-27T12:32:00.000Z",
+   "category": "PADDOCK",
+   "title": "Isack Hadjar vise sa première victoire en F1 en 2026 : « Il me reste deux courses, je peux prendre des risques »",
+   "summary": "Déçu certes, mais loin d’être abattu. Ce jeudi au Qatar, Isack Hadjar est apparu détendu, et même souriant au moment d’évoquer son duel pour la victoire avec Max Verstappen dimanche dernier, à Las Vegas. Certes, les consignes d’équipe, et surtout, cette…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/isack-hadjar-vise-sa-premiere-victoire-en-f1-en-2026-il-me-reste-deux-courses-je-peux-prendre-des-risques.html",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/STL86979.jpg",
+   "impact": {
+    "targetType": "driver",
+    "targetIds": [
+     "hadjar"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 0.95,
+    "impactLabel": "Cotes -5%",
+    "teamId": "red_bull"
+   },
+   "firstSeen": "2026-11-27T12:55:05.132Z"
+  },
   {
    "id": "news_h8gwvs",
    "timestamp": "2026-11-27T12:22:00.000Z",
@@ -880,19 +906,6 @@
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/mclaren2_118_-3.jpg",
    "impact": null,
    "firstSeen": "2026-11-26T08:20:05.660Z"
-  },
-  {
-   "id": "news_xypkka",
-   "timestamp": "2026-11-26T07:25:34.000Z",
-   "category": "PADDOCK",
-   "title": "5 choses à suivre au Grand Prix du Qatar de Formule 1",
-   "summary": "La saison 2026 de Formule 1 approche de son terme, avec le Grand Prix du Qatar ce week-end, avant la finale d'Abu Dhabi la semaine prochaine. Les deux titres sont déjà attribués, Kimi Antonelli et Mercedes ayant décroché les couronnes pilotes et constructeurs…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/gp-qatar-f1-2026-5-choses-a-suivre/10877733/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "image": "https://cdn-1.motorsport.com/images/amp/YMX3X1v2/s6/des-membres-de-red-bull-2.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T07:50:00.618Z"
   }
  ]
 }
