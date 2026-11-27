@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-27T13:25:09.600Z",
+ "updated": "2026-11-27T13:55:30.876Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-27T13:55:09.600Z",
+ "next": "2026-11-27T14:25:30.876Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -11,8 +11,8 @@
   },
   {
    "name": "Nextgen-Auto",
-   "ok": true,
-   "n": 93
+   "ok": false,
+   "err": "HTTP 415"
   },
   {
    "name": "F1i",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_amgbhe",
+   "timestamp": "2026-11-27T13:44:50.000Z",
+   "category": "PADDOCK",
+   "title": "Marc Márquez explique sa retraite : « J’ai commencé à ressentir de la peur »",
+   "summary": "Comme un symbole, Marc Márquez a choisi d’annoncer sa retraite à la surprise générale ce vendredi 27 novembre, cinq jours après avoir été officiellement titré champion du monde pour la 10e fois. Clin d’œil de l’histoire, c’était aussi un 27 novembre, voilà dix…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/motogp/marc-marquez-explique-sa-retraite-jai-commence-a-ressentir-de-la-peur.html",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/55676514316_c20a95db7c_o.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-27T13:55:30.876Z"
+  },
   {
    "id": "news_24fckz",
    "timestamp": "2026-11-27T13:00:00.000Z",
@@ -893,19 +906,6 @@
    "image": "https://cdn-1.motorsport.com/images/amp/YXyKMzx6/s6/oliver-bearman-haas.jpg",
    "impact": null,
    "firstSeen": "2026-11-26T09:20:13.183Z"
-  },
-  {
-   "id": "news_gwkzdq",
-   "timestamp": "2026-11-26T08:28:00.000Z",
-   "category": "PADDOCK",
-   "title": "Bourdais charge sévèrement Verstappen : 'je n'aime pas le personnage'",
-   "summary": "Sébastien Bourdais n'a pas mâché ses mots à l'égard de Max Verstappen après la nouvelle escalade des tensions entre le Néerlandais et George Russell lors du Grand Prix de Las Vegas. L'ancien pilote français de Formule 1 reproche au quadruple champion du monde…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/bourdais-charge-severement-verstappen-je-n-aime-pas-le-personnage,213740.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456001_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T08:50:09.340Z"
   }
  ]
 }
