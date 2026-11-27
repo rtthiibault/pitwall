@@ -557,3 +557,16 @@ body.on-home .hx-wx { color: rgba(241,242,244,.78); }
 .hx-track { overflow: visible !important; }
 .hx-map, .cir-map, .crx-gp-map, .gh-art-track { overflow: hidden !important; }
 .race-map .rm-scene svg, .race-map .rm-labels svg { overflow: visible !important; }
+/* En-tête : la carte en haut, un bandeau d'information plein en bas (favori, chances, météo) */
+body.on-home .hx-map { padding: 0; gap: 0; grid-template-rows: minmax(0, 1fr) auto; place-items: stretch; }
+body.on-home .hx-map .hx-track { padding: 24px 24px 18px; box-sizing: border-box; max-height: 460px; }
+body.on-home .hx-map figcaption { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
+  margin: 0; padding: 14px 20px; background: #14171c; border-top: 1px solid rgba(255,255,255,.08); border-radius: 0 0 12px 12px; }
+body.on-home .hx-fav { display: flex; align-items: center; gap: 14px; border: 0 !important; padding: 0 0 0 14px !important; position: relative; }
+body.on-home .hx-fav::before { content: ''; position: absolute; left: 0; top: 4px; bottom: 4px; width: 3px; border-radius: 2px; background: var(--tc); }
+body.on-home .hx-fav-n { height: 34px; } body.on-home .hx-fav-n .dnum { height: 34px; }
+body.on-home .hx-fav small { font-size: 12px; color: var(--hm-mute); } body.on-home .hx-fav b { font-size: 16px; }
+body.on-home .hx-fav-o { padding-left: 16px; border-left: 1px solid var(--hm-line2); } body.on-home .hx-fav-o b { font-size: 20px; font-variation-settings: 'wdth' 116; font-weight: 900; }
+body.on-home .hx-wx { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px !important; border-radius: 999px; background: rgba(255,255,255,.05) !important; border: 1px solid rgba(255,255,255,.08); font-size: 13px; color: #c9ced6 !important; white-space: nowrap; }
+@media (max-width: 640px) { body.on-home .hx-map figcaption { padding: 12px 14px; } body.on-home .hx-wx { white-space: normal; } }
+body.on-home .hx-map figcaption { box-shadow: 0 40px 0 #14171c; }
