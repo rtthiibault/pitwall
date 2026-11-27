@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-27T06:23:51.505Z",
+ "updated": "2026-11-27T06:53:54.890Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-27T06:53:51.505Z",
+ "next": "2026-11-27T07:23:54.890Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 87
+   "n": 86
   },
   {
    "name": "F1i",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_7qpwin",
+   "timestamp": "2026-11-27T06:51:00.000Z",
+   "category": "RÈGLEMENT",
+   "title": "Les pilotes F1 jouent à un quiz pour juger les situations et améliorer les sanctions de la FIA !",
+   "summary": "La traditionnelle réunion annuelle entre les pilotes de Formule 1 et les commissaires sportifs de la FIA a pris une tournure pour le moins inhabituelle ce jeudi au Grand Prix du Qatar. La Fédération a en effet utilisé le jeu de quiz interactif Kahoot ! pour…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/les-pilotes-f1-jouent-a-un-quiz-pour-juger-les-situations-et-ameliorer-les,213777.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1427137_hires-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-27T06:53:54.890Z"
+  },
   {
    "id": "news_wherqu",
    "timestamp": "2026-11-27T06:03:00.000Z",
@@ -868,19 +881,6 @@
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/astonmartin3_26_-14.jpg",
    "impact": null,
    "firstSeen": "2026-11-25T14:17:02.866Z"
-  },
-  {
-   "id": "news_11owcgc",
-   "timestamp": "2026-11-25T12:46:00.000Z",
-   "category": "PADDOCK",
-   "title": "Verstappen peut-il reprendre la couronne mondiale à Antonelli dès 2027 ?",
-   "summary": "Helmut Marko s'attend à une lutte pour le titre mondial bien différente en 2027, avec un Max Verstappen en mesure de défier directement le nouveau champion du monde de Formule 1, Kimi Antonelli. L'ancien conseiller de Red Bull estime que la montée en puissance…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-peut-il-reprendre-la-couronne-mondiale-a-antonelli-des-2027,213716.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455472_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-25T12:46:50.995Z"
   }
  ]
 }
