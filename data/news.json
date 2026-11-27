@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-27T18:26:18.206Z",
+ "updated": "2026-11-27T18:56:23.243Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-27T18:56:18.206Z",
+ "next": "2026-11-27T19:26:23.243Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -92,6 +92,19 @@
    "firstSeen": "2026-11-27T17:26:08.248Z"
   },
   {
+   "id": "news_1d1mcpn",
+   "timestamp": "2026-11-27T15:24:14.000Z",
+   "category": "RÈGLEMENT",
+   "title": "Pirelli justifie la limite de 27 tours au Qatar : « Ce sont des mathématiques pures »",
+   "summary": "Malgré l’entrée dans une nouvelle ère réglementaire, Pirelli retrouve le même casse-tête au Qatar. Comme lors des éditions précédentes, le manufacturier unique de la F1 a décidé, avec la FIA et la FOM et après concertation avec les équipes, de limiter le…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/pirelli-justifie-la-limite-de-27-tours-au-qatar-ce-sont-des-mathematiques-pures.html",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/8-friday-lusail-2026.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-27T18:56:23.243Z"
+  },
+  {
    "id": "news_1ocdx9c",
    "timestamp": "2026-11-27T14:39:34.000Z",
    "category": "PADDOCK",
@@ -141,7 +154,7 @@
    "url": "https://www.autohebdo.fr/actualites/motogp/marc-marquez-explique-sa-retraite-jai-commence-a-ressentir-de-la-peur.html",
    "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/55676514316_c20a95db7c_o.jpg",
    "impact": null,
-   "firstSeen": "2026-11-27T18:26:18.206Z"
+   "firstSeen": "2026-11-27T18:56:23.243Z"
   },
   {
    "id": "news_24fckz",
@@ -919,19 +932,6 @@
     "teamId": "aston_martin"
    },
    "firstSeen": "2026-11-26T11:20:46.596Z"
-  },
-  {
-   "id": "news_1a650sy",
-   "timestamp": "2026-11-26T10:32:00.000Z",
-   "category": "PADDOCK",
-   "title": "Vettel pointe les maux profonds de Ferrari : un manque de courage pour changer",
-   "summary": "Alors que Ferrari traverse une nouvelle crise interne en raison des tensions entre Lewis Hamilton et Charles Leclerc, Sebastian Vettel est revenu sur les faiblesses structurelles qui avaient compromis les ambitions de la Scuderia durant ses six saisons à…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/vettel-pointe-les-maux-profonds-de-ferrari-un-manque-de-courage-pour-changer,213742.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/ferrari_41_-7.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T10:50:43.460Z"
   }
  ]
 }
