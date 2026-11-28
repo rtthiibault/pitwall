@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-28T13:59:44.467Z",
+ "updated": "2026-11-28T14:29:49.360Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-28T14:29:44.467Z",
+ "next": "2026-11-28T14:59:49.360Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_x88spa",
+   "timestamp": "2026-11-28T14:00:00.000Z",
+   "category": "PADDOCK",
+   "title": "LIVE F1 - Grand Prix du Qatar : les essais libres 3 en direct",
+   "summary": "Le Grand Prix du Qatar se poursuit à Losail avec la dernière heure d'essais libres avant les qualifications. Les 22 pilotes vont pouvoir préparer la séance qualificative après avoir travaillé sur les longs relais hier, mais les pneus seront encore au centre du…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/live-f1-grand-prix-du-qatar-les-essais-libres-3-en-direct,213842.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456940_hires-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T14:29:49.360Z"
+  },
   {
    "id": "news_4zdaz7",
    "timestamp": "2026-11-28T13:40:00.000Z",
@@ -867,19 +880,6 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/antonelli-veut-courir-avec-verstappen-au-nurburgring-reste-a-convaincre-wolff,213776.html",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455470_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-27T11:54:53.958Z"
-  },
-  {
-   "id": "news_vi5zw1",
-   "timestamp": "2026-11-27T10:01:00.000Z",
-   "category": "PADDOCK",
-   "title": "Pérez affiche sa confiance dans la progression de Cadillac F1 en 2027",
-   "summary": "Sergio Pérez ne regrette absolument pas sa décision de revenir en Formule 1 avec Cadillac, malgré les difficultés rencontrées par la nouvelle écurie américaine durant sa première saison dans la catégorie reine. Le Mexicain estime avoir réalisé une excellente…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/perez-affiche-sa-confiance-dans-la-progression-de-cadillac-f1-en-2027,213765.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456597_hires.jpg",
    "impact": null,
    "firstSeen": "2026-11-27T11:54:53.958Z"
   }
