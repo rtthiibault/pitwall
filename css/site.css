@@ -630,3 +630,5 @@ body.on-home .hx-rail li::before { display: none; }
 @media (prefers-reduced-motion: reduce) { .hx-ses, .hx-ses-go svg { transition: none; } .hx-ses:hover { transform: none; } }
 @media (max-width: 640px) { body.on-home .hx-rail { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
 @media (max-width: 480px) { body.on-home .hx-pod b { font-size: 34px; } body.on-home .hx-pod + .hx-pod::before { margin: 0 4px 0 2px; font-size: 24px; } body.on-home .hx-pod small { font-size: 12px; } }
+/* Carte de course : le décor doit couvrir exactement la carte (même repère que la piste peinte par la carte) */
+.race-map .rm-scene svg, .race-map .rm-labels svg { max-height: none !important; padding: 0 !important; width: 100% !important; height: 100% !important; position: absolute !important; inset: 0 !important; }
