@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-28T06:58:41.893Z",
+ "updated": "2026-11-28T07:28:45.268Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-28T07:28:41.893Z",
+ "next": "2026-11-28T07:58:45.268Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 107
+   "n": 109
   },
   {
    "name": "F1i",
@@ -26,6 +26,32 @@
   }
  ],
  "items": [
+  {
+   "id": "news_3gkb7s",
+   "timestamp": "2026-11-28T07:07:30.000Z",
+   "category": "PADDOCK",
+   "title": "Lando Norris : \"Mercedes est à un autre niveau\" au Qatar",
+   "summary": "Les deux séances d'essais libres de vendredi au Grand Prix du Qatar se sont achevées sur un doublé des Mercedes du nouveau champion du monde Kimi Antonelli et de son coéquipier George Russell. Mais aucune autre écurie n'a été en mesure de rivaliser avec leur…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/lando-norris-mercedes-autre-niveau-qatar/10878485/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/6x7LeR4Y/s6/andrea-kimi-antonelli-mercedes-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T07:28:45.268Z"
+  },
+  {
+   "id": "news_f3rdq9",
+   "timestamp": "2026-11-28T06:54:00.000Z",
+   "category": "PADDOCK",
+   "title": "La vente de parts de Cadillac F1 se complique",
+   "summary": "Les négociations concernant une éventuelle cession de la participation de Mark Walter dans l'écurie Cadillac F1 auraient rencontré plusieurs obstacles ces derniers jours. Le groupe américain Fenway Sports Group, notamment propriétaire du Liverpool FC et des…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/la-vente-de-parts-de-cadillac-f1-se-complique,213738.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/cadillac_32_-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T07:28:45.268Z"
+  },
   {
    "id": "news_1o7ausl",
    "timestamp": "2026-11-28T06:09:00.000Z",
@@ -466,7 +492,7 @@
    "url": "https://www.autohebdo.fr/actualites/motogp/marc-marquez-explique-sa-retraite-jai-commence-a-ressentir-de-la-peur.html",
    "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/55676514316_c20a95db7c_o.jpg",
    "impact": null,
-   "firstSeen": "2026-11-28T06:58:41.893Z"
+   "firstSeen": "2026-11-28T07:28:45.268Z"
   },
   {
    "id": "news_1tqg9qd",
@@ -855,32 +881,6 @@
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456573_hires.jpg",
    "impact": null,
    "firstSeen": "2026-11-26T18:51:59.868Z"
-  },
-  {
-   "id": "news_128e8du",
-   "timestamp": "2026-11-26T18:17:00.000Z",
-   "category": "PADDOCK",
-   "title": "Lawson est 'très heureux' de son bilan et attend 2027 avec 'enthousiasme'",
-   "summary": "Racing Bulls semble avoir assuré la cinquième place du championnat des constructeurs malgré ls 18 points marqués par Alpine F1 au GP de Las Vegas, et Liam Lawson est satisfait de son bilan personnel avant le Grand Prix du Qatar, lui qui a un bilan personnel…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/lawson-est-tres-heureux-de-son-bilan-et-attend-2027-avec-enthousiasme,213751.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456311_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T18:51:59.868Z"
-  },
-  {
-   "id": "news_1nybnuo",
-   "timestamp": "2026-11-26T18:05:00.000Z",
-   "category": "PADDOCK",
-   "title": "Câmara revient sur une décision 'pas facile' mais qui avait 'plus de sens'",
-   "summary": "Rafael Câmara est présent au Grand Prix du Qatar en tant que pilote Haas F1 ce week-end, puisqu'il a décidé de rester en Formule 1 pour les deux dernières courses de l'année. Arrivé au Brésil à la place d'Esteban Ocon, il a ensuite couru à Las Vegas, deux…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/camara-revient-sur-une-decision-pas-facile-mais-qui-avait-plus-de-sens,213764.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456447_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T18:21:54.899Z"
   }
  ]
 }
