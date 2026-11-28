@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-28T09:59:02.587Z",
+ "updated": "2026-11-28T10:29:06.252Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-28T10:29:02.587Z",
+ "next": "2026-11-28T10:59:06.252Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 112
+   "n": 113
   },
   {
    "name": "F1i",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_asi2j8",
+   "timestamp": "2026-11-28T10:21:00.000Z",
+   "category": "PADDOCK",
+   "title": "Le Qatar minimise les inquiétudes après les révélations de Sainz sur les plans d'évacuation",
+   "summary": "Les organisateurs du Grand Prix du Qatar continuent de défendre la tenue de leur épreuve de Formule 1 malgré les tensions persistantes au Moyen-Orient. Abdul Rahman Al Mannai, président de la Fédération qatarie de motocyclisme et de sport automobile, assure…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/le-qatar-minimise-les-inquietudes-apres-les-revelations-de-sainz-sur-les-plans,213832.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456872_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T10:29:06.252Z"
+  },
   {
    "id": "news_h3rur2",
    "timestamp": "2026-11-28T09:49:45.000Z",
@@ -597,19 +610,6 @@
     "teamId": "mercedes"
    },
    "firstSeen": "2026-11-28T06:28:38.080Z"
-  },
-  {
-   "id": "news_amgbhe",
-   "timestamp": "2026-11-27T13:44:50.000Z",
-   "category": "PADDOCK",
-   "title": "Marc Márquez explique sa retraite : « J’ai commencé à ressentir de la peur »",
-   "summary": "Comme un symbole, Marc Márquez a choisi d’annoncer sa retraite à la surprise générale ce vendredi 27 novembre, cinq jours après avoir été officiellement titré champion du monde pour la 10e fois. Clin d’œil de l’histoire, c’était aussi un 27 novembre, voilà dix…",
-   "source": "AutoHebdo",
-   "lang": "fr",
-   "url": "https://www.autohebdo.fr/actualites/motogp/marc-marquez-explique-sa-retraite-jai-commence-a-ressentir-de-la-peur.html",
-   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/55676514316_c20a95db7c_o.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-28T09:59:02.587Z"
   },
   {
    "id": "news_1tqg9qd",
