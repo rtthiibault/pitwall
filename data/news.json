@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-28T09:28:59.197Z",
+ "updated": "2026-11-28T09:59:02.587Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-28T09:58:59.197Z",
+ "next": "2026-11-28T10:29:02.587Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 113
+   "n": 112
   },
   {
    "name": "F1i",
@@ -26,6 +26,32 @@
   }
  ],
  "items": [
+  {
+   "id": "news_h3rur2",
+   "timestamp": "2026-11-28T09:49:45.000Z",
+   "category": "PADDOCK",
+   "title": "Kimi Antonelli et Max Verstappen se projettent sur 2027 : « La fin de saison nous offre un aperçu de ce qui se passera l’an prochain »",
+   "summary": "Et si le duel Antonelli – Verstappen était déjà écrit en vue de la saison 2027 de F1 ? À ce jour, rien n’est moins sûr bien entendu. Si Red Bull demeure incontestablement l’équipe qui termine le mieux cet exercice 2026 en dépit d’un début de saison difficile…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/kimi-antonelli-et-max-verstappen-se-projettent-sur-2027-la-fin-de-saison-nous-offre-un-apercu-de-ce-qui-se-passera-lan-prochain.html",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/DPPI_00126025_076.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T09:59:02.587Z"
+  },
+  {
+   "id": "news_4b09p9",
+   "timestamp": "2026-11-28T09:45:45.000Z",
+   "category": "PADDOCK",
+   "title": "Verstappen pris à son propre jeu par Hamilton au Qatar, la riposte s'organise",
+   "summary": "Juan Pablo Montoya s'est amusé de l'incident impliquant Max Verstappen et Lewis Hamilton lors de la deuxième séance d'essais libres du Grand Prix du Qatar. Alors que les deux multiples champions du monde se préparaient à effectuer un tour rapide, le pilote…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-pris-a-son-propre-jeu-par-hamilton-au-qatar-la-riposte-s-organise,213837.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1457073_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T09:59:02.587Z"
+  },
   {
    "id": "news_1yj2tis",
    "timestamp": "2026-11-28T09:19:00.000Z",
@@ -583,7 +609,7 @@
    "url": "https://www.autohebdo.fr/actualites/motogp/marc-marquez-explique-sa-retraite-jai-commence-a-ressentir-de-la-peur.html",
    "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/55676514316_c20a95db7c_o.jpg",
    "impact": null,
-   "firstSeen": "2026-11-28T09:28:59.197Z"
+   "firstSeen": "2026-11-28T09:59:02.587Z"
   },
   {
    "id": "news_1tqg9qd",
@@ -856,44 +882,6 @@
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1427137_hires-2.jpg",
    "impact": null,
    "firstSeen": "2026-11-27T06:53:54.890Z"
-  },
-  {
-   "id": "news_wherqu",
-   "timestamp": "2026-11-27T06:03:00.000Z",
-   "category": "PADDOCK",
-   "title": "Mercedes F1 a corrigé sa gestion énergétique après le fiasco d'Antonelli à Vegas",
-   "summary": "Mercedes F1 a apporté des modifications à son système de gestion de l'énergie électrique après la mésaventure de Kimi Antonelli lors du Grand Prix de Las Vegas. Alors qu'il luttait pour la victoire avec Max Verstappen, le champion du monde avait tenté de…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/mercedes-f1-a-corrige-sa-gestion-energetique-apres-le-fiasco-d-antonelli-a,213775.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/mercedes_47_-2.jpg",
-   "impact": {
-    "targetType": "team",
-    "targetIds": [
-     "mercedes"
-    ],
-    "managerModifiers": {
-     "powerUnit": 0,
-     "aero": -1,
-     "reliability": 0
-    },
-    "bettingOddsMultiplier": 1.04,
-    "impactLabel": "Aéro -1 pts | Cotes +4%"
-   },
-   "firstSeen": "2026-11-27T06:23:51.505Z"
-  },
-  {
-   "id": "news_timh8a",
-   "timestamp": "2026-11-27T05:00:04.000Z",
-   "category": "PADDOCK",
-   "title": "Fernando Alonso : \"J'arrêterai la F1 quand je me sentirai lent\"",
-   "summary": "Fernando Alonso affirme qu'il arrêtera la Formule 1 lorsqu'il sentira qu'il a perdu de sa vitesse, et estime qu'il n'a pas besoin d'être aussi en forme qu'un footballeur pour rester compétitif. Le pilote espagnol est le plus expérimenté de l'histoire de la F1…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/fernando-alonso-arretera-f1-quand-il-sera-lent/10877865/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "image": "https://cdn-1.motorsport.com/images/amp/6zoDBWk0/s6/fernando-alonso-aston-martin-r.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-27T05:23:44.371Z"
   }
  ]
 }
