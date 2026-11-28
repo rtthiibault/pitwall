@@ -590,7 +590,10 @@
      Le tarif repart à 100 à chaque nouvelle fenêtre. */
   const WINDOW_MS = () => ((F1.manager && F1.manager.REFILL_H) || 5) * 3600e3;
   const windowKey = () => Math.floor(Date.now() / WINDOW_MS());
-  const win = () => { const m = mgr(); if (m.day.key !== windowKey()) m.day = { key: windowKey(), n: 0, paid: 0 }; return m.day; };
+  // recharge exceptionnelle des courses gratuites : changer l'identifiant pour en offrir une nouvelle (une fois par sauvegarde)
+  const BONUS_REFILL = '2026-11-28';
+  const win = () => { const m = mgr(); if (m.day.key !== windowKey()) m.day = { key: windowKey(), n: 0, paid: 0 };
+    if (m.refill !== BONUS_REFILL) { m.refill = BONUS_REFILL; m.day.n = 0; m.day.paid = 0; } return m.day; };
   function racesPerDay() { return (F1.manager ? F1.manager.RACES_PER_DAY + F1.manager.teamBonus(mgr()).races : 3); }
   function racesLeft() { return Math.max(0, racesPerDay() - win().n); }
   function extraCost() { return 100 + 50 * (win().paid || 0); }
