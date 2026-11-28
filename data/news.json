@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-28T12:29:34.743Z",
+ "updated": "2026-11-28T12:59:38.000Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-28T12:59:34.743Z",
+ "next": "2026-11-28T13:29:38.000Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_3pl0u2",
+   "timestamp": "2026-11-28T12:34:00.000Z",
+   "category": "PADDOCK",
+   "title": "Hülkenberg a vu cette année des raisons de croire au projet Audi F1 à long terme",
+   "summary": "Nico Hülkenberg dresse un bilan plutôt positif de la première saison d'Audi en Formule 1, malgré les nombreuses occasions manquées d'inscrire des points au championnat. À deux Grands Prix de la fin de la saison 2026, le pilote allemand estime que le…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hulkenberg-a-vu-cette-annee-des-raisons-de-croire-au-projet-audi-f1-a-long,213834.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1457182_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T12:59:38.000Z"
+  },
   {
    "id": "news_1lpyzp8",
    "timestamp": "2026-11-28T11:50:00.000Z",
@@ -867,19 +880,6 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/sainz-predit-une-fin-de-saison-delicate-pour-williams-f1-albon-est-prudent-pour,213771.html",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456584_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-27T11:54:53.958Z"
-  },
-  {
-   "id": "news_fhf7kf",
-   "timestamp": "2026-11-27T08:39:00.000Z",
-   "category": "PADDOCK",
-   "title": "La F1 arrive au Qatar entre plans d'évacuation, absences et demandes d'annulation",
-   "summary": "La Formule 1 a pris ses quartiers au Qatar malgré les inquiétudes persistantes concernant la situation sécuritaire au Moyen-Orient, mais plusieurs diffuseurs et fournisseurs de la discipline ont préféré limiter, voire supprimer, leur présence sur place. Des…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/la-f1-arrive-au-qatar-entre-plans-d-evacuation-absences-et-demandes-d,213786.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456630_hires-2.jpg",
    "impact": null,
    "firstSeen": "2026-11-27T11:54:53.958Z"
   }
