@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-28T16:30:05.346Z",
+ "updated": "2026-11-28T17:00:08.894Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-28T17:00:05.346Z",
+ "next": "2026-11-28T17:30:08.894Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_1hiomgu",
+   "timestamp": "2026-11-28T16:14:00.000Z",
+   "category": "PADDOCK",
+   "title": "Lawson pense que l'incident entre Hamilton et Verstappen révèle 'un passif plus profond'",
+   "summary": "Liam Lawson estime que la dernière guerre des mots entre Max Verstappen et George Russell, survenue au Grand Prix de Las Vegas après des manœuvres particulièrement douteuses du pilote Red Bull, trouve son origine dans une rivalité bien plus ancienne. Les deux…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/lawson-pense-que-l-incident-entre-hamilton-et-verstappen-revele-un-passif-plus,213840.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456644_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T17:00:08.894Z"
+  },
   {
    "id": "news_sdn9gc",
    "timestamp": "2026-11-28T15:43:47.000Z",
@@ -857,19 +870,6 @@
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/williams_14_-6.jpg",
    "impact": null,
    "firstSeen": "2026-11-27T12:24:58.334Z"
-  },
-  {
-   "id": "news_1wotlll",
-   "timestamp": "2026-11-27T11:51:32.000Z",
-   "category": "PADDOCK",
-   "title": "Carlos Sainz explique sa curieuse idée pour le DRS en F1 à partir de 2030",
-   "summary": "Alors que la Formule 1 est sur le point de valider les grandes lignes de son retour aux moteurs V8 en 2030, plusieurs des pilotes les plus influents ont commencé à développer leurs idées pour en faire un spectacle attractif. La F1 devrait adopter de tout…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/carlos-sainz-explique-idee-curieuse-drs-2030/10878149/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "image": "https://cdn-1.motorsport.com/images/amp/YP74e532/s6/carlos-sainz-williams-2.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-27T11:54:53.958Z"
   }
  ]
 }
