@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-28T05:58:17.666Z",
+ "updated": "2026-11-28T06:28:38.080Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-28T06:28:17.666Z",
+ "next": "2026-11-28T06:58:38.080Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -11,8 +11,8 @@
   },
   {
    "name": "Nextgen-Auto",
-   "ok": false,
-   "err": "HTTP 415"
+   "ok": true,
+   "n": 108
   },
   {
    "name": "F1i",
@@ -27,6 +27,188 @@
  ],
  "items": [
   {
+   "id": "news_1o7ausl",
+   "timestamp": "2026-11-28T06:09:00.000Z",
+   "category": "PADDOCK",
+   "title": "Mekies impressionné par Hadjar, proche de 'l'une des meilleures versions de Verstappen'",
+   "summary": "Laurent Mekies se montre particulièrement impressionné par la progression d'Isack Hadjar au cours de sa première saison chez Red Bull Racing. Le directeur de l'écurie de Milton Keynes estime que les performances du Français lors du Grand Prix de Las Vegas sont…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/mekies-impressionne-par-hadjar-proche-de-l-une-des-meilleures-versions-de,213821.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1421453_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
+  },
+  {
+   "id": "news_1v1drre",
+   "timestamp": "2026-11-27T21:27:00.000Z",
+   "category": "PADDOCK",
+   "title": "Cadillac F1 se prépare à un week-end 'difficile' mais l'équipe le 'savait' en arrivant au Qatar",
+   "summary": "Cadillac F1 a connu une journée très difficile pour débuter le Grand Prix du Qatar, sur un circuit de Losail qui ne convient pas du tout aux caractéristiques de sa monoplace. La MAC-26 a en effet de grosses lacunes en matière d'appui aérodynamique, ce qui est…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/cadillac-f1-se-prepare-a-un-week-end-difficile-mais-l-equipe-le-savait-en,213805.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456973_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
+  },
+  {
+   "id": "news_paoyqi",
+   "timestamp": "2026-11-27T21:16:00.000Z",
+   "category": "PADDOCK",
+   "title": "Williams F1 s'inquiète du graining malgré une journée 'relativement simple'",
+   "summary": "Williams F1 a connu une première journée plutôt délicate au Grand Prix du Qatar, et l'équipe est dans la lutte avec Haas, devant Aston Martin et Cadillac, et c'est donc avec un espoir de passer en Q2 que le team va aborder la deuxième journée, même si les…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/williams-f1-s-inquiete-du-graining-malgre-une-journee-relativement-simple,213810.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1457220_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
+  },
+  {
+   "id": "news_1cantke",
+   "timestamp": "2026-11-27T21:03:00.000Z",
+   "category": "TECHNIQUE",
+   "title": "Haas F1 valide son aileron 'Macarena' pour 2027, Câmara se paie Bearman deux fois !",
+   "summary": "Haas F1 a connu une première journée d'essais libres compliquée au Grand Prix du Qatar, Rafael Câmara et Oliver Bearman terminant respectivement 17e et 18e des EL2 sur le circuit de Losail. L'écurie américaine a notamment éprouvé des difficultés à trouver un…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/haas-f1-valide-son-aileron-macarena-pour-2027-camara-se-paie-bearman-deux-fois,213807.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456791_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
+  },
+  {
+   "id": "news_1291huy",
+   "timestamp": "2026-11-27T20:51:00.000Z",
+   "category": "PADDOCK",
+   "title": "Racing Bulls a vécu 'une journée solide' et pointe dans le top 10 au Qatar",
+   "summary": "Racing Bulls a bouclé la première journée du Grand Prix du Qatar de F1 dans le top 10, avec une bataille déjà ouverte contre Alpine et Audi, qui suivaient de près aux portes des dix premiers. Du côté de l'équipe de Faenza, des progrès ont été visibles entre…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/racing-bulls-a-vecu-une-journee-solide-et-pointe-dans-le-top-10-au-qatar,213809.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456977_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
+  },
+  {
+   "id": "news_anzx0x",
+   "timestamp": "2026-11-27T20:40:03.000Z",
+   "category": "PADDOCK",
+   "title": "Ferrari signe des Libres 2 cauchemardesques au Qatar avec Leclerc et Hamilton",
+   "summary": "Ferrari a vécu une deuxième séance d'essais libres particulièrement difficile au Grand Prix du Qatar, marquée par des incidents impliquant ses deux pilotes et un manque de compétitivité préoccupant. Alors que Charles Leclerc a provoqué un premier drapeau rouge…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/ferrari-signe-des-libres-2-cauchemardesques-au-qatar-avec-leclerc-et-hamilton,213812.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1457190_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
+  },
+  {
+   "id": "news_1hr9dor",
+   "timestamp": "2026-11-27T20:28:00.000Z",
+   "category": "TECHNIQUE",
+   "title": "Gasly explique sa spectaculaire sortie de piste, Alpine F1 perd un fond plat",
+   "summary": "Alpine F1 a connu une première journée d'essais libres difficile au Grand Prix du Qatar, sur un circuit de Losail dont les nombreux enchaînements rapides mettent en évidence certaines faiblesses de l'A526. Douzième des EL2, Pierre Gasly a notamment été victime…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/gasly-explique-sa-spectaculaire-sortie-de-piste-alpine-f1-perd-un-fond-plat,213811.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1457147_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
+  },
+  {
+   "id": "news_1xloahz",
+   "timestamp": "2026-11-27T20:15:00.000Z",
+   "category": "PADDOCK",
+   "title": "Red Bull loin du compte au Qatar, Verstappen réclame 'un gros bond' face à Mercedes F1",
+   "summary": "Max Verstappen attend des progrès significatifs de la part de Red Bull Racing durant la nuit pour espérer rivaliser avec Mercedes lors de la suite du week-end du Grand Prix du Qatar. Cinquième des EL2 à quatre dixièmes de seconde du meilleur temps établi par…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/red-bull-loin-du-compte-au-qatar-verstappen-reclame-un-gros-bond-face-a,213814.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456814_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
+  },
+  {
+   "id": "news_145d9b1",
+   "timestamp": "2026-11-27T20:04:00.000Z",
+   "category": "PADDOCK",
+   "title": "Audi F1 'doit trouver un peu plus de rythme' mais a vécu une journée 'propre'",
+   "summary": "Audi F1 a affiché un rythme encourageant lors de la première journée du Grand Prix du Qatar, sur le circuit de Losail. Les deux pilotes se sont approchés du top 10 toute la journée, et la R26 semble en mesure de viser les points et la Q3, puisque Gabriel…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/audi-f1-doit-trouver-un-peu-plus-de-rythme-mais-a-vecu-une-journee-propre,213808.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456919_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
+  },
+  {
+   "id": "news_1uitq3p",
+   "timestamp": "2026-11-27T19:53:00.000Z",
+   "category": "PADDOCK",
+   "title": "Mercedes F1 signe deux doublés au Qatar mais se méfie de McLaren et Red Bull",
+   "summary": "Mercedes F1 a parfaitement entamé son week-end au Qatar en signant un doublé lors de chacune des deux premières séances d'essais libres sur le circuit de Losail. Kimi Antonelli a systématiquement devancé George Russell, les deux pilotes n'étant séparés que de…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/mercedes-f1-signe-deux-doubles-au-qatar-mais-se-mefie-de-mclaren-et-red-bull,213815.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456948_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
+  },
+  {
+   "id": "news_qllhsy",
+   "timestamp": "2026-11-27T19:38:00.000Z",
+   "category": "PADDOCK",
+   "title": "Norris s'avoue déjà vaincu par une écurie Mercedes F1 qui évolue 'dans une catégorie différente'",
+   "summary": "McLaren F1 a terminé la journée du vendredi au Grand Prix du Qatar en tant que deuxième force du plateau, tout juste devant les Red Bull, mais surtout loin derrière les pilotes Mercedes. Lando Norris était troisième des EL2 et il admet qu'il est pour l'instant…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/norris-s-avoue-deja-vaincu-par-une-ecurie-mercedes-f1-qui-evolue-dans-une,213813.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456940_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
+  },
+  {
+   "id": "news_1mipft9",
+   "timestamp": "2026-11-27T19:24:00.000Z",
+   "category": "PADDOCK",
+   "title": "Aston Martin F1 ferme la marche devant Cadillac au Qatar avec Alonso et Stroll",
+   "summary": "Aston Martin F1 a connu une première journée d'essais particulièrement difficile au Grand Prix du Qatar, Fernando Alonso et Lance Stroll occupant les deux dernières places du classement à l'issue des EL2 à Losail. Toujours diminué par une infection virale…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/aston-martin-f1-ferme-la-marche-devant-cadillac-au-qatar-avec-alonso-et-stroll,213806.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1457217_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
+  },
+  {
+   "id": "news_1234zzv",
+   "timestamp": "2026-11-27T18:58:00.000Z",
+   "category": "PADDOCK",
+   "title": "Photos - GP du Qatar de F1 2026 - Vendredi",
+   "summary": "",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/photos/photos-gp-du-qatar-de-f1-2026-vendredi,213802.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456865_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
+  },
+  {
+   "id": "news_1fvqw3e",
+   "timestamp": "2026-11-27T18:43:00.000Z",
+   "category": "RÈGLEMENT",
+   "title": "La F1 va geler ses V6 courant 2028, le plan de transition vers les V8 révélé",
+   "summary": "Le cadre réglementaire devant permettre à la Formule 1 d'introduire de nouveaux moteurs V8 à partir de 2030 prévoit bien un gel du développement des actuels V6 hybrides pour la saison 2029, comme l'ont confirmé la FIA et Laurent Mekies ce vendredi au Grand…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/la-f1-va-geler-ses-v6-courant-2028-le-plan-de-transition-vers-les-v8-revele,213820.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1402127_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
+  },
+  {
    "id": "news_198s6zc",
    "timestamp": "2026-11-27T18:20:13.000Z",
    "category": "PADDOCK",
@@ -38,6 +220,32 @@
    "image": "https://cdn-1.motorsport.com/images/amp/YMXbRqG2/s6/pierre-gasly-alpine-2.jpg",
    "impact": null,
    "firstSeen": "2026-11-27T18:26:18.206Z"
+  },
+  {
+   "id": "news_e9d8m",
+   "timestamp": "2026-11-27T18:17:13.000Z",
+   "category": "PADDOCK",
+   "title": "F1 - GP du Qatar 2026 - Essais Libres 2",
+   "summary": "Pos.PiloteVoitureTempsTours 1 Kimi Antonelli Mercedes W17 1:23.077 31 2 George Russell Mercedes W17 1:23.204 33 3 Lando Norris McLaren Mercedes MCL40 1:23.522 31 4 Oscar Piastri McLaren Mercedes MCL40 1:23.549 32 5 Max Verstappen Red Bull RBPT Ford RB22…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/resultats/f1-gp-du-qatar-2026-essais-libres-2,213816.html",
+   "image": "",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
+  },
+  {
+   "id": "news_585xw2",
+   "timestamp": "2026-11-27T18:15:00.000Z",
+   "category": "PADDOCK",
+   "title": "GP du Qatar, EL2 : Antonelli confirme au terme d'une séance rallongée, Hamilton à l'arrêt",
+   "summary": "Le Grand Prix du Qatar se poursuit sur le circuit de Losail, où les équipes vont disputer la deuxième séance d'essais libres du week-end en guise de conclusion de la première journée. Les EL2 sont souvent une séance studieuse, et ce sera encore plus le cas ce…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/gp-du-qatar-el2-antonelli-confirme-au-terme-d-une-seance-rallongee-hamilton-a-l,213800.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456970_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
   },
   {
    "id": "news_14felzw",
@@ -92,6 +300,58 @@
    "firstSeen": "2026-11-27T17:26:08.248Z"
   },
   {
+   "id": "news_5du14l",
+   "timestamp": "2026-11-27T17:13:14.000Z",
+   "category": "RÈGLEMENT",
+   "title": "Comment près de 2 000 contrats ont conduit Williams F1 à dépasser le plafond budgétaire",
+   "summary": "James Vowles a apporté des précisions concernant les circonstances qui ont conduit Williams à dépasser le plafond budgétaire de la Formule 1 en 2025. Le directeur de l'écurie britannique a expliqué que cette infraction résultait d'une restructuration de…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/comment-pres-de-2-000-contrats-ont-conduit-williams-f1-a-depasser-le-plafond,213804.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1457048_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
+  },
+  {
+   "id": "news_1bej7u2",
+   "timestamp": "2026-11-27T16:37:54.000Z",
+   "category": "PADDOCK",
+   "title": "Red Bull écope d'une énorme amende après un incident dangereux avec Hadjar",
+   "summary": "Red Bull Racing a écopé d'une très lourde amende à la suite d'un incident potentiellement dangereux impliquant Isack Hadjar lors de la première séance d'essais libres du Grand Prix du Qatar. Le pilote français a reçu l'autorisation de quitter son emplacement…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/red-bull-ecope-d-une-enorme-amende-apres-un-incident-dangereux-avec-hadjar,213803.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456782_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
+  },
+  {
+   "id": "news_morq86",
+   "timestamp": "2026-11-27T16:17:00.000Z",
+   "category": "RÈGLEMENT",
+   "title": "Audi F1 déboutée par la FIA dans son recours contre Yuki Tsunoda",
+   "summary": "La Cour d'appel internationale de la FIA a rejeté le recours déposé par Audi F1 à la suite du Grand Prix d'Italie 2026, confirmant ainsi la décision des commissaires sportifs de ne pas sanctionner Yuki Tsunoda. L'écurie allemande estimait que le pilote…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/audi-f1-deboutee-par-la-fia-dans-son-recours-contre-yuki-tsunoda,213801.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/audi3_19_-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
+  },
+  {
+   "id": "news_1pvodfb",
+   "timestamp": "2026-11-27T15:52:00.000Z",
+   "category": "RÈGLEMENT",
+   "title": "Albon prend la défense de Leclerc et pointe les incohérences des commissaires",
+   "summary": "Alex Albon ne partage pas nécessairement l'interprétation des commissaires sportifs de la FIA concernant l'accrochage entre Charles Leclerc et Lewis Hamilton lors du Grand Prix de Las Vegas. Le pilote Williams estime que les directives de pilotage actuelles…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/albon-prend-la-defense-de-leclerc-et-pointe-les-incoherences-des-commissaires,213795.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/ferrari_40_-5.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
+  },
+  {
    "id": "news_1d1mcpn",
    "timestamp": "2026-11-27T15:24:14.000Z",
    "category": "RÈGLEMENT",
@@ -103,6 +363,19 @@
    "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/8-friday-lusail-2026.jpg",
    "impact": null,
    "firstSeen": "2026-11-27T18:56:23.243Z"
+  },
+  {
+   "id": "news_g0sl41",
+   "timestamp": "2026-11-27T15:19:00.000Z",
+   "category": "PADDOCK",
+   "title": "Estimée à 6 millions de dollars, la Williams F1 d'Ayrton Senna ne trouve pas preneur",
+   "summary": "Une rare monoplace de Formule 1 pilotée par Ayrton Senna lors de sa dernière saison dans la catégorie reine n'a pas trouvé preneur lors d'une vente aux enchères organisée à New York. Estimée entre quatre et six millions de dollars, la Williams FW16B-01 possède…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/estimee-a-6-millions-de-dollars-la-williams-f1-d-ayrton-senna-ne-trouve-pas,213705.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_35735_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
   },
   {
    "id": "news_1ocdx9c",
@@ -131,6 +404,19 @@
    "firstSeen": "2026-11-27T14:55:40.133Z"
   },
   {
+   "id": "news_1fe03f3",
+   "timestamp": "2026-11-27T14:33:24.000Z",
+   "category": "PADDOCK",
+   "title": "F1 - GP du Qatar 2026 - Essais Libres 1",
+   "summary": "Pos.PiloteVoitureTempsTours 1 Kimi Antonelli Mercedes W17 1:23.217 31 2 George Russell Mercedes W17 1:23.724 29 3 Isack Hadjar Red Bull RBPT Ford RB22 1:23.878 25 4 Lando Norris McLaren Mercedes MCL40 1:24.067 26 5 Oscar Piastri McLaren Mercedes MCL40 1:24.077…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/resultats/f1-gp-du-qatar-2026-essais-libres-1,213799.html",
+   "image": "",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
+  },
+  {
    "id": "news_1ml2o1o",
    "timestamp": "2026-11-27T14:32:02.000Z",
    "category": "MÉTÉO",
@@ -144,6 +430,32 @@
    "firstSeen": "2026-11-27T14:55:40.133Z"
   },
   {
+   "id": "news_uq0ays",
+   "timestamp": "2026-11-27T14:31:00.000Z",
+   "category": "PADDOCK",
+   "title": "GP du Qatar, EL1 : Antonelli et Mercedes F1 en tête, Ferrari légèrement en retrait",
+   "summary": "C'est l'heure du Grand Prix du Qatar, avant-dernière manche de la saison 2026 de F1, qui débute avec les EL1 en ce vendredi après-midi. Une séance qui va permettre de préparer sereinement la suite du week-end, alors que Losail avait accueilli un week-end de…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/gp-du-qatar-el1-antonelli-et-mercedes-f1-en-tete-ferrari-legerement-en-retrait,213797.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456820_hires.jpg",
+   "impact": {
+    "targetType": "driver",
+    "targetIds": [
+     "antonelli"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 0.95,
+    "impactLabel": "Cotes -5%",
+    "teamId": "mercedes"
+   },
+   "firstSeen": "2026-11-28T06:28:38.080Z"
+  },
+  {
    "id": "news_amgbhe",
    "timestamp": "2026-11-27T13:44:50.000Z",
    "category": "PADDOCK",
@@ -154,7 +466,20 @@
    "url": "https://www.autohebdo.fr/actualites/motogp/marc-marquez-explique-sa-retraite-jai-commence-a-ressentir-de-la-peur.html",
    "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/55676514316_c20a95db7c_o.jpg",
    "impact": null,
-   "firstSeen": "2026-11-28T05:58:17.666Z"
+   "firstSeen": "2026-11-28T06:28:38.080Z"
+  },
+  {
+   "id": "news_1tqg9qd",
+   "timestamp": "2026-11-27T13:19:00.000Z",
+   "category": "PADDOCK",
+   "title": "Stroll démolit le spectacle donné par la F1 et veut retrouver le DRS",
+   "summary": "Lance Stroll n'a guère été séduit par le spectacle offert par la Formule 1 lors du Grand Prix de Las Vegas, malgré les nombreuses batailles en piste et les écarts particulièrement faibles entre les monoplaces. Alors que cette épreuve a relancé le débat sur le…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/stroll-demolit-le-spectacle-donne-par-la-f1-et-veut-retrouver-le-drs,213791.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/astonmartin3_10_-7.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T06:28:38.080Z"
   },
   {
    "id": "news_24fckz",
@@ -556,382 +881,6 @@
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456447_hires.jpg",
    "impact": null,
    "firstSeen": "2026-11-26T18:21:54.899Z"
-  },
-  {
-   "id": "news_11wjl98",
-   "timestamp": "2026-11-26T17:52:00.000Z",
-   "category": "PADDOCK",
-   "title": "Piastri veut repartir de zéro après une saison 2026 particulièrement difficile",
-   "summary": "Oscar Piastri espère terminer sur une note positive une saison 2026 de Formule 1 bien plus difficile qu'il ne l'avait imaginé. À l'occasion de la conférence de presse du Grand Prix du Qatar, le pilote McLaren est revenu sur les difficultés d'adaptation…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/piastri-veut-repartir-de-zero-apres-une-saison-2026-particulierement-difficile,213768.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456493_hires.jpg",
-   "impact": {
-    "targetType": "driver",
-    "targetIds": [
-     "piastri"
-    ],
-    "managerModifiers": {
-     "powerUnit": 0,
-     "aero": 0,
-     "reliability": 0
-    },
-    "bettingOddsMultiplier": 1.06,
-    "impactLabel": "Cotes +6%",
-    "teamId": "mclaren"
-   },
-   "firstSeen": "2026-11-26T18:21:54.899Z"
-  },
-  {
-   "id": "news_17t0ag5",
-   "timestamp": "2026-11-26T17:37:00.000Z",
-   "category": "PADDOCK",
-   "title": "Hadjar sent sa première victoire en F1 se rapprocher après sa performance de Vegas",
-   "summary": "Isack Hadjar aborde les deux dernières manches de la saison 2026 de Formule 1 avec la conviction que sa première victoire dans la catégorie reine est désormais à sa portée. Après avoir lutté aux avant-postes avec Max Verstappen lors du Grand Prix de Las Vegas…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hadjar-sent-sa-premiere-victoire-en-f1-se-rapprocher-apres-sa-performance-de,213754.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456531_hires.jpg",
-   "impact": {
-    "targetType": "driver",
-    "targetIds": [
-     "hadjar"
-    ],
-    "managerModifiers": {
-     "powerUnit": 0,
-     "aero": 0,
-     "reliability": 0
-    },
-    "bettingOddsMultiplier": 0.95,
-    "impactLabel": "Cotes -5%",
-    "teamId": "red_bull"
-   },
-   "firstSeen": "2026-11-26T17:51:49.130Z"
-  },
-  {
-   "id": "news_91ylis",
-   "timestamp": "2026-11-26T17:34:00.000Z",
-   "category": "PADDOCK",
-   "title": "George Russell réagit à la tension grandissante avec Max Verstappen : « Je suis peut-être trop ouvert et trop honnête avec les médias »",
-   "summary": "À Sin City, George Russell aurait bien pu aller accrocher un podium à la régulière. Au lieu de cela, le Britannique a terminé sa course dans le mur alors qu’il tentait de dépasser son coéquipier Kimi Antonelli, dans un contexte où sa joute verbale avec Max…",
-   "source": "AutoHebdo",
-   "lang": "fr",
-   "url": "https://www.autohebdo.fr/actualites/f1/george-russell-reagit-a-la-tension-grandissante-avec-max-verstappen-je-suis-peut-etre-trop-ouvert-et-trop-honnete-avec-les-medias.html",
-   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/DPPI_00126025_043.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T17:51:49.130Z"
-  },
-  {
-   "id": "news_1cmexe1",
-   "timestamp": "2026-11-26T17:19:00.000Z",
-   "category": "PADDOCK",
-   "title": "Bearman se sent prêt à mener Haas F1 et veut prouver à Ferrari qu'il a les épaules",
-   "summary": "Quelques heures après l'officialisation de sa prolongation chez Haas F1 pour la saison 2027, Oliver Bearman s'est longuement exprimé sur son avenir à l'occasion de la conférence de presse du Grand Prix du Qatar. Soulagé de voir les dernières incertitudes…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/bearman-se-sent-pret-a-mener-haas-f1-et-veut-prouver-a-ferrari-qu-il-a-les,213766.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456485_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T17:51:49.130Z"
-  },
-  {
-   "id": "news_1xshvlg",
-   "timestamp": "2026-11-26T17:17:13.000Z",
-   "category": "PADDOCK",
-   "title": "Hamilton apaise les tensions avec Leclerc : \"On va trouver une solution\"",
-   "summary": "Lewis Hamilton se dit convaincu que son coéquipier Charles Leclerc et lui vont \"trouver une solution\" après leur dernier accrochage en piste, survenu lors du Grand Prix de Las Vegas la semaine dernière. Deux semaines après un incident coûteux en piste alors…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/hamilton-apaise-tensions-leclerc-trouver-solution-ferrari/10877991/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "image": "https://cdn-1.motorsport.com/images/amp/27NojvR0/s6/charles-leclerc-ferrari-lewis-.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T17:21:44.404Z"
-  },
-  {
-   "id": "news_1hse1yb",
-   "timestamp": "2026-11-26T17:03:37.000Z",
-   "category": "PADDOCK",
-   "title": "Gasly veut lutter avec les top teams 'beaucoup plus souvent' en 2027",
-   "summary": "Alpine F1 a enregistré un excellent résultat à Las Vegas, avec la cinquième place de Pierre Gasly et la sixième de Franco Colapinto. Les deux pilotes ont roulé dans le groupe de tête et ont dû reculer dans la hiérarchie à cause d'un problème de surchauffe qui…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/gasly-veut-lutter-avec-les-top-teams-beaucoup-plus-souvent-en-2027,213760.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456396_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T17:21:44.404Z"
-  },
-  {
-   "id": "news_1e0wrqp",
-   "timestamp": "2026-11-26T16:42:02.000Z",
-   "category": "PADDOCK",
-   "title": "Leclerc agacé de \"voir des gens remettre en question mon intégrité\" chez Ferrari",
-   "summary": "Charles Leclerc n'a pas caché sa colère face à ceux qui \"remettent en question son intégrité et son amour pour Ferrari\" après un nouvel accrochage avec son coéquipier Lewis Hamilton à Las Vegas. Le Monégasque a également appelé à trouver une \"solution\". Les…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/charles-leclerc-agace-remise-en-question-integrite-ferrari/10877966/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "image": "https://cdn-1.motorsport.com/images/amp/6zoD4aJ0/s6/charles-leclerc-ferrari-2.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T16:51:40.233Z"
-  },
-  {
-   "id": "news_1222enl",
-   "timestamp": "2026-11-26T16:42:00.000Z",
-   "category": "PADDOCK",
-   "title": "Hamilton tend la main à Leclerc mais ne change pas de position sur les règles d'engagement",
-   "summary": "Lewis Hamilton a révélé avoir eu des discussions positives avec Charles Leclerc en marge du Grand Prix du Qatar, quelques jours après leur nouvel accrochage lors du Grand Prix de Las Vegas. Le septuple champion du monde reste convaincu que les deux pilotes…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hamilton-tend-la-main-a-leclerc-mais-ne-change-pas-de-position-sur-les-regles-d,213763.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456337_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T17:21:44.404Z"
-  },
-  {
-   "id": "news_kf3q44",
-   "timestamp": "2026-11-26T16:36:11.000Z",
-   "category": "PADDOCK",
-   "title": "Charles Leclerc l’assume après Las Vegas : « Oui, c’est inacceptable »",
-   "summary": "Après trois Grands Prix à l’issue desquels la discorde a prédominé cette saison chez Ferrari, l’étau médiatique se ressert. Coupable d’avoir accroché Lewis Hamilton à Las Vegas, Charles Leclerc, présent en conférence de presse au Qatar, a naturellement été…",
-   "source": "AutoHebdo",
-   "lang": "fr",
-   "url": "https://www.autohebdo.fr/actualites/f1/charles-leclerc-lassume-apres-las-vegas-oui-cest-inacceptable.html",
-   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/DPPI_00126025_055.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T16:51:40.233Z"
-  },
-  {
-   "id": "news_avwjff",
-   "timestamp": "2026-11-26T16:06:00.000Z",
-   "category": "PADDOCK",
-   "title": "Leclerc n'a 'pas le droit' de parler des dernière discussions chez Ferrari et dément être le n°1 par contrat",
-   "summary": "Charles Leclerc a reconnu que l'ambiance au sein de Ferrari était loin d'être idéale à la suite de son nouvel accrochage avec Lewis Hamilton lors du Grand Prix de Las Vegas. Le Monégasque accepte le jugement particulièrement sévère de Frédéric Vasseur sur cet…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/leclerc-n-a-pas-le-droit-de-parler-des-derniere-discussions-chez-ferrari-et,213762.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456409_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T16:51:40.233Z"
-  },
-  {
-   "id": "news_1jj4nnm",
-   "timestamp": "2026-11-26T15:49:24.000Z",
-   "category": "PADDOCK",
-   "title": "Russell juge les propos de Verstappen \"amusants\"... et maintient les siens",
-   "summary": "Deux ans après de grosses frictions déjà, survenues à la même période de l'année, George Russell et Max Verstappen se sont de nouveau affrontés la semaine dernière à Las Vegas. Un incident lors des essais libres avait provoqué la colère de Russell : Verstappen…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/russell-verstappen-propos-amusants-qatar/10877936/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "image": "https://cdn-1.motorsport.com/images/amp/6AlvydGY/s6/max-verstappen-red-bull-racing-2.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T16:21:35.652Z"
-  },
-  {
-   "id": "news_1dzar7x",
-   "timestamp": "2026-11-26T15:38:43.000Z",
-   "category": "PADDOCK",
-   "title": "Bottas confirme que le simulateur de Cadillac F1 arrivera en retard",
-   "summary": "Valtteri Bottas a révélé que l'arrivée du nouveau simulateur de Cadillac F1 a été retardée par rapport à son objectif initial de la fin d'année. Le pilote finlandais a confirmé l'information et a détaillé comment l'équipe va travailler en attendant l'arrivée…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/bottas-confirme-que-le-simulateur-de-cadillac-f1-arrivera-en-retard,213753.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456387_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T15:51:31.240Z"
-  },
-  {
-   "id": "news_smber9",
-   "timestamp": "2026-11-26T15:12:00.000Z",
-   "category": "PADDOCK",
-   "title": "Russell répond à Verstappen : 'certains de ses commentaires m'ont fait rire'",
-   "summary": "George Russell ne regrette pas les déclarations qu'il avait formulées à l'encontre de Max Verstappen après leur incident en essais libres lors du Grand Prix de Las Vegas. Le pilote Mercedes reconnaît toutefois avoir trouvé certaines des attaques verbales du…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/russell-repond-a-verstappen-certains-de-ses-commentaires-m-ont-fait-rire,213761.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456520_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T15:51:31.240Z"
-  },
-  {
-   "id": "news_14c9fm1",
-   "timestamp": "2026-11-26T14:49:00.000Z",
-   "category": "PADDOCK",
-   "title": "Norris 'souhaitait une meilleure saison' mais se félicite de sa propre performance",
-   "summary": "Lando Norris estime que la saison 2026 n'a pas été à la hauteur des attentes pour lui et McLaren F1, qui sortaient d'une année précédente durant laquelle ils avaient remporté les deux titres mondiaux. Mais un manque de performance en début d'année a coûté la…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/norris-souhaitait-une-meilleure-saison-mais-se-felicite-de-sa-propre,213759.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456381_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T15:21:14.036Z"
-  },
-  {
-   "id": "news_ph6n1u",
-   "timestamp": "2026-11-26T14:16:00.000Z",
-   "category": "PADDOCK",
-   "title": "Alpine F1 doit s'attendre à un dur retour à la réalité au Qatar",
-   "summary": "Après avoir savouré la possibilité de se battre avec les écuries de pointe lors du Grand Prix de Las Vegas, Franco Colapinto s'attend à un retour à la réalité pour Alpine F1 ce week-end au Qatar. Le pilote argentin, qui a égalé son meilleur résultat en Formule…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/alpine-f1-doit-s-attendre-a-un-dur-retour-a-la-realite-au-qatar,213757.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/alpine_12_-6.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T14:51:10.621Z"
-  },
-  {
-   "id": "news_17olqf0",
-   "timestamp": "2026-11-26T13:53:10.000Z",
-   "category": "PADDOCK",
-   "title": "Norris réagit au conflit Verstappen-Russell : 'c'est en piste qu'il faut parler'",
-   "summary": "Lando Norris a livré son regard sur la rivalité de plus en plus virulente entre Max Verstappen et George Russell à l'approche du Grand Prix du Qatar. Le pilote McLaren estime que les deux hommes n'ont aucune obligation de s'entendre, mais rappelle que les…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/norris-reagit-au-conflit-verstappen-russell-c-est-en-piste-qu-il-faut-parler,213756.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456358_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T14:21:07.315Z"
-  },
-  {
-   "id": "news_4n2teo",
-   "timestamp": "2026-11-26T13:42:00.000Z",
-   "category": "PADDOCK",
-   "title": "Découvrez la grille de F1 au complet pour la saison 2027",
-   "summary": "Et de un qui font 22 ! Ce jeudi, Haas a officialisé la prolongation du contrat d’Oliver Bearman en vue de la saison 2027, portant ainsi au complet la grille pour la saison à venir. En l’occurrence, le Britannique fera équipe avec un jeune pilote qu’il connaît…",
-   "source": "AutoHebdo",
-   "lang": "fr",
-   "url": "https://www.autohebdo.fr/actualites/f1/decouvrez-la-grille-de-f1-au-complet-pour-la-saison-2027.html",
-   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/DPPI_00126023_2390.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T14:21:07.315Z"
-  },
-  {
-   "id": "news_jadi7l",
-   "timestamp": "2026-11-26T13:28:00.000Z",
-   "category": "PADDOCK",
-   "title": "Le Grand Prix du Qatar F1 va se jouer à guichets fermés malgré les tensions",
-   "summary": "Malgré le conflit au Moyen-Orient et les nombreuses interrogations qui ont entouré la tenue des deux dernières manches de la saison 2026 de Formule 1, les organisateurs du Grand Prix du Qatar s'attendent à faire le plein de spectateurs ce dimanche sur le…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/le-grand-prix-du-qatar-f1-va-se-jouer-a-guichets-fermes-malgre-les-tensions,213755.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456315_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T13:51:03.955Z"
-  },
-  {
-   "id": "news_1q7g8kz",
-   "timestamp": "2026-11-26T13:21:00.000Z",
-   "category": "PADDOCK",
-   "title": "Photos - GP du Qatar de F1 2026 - Jeudi",
-   "summary": "",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/photos/photos-gp-du-qatar-de-f1-2026-jeudi,213752.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456373_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T13:51:03.955Z"
-  },
-  {
-   "id": "news_1teijow",
-   "timestamp": "2026-11-26T12:54:00.000Z",
-   "category": "TECHNIQUE",
-   "title": "Honda F1 n'a trouvé aucun problème moteur malgré les plaintes d'Alonso",
-   "summary": "Honda F1 n'est toujours pas parvenu à identifier le moindre problème sur le groupe propulseur de Fernando Alonso après l'abandon de l'Espagnol dans le dernier virage du Grand Prix de Las Vegas. Alors que le double champion du monde s'était plaint d'un problème…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/honda-f1-n-a-trouve-aucun-probleme-moteur-malgre-les-plaintes-d-alonso,213750.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/astonmartin3_20_-4.jpg",
-   "impact": {
-    "targetType": "engine",
-    "targetIds": [
-     "aston_martin"
-    ],
-    "managerModifiers": {
-     "powerUnit": -2,
-     "aero": 0,
-     "reliability": 0
-    },
-    "bettingOddsMultiplier": 1.08,
-    "impactLabel": "Moteur -2 pts | Cotes +8%"
-   },
-   "firstSeen": "2026-11-26T13:21:00.492Z"
-  },
-  {
-   "id": "news_72lm08",
-   "timestamp": "2026-11-26T12:13:00.000Z",
-   "category": "PADDOCK",
-   "title": "Vibreurs agressifs et limites de piste : Williams F1 détaille les défis du Qatar",
-   "summary": "Williams F1 a marqué quatre points à Las Vegas grâce à la huitième place de Carlos Sainz, mais le Grand Prix du Qatar ce week-end devrait être bien plus compliqué pour l'équipe de Grove. En effet, les deux circuits sont totalement différents, et le positif…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/vibreurs-agressifs-et-limites-de-piste-williams-f1-detaille-les-defis-du-qatar,213725.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/williams_13_-3.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T12:50:57.535Z"
-  },
-  {
-   "id": "news_i2fy8n",
-   "timestamp": "2026-11-26T11:48:00.000Z",
-   "category": "PADDOCK",
-   "title": "Vesti révèle avoir effectué un travail 'jamais vu auparavant en F1' chez Mercedes",
-   "summary": "Frederik Vesti reste convaincu que son rêve de devenir titulaire en Formule 1 peut encore se concrétiser, malgré la décision de Cadillac de conserver Valtteri Bottas pour la saison 2027. Le pilote de réserve de Mercedes a notamment révélé avoir joué un rôle…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/vesti-revele-avoir-effectue-un-travail-jamais-vu-auparavant-en-f1-chez-mercedes,213744.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/mercedes_19_-11.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T12:50:57.535Z"
-  },
-  {
-   "id": "news_tqrpp2",
-   "timestamp": "2026-11-26T11:01:32.000Z",
-   "category": "PADDOCK",
-   "title": "Malade, Alonso va manquer la première journée du Grand Prix du Qatar",
-   "summary": "Fernando Alonso ne participera pas à la journée médias du Grand Prix du Qatar ce jeudi, Aston Martin F1 ayant confirmé que son pilote souffrait encore des effets d'une infection virale contractée lors du Grand Prix de Las Vegas le week-end dernier. Le double…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/malade-alonso-va-manquer-la-premiere-journee-du-grand-prix-du-qatar,213749.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/astonmartin2_1_-6.jpg",
-   "impact": {
-    "targetType": "driver",
-    "targetIds": [
-     "alonso"
-    ],
-    "managerModifiers": {
-     "powerUnit": 0,
-     "aero": 0,
-     "reliability": 0
-    },
-    "bettingOddsMultiplier": 1.25,
-    "impactLabel": "Cotes +25%",
-    "teamId": "aston_martin"
-   },
-   "firstSeen": "2026-11-26T11:20:46.596Z"
-  },
-  {
-   "id": "news_fefgtc",
-   "timestamp": "2026-11-26T10:58:23.000Z",
-   "category": "PADDOCK",
-   "title": "Fernando Alonso malade et absent jeudi à Losail",
-   "summary": "Le double champion du monde manquera les habituelles obligations médiatiques sur le circuit de Losail, avec pour objectif de retrouver la forme à temps pour les EL1 vendredi. Dans un communiqué, son équipe Aston Martin a expliqué : \"Fernando manquera la…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/fernando-alonso-malade-absent-jeudi-qatar/10877852/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "image": "https://cdn-1.motorsport.com/images/amp/6zoD4Ma0/s6/fernando-alonso-aston-martin-r.jpg",
-   "impact": {
-    "targetType": "driver",
-    "targetIds": [
-     "alonso"
-    ],
-    "managerModifiers": {
-     "powerUnit": 0,
-     "aero": 0,
-     "reliability": 0
-    },
-    "bettingOddsMultiplier": 1.25,
-    "impactLabel": "Cotes +25%",
-    "teamId": "aston_martin"
-   },
-   "firstSeen": "2026-11-26T11:20:46.596Z"
   }
  ]
 }
