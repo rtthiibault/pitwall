@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-28T12:59:38.000Z",
+ "updated": "2026-11-28T13:29:41.236Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-28T13:29:38.000Z",
+ "next": "2026-11-28T13:59:41.236Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 111
+   "n": 112
   },
   {
    "name": "F1i",
@@ -26,6 +26,32 @@
   }
  ],
  "items": [
+  {
+   "id": "news_pmvue2",
+   "timestamp": "2026-11-28T13:17:00.000Z",
+   "category": "PADDOCK",
+   "title": "Rosberg écarte déjà Russell de la lutte pour le titre F1 en 2027",
+   "summary": "Nico Rosberg doute fortement de la capacité de George Russell à se mêler à la lutte pour le titre mondial de Formule 1 en 2027, après la défaite particulièrement difficile à encaisser du Britannique face à son équipier Kimi Antonelli cette saison. Le champion…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/rosberg-ecarte-deja-russell-de-la-lutte-pour-le-titre-f1-en-2027,213784.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456923_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T13:29:41.236Z"
+  },
+  {
+   "id": "news_k4xm0m",
+   "timestamp": "2026-11-28T13:10:07.000Z",
+   "category": "RÈGLEMENT",
+   "title": "La FIA réfléchit au retour du DRS en complément d'un push-to-pass en 2030",
+   "summary": "Bien que le cadre réglementaire annoncé la semaine dernière définisse les principaux éléments de la prochaine ère de la F1 – un V8 turbo de 2,1 litres avec une composante électrique considérablement réduite –, de nombreux détails doivent encore être précisés…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/fia-reflechit-associer-drs-push-to-pass-2030/10878591/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/0arEDe42/s6/isack-hadjar-red-bull-racing-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T13:29:41.236Z"
+  },
   {
    "id": "news_3pl0u2",
    "timestamp": "2026-11-28T12:34:00.000Z",
@@ -854,32 +880,6 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hamilton-veut-profiter-de-l-hiver-pour-se-rapprocher-personnellement-de-leclerc,213793.html",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/ferrari_13_-6.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-27T11:54:53.958Z"
-  },
-  {
-   "id": "news_6fsru8",
-   "timestamp": "2026-11-27T09:23:00.000Z",
-   "category": "PADDOCK",
-   "title": "Oliver Bearman prolongé par Haas, veut « prouver aux équipes de pointe » qu’il a « ce qu’il faut »",
-   "summary": "Cela semblait surtout être un secret de polichinelle, mais l’on aurait pu presque croire à un début de doute. Oliver Bearman, pilote de l’écurie Haas, sera toujours bel et bien titulaire au sein de l’équipe américaine de F1 en 2027, et ce malgré des…",
-   "source": "AutoHebdo",
-   "lang": "fr",
-   "url": "https://www.autohebdo.fr/actualites/f1/oliver-bearman-prolonge-par-haas-veut-prouver-aux-equipes-de-pointe-quil-a-ce-quil-faut.html",
-   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/DPPI_00126025_044.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-27T09:54:35.354Z"
-  },
-  {
-   "id": "news_1wmei7j",
-   "timestamp": "2026-11-27T09:11:00.000Z",
-   "category": "RÈGLEMENT",
-   "title": "Sainz prédit une fin de saison 'délicate' pour Williams F1, Albon est prudent pour 2027",
-   "summary": "Carlos Sainz est parti près du fond de la grille à Vegas en raison d'une pénalité de 10 places sur la grille pour avoir pris un nouveau turbo. Et malgré cela, il a remonté le peloton et a terminé huitième au prix d'un superbe dépassement sur George Russell…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/sainz-predit-une-fin-de-saison-delicate-pour-williams-f1-albon-est-prudent-pour,213771.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456584_hires.jpg",
    "impact": null,
    "firstSeen": "2026-11-27T11:54:53.958Z"
   }
