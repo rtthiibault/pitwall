@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-28T08:58:55.864Z",
+ "updated": "2026-11-28T09:28:59.197Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-28T09:28:55.864Z",
+ "next": "2026-11-28T09:58:59.197Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 112
+   "n": 113
   },
   {
    "name": "F1i",
@@ -27,6 +27,19 @@
  ],
  "items": [
   {
+   "id": "news_1yj2tis",
+   "timestamp": "2026-11-28T09:19:00.000Z",
+   "category": "RÈGLEMENT",
+   "title": "Hankook prépare en secret son arrivée en F1 et a déjà effectué deux séances d'essais",
+   "summary": "La bataille pour devenir le prochain fournisseur officiel de pneumatiques de la Formule 1 à partir de 2029 pourrait opposer trois manufacturiers. Alors que Pirelli et Bridgestone sont susceptibles de se porter candidats au prochain appel d'offres de la FIA…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hankook-prepare-en-secret-son-arrivee-en-f1-et-a-deja-effectue-deux-seances-d,213836.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/ambiance-pirelli0_19_-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T09:28:59.197Z"
+  },
+  {
    "id": "news_5av0g5",
    "timestamp": "2026-11-28T08:52:29.000Z",
    "category": "TECHNIQUE",
@@ -38,6 +51,19 @@
    "image": "https://cdn-1.motorsport.com/images/amp/6O7z5j56/s6/pierre-gasly-alpine.jpg",
    "impact": null,
    "firstSeen": "2026-11-28T08:58:55.864Z"
+  },
+  {
+   "id": "news_1ignm8k",
+   "timestamp": "2026-11-28T08:47:00.000Z",
+   "category": "PADDOCK",
+   "title": "Pirelli F1 en mode alerte au Qatar : des pneus usés à 100% après seulement 15 tours",
+   "summary": "Malgré des pressions minimales imposées aux pneumatiques avant déjà inédites à l'entame d'un week-end cette saison et une limitation à 27 tours de la distance pouvant être parcourue avec chaque train de pneus, Pirelli envisage de prendre des mesures de…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/pirelli-f1-en-mode-alerte-au-qatar-des-pneus-uses-a-100-apres-seulement-15,213830.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1457146_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T09:28:59.197Z"
   },
   {
    "id": "news_18qzqor",
@@ -557,7 +583,7 @@
    "url": "https://www.autohebdo.fr/actualites/motogp/marc-marquez-explique-sa-retraite-jai-commence-a-ressentir-de-la-peur.html",
    "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/55676514316_c20a95db7c_o.jpg",
    "impact": null,
-   "firstSeen": "2026-11-28T08:58:55.864Z"
+   "firstSeen": "2026-11-28T09:28:59.197Z"
   },
   {
    "id": "news_1tqg9qd",
@@ -868,32 +894,6 @@
    "image": "https://cdn-1.motorsport.com/images/amp/6zoDBWk0/s6/fernando-alonso-aston-martin-r.jpg",
    "impact": null,
    "firstSeen": "2026-11-27T05:23:44.371Z"
-  },
-  {
-   "id": "news_1olbyh4",
-   "timestamp": "2026-11-26T21:17:13.000Z",
-   "category": "PADDOCK",
-   "title": "Max Verstappen sans Gianpiero Lambiase à Losail, Tom Hart le remplace",
-   "summary": "Max Verstappen sera privé de son bras droit habituel Gianpiero Lambiase ce week-end sur le circuit international de Losail. Red Bull avait déjà opté pour un système de rotation pour la dernière partie de cette saison de Formule 1, principalement afin de…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/max-verstappen-sans-gianpiero-lambiase-au-gp-du-qatar-tom-hart-le-remplace/10878051/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "image": "https://cdn-1.motorsport.com/images/amp/YBVj7QzY/s6/max-verstappen-red-bull-racing.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T21:22:40.246Z"
-  },
-  {
-   "id": "news_17eq9fo",
-   "timestamp": "2026-11-26T20:18:27.000Z",
-   "category": "PADDOCK",
-   "title": "Impressionné par sa 'très bonne série', Verstappen veut faire 'encore mieux' en 2027",
-   "summary": "Max Verstappen est impressionné de voir comment Red Bull a réglé ses problèmes du début de saison, alors qu'il est le pilote le plus prolifique en termes de points marqués depuis le Grand Prix d'Espagne. Le pilote Red Bull va très certainement être…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/impressionne-par-sa-tres-bonne-serie-verstappen-veut-faire-encore-mieux-en-2027,213773.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456640_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T20:52:18.091Z"
   }
  ]
 }
