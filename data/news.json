@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-28T10:59:09.970Z",
+ "updated": "2026-11-28T11:29:13.507Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-28T11:29:09.970Z",
+ "next": "2026-11-28T11:59:13.507Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 113
+   "n": 112
   },
   {
    "name": "F1i",
@@ -26,6 +26,32 @@
   }
  ],
  "items": [
+  {
+   "id": "news_hnqpsr",
+   "timestamp": "2026-11-28T11:27:51.000Z",
+   "category": "RÈGLEMENT",
+   "title": "Pourquoi Williams a dépassé le plafond budgétaire en 2025",
+   "summary": "L'infraction de Williams au règlement du plafond budgétaire de la Formule 1 pour la saison 2025 est due à une divergence d'interprétation entre le département financier de l'écurie et la FIA. Elle concerne la restructuration de l'entreprise, qui a transféré…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/pourquoi-williams-depasse-plafond-budgetaire-2025/10878571/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/24QeqOXY/s6/alexander-albon-williams-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T11:29:13.507Z"
+  },
+  {
+   "id": "news_t9g167",
+   "timestamp": "2026-11-28T11:02:00.000Z",
+   "category": "PADDOCK",
+   "title": "Aucun plan B chez Haas F1 : Komatsu balaie les doutes autour de Bearman",
+   "summary": "La prolongation de contrat d'Oliver Bearman chez Haas F1, a pris beaucoup plus de temps que prévu. Désaccords sur le salaire, volonté de Bearman de se sécuriser une place chez Ferrari à moyen terme…. Les négociations semblent avoir été rudes, au point de…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/aucun-plan-b-chez-haas-f1-komatsu-balaie-les-doutes-autour-de-bearman,213817.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/haas1_3_-10.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T11:29:13.507Z"
+  },
   {
    "id": "news_asi2j8",
    "timestamp": "2026-11-28T10:21:00.000Z",
@@ -856,32 +882,6 @@
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456467_hires.jpg",
    "impact": null,
    "firstSeen": "2026-11-27T11:54:53.958Z"
-  },
-  {
-   "id": "news_1wh3ai5",
-   "timestamp": "2026-11-27T07:28:00.000Z",
-   "category": "TECHNIQUE",
-   "title": "Stroll veut des progrès en 2027 mais admet que Honda est 'un point d'interrogation'",
-   "summary": "Aston Martin F1 espère progresser l'an prochain, notamment au niveau du châssis qui a été un des problèmes cette année, mais Lance Stroll s'inquiète de l'inconnue que représente la performance du moteur Honda évolué en 2027. Selon lui, c'est le plus gros du…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/stroll-veut-des-progres-en-2027-mais-admet-que-honda-est-un-point-d,213758.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456456_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-27T11:54:53.958Z"
-  },
-  {
-   "id": "news_7qpwin",
-   "timestamp": "2026-11-27T06:51:00.000Z",
-   "category": "RÈGLEMENT",
-   "title": "Les pilotes F1 jouent à un quiz pour juger les situations et améliorer les sanctions de la FIA !",
-   "summary": "La traditionnelle réunion annuelle entre les pilotes de Formule 1 et les commissaires sportifs de la FIA a pris une tournure pour le moins inhabituelle ce jeudi au Grand Prix du Qatar. La Fédération a en effet utilisé le jeu de quiz interactif Kahoot ! pour…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/les-pilotes-f1-jouent-a-un-quiz-pour-juger-les-situations-et-ameliorer-les,213777.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1427137_hires-2.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-27T06:53:54.890Z"
   }
  ]
 }
