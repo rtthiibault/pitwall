@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-28T08:28:52.158Z",
+ "updated": "2026-11-28T08:58:55.864Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-28T08:58:52.158Z",
+ "next": "2026-11-28T09:28:55.864Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_5av0g5",
+   "timestamp": "2026-11-28T08:52:29.000Z",
+   "category": "TECHNIQUE",
+   "title": "Des pneus usés à 100% en 15 tours : nouveau casse-tête pour Pirelli à Losail",
+   "summary": "Chaque année, le circuit de Losail représente le plus grand défi de la saison de Formule 1 pour Pirelli. C'est précisément pour cette raison qu'une durée maximale de relais est de nouveau imposée cette saison, avec une limite fixée cette fois à 27 tours par…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/usure-totale-pneus-pirelli-casse-tete-losail/10878507/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/6O7z5j56/s6/pierre-gasly-alpine.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T08:58:55.864Z"
+  },
   {
    "id": "news_18qzqor",
    "timestamp": "2026-11-28T08:14:00.000Z",
@@ -544,7 +557,7 @@
    "url": "https://www.autohebdo.fr/actualites/motogp/marc-marquez-explique-sa-retraite-jai-commence-a-ressentir-de-la-peur.html",
    "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/55676514316_c20a95db7c_o.jpg",
    "impact": null,
-   "firstSeen": "2026-11-28T08:28:52.158Z"
+   "firstSeen": "2026-11-28T08:58:55.864Z"
   },
   {
    "id": "news_1tqg9qd",
@@ -881,19 +894,6 @@
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456640_hires.jpg",
    "impact": null,
    "firstSeen": "2026-11-26T20:52:18.091Z"
-  },
-  {
-   "id": "news_1j13l6i",
-   "timestamp": "2026-11-26T19:41:00.000Z",
-   "category": "PADDOCK",
-   "title": "'C'est facile de perdre la concentration' : Antonelli raconte une fin de saison sans enjeu",
-   "summary": "Kimi Antonelli n'a plus rien à gagner cette saison, avec le titre mondial des pilotes, celui des constructeurs pour Mercedes F1, 16 podiums dont neuf victoires, sept pole positions et huit meilleurs tours. Le pilote italien a reconnu en marge du Grand Prix du…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/c-est-facile-de-perdre-la-concentration-antonelli-raconte-une-fin-de-saison,213774.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456559_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T20:22:13.728Z"
   }
  ]
 }
