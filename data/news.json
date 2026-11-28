@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-28T07:28:45.268Z",
+ "updated": "2026-11-28T07:58:48.775Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-28T07:58:45.268Z",
+ "next": "2026-11-28T08:28:48.775Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 109
+   "n": 112
   },
   {
    "name": "F1i",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_tnhxtx",
+   "timestamp": "2026-11-28T07:31:34.000Z",
+   "category": "PADDOCK",
+   "title": "Ferrari : Vasseur se mure dans le silence, Hamilton veut prendre le pouvoir",
+   "summary": "Frédéric Vasseur se fait inhabituellement discret dans le paddock du Grand Prix du Qatar, alors que les critiques se multiplient concernant sa gestion de la rivalité entre Lewis Hamilton et Charles Leclerc chez Ferrari. Le directeur de la Scuderia aurait…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/ferrari-vasseur-se-mure-dans-le-silence-hamilton-veut-prendre-le-pouvoir,213825.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456978_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T07:58:48.775Z"
+  },
   {
    "id": "news_3gkb7s",
    "timestamp": "2026-11-28T07:07:30.000Z",
@@ -492,7 +505,7 @@
    "url": "https://www.autohebdo.fr/actualites/motogp/marc-marquez-explique-sa-retraite-jai-commence-a-ressentir-de-la-peur.html",
    "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/55676514316_c20a95db7c_o.jpg",
    "impact": null,
-   "firstSeen": "2026-11-28T07:28:45.268Z"
+   "firstSeen": "2026-11-28T07:58:48.775Z"
   },
   {
    "id": "news_1tqg9qd",
@@ -868,19 +881,6 @@
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456410_hires.jpg",
    "impact": null,
    "firstSeen": "2026-11-26T19:22:04.315Z"
-  },
-  {
-   "id": "news_lxamug",
-   "timestamp": "2026-11-26T18:31:00.000Z",
-   "category": "PADDOCK",
-   "title": "Leclerc reconnaît les limites de sa cohabitation actuelle avec Hamilton... à régler pour 2027",
-   "summary": "Charles Leclerc reste convaincu qu'une cohabitation harmonieuse avec Lewis Hamilton est possible chez Ferrari, malgré les tensions inhérentes à la présence de deux pilotes particulièrement ambitieux au sein d'une même équipe. Le Monégasque estime que la…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/leclerc-reconnait-les-limites-de-sa-cohabitation-actuelle-avec-hamilton-a,213770.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456573_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T18:51:59.868Z"
   }
  ]
 }
