@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-28T14:29:49.360Z",
+ "updated": "2026-11-28T14:59:54.011Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-28T14:59:49.360Z",
+ "next": "2026-11-28T15:29:54.011Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 111
+   "n": 112
   },
   {
    "name": "F1i",
@@ -26,6 +26,19 @@
   }
  ],
  "items": [
+  {
+   "id": "news_fzou00",
+   "timestamp": "2026-11-28T14:45:00.000Z",
+   "category": "TECHNIQUE",
+   "title": "Sainz veut une évolution des pénalités en F1, Antonelli propose une solution concrète",
+   "summary": "Carlos Sainz a appelé la FIA à revoir les modalités d'application des pénalités en Formule 1 pour la saison 2027, alors que les pilotes ont rencontré les commissaires sportifs jeudi au Grand Prix du Qatar afin de revenir sur plusieurs décisions controversées…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/sainz-veut-une-evolution-des-penalites-en-f1-antonelli-propose-une-solution,213835.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456694_hires.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T14:59:54.011Z"
+  },
   {
    "id": "news_x88spa",
    "timestamp": "2026-11-28T14:00:00.000Z",
@@ -869,19 +882,6 @@
    "image": "https://cdn-1.motorsport.com/images/amp/YE9EQnLY/s6/le-depart.jpg",
    "impact": null,
    "firstSeen": "2026-11-27T11:24:49.584Z"
-  },
-  {
-   "id": "news_11h9l51",
-   "timestamp": "2026-11-27T10:30:00.000Z",
-   "category": "PADDOCK",
-   "title": "Antonelli veut courir avec Verstappen au Nürburgring, reste à convaincre Wolff",
-   "summary": "Kimi Antonelli aimerait un jour faire équipe avec Max Verstappen en endurance, et plus particulièrement sur la mythique Nordschleife du Nürburgring. Le champion du monde 2026 de Formule 1 a révélé avoir déjà discuté de cette possibilité avec le Néerlandais…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/antonelli-veut-courir-avec-verstappen-au-nurburgring-reste-a-convaincre-wolff,213776.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1455470_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-27T11:54:53.958Z"
   }
  ]
 }
