@@ -3295,7 +3295,7 @@
           <div class="wx-strip" id="wxStrip" style="grid-template-columns:repeat(${LAPS}, 1fr)" title="Radar météo : ${range} tour${range > 1 ? 's' : ''} de prévision (améliorez la station météo du garage pour voir plus loin)">${res.weather.slice(1).map((x, i) => `<i data-l="${i + 1}"></i>`).join('')}</div>
           <div class="pitwall" id="pitwall"></div>
         </div>
-        <div class="race-side"><div class="tower-h"><span>Classement</span><div class="seg tw-mode"><button class="on" data-tw="gap">Leader</button><button data-tw="int">Intervalle</button></div></div><div class="tower" style="height:${res.field.length * ROW}px;--row:${ROW}px">${tower}</div><div class="feed" id="feed"><div class="ev"><b>Départ</b> — vous partez P${meX.grid} sur la grille, en ${MG().TYRES[meX.tyre].name.toLowerCase()}${res.weather[0].wet > 0.12 ? `, sur piste ${MG().trackState(res.weather[0].wet).toLowerCase()}` : ''}</div></div></div>
+        <div class="race-side"><div class="rc" id="rcBox" aria-live="polite"></div><div class="tower-h"><span>Classement</span><div class="seg tw-mode"><button class="on" data-tw="gap">Leader</button><button data-tw="int">Intervalle</button></div></div><div class="tower" style="height:${res.field.length * ROW}px;--row:${ROW}px">${tower}</div><div class="feed" id="feed"><div class="ev"><b>Départ</b> — vous partez P${meX.grid} sur la grille, en ${MG().TYRES[meX.tyre].name.toLowerCase()}${res.weather[0].wet > 0.12 ? `, sur piste ${MG().trackState(res.weather[0].wet).toLowerCase()}` : ''}</div></div></div>
       </div></div></div>`;
     const STEP = 50, LAP_MS = 480000 / LAPS; // une course dure environ 8 minutes en vitesse ×1 (4 min en ×2, 2 min en ×4, 1 min en ×8), quel que soit le nombre de tours
     let lap = 0, T = -0.5, flagT = 0, started = false, paused = false, done = false, evI = 0, radioTimer = null; // T < 0 : procédure de départ (5 feux rouges)
@@ -3376,7 +3376,7 @@
         const el = $(`.trow[data-i="${o.i}"]`); if (!el) return;
         el.querySelector('.tt').innerHTML = o.out ? '' : tyreDot(o.ty, 'sm' + (o.wear > 0.75 ? ' worn' : ''));
       });
-      towerTick();
+      towerTick(); rcTick(L);
       $('#lapN').textContent = L;
       wx(L);
       const feed = $('#feed');
@@ -3407,13 +3407,21 @@
         if (auto && box.dataset.pick != null && box.dataset.pick !== '') { idx = +box.dataset.pick; } // temps écoulé pendant le choix des pneus : l'option choisie s'applique avec le composé prévu
         delete box.dataset.pick;
         const r = MG().applyChoice(res, dil, +idx, tyre);
-        box.innerHTML = `<div class="radio-box res ${r.out ? 'bad' : r.dt < 0 ? 'good' : r.dt > 0 ? 'bad' : ''}">${RHEAD('Radio stand' + (auto ? ' · temps écoulé, choix prudent appliqué' : ''))}<div class="radio-pick">${esc(r.choice)}</div><p>${esc(r.msg)}</p></div>`;
+        const tone = r.out ? 'bad' : r.dt < -0.05 ? 'good' : r.dt > 0.05 ? 'bad' : 'flat';
+        const chip = r.out ? 'Abandon' : tone === 'good' ? `${String(Math.abs(r.dt).toFixed(1)).replace('.', ',')} s gagnées` : tone === 'bad' ? `${String(Math.abs(r.dt).toFixed(1)).replace('.', ',')} s perdues` : 'Sans effet sur le chrono';
+        const ico = tone === 'good' ? '<path d="M5 12.5l4.5 4.5L19 7.5"/>' : tone === 'bad' ? '<path d="M7 7l10 10M17 7L7 17"/>' : '<path d="M6 12h12"/>';
+        box.innerHTML = `<div class="rdx rdx-out ${tone}">${RHEAD(auto ? 'Radio stand · temps écoulé' : 'Radio stand')}
+          <div class="rdx-res"><span class="rdx-ico"><svg viewBox="0 0 24 24" aria-hidden="true">${ico}</svg></span><div><small>${auto ? 'Choix prudent appliqué' : 'Décision'}</small><b>${esc(r.choice)}</b></div><span class="rdx-chip">${chip}</span></div>
+          <p class="rdx-msg">${esc(String(r.msg).replace(/\s*[+−-]\d+[,.]\d+\s*s(?: gagnées| perdues)?\.?\s*$/, ''))}</p></div>`;
         setTimeout(() => { box.classList.remove('on'); box.innerHTML = ''; paused = false; then(); renderWall(lap); }, 2600);
       };
-      box.innerHTML = `<div class="radio-box">${RHEAD('Radio stand · ' + esc(dil.title), `<b class="radio-cd" id="radioCd">${RADIO_S}</b>`)}
-        <p>${esc(dil.text)}</p><div class="radio-opts">${dil.options.map((o, i) => `<button class="btn sm ghost" data-radio="${i}">${esc(o)}</button>`).join('')}</div>
-        <div class="radio-bar"><i id="radioBar"></i></div></div>`;
+      box.innerHTML = `<div class="rdx">${RHEAD('Radio stand', `<b class="radio-cd" id="radioCd">${RADIO_S}</b>`)}
+        <h4 class="rdx-t">${esc(dil.title)}</h4><p class="rdx-q">${esc(dil.text)}</p>
+        <div class="radio-opts rdx-opts">${dil.options.map((o, i) => `<button type="button" class="rdx-o" data-radio="${i}"><kbd>${i + 1}</kbd><span>${esc(o)}</span>${i === dil.def ? '<em>prudent</em>' : ''}<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg></button>`).join('')}</div>
+        <div class="radio-bar"><i id="radioBar"></i></div><small class="rdx-foot">Sans réponse dans les ${RADIO_S} s, le choix prudent s'applique.</small></div>`;
       box.classList.add('on'); renderWall(lap);
+      const onKey = (e) => { if (!box.classList.contains('on')) { document.removeEventListener('keydown', onKey); return; } const n = +e.key; const b = box.querySelector(`[data-radio="${n - 1}"]`); if (n >= 1 && b) { e.preventDefault(); b.click(); } };
+      document.addEventListener('keydown', onKey);
       box.onclick = (e) => {
         const t = e.target.closest('[data-tc]'); if (t) { answer(box.dataset.pick, false, t.dataset.tc); return; }
         const b = e.target.closest('[data-radio]'); if (!b) return;
@@ -3528,6 +3536,21 @@
        les voitures se rapprocher, s'éloigner et se dépasser en plein tour. */
     let twMode = 'gap';
     const near = { ahead: 99, behind: 99 };
+    // Direction de course en haut du classement : tour en cours, drapeaux, safety car (style des graphismes TV)
+    const RC_ICO = {
+      flags: '<svg viewBox="0 0 40 24" aria-hidden="true"><path d="M4 22V3M4 3l13 2-1 7-12-1M22 22V3m0 0l13 2-1 7-12-1" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+      car: '<svg viewBox="0 0 56 20" aria-hidden="true"><path d="M3 14c0-3 3-5 7-5l8-4h14l8 4h7c4 0 6 2 6 5v1H3z" fill="currentColor"/><circle cx="14" cy="15" r="3.6" fill="currentColor" stroke="#111" stroke-width="2"/><circle cx="43" cy="15" r="3.6" fill="currentColor" stroke="#111" stroke-width="2"/><rect x="22" y="2" width="12" height="3" rx="1" fill="currentColor"/></svg>',
+      chk: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 22V3" stroke="currentColor" stroke-width="2"/><path d="M5 3h16v11H5z" fill="#fff"/><path d="M5 3h4v4H5zm8 0h4v4h-4zM9 7h4v3.5H9zm8 0h4v3.5h-4zM5 10.5h4V14H5zm8 0h4V14h-4z" fill="#111"/></svg>',
+    };
+    function rcTick(L) {
+      const el = $('#rcBox'); if (!el) return;
+      const f = L <= 0 ? { k: 'grid', t: 'Grille de départ', s: 'Tour de formation' } : (res.flags && res.flags[L]) || null;
+      const ico = !f ? '' : f.k === 'sc' || f.k === 'vsc' ? RC_ICO.flags + RC_ICO.car : f.k === 'flag' ? RC_ICO.chk : f.k === 'final' ? '' : RC_ICO.flags;
+      const key = L + '|' + (f ? f.k + f.s : '');
+      if (el.dataset.k === key) return; el.dataset.k = key;
+      el.className = 'rc' + (f ? ' rc-' + f.k : '');
+      el.innerHTML = `<div class="rc-lap"><span>Tour</span><i></i><b>${Math.max(0, L)}<small> / ${LAPS}</small></b></div>${f ? `<div class="rc-band"><span class="rc-ico">${ico}</span><div><b>${esc(f.t)}</b>${f.s ? `<small>${esc(f.s)}</small>` : ''}</div></div>` : ''}`;
+    }
     function towerTick() {
       const L = Math.max(0, Math.floor(T)), f = Math.max(0, Math.min(1, T - L)), L1 = Math.min(res.lap, L + 1);
       const rows = res.field.map((x) => {
@@ -3729,7 +3752,7 @@
 
     S.raceFinish = finish;
     wx(0);
-    towerTick(); renderTele(); mapWxTick(); gridChoice();
+    towerTick(); rcTick(0); renderTele(); mapWxTick(); gridChoice();
     // carte 2D : tracé du circuit et un point par voiture
     try {
       S.raceMap = F1.racemap.mount($('#raceMap'), {
@@ -3755,7 +3778,7 @@
         lap = L;
         if (lap >= LAPS) return finish(false);
         render(lap); renderTele();
-        const dil = res.DL.includes(lap) ? MG().dilemmaFor(res) : null;
+        const dil = res.DL.includes(lap) || (MG().neutralStart && MG().neutralStart(res, lap)) ? MG().dilemmaFor(res) : null;
         if (dil) { T = lap; askRadio(dil, () => MG().stepLap(res)); } else MG().stepLap(res);
       }
     }, STEP);
