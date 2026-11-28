@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-28T11:29:13.507Z",
+ "updated": "2026-11-28T11:59:31.672Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-28T11:59:13.507Z",
+ "next": "2026-11-28T12:29:31.672Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 112
+   "n": 113
   },
   {
    "name": "F1i",
@@ -26,6 +26,32 @@
   }
  ],
  "items": [
+  {
+   "id": "news_1lpyzp8",
+   "timestamp": "2026-11-28T11:50:00.000Z",
+   "category": "PADDOCK",
+   "title": "Mekies ne calmera pas 'Mad Max' Verstappen face à Russell",
+   "summary": "Si le titre 2026 se jouait sur la deuxième moitié de saison, alors Max Verstappen serait leader du championnat… Le pilote Red Bull est en effet sur une incroyable série : 9 podiums d'affilée, dont 4 victoires. Un come-back qui sera certes insuffisant pour…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/mekies-ne-calmera-pas-mad-max-verstappen-face-a-russell,213819.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456001_hires-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T11:59:31.672Z"
+  },
+  {
+   "id": "news_essq2z",
+   "timestamp": "2026-11-28T11:44:00.000Z",
+   "category": "PADDOCK",
+   "title": "Première en F2, première pole pour Ugochukwu : seuls deux pilotes de F1 y étaient parvenus",
+   "summary": "L’on s’attendait légitimement à ce que Freddie Slater (protégé de la filière Audi) et Ugo Ugochukwu (champion de Formule 3) soient les deux attractions principales du week-end en Formule 2, mais de là à jouer les premiers rôles de la sorte, cela a de quoi…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/monoplace/formule-2/premiere-en-f2-premiere-pole-pour-ugochukwu-seuls-deux-pilotes-de-f1-y-etaient-parvenus.html",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/09/DPPI_03326025_144.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T11:59:31.672Z"
+  },
   {
    "id": "news_hnqpsr",
    "timestamp": "2026-11-28T11:27:51.000Z",
@@ -854,32 +880,6 @@
    "lang": "fr",
    "url": "https://motorsport.nextgen-auto.com/fr/formule-1/la-f1-arrive-au-qatar-entre-plans-d-evacuation-absences-et-demandes-d,213786.html",
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456630_hires-2.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-27T11:54:53.958Z"
-  },
-  {
-   "id": "news_y47glz",
-   "timestamp": "2026-11-27T08:25:17.000Z",
-   "category": "PADDOCK",
-   "title": "Le programme du Grand Prix du Qatar F1 2026 : dates, horaires et infos",
-   "summary": "Le Grand Prix du Qatar, disputé sur le circuit de Losail, est la 22e et avant-dernière manche de la saison. Le décalage horaire entre Losail et Paris est de deux heures, donc quand il est 9h en France, il est 11h au Qatar. Toutefois, Grand Prix semi-nocturne…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/gp-qatar-2026-dates-horaires-infos-programme/10877189/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "image": "https://cdn-1.motorsport.com/images/amp/2wlKJ3bY/s6/qatar-2.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-27T08:54:27.580Z"
-  },
-  {
-   "id": "news_a04wbg",
-   "timestamp": "2026-11-27T08:06:00.000Z",
-   "category": "PADDOCK",
-   "title": "Russell assume sa prise de risques et désigne Red Bull comme l'équipe à battre",
-   "summary": "George Russell reconnaît avoir sensiblement augmenté sa prise de risques en cette fin de saison 2026 de Formule 1, alors que ses espoirs de titre mondial se sont envolés et que Mercedes a déjà remporté le championnat des constructeurs. Le Britannique a apporté…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/russell-assume-sa-prise-de-risques-et-designe-red-bull-comme-l-equipe-a-battre,213767.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456467_hires.jpg",
    "impact": null,
    "firstSeen": "2026-11-27T11:54:53.958Z"
   }
