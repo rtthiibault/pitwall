@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-28T07:58:48.775Z",
+ "updated": "2026-11-28T08:28:52.158Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-28T08:28:48.775Z",
+ "next": "2026-11-28T08:58:52.158Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -26,6 +26,45 @@
   }
  ],
  "items": [
+  {
+   "id": "news_18qzqor",
+   "timestamp": "2026-11-28T08:14:00.000Z",
+   "category": "PADDOCK",
+   "title": "Stroll s'est blessé au dos au Qatar, Crawford pourrait faire ses débuts en F1",
+   "summary": "Lance Stroll a révélé avoir souffert de douleurs lombaires apparues soudainement lors de la deuxième séance d'essais libres du Grand Prix du Qatar. Le pilote Aston Martin F1, dernier du classement lors des deux séances disputées vendredi à Losail, s'est blessé…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/stroll-s-est-blesse-au-dos-au-qatar-crawford-pourrait-faire-ses-debuts-en-f1,213829.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456930_hires.jpg",
+   "impact": {
+    "targetType": "driver",
+    "targetIds": [
+     "stroll"
+    ],
+    "managerModifiers": {
+     "powerUnit": 0,
+     "aero": 0,
+     "reliability": 0
+    },
+    "bettingOddsMultiplier": 1.25,
+    "impactLabel": "Cotes +25%",
+    "teamId": "aston_martin"
+   },
+   "firstSeen": "2026-11-28T08:28:52.158Z"
+  },
+  {
+   "id": "news_187y9jb",
+   "timestamp": "2026-11-28T08:00:41.000Z",
+   "category": "PADDOCK",
+   "title": "Hankook devrait concurrencer Pirelli pour le prochain appel d'offres en F1",
+   "summary": "C'est une nouvelle illustration éclatante de la portée mondiale et de la popularité croissante de la Formule 1 : un nouveau candidat sérieux s'apprête à briguer le contrat exclusif de fourniture des pneus du championnat. Pirelli a succédé à Bridgestone en tant…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/hankook-concurrencer-pirelli-manufacturier-unique-f1/10878495/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/24QGyxNY/s6/gettyimages-2257247174.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T08:28:52.158Z"
+  },
   {
    "id": "news_tnhxtx",
    "timestamp": "2026-11-28T07:31:34.000Z",
@@ -505,7 +544,7 @@
    "url": "https://www.autohebdo.fr/actualites/motogp/marc-marquez-explique-sa-retraite-jai-commence-a-ressentir-de-la-peur.html",
    "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/55676514316_c20a95db7c_o.jpg",
    "impact": null,
-   "firstSeen": "2026-11-28T07:58:48.775Z"
+   "firstSeen": "2026-11-28T08:28:52.158Z"
   },
   {
    "id": "news_1tqg9qd",
@@ -855,32 +894,6 @@
    "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456559_hires.jpg",
    "impact": null,
    "firstSeen": "2026-11-26T20:22:13.728Z"
-  },
-  {
-   "id": "news_1tim479",
-   "timestamp": "2026-11-26T19:04:00.000Z",
-   "category": "PADDOCK",
-   "title": "Hamilton refuse de noircir le tableau chez Ferrari malgré les tensions",
-   "summary": "Lewis Hamilton assure que les deux pilotes Ferrari restent libres de s'affronter en piste malgré leur nouvel accrochage lors du Grand Prix de Las Vegas. Après avoir pris le temps de réfléchir aux événements du week-end dernier et discuté avec Charles Leclerc…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hamilton-refuse-de-noircir-le-tableau-chez-ferrari-malgre-les-tensions,213772.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456610_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T19:22:04.315Z"
-  },
-  {
-   "id": "news_8v4efz",
-   "timestamp": "2026-11-26T18:46:00.000Z",
-   "category": "PADDOCK",
-   "title": "Hülkenberg salue les 'progrès' d'Audi F1, Bortoleto explique d'où vient sa frustration",
-   "summary": "Nico Hülkenberg dresse un bilan globalement positif de la première saison d'Audi en Formule 1, malgré un parcours parfois chaotique et une certaine frustration liée aux nombreuses occasions manquées d'inscrire des points. Le pilote allemand, qui s'est une…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/hulkenberg-salue-les-progres-d-audi-f1-bortoleto-explique-d-ou-vient-sa,213769.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456410_hires.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-26T19:22:04.315Z"
   }
  ]
 }
