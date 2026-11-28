@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-28T15:29:57.424Z",
+ "updated": "2026-11-28T16:00:02.064Z",
  "periodHours": 0.5,
  "periodMinutes": 30,
- "next": "2026-11-28T15:59:57.424Z",
+ "next": "2026-11-28T16:30:02.064Z",
  "sources": [
   {
    "name": "Motorsport.com",
@@ -12,7 +12,7 @@
   {
    "name": "Nextgen-Auto",
    "ok": true,
-   "n": 111
+   "n": 112
   },
   {
    "name": "F1i",
@@ -26,6 +26,58 @@
   }
  ],
  "items": [
+  {
+   "id": "news_sdn9gc",
+   "timestamp": "2026-11-28T15:43:47.000Z",
+   "category": "PADDOCK",
+   "title": "Antonelli signe un sans-faute en essais, Mercedes domine",
+   "summary": "Kimi Antonelli a permis à Mercedes de signer le meilleur temps des trois séances d'essais du GP du Qatar. Les Flèches d'argent abordent les qualifications avec une avance considérable. George Russell a pris les commandes avant la mi-séance, alors que les…",
+   "source": "Motorsport.com",
+   "lang": "fr",
+   "url": "https://fr.motorsport.com/f1/news/kimi-antonelli-signe-sans-faute-essais-mercedes-domine/10878660/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
+   "image": "https://cdn-1.motorsport.com/images/amp/2GdKBMrY/s6/andrea-kimi-antonelli-mercedes-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T16:00:02.064Z"
+  },
+  {
+   "id": "news_1yf6s87",
+   "timestamp": "2026-11-28T15:34:37.000Z",
+   "category": "PADDOCK",
+   "title": "GP du Qatar – EL3 : Les Mercedes encore au sommet avant les qualifications",
+   "summary": "À Doha, il y a Mercedes et les autres. Les Flèches d’argent ont brillé dans la nuit de Losail en dominant pour la troisième fois de suite les Essais Libres du Grand Prix du Qatar. Comme lors des Essais Libres 1 et 2, le champion du monde Kimi Antonelli a été…",
+   "source": "AutoHebdo",
+   "lang": "fr",
+   "url": "https://www.autohebdo.fr/actualites/f1/gp-du-qatar-el3-les-mercedes-encore-au-sommet-avant-les-qualifications.html",
+   "image": "https://www.autohebdo.fr/wp-content/uploads/2026/11/DPPI_00126025_1196.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T16:00:02.064Z"
+  },
+  {
+   "id": "news_hmo0rr",
+   "timestamp": "2026-11-28T15:32:02.000Z",
+   "category": "PADDOCK",
+   "title": "F1 - GP du Qatar 2026 - Essais Libres 3",
+   "summary": "Pos.PiloteVoitureTempsTours 1 Kimi Antonelli Mercedes W17 1:22.400 14 2 George Russell Mercedes W17 1:22.649 16 3 Max Verstappen Red Bull RBPT Ford RB22 1:22.910 14 4 Isack Hadjar Red Bull RBPT Ford RB22 1:23.087 15 5 Charles Leclerc Ferrari SF-26 1:23.208 22…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/resultats/f1-gp-du-qatar-2026-essais-libres-3,213843.html",
+   "image": "",
+   "impact": null,
+   "firstSeen": "2026-11-28T16:00:02.064Z"
+  },
+  {
+   "id": "news_httpo1",
+   "timestamp": "2026-11-28T15:31:00.000Z",
+   "category": "PADDOCK",
+   "title": "Grand Prix du Qatar, EL3 : Antonelli et Mercedes F1 sur un nuage, une bataille très serrée derrière",
+   "summary": "Le Grand Prix du Qatar se poursuit à Losail avec la dernière heure d'essais libres avant les qualifications. Les 22 pilotes vont pouvoir préparer la séance qualificative après avoir travaillé sur les longs relais hier, mais les pneus seront encore au centre du…",
+   "source": "Nextgen-Auto",
+   "lang": "fr",
+   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/grand-prix-du-qatar-el3-antonelli-et-mercedes-f1-sur-un-nuage-une-bataille-tres,213842.html",
+   "image": "https://motorsport.nextgen-auto.com/IMG/logo/xpb_1456948_hires-2.jpg",
+   "impact": null,
+   "firstSeen": "2026-11-28T16:00:02.064Z"
+  },
   {
    "id": "news_fzou00",
    "timestamp": "2026-11-28T14:45:00.000Z",
@@ -818,70 +870,6 @@
    "image": "https://cdn-1.motorsport.com/images/amp/YP74e532/s6/carlos-sainz-williams-2.jpg",
    "impact": null,
    "firstSeen": "2026-11-27T11:54:53.958Z"
-  },
-  {
-   "id": "news_1tfdtmd",
-   "timestamp": "2026-11-27T11:46:00.000Z",
-   "category": "PADDOCK",
-   "title": "Colapinto révèle pourquoi il a embarqué dans un avion avec son casque F1 sur la tête",
-   "summary": "Franco Colapinto a dévoilé les coulisses d'une scène pour le moins insolite qui a largement circulé sur les réseaux sociaux après le Grand Prix de Las Vegas. Aperçu en train d'embarquer sur un vol en classe économique avec son casque de Formule 1 sur la tête…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/colapinto-revele-pourquoi-il-a-embarque-dans-un-avion-avec-son-casque-f1-sur-la,213788.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/hye0qbxwuaekxmq.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-27T12:24:58.334Z"
-  },
-  {
-   "id": "news_12y40mn",
-   "timestamp": "2026-11-27T11:41:21.000Z",
-   "category": "TECHNIQUE",
-   "title": "Honda ne trouve aucun problème sur le \"moteur cassé\" d'Alonso à Las Vegas",
-   "summary": "Lors du dernier tour du Grand Prix de Las Vegas de Formule 1, Fernando Alonso a décidé d'en rester là. Le double champion du monde a bloqué ses roues au bout de la longue ligne droite avant d'annoncer à son équipe à la radio : \"Aux stands, aux stands, moteur…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/honda-trouve-aucun-probleme-moteur-casse-alonso-aston-martin-las-vegas/10878123/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "image": "https://cdn-1.motorsport.com/images/amp/YK15zBk0/s6/fernando-alonso-aston-martin-r.jpg",
-   "impact": {
-    "targetType": "engine",
-    "targetIds": [
-     "aston_martin"
-    ],
-    "managerModifiers": {
-     "powerUnit": -2,
-     "aero": 0,
-     "reliability": -2
-    },
-    "bettingOddsMultiplier": 1.12,
-    "impactLabel": "Moteur -2 pts | Fiabilité -2 pts | Cotes +12%"
-   },
-   "firstSeen": "2026-11-27T11:54:53.958Z"
-  },
-  {
-   "id": "news_e7se4n",
-   "timestamp": "2026-11-27T11:03:00.000Z",
-   "category": "RÈGLEMENT",
-   "title": "Verstappen révèle ce que la F1 devrait conserver pour ses monoplaces de 2030",
-   "summary": "Si le Grand Prix de Las Vegas n'a pas suffi à réconcilier Max Verstappen avec les aspects artificiels de la réglementation actuelle de la Formule 1, le Néerlandais estime néanmoins que l'épreuve disputée dans le Nevada a mis en évidence un phénomène dont la…",
-   "source": "Nextgen-Auto",
-   "lang": "fr",
-   "url": "https://motorsport.nextgen-auto.com/fr/formule-1/verstappen-revele-ce-que-la-f1-devrait-conserver-pour-ses-monoplaces-de-2030,213794.html",
-   "image": "https://motorsport.nextgen-auto.com/IMG/logo/ambiance-pirelli3_4_-6.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-27T11:54:53.958Z"
-  },
-  {
-   "id": "news_15svcoj",
-   "timestamp": "2026-11-27T10:55:34.000Z",
-   "category": "RÈGLEMENT",
-   "title": "Quand les pilotes répondent à un quiz pour débattre des décisions des commissaires",
-   "summary": "Peu de sujets liés au quotidien d'un week-end de Formule 1 suscitent autant de divergences d'opinion que les décisions des commissaires, en particulier leur cohérence. Une minorité de pilotes particulièrement prompts à s'exprimer tend à monopoliser ce débat…",
-   "source": "Motorsport.com",
-   "lang": "fr",
-   "url": "https://fr.motorsport.com/f1/news/pilotes-quiz-debattre-decisions-commissaires/10878167/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-F1&utm_term=News&utm_content=fr",
-   "image": "https://cdn-1.motorsport.com/images/amp/YE9EQnLY/s6/le-depart.jpg",
-   "impact": null,
-   "firstSeen": "2026-11-27T11:24:49.584Z"
   }
  ]
 }
